@@ -1,0 +1,16 @@
+{
+  "extends": "./tsconfig.base.json",
+  "compilerOptions": {
+    "lib": [
+      "ESNext"
+    ],
+  },
+  "include": [
+    "packages/server/*.js",
+    "packages/server/.*.js",
+    "packages/client/*.js",
+    "packages/client/.*.js",
+    "*.js",
+    ".*.js"
+  ]
+}

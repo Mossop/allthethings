@@ -1,0 +1,22 @@
+{
+  "name": "@allthethings/client",
+  "description": "AllTheThings GraphQL website.",
+  "repository": "Mossop/allthethings",
+  "license": "MIT",
+  "author": "Dave Townsend <dtownsend@oxymoronical.com>",
+  "scripts": {
+    "build": "webpack",
+    "watch": "webpack --watch"
+  },
+  "dependencies": {
+    "@apollo/client": "^3.3.6"
+  },
+  "devDependencies": {
+    "fork-ts-checker-webpack-plugin": "^6.1.0",
+    "html-webpack-plugin": "^4.5.1",
+    "html-webpack-tags-plugin": "^2.0.17",
+    "ts-loader": "^8.0.14",
+    "webpack": "^5.12.3",
+    "webpack-cli": "^4.3.1"
+  }
+}

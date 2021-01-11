@@ -1,0 +1,8 @@
+type Context {
+  id: ID!
+  name: String!
+}
+
+type Query {
+  contexts: [Context!]!
+}

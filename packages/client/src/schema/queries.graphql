@@ -1,0 +1,6 @@
+query contexts {
+  contexts {
+    id
+    name
+  }
+}
