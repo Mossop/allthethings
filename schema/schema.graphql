@@ -1,8 +1,45 @@
-type Context {
-  id: ID!
-  name: String!
+type User @entity {
+  id: ID! @id
+  email: String! @column
+  password: String! @column
+}
+
+union ProjectContext = Context | EmptyContext
+
+type Context @entity {
+  id: ID! @id
+  user: User! @link
+  name: String! @column(overrideType: "string | null")
+
+  projects: [Project!]!
+}
+
+type EmptyContext {
+  user: User! @link
+
+  projects: [Project!]!
+}
+
+type Project @entity {
+  id: ID! @id
+  parent: Project @link
+  context: ProjectContext @column(overrideType: "ObjectID")
+  name: String @column
+
+  subprojects: [Project!]!
 }
 
 type Query {
+  user: User
+
   contexts: [Context!]!
+  emptyContext: EmptyContext
+  context(id: ID!): Context
+}
+
+type Mutation {
+  createContext(name: String!): Context!
+  createProject(name: String!, parent: ID, context: ID): Project!
+  assignContext(project: ID!, context: ID): Project
+  assignParent(project: ID!, parent: ID): Project
 }

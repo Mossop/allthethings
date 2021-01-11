@@ -14,15 +14,81 @@ export type Scalars = {
   Float: number;
 };
 
+export type User = {
+  __typename?: 'User';
+  id: Scalars['ID'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type ProjectContext = Context | EmptyContext;
+
 export type Context = {
   __typename?: 'Context';
   id: Scalars['ID'];
+  user: User;
   name: Scalars['String'];
+  projects: Array<Project>;
+};
+
+export type EmptyContext = {
+  __typename?: 'EmptyContext';
+  user: User;
+  projects: Array<Project>;
+};
+
+export type Project = {
+  __typename?: 'Project';
+  id: Scalars['ID'];
+  parent?: Maybe<Project>;
+  context?: Maybe<ProjectContext>;
+  name?: Maybe<Scalars['String']>;
+  subprojects: Array<Project>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  user?: Maybe<User>;
   contexts: Array<Context>;
+  emptyContext?: Maybe<EmptyContext>;
+  context?: Maybe<Context>;
+};
+
+
+export type QueryContextArgs = {
+  id: Scalars['ID'];
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createContext: Context;
+  createProject: Project;
+  assignContext?: Maybe<Project>;
+  assignParent?: Maybe<Project>;
+};
+
+
+export type MutationCreateContextArgs = {
+  name: Scalars['String'];
+};
+
+
+export type MutationCreateProjectArgs = {
+  name: Scalars['String'];
+  parent?: Maybe<Scalars['ID']>;
+  context?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationAssignContextArgs = {
+  project: Scalars['ID'];
+  context?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationAssignParentArgs = {
+  project: Scalars['ID'];
+  parent?: Maybe<Scalars['ID']>;
 };
 
 export type ContextsQueryVariables = Exact<{ [key: string]: never; }>;

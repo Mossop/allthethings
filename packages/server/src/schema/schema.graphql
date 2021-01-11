@@ -1,8 +1,41 @@
+type User {
+  id: ID!
+  email: String!
+  password: String!
+}
+
+union ProjectContext = Context | EmptyContext
+
 type Context {
   id: ID!
+  user: User!
   name: String!
+  projects: [Project!]!
+}
+
+type EmptyContext {
+  user: User!
+  projects: [Project!]!
+}
+
+type Project {
+  id: ID!
+  parent: Project
+  context: ProjectContext
+  name: String
+  subprojects: [Project!]!
 }
 
 type Query {
+  user: User
   contexts: [Context!]!
+  emptyContext: EmptyContext
+  context(id: ID!): Context
+}
+
+type Mutation {
+  createContext(name: String!): Context!
+  createProject(name: String!, parent: ID, context: ID): Project!
+  assignContext(project: ID!, context: ID): Project
+  assignParent(project: ID!, parent: ID): Project
 }

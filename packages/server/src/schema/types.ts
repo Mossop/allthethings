@@ -1,10 +1,12 @@
 /* eslint-disable */
 import type { GraphQLResolveInfo } from 'graphql';
+import type { UserDbObject, ContextDbObject, ProjectDbObject } from '../db/types';
 import type { ResolverContext } from './context';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -14,15 +16,81 @@ export type Scalars = {
   Float: number;
 };
 
+export type User = {
+  __typename?: 'User';
+  id: Scalars['ID'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+};
+
+export type ProjectContext = Context | EmptyContext;
+
 export type Context = {
   __typename?: 'Context';
   id: Scalars['ID'];
+  user: User;
   name: Scalars['String'];
+  projects: Array<Project>;
+};
+
+export type EmptyContext = {
+  __typename?: 'EmptyContext';
+  user: User;
+  projects: Array<Project>;
+};
+
+export type Project = {
+  __typename?: 'Project';
+  id: Scalars['ID'];
+  parent?: Maybe<Project>;
+  context?: Maybe<ProjectContext>;
+  name?: Maybe<Scalars['String']>;
+  subprojects: Array<Project>;
 };
 
 export type Query = {
   __typename?: 'Query';
+  user?: Maybe<User>;
   contexts: Array<Context>;
+  emptyContext?: Maybe<EmptyContext>;
+  context?: Maybe<Context>;
+};
+
+
+export type QueryContextArgs = {
+  id: Scalars['ID'];
+};
+
+export type Mutation = {
+  __typename?: 'Mutation';
+  createContext: Context;
+  createProject: Project;
+  assignContext?: Maybe<Project>;
+  assignParent?: Maybe<Project>;
+};
+
+
+export type MutationCreateContextArgs = {
+  name: Scalars['String'];
+};
+
+
+export type MutationCreateProjectArgs = {
+  name: Scalars['String'];
+  parent?: Maybe<Scalars['ID']>;
+  context?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationAssignContextArgs = {
+  project: Scalars['ID'];
+  context?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationAssignParentArgs = {
+  project: Scalars['ID'];
+  parent?: Maybe<Scalars['ID']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -104,35 +172,88 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
-  Context: ResolverTypeWrapper<Context>;
+  User: ResolverTypeWrapper<UserDbObject>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  ProjectContext: ResolversTypes['Context'] | ResolversTypes['EmptyContext'];
+  Context: ResolverTypeWrapper<ContextDbObject>;
+  EmptyContext: ResolverTypeWrapper<ContextDbObject>;
+  Project: ResolverTypeWrapper<ProjectDbObject>;
   Query: ResolverTypeWrapper<{}>;
+  Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
-  Context: Context;
+  User: UserDbObject;
   ID: Scalars['ID'];
   String: Scalars['String'];
+  ProjectContext: ResolversParentTypes['Context'] | ResolversParentTypes['EmptyContext'];
+  Context: ContextDbObject;
+  EmptyContext: ContextDbObject;
+  Project: ProjectDbObject;
   Query: {};
+  Mutation: {};
   Boolean: Scalars['Boolean'];
+}>;
+
+export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ProjectContext'] = ResolversParentTypes['ProjectContext']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'Context' | 'EmptyContext', ParentType, ContextType>;
 }>;
 
 export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type EmptyContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['EmptyContext'] = ResolversParentTypes['EmptyContext']> = ResolversObject<{
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  projects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  parent?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
+  context?: Resolver<Maybe<ResolversTypes['ProjectContext']>, ParentType, ContextType>;
+  name?: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  subprojects?: Resolver<Array<ResolversTypes['Project']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   contexts?: Resolver<Array<ResolversTypes['Context']>, ParentType, ContextType>;
+  emptyContext?: Resolver<Maybe<ResolversTypes['EmptyContext']>, ParentType, ContextType>;
+  context?: Resolver<Maybe<ResolversTypes['Context']>, ParentType, ContextType, RequireFields<QueryContextArgs, 'id'>>;
+}>;
+
+export type MutationResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createContext?: Resolver<ResolversTypes['Context'], ParentType, ContextType, RequireFields<MutationCreateContextArgs, 'name'>>;
+  createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'name'>>;
+  assignContext?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<MutationAssignContextArgs, 'project'>>;
+  assignParent?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<MutationAssignParentArgs, 'project'>>;
 }>;
 
 export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
+  User?: UserResolvers<ContextType>;
+  ProjectContext?: ProjectContextResolvers<ContextType>;
   Context?: ContextResolvers<ContextType>;
+  EmptyContext?: EmptyContextResolvers<ContextType>;
+  Project?: ProjectResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
+  Mutation?: MutationResolvers<ContextType>;
 }>;
 
 
