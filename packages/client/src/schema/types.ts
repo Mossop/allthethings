@@ -61,10 +61,18 @@ export type QueryContextArgs = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  login?: Maybe<User>;
+  logout?: Maybe<Scalars['Boolean']>;
   createContext: Context;
   createProject: Project;
   assignContext?: Maybe<Project>;
   assignParent?: Maybe<Project>;
+};
+
+
+export type MutationLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
 };
 
 

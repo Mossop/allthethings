@@ -38,6 +38,9 @@ type Query {
 }
 
 type Mutation {
+  login(email: String!, password: String!): User
+  logout: Boolean
+
   createContext(name: String!): Context!
   createProject(name: String!, parent: ID, context: ID): Project!
   assignContext(project: ID!, context: ID): Project

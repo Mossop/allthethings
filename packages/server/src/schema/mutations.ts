@@ -1,17 +1,39 @@
 import { ObjectId } from "mongodb";
 
-import type { ContextDbObject, ProjectDbObject } from "../db/types";
-import type { AuthedParams } from "./context";
-import { authed } from "./context";
+import type { ContextDbObject, ProjectDbObject, UserDbObject } from "../db/types";
+import type { AuthedParams, ResolverParams } from "./context";
+import { resolver, authed } from "./context";
 import type {
   Resolvers,
   MutationCreateContextArgs,
   MutationAssignContextArgs,
   MutationCreateProjectArgs,
   MutationAssignParentArgs,
+  MutationLoginArgs,
 } from "./types";
 
 const resolvers: Resolvers["Mutation"] = {
+  login: resolver(async ({
+    args: { email, password },
+    ctx,
+  }: ResolverParams<unknown, MutationLoginArgs>): Promise<UserDbObject | null> => {
+    let user = await ctx.dataSources.users.verifyUser(email, password);
+
+    if (!user) {
+      user = await ctx.dataSources.users.createUser(email, password);
+    }
+
+    ctx.login(user._id);
+    return user;
+  }),
+
+  logout: authed(async ({
+    ctx,
+  }: AuthedParams): Promise<boolean> => {
+    ctx.logout();
+    return true;
+  }),
+
   createContext: authed(({
     args: { name },
     ctx,

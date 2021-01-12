@@ -63,10 +63,18 @@ export type QueryContextArgs = {
 
 export type Mutation = {
   __typename?: 'Mutation';
+  login?: Maybe<User>;
+  logout?: Maybe<Scalars['Boolean']>;
   createContext: Context;
   createProject: Project;
   assignContext?: Maybe<Project>;
   assignParent?: Maybe<Project>;
+};
+
+
+export type MutationLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
 };
 
 
@@ -240,6 +248,8 @@ export type QueryResolvers<ContextType = ResolverContext, ParentType extends Res
 }>;
 
 export type MutationResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  login?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<MutationLoginArgs, 'email' | 'password'>>;
+  logout?: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createContext?: Resolver<ResolversTypes['Context'], ParentType, ContextType, RequireFields<MutationCreateContextArgs, 'name'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<MutationCreateProjectArgs, 'name'>>;
   assignContext?: Resolver<Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<MutationAssignContextArgs, 'project'>>;

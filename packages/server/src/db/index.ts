@@ -1,4 +1,5 @@
 import { MongoDataSource } from "apollo-datasource-mongodb";
+import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type { Cursor, FilterQuery, MongoClient } from "mongodb";
 import { ObjectId } from "mongodb";
 
@@ -44,6 +45,28 @@ class BaseDataSource<T extends DbObject> extends MongoDataSource<T> {
 }
 
 export class UserDataSource extends BaseDataSource<UserDbObject> {
+  public async verifyUser(email: string, password: string): Promise<UserDbObject | null> {
+    let users = await this.list({
+      email,
+    });
+
+    if (users.length != 1) {
+      return null;
+    }
+
+    if (await bcryptCompare(password, users[0].password)) {
+      return users[0];
+    }
+
+    return null;
+  }
+
+  public async createUser(email: string, password: string): Promise<UserDbObject> {
+    return this.insertOne({
+      email,
+      password: await bcryptHash(password, 12),
+    });
+  }
 }
 
 export class ContextDataSource extends BaseDataSource<ContextDbObject> {

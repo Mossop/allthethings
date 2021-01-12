@@ -1,6 +1,7 @@
 import { ApolloServer } from "apollo-server-koa";
 import koa from "koa";
 import koaRouter from "koa-router";
+import koaSession from "koa-session";
 import { MongoClient } from "mongodb";
 
 import { dataSources } from "./db";
@@ -22,6 +23,14 @@ async function init(): Promise<void> {
     // @ts-ignore
     dataSources: () => dataSources(client),
   });
+
+  app.keys = ["allthethings"];
+
+  app.use(koaSession({
+    renew: true,
+    sameSite: "strict",
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+  }, app));
 
   app.use(gqlServer.getMiddleware());
   app.use(router.routes());
