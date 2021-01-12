@@ -1,12 +1,22 @@
+import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { render } from "react-dom";
 
-const baseTheme = createMuiTheme();
+import App from "./App";
+
+const baseTheme = createMuiTheme({
+  palette: {
+    type: "dark",
+  },
+});
 
 /* eslint-disable @typescript-eslint/naming-convention */
 const themeOverrides = (theme: Theme): Theme => createMuiTheme({
+  palette: {
+    type: "dark",
+  },
   overrides: {
     MuiCssBaseline: {
       "@global": {
@@ -66,10 +76,23 @@ const themeOverrides = (theme: Theme): Theme => createMuiTheme({
 /* eslint-enable @typescript-eslint/naming-convention */
 
 function init(): void {
+  let link = createHttpLink({
+    uri: "/graphql",
+    credentials: "same-origin",
+  });
+
+  let client = new ApolloClient({
+    link,
+    cache: new InMemoryCache(),
+  });
+
   render(
     <ThemeProvider theme={baseTheme}>
       <ThemeProvider theme={themeOverrides}>
-        <CssBaseline/>
+        <ApolloProvider client={client}>
+          <CssBaseline/>
+          <App/>
+        </ApolloProvider>
       </ThemeProvider>
     </ThemeProvider>,
     document.getElementById("app"),

@@ -99,48 +99,98 @@ export type MutationAssignParentArgs = {
   parent?: Maybe<Scalars['ID']>;
 };
 
-export type ContextsQueryVariables = Exact<{ [key: string]: never; }>;
+export type LoginMutationVariables = Exact<{
+  email: Scalars['String'];
+  password: Scalars['String'];
+}>;
 
 
-export type ContextsQuery = (
+export type LoginMutation = (
+  { __typename?: 'Mutation' }
+  & { login?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'email'>
+  )> }
+);
+
+export type CurrentUserQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type CurrentUserQuery = (
   { __typename?: 'Query' }
-  & { contexts: Array<(
-    { __typename?: 'Context' }
-    & Pick<Context, 'id' | 'name'>
+  & { user?: Maybe<(
+    { __typename?: 'User' }
+    & Pick<User, 'id' | 'email'>
   )> }
 );
 
 
-export const ContextsDocument = gql`
-    query contexts {
-  contexts {
+export const LoginDocument = gql`
+    mutation Login($email: String!, $password: String!) {
+  login(email: $email, password: $password) {
+    email
+  }
+}
+    `;
+export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
+
+/**
+ * __useLoginMutation__
+ *
+ * To run a mutation, you first call `useLoginMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useLoginMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [loginMutation, { data, loading, error }] = useLoginMutation({
+ *   variables: {
+ *      email: // value for 'email'
+ *      password: // value for 'password'
+ *   },
+ * });
+ */
+export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
+        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, baseOptions);
+      }
+export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
+export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
+export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
+export const CurrentUserDocument = gql`
+    query CurrentUser {
+  user {
     id
-    name
+    email
   }
 }
     `;
 
 /**
- * __useContextsQuery__
+ * __useCurrentUserQuery__
  *
- * To run a query within a React component, call `useContextsQuery` and pass it any options that fit your needs.
- * When your component renders, `useContextsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useCurrentUserQuery` and pass it any options that fit your needs.
+ * When your component renders, `useCurrentUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useContextsQuery({
+ * const { data, loading, error } = useCurrentUserQuery({
  *   variables: {
  *   },
  * });
  */
-export function useContextsQuery(baseOptions?: Apollo.QueryHookOptions<ContextsQuery, ContextsQueryVariables>) {
-        return Apollo.useQuery<ContextsQuery, ContextsQueryVariables>(ContextsDocument, baseOptions);
+export function useCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
+        return Apollo.useQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, baseOptions);
       }
-export function useContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ContextsQuery, ContextsQueryVariables>) {
-          return Apollo.useLazyQuery<ContextsQuery, ContextsQueryVariables>(ContextsDocument, baseOptions);
+export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
+          return Apollo.useLazyQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, baseOptions);
         }
-export type ContextsQueryHookResult = ReturnType<typeof useContextsQuery>;
-export type ContextsLazyQueryHookResult = ReturnType<typeof useContextsLazyQuery>;
-export type ContextsQueryResult = Apollo.QueryResult<ContextsQuery, ContextsQueryVariables>;
+export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
+export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
+export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
+export function refetchCurrentUserQuery(variables?: CurrentUserQueryVariables) {
+      return { query: CurrentUserDocument, variables: variables }
+    }

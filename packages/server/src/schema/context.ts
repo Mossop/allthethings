@@ -65,7 +65,7 @@ export function resolver<TResult, TParent, TArgs>(
   };
 }
 
-export function buildContext(ctx: Koa.Context): BaseContext {
+export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
   let user = ctx.session?.userId;
 
   return {
@@ -77,7 +77,7 @@ export function buildContext(ctx: Koa.Context): BaseContext {
       }
 
       this.userId = userId;
-      ctx.session.userId = userId;
+      ctx.session.userId = userId.toHexString();
       ctx.session.save();
     },
 

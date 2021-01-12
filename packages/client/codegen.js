@@ -11,6 +11,7 @@ module.exports = {
     ],
     config: {
       content: "/* eslint-disable */",
+      withRefetchFn: true,
     },
   },
 };

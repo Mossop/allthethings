@@ -1,6 +1,6 @@
-query contexts {
-  contexts {
+query CurrentUser {
+  user {
     id
-    name
+    email
   }
 }
