@@ -17,5 +17,16 @@ module.exports = {
     extends: [
       "plugin:mossop/react",
     ],
+
+    rules: {
+      "react/jsx-fragments": ["warn", "syntax"],
+      "react/react-in-jsx-scope": "off",
+    },
+
+    settings: {
+      react: {
+        version: "17.0",
+      },
+    },
   }],
 };

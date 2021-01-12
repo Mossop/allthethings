@@ -7,7 +7,7 @@ const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 module.exports = {
   mode: "development",
   entry: {
-    app: path.join(__dirname, "src", "index.ts"),
+    app: path.join(__dirname, "src", "index.tsx"),
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
