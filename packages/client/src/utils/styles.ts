@@ -13,7 +13,7 @@ export const flexColumn: CSSProperties = {
 
 export const flexRow: CSSProperties = {
   ...flex,
-  flexDirection: "column",
+  flexDirection: "row",
 };
 
 export const flexCentered: CSSProperties = {

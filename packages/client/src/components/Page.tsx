@@ -5,7 +5,8 @@ import clsx from "clsx";
 import type { ReactElement, ReactNode } from "react";
 import { Suspense } from "react";
 
-import { flexColumn } from "../utils/styles";
+import UserMenu from "../ui/UserMenu";
+import { flexColumn, flexRow } from "../utils/styles";
 import Loading from "./Loading";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -20,10 +21,9 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingBottom: theme.spacing(1),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      display: "flex",
-      flexDirection: "row",
+      ...flexRow,
       alignItems: "center",
-      justifyContent: "start",
+      justifyContent: "space-between",
     },
     title: {
       fontSize: "1.5rem",
@@ -51,6 +51,7 @@ export default function Page({
       role="banner"
     >
       <h1 className={classes.title}>AllTheThings</h1>
+      <UserMenu/>
     </AppBar>
     <Suspense fallback={<Loading className={classes.loading}/>}>
       {children}
