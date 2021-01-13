@@ -19,6 +19,24 @@ function dbObjectResolver<T>(resolver: T): T {
 }
 
 const UserResolver = dbObjectResolver<UserResolvers>({
+  contexts: authed(({
+    outer,
+    ctx,
+  }: AuthedParams<UserDbObject>): Promise<ContextDbObject[]> => {
+    return ctx.dataSources.contexts.list({
+      user: outer._id,
+      name: {
+        $ne: null,
+      },
+    });
+  }),
+
+  emptyContext: authed(({
+    outer,
+    ctx,
+  }: AuthedParams<UserDbObject>): Promise<ContextDbObject> => {
+    return ctx.dataSources.contexts.getEmptyContext(outer._id);
+  }),
 });
 
 const ProjectContextResolver: ProjectContextResolvers = {

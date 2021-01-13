@@ -7,3 +7,10 @@ mutation Login($email: String!, $password: String!) {
 mutation Logout {
   logout
 }
+
+mutation CreateContext($name: String!) {
+  createContext(name: $name) {
+    id
+    name
+  }
+}

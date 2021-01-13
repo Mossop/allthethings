@@ -25,23 +25,6 @@ const resolvers: Resolvers["Query"] = {
   }: AuthedParams<unknown, QueryContextArgs>): Promise<ContextDbObject | null> => {
     return ctx.dataSources.contexts.get(id);
   }),
-
-  contexts: authed(({
-    ctx,
-  }: AuthedParams): Promise<ContextDbObject[]> => {
-    return ctx.dataSources.contexts.list({
-      user: ctx.userId,
-      name: {
-        $ne: null,
-      },
-    });
-  }),
-
-  emptyContext: authed(({
-    ctx,
-  }: AuthedParams): Promise<ContextDbObject> => {
-    return ctx.dataSources.contexts.getEmptyContext(ctx.userId);
-  }),
 };
 
 export default {

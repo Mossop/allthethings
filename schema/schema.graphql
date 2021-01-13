@@ -2,6 +2,9 @@ type User @entity {
   id: ID! @id
   email: String! @column
   password: String! @column
+
+  contexts: [Context!]!
+  emptyContext: EmptyContext
 }
 
 union ProjectContext = Context | EmptyContext
@@ -31,9 +34,6 @@ type Project @entity {
 
 type Query {
   user: User
-
-  contexts: [Context!]!
-  emptyContext: EmptyContext
   context(id: ID!): Context
 }
 

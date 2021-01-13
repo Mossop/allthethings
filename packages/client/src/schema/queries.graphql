@@ -4,3 +4,12 @@ query CurrentUser {
     email
   }
 }
+
+query Contexts {
+  user {
+    contexts {
+      id
+      name
+    }
+  }
+}

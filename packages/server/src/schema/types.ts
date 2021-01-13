@@ -21,6 +21,8 @@ export type User = {
   id: Scalars['ID'];
   email: Scalars['String'];
   password: Scalars['String'];
+  contexts: Array<Context>;
+  emptyContext?: Maybe<EmptyContext>;
 };
 
 export type ProjectContext = Context | EmptyContext;
@@ -51,8 +53,6 @@ export type Project = {
 export type Query = {
   __typename?: 'Query';
   user?: Maybe<User>;
-  contexts: Array<Context>;
-  emptyContext?: Maybe<EmptyContext>;
   context?: Maybe<Context>;
 };
 
@@ -210,6 +210,8 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  contexts?: Resolver<Array<ResolversTypes['Context']>, ParentType, ContextType>;
+  emptyContext?: Resolver<Maybe<ResolversTypes['EmptyContext']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -242,8 +244,6 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   user?: Resolver<Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  contexts?: Resolver<Array<ResolversTypes['Context']>, ParentType, ContextType>;
-  emptyContext?: Resolver<Maybe<ResolversTypes['EmptyContext']>, ParentType, ContextType>;
   context?: Resolver<Maybe<ResolversTypes['Context']>, ParentType, ContextType, RequireFields<QueryContextArgs, 'id'>>;
 }>;
 

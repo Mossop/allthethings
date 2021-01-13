@@ -2,13 +2,16 @@ import Avatar from "@material-ui/core/Avatar";
 import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import md5 from "md5";
 import { useCallback } from "react";
 
 import { useLogoutMutation } from "../schema/mutations";
-import { refetchCurrentUserQuery, useCurrentUserQuery } from "../schema/queries";
+import type { CurrentUserQuery } from "../schema/queries";
+import { refetchCurrentUserQuery } from "../schema/queries";
 import type { ReactResult } from "../utils/types";
+import { ReactMemo } from "../utils/types";
 
 function avatarSources(email: string): string[] {
   let hash = md5(email);
@@ -19,8 +22,22 @@ function avatarSources(email: string): string[] {
   ];
 }
 
-export default function UserMenu(): ReactResult {
-  let { data: { user } = { user: null } } = useCurrentUserQuery();
+const useStyles = makeStyles(() =>
+  createStyles({
+    avatar: {
+      width: 32,
+      height: 32,
+    },
+  }));
+
+interface UserMenuProps {
+  user: NonNullable<CurrentUserQuery["user"]>;
+}
+
+export default ReactMemo(function UserMenu({
+  user,
+}: UserMenuProps): ReactResult {
+  let classes = useStyles();
   let [logout] = useLogoutMutation({
     refetchQueries: [refetchCurrentUserQuery()],
   });
@@ -31,15 +48,12 @@ export default function UserMenu(): ReactResult {
     void logout();
   }, [logout]);
 
-  if (!user) {
-    return null;
-  }
-
   return <>
     <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
       <Avatar
         srcSet={avatarSources(user.email).join(", ")}
         src={avatarSources(user.email)[0]}
+        className={classes.avatar}
       />
     </IconButton>
     <Menu
@@ -62,4 +76,4 @@ export default function UserMenu(): ReactResult {
       <MenuItem id="user-menu-logout" onClick={doLogout}>Logout</MenuItem>
     </Menu>
   </>;
-}
+});

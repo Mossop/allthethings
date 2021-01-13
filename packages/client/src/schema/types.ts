@@ -17,6 +17,8 @@ export type User = {
   id: Scalars['ID'];
   email: Scalars['String'];
   password: Scalars['String'];
+  contexts: Array<Context>;
+  emptyContext?: Maybe<EmptyContext>;
 };
 
 export type ProjectContext = Context | EmptyContext;
@@ -47,8 +49,6 @@ export type Project = {
 export type Query = {
   __typename?: 'Query';
   user?: Maybe<User>;
-  contexts: Array<Context>;
-  emptyContext?: Maybe<EmptyContext>;
   context?: Maybe<Context>;
 };
 

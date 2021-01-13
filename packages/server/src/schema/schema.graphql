@@ -2,6 +2,8 @@ type User {
   id: ID!
   email: String!
   password: String!
+  contexts: [Context!]!
+  emptyContext: EmptyContext
 }
 
 union ProjectContext = Context | EmptyContext
@@ -28,8 +30,6 @@ type Project {
 
 type Query {
   user: User
-  contexts: [Context!]!
-  emptyContext: EmptyContext
   context(id: ID!): Context
 }
 

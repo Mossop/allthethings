@@ -6,14 +6,10 @@ import { render } from "react-dom";
 
 import App from "./App";
 
-const baseTheme = createMuiTheme({
-  palette: {
-    type: "dark",
-  },
-});
+const base = createMuiTheme();
 
 /* eslint-disable @typescript-eslint/naming-convention */
-const themeOverrides = (theme: Theme): Theme => createMuiTheme({
+const baseTheme = (theme: Theme): Theme => createMuiTheme({
   palette: {
     type: "dark",
   },
@@ -33,15 +29,19 @@ const themeOverrides = (theme: Theme): Theme => createMuiTheme({
         },
       },
     },
-    // @ts-ignore: Rating is from labs
-    MuiRating: {
+    MuiSvgIcon: {
       root: {
         fontSize: "inherit",
       },
     },
-    MuiSvgIcon: {
+    MuiIconButton: {
       root: {
         fontSize: "inherit",
+      },
+    },
+    MuiFormControl: {
+      marginNormal: {
+        marginTop: theme.spacing(1),
       },
     },
     MuiDialogTitle: {
@@ -54,7 +54,7 @@ const themeOverrides = (theme: Theme): Theme => createMuiTheme({
     },
     MuiDialogContent: {
       root: {
-        paddingBottom: 0,
+        padding: theme.spacing(2),
         display: "flex",
         flexDirection: "column",
         justifyContent: "start",
@@ -63,13 +63,11 @@ const themeOverrides = (theme: Theme): Theme => createMuiTheme({
     },
     MuiDialogActions: {
       root: {
-        padding: theme.spacing(1),
+        paddingTop: 0,
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        paddingBottom: theme.spacing(2),
       },
-    },
-  },
-  props: {
-    MuiDialogActions: {
-      disableSpacing: true,
     },
   },
 });
@@ -87,8 +85,8 @@ function init(): void {
   });
 
   render(
-    <ThemeProvider theme={baseTheme}>
-      <ThemeProvider theme={themeOverrides}>
+    <ThemeProvider theme={base}>
+      <ThemeProvider theme={baseTheme}>
         <ApolloProvider client={client}>
           <CssBaseline/>
           <App/>
