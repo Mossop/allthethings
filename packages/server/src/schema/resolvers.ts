@@ -23,12 +23,7 @@ const UserResolver = dbObjectResolver<UserResolvers>({
     outer,
     ctx,
   }: AuthedParams<UserDbObject>): Promise<ContextDbObject[]> => {
-    return ctx.dataSources.contexts.list({
-      user: outer._id,
-      name: {
-        $ne: null,
-      },
-    });
+    return ctx.dataSources.contexts.listNamed(outer._id);
   }),
 
   emptyContext: authed(({
@@ -64,9 +59,7 @@ const EmptyContextResolver: EmptyContextResolvers = {
   }),
 
   projects: authed(({ outer, ctx }: AuthedParams<ContextDbObject>): Promise<ProjectDbObject[]> => {
-    return ctx.dataSources.projects.list({
-      context: outer._id,
-    });
+    return ctx.dataSources.projects.listContextRoots(outer._id);
   }),
 };
 
@@ -100,9 +93,7 @@ const ProjectResolver = dbObjectResolver<ProjectResolvers>({
     outer,
     ctx,
   }: AuthedParams<ProjectDbObject>): Promise<ProjectDbObject[]> => {
-    return ctx.dataSources.projects.list({
-      parent: outer._id,
-    });
+    return ctx.dataSources.projects.listChildren(outer._id);
   }),
 });
 

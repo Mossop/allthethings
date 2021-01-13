@@ -12,11 +12,11 @@ const resolvers: Resolvers["Query"] = {
     }
 
     let user = await ctx.dataSources.users.get(ctx.userId);
-    if (user) {
-      return user;
+    if (!user) {
+      ctx.logout();
     }
 
-    throw new Error("No user record found.");
+    return user;
   }),
 
   context: authed(({

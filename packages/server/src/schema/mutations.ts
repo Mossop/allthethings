@@ -38,10 +38,7 @@ const resolvers: Resolvers["Mutation"] = {
     args: { name },
     ctx,
   }: AuthedParams<unknown, MutationCreateContextArgs>): Promise<ContextDbObject> => {
-    return ctx.dataSources.contexts.insertOne({
-      user: ctx.userId,
-      name,
-    });
+    return ctx.dataSources.contexts.create(ctx.userId, name);
   }),
 
   createProject: authed(async ({
@@ -50,11 +47,7 @@ const resolvers: Resolvers["Mutation"] = {
   }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<ProjectDbObject> => {
     let contextId = await ctx.dataSources.contexts.getContextId(ctx.userId, context);
 
-    return ctx.dataSources.projects.insertOne({
-      context: contextId,
-      parent: parent ? new ObjectId(parent) : null,
-      name,
-    });
+    return ctx.dataSources.projects.create(contextId, parent ? new ObjectId(parent) : null, name);
   }),
 
   assignContext: authed(async ({
@@ -63,18 +56,17 @@ const resolvers: Resolvers["Mutation"] = {
   }: AuthedParams<unknown, MutationAssignContextArgs>): Promise<ProjectDbObject | null> => {
     let contextId = await ctx.dataSources.contexts.getContextId(ctx.userId, context);
 
-    return ctx.dataSources.projects.updateOne(new ObjectId(project), {
-      context: contextId,
-    });
+    return ctx.dataSources.projects.setContext(new ObjectId(project), contextId);
   }),
 
   assignParent: authed(async ({
     args: { project, parent },
     ctx,
   }: AuthedParams<unknown, MutationAssignParentArgs>): Promise<ProjectDbObject | null> => {
-    return ctx.dataSources.projects.updateOne(new ObjectId(project), {
-      parent: parent ? new ObjectId(parent) : null,
-    });
+    return ctx.dataSources.projects.setParent(
+      new ObjectId(project),
+      parent ? new ObjectId(parent) : null,
+    );
   }),
 };
 

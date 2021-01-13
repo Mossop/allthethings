@@ -7,17 +7,18 @@ import koa from "koa";
 import koaMount from "koa-mount";
 import koaSession from "koa-session";
 import koaStatic from "koa-static";
-import { MongoClient } from "mongodb";
+import { install } from "source-map-support";
 
-import { dataSources } from "./db";
+import { connect, dataSources } from "./db";
 import { loadSchema, resolvers } from "./schema";
 import { buildContext } from "./schema/context";
+
+install();
 
 async function init(): Promise<void> {
   let clientRoot = path.normalize(path.join(__dirname, "..", "..", "client", "dist"));
 
-  let client = new MongoClient("mongodb://localhost:27017/allthethings");
-  await client.connect();
+  let client = await connect();
 
   let gqlServer = new ApolloServer({
     typeDefs: await loadSchema(),
