@@ -4,17 +4,12 @@ import type { ReactElement } from "react";
 import Loading from "./components/Loading";
 import Page from "./components/Page";
 import { useCurrentUserQuery } from "./schema/queries";
-import Login from "./ui/Login";
-import { flexCentered } from "./utils/styles";
+import LoginDialog from "./ui/LoginDialog";
 
 const useStyles = makeStyles(() =>
   createStyles({
     content: {
       flex: 1,
-    },
-    dialog: {
-      flexBasis: "75%",
-      ...flexCentered,
     },
   }));
 
@@ -41,8 +36,6 @@ export default function App(): ReactElement | null {
   }
 
   return <Page>
-    <div className={classes.dialog}>
-      <Login/>
-    </div>
+    <LoginDialog/>
   </Page>;
 }

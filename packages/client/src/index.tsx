@@ -44,6 +44,11 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
         marginTop: theme.spacing(1),
       },
     },
+    MuiDialog: {
+      paper: {
+        minWidth: "22rem",
+      },
+    },
     MuiDialogTitle: {
       root: {
         paddingTop: theme.spacing(2),
@@ -54,7 +59,9 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
     },
     MuiDialogContent: {
       root: {
-        padding: theme.spacing(2),
+        paddingLeft: theme.spacing(2),
+        paddingRight: theme.spacing(2),
+        paddingBottom: theme.spacing(4),
         display: "flex",
         flexDirection: "column",
         justifyContent: "start",
