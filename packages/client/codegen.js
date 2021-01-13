@@ -4,6 +4,7 @@ module.exports = {
   [path.join(__dirname, "src", "schema", "types.ts")]: {
     plugins: [
       "typescript",
+      "typescript-apollo-client-helpers",
       "add",
     ],
     config: {

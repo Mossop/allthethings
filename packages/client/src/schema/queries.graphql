@@ -1,6 +1,5 @@
 query CurrentUser {
   user {
-    id
     email
   }
 }

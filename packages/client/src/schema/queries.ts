@@ -10,7 +10,7 @@ export type CurrentUserQuery = (
   { __typename?: 'Query' }
   & { user?: Types.Maybe<(
     { __typename?: 'User' }
-    & Pick<Types.User, 'id' | 'email'>
+    & Pick<Types.User, 'email'>
   )> }
 );
 
@@ -32,7 +32,6 @@ export type ContextsQuery = (
 export const CurrentUserDocument = gql`
     query CurrentUser {
   user {
-    id
     email
   }
 }

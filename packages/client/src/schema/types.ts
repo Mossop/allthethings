@@ -1,4 +1,5 @@
 /* eslint-disable */
+import { FieldPolicy, FieldReadFunction, TypePolicies, TypePolicy } from '@apollo/client/cache';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -14,7 +15,6 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
   email: Scalars['String'];
   password: Scalars['String'];
   contexts: Array<Context>;
@@ -95,4 +95,72 @@ export type MutationAssignContextArgs = {
 export type MutationAssignParentArgs = {
   project: Scalars['ID'];
   parent?: Maybe<Scalars['ID']>;
+};
+
+export type UserKeySpecifier = ('email' | 'password' | 'contexts' | 'emptyContext' | UserKeySpecifier)[];
+export type UserFieldPolicy = {
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	password?: FieldPolicy<any> | FieldReadFunction<any>,
+	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
+	emptyContext?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type ContextKeySpecifier = ('id' | 'user' | 'name' | 'projects' | ContextKeySpecifier)[];
+export type ContextFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	projects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type EmptyContextKeySpecifier = ('user' | 'projects' | EmptyContextKeySpecifier)[];
+export type EmptyContextFieldPolicy = {
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	projects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type ProjectKeySpecifier = ('id' | 'parent' | 'context' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
+export type ProjectFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	parent?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type QueryKeySpecifier = ('user' | 'context' | QueryKeySpecifier)[];
+export type QueryFieldPolicy = {
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'createProject' | 'assignContext' | 'assignParent' | MutationKeySpecifier)[];
+export type MutationFieldPolicy = {
+	login?: FieldPolicy<any> | FieldReadFunction<any>,
+	logout?: FieldPolicy<any> | FieldReadFunction<any>,
+	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	assignContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	assignParent?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type TypedTypePolicies = TypePolicies & {
+	User?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | UserKeySpecifier | (() => undefined | UserKeySpecifier),
+		fields?: UserFieldPolicy,
+	},
+	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | ContextKeySpecifier | (() => undefined | ContextKeySpecifier),
+		fields?: ContextFieldPolicy,
+	},
+	EmptyContext?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | EmptyContextKeySpecifier | (() => undefined | EmptyContextKeySpecifier),
+		fields?: EmptyContextFieldPolicy,
+	},
+	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),
+		fields?: ProjectFieldPolicy,
+	},
+	Query?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | QueryKeySpecifier | (() => undefined | QueryKeySpecifier),
+		fields?: QueryFieldPolicy,
+	},
+	Mutation?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | MutationKeySpecifier | (() => undefined | MutationKeySpecifier),
+		fields?: MutationFieldPolicy,
+	}
 };

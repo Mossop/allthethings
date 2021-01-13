@@ -18,7 +18,6 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
   email: Scalars['String'];
   password: Scalars['String'];
   contexts: Array<Context>;
@@ -181,10 +180,10 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
   User: ResolverTypeWrapper<UserDbObject>;
-  ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   ProjectContext: ResolversTypes['Context'] | ResolversTypes['EmptyContext'];
   Context: ResolverTypeWrapper<ContextDbObject>;
+  ID: ResolverTypeWrapper<Scalars['ID']>;
   EmptyContext: ResolverTypeWrapper<ContextDbObject>;
   Project: ResolverTypeWrapper<ProjectDbObject>;
   Query: ResolverTypeWrapper<{}>;
@@ -195,10 +194,10 @@ export type ResolversTypes = ResolversObject<{
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
   User: UserDbObject;
-  ID: Scalars['ID'];
   String: Scalars['String'];
   ProjectContext: ResolversParentTypes['Context'] | ResolversParentTypes['EmptyContext'];
   Context: ContextDbObject;
+  ID: Scalars['ID'];
   EmptyContext: ContextDbObject;
   Project: ProjectDbObject;
   Query: {};
@@ -207,7 +206,6 @@ export type ResolversParentTypes = ResolversObject<{
 }>;
 
 export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   contexts?: Resolver<Array<ResolversTypes['Context']>, ParentType, ContextType>;

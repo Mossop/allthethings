@@ -1,5 +1,6 @@
-type User @entity {
-  id: ID! @id
+type User @entity(additionalFields: [
+ { path: "_id", type: "ObjectID" }
+]) {
   email: String! @column
   password: String! @column
 

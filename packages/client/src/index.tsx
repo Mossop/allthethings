@@ -5,6 +5,7 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { render } from "react-dom";
 
 import App from "./App";
+import { connect } from "./schema";
 
 const base = createMuiTheme();
 
@@ -81,15 +82,7 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
 /* eslint-enable @typescript-eslint/naming-convention */
 
 function init(): void {
-  let link = createHttpLink({
-    uri: "/graphql",
-    credentials: "same-origin",
-  });
-
-  let client = new ApolloClient({
-    link,
-    cache: new InMemoryCache(),
-  });
+  let client = connect();
 
   render(
     <ThemeProvider theme={base}>

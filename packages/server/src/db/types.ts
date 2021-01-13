@@ -22,7 +22,6 @@ export type Scalars = {
 
 export type User = {
   __typename?: 'User';
-  id: Scalars['ID'];
   email: Scalars['String'];
   password: Scalars['String'];
   contexts: Array<Context>;
@@ -112,9 +111,9 @@ export type AdditionalEntityFields = {
 
 import { ObjectID } from 'mongodb';
 export type UserDbObject = {
-  _id: ObjectID,
   email: string,
   password: string,
+  _id: ObjectID,
 };
 
 export type ContextDbObject = {

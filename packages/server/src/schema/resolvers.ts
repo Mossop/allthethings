@@ -18,7 +18,7 @@ function dbObjectResolver<T>(resolver: T): T {
   };
 }
 
-const UserResolver = dbObjectResolver<UserResolvers>({
+const UserResolver: UserResolvers = {
   contexts: authed(({
     outer,
     ctx,
@@ -32,7 +32,7 @@ const UserResolver = dbObjectResolver<UserResolvers>({
   }: AuthedParams<UserDbObject>): Promise<ContextDbObject> => {
     return ctx.dataSources.contexts.getEmptyContext(outer._id);
   }),
-});
+};
 
 const ProjectContextResolver: ProjectContextResolvers = {
   // eslint-disable-next-line @typescript-eslint/naming-convention

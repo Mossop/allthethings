@@ -5,9 +5,6 @@
   "repository": "Mossop/allthethings",
   "license": "MIT",
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
-  "workspaces": [
-    "./packages/*"
-  ],
   "scripts": {
     "build-schema": "graphql-codegen",
     "build-client": "cd packages/client && npm run build",
@@ -22,6 +19,7 @@
     "@graphql-codegen/near-operation-file-preset": "^1.17.13",
     "@graphql-codegen/schema-ast": "^1.18.1",
     "@graphql-codegen/typescript": "^1.20.0",
+    "@graphql-codegen/typescript-apollo-client-helpers": "^1.1.2",
     "@graphql-codegen/typescript-mongodb": "^1.17.9",
     "@graphql-codegen/typescript-operations": "^1.17.13",
     "@graphql-codegen/typescript-react-apollo": "^2.2.1",
