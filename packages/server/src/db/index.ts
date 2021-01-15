@@ -35,8 +35,28 @@ export async function connect(): Promise<MongoClient> {
 
   let schemaVersion = await getSchemaVersion(client);
   if (schemaVersion < 1) {
-    await client.db().collection("users").createIndex({ email: 1 }, { unique: true });
-    await client.db().collection("contexts").createIndex({ user: 1, name: 1 }, { unique: true });
+    await client.db().collection("users").createIndex({
+      email: 1,
+    }, {
+      unique: true,
+    });
+
+    await client.db().collection("contexts").createIndex({
+      user: 1,
+      stub: 1,
+    }, {
+      unique: true,
+    });
+
+    await client.db().collection("projects").createIndex({
+      user: 1,
+      context: 1,
+      parent: 1,
+      stub: 1,
+    }, {
+      unique: true,
+    });
+
     await setSchemaVersion(client, 1);
   }
 

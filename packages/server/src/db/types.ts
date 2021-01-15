@@ -10,6 +10,7 @@ export type UserDbObject = {
 export type ContextDbObject = {
   _id: ObjectID,
   user: UserDbObject['_id'],
+  stub: string,
   name: string,
 };
 
@@ -18,5 +19,6 @@ export type ProjectDbObject = {
   user: UserDbObject['_id'],
   context: Maybe<ContextDbObject['_id']>,
   parent: Maybe<ProjectDbObject['_id']>,
-  name: Maybe<string>,
+  stub: string,
+  name: string,
 };

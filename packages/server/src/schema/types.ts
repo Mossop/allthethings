@@ -24,6 +24,7 @@ export type Context = {
   readonly __typename?: 'Context';
   readonly id: Scalars['ID'];
   readonly user: User;
+  readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
   readonly rootProjects: ReadonlyArray<Project>;
 };
@@ -34,7 +35,8 @@ export type Project = {
   readonly user: User;
   readonly context?: Maybe<Context>;
   readonly parent?: Maybe<Project>;
-  readonly name?: Maybe<Scalars['String']>;
+  readonly stub: Scalars['String'];
+  readonly name: Scalars['String'];
   readonly subprojects: ReadonlyArray<Project>;
 };
 

@@ -13,6 +13,10 @@ export interface DbObject {
   _id: ObjectId;
 }
 
+function stub(name: string): string {
+  return name.toLocaleLowerCase().replaceAll(" ", "-");
+}
+
 class BaseDataSource<
   T,
   D extends DbObject = DbObjectFor<T>,
@@ -154,11 +158,12 @@ export class ContextDataSource extends BaseDataSource<Context> {
 
   public async create(
     user: ObjectId,
-    params: Omit<ContextDbObject, "_id" | "user">,
+    params: Omit<ContextDbObject, "_id" | "user" | "stub">,
   ): Promise<Context> {
     let context = await this.insert({
       ...params,
       user,
+      stub: stub(params.name),
     });
 
     await this.context.dataSources.users.updateOne(user, {
@@ -176,7 +181,7 @@ export class ProjectDataSource extends BaseDataSource<Project> {
 
   public async create(
     userId: ObjectId,
-    params: Omit<ProjectDbObject, "_id" | "user">,
+    params: Omit<ProjectDbObject, "_id" | "user" | "stub">,
   ): Promise<Project> {
     let context: Context | null = null;
     if (params.context) {
@@ -214,6 +219,7 @@ export class ProjectDataSource extends BaseDataSource<Project> {
     let project = await this.insert({
       ...params,
       user: userId,
+      stub: stub(params.name),
     });
 
     return project;

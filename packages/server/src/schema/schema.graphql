@@ -8,6 +8,7 @@ type User {
 type Context {
   id: ID!
   user: User!
+  stub: String!
   name: String!
   rootProjects: [Project!]!
 }
@@ -17,7 +18,8 @@ type Project {
   user: User!
   context: Context
   parent: Project
-  name: String
+  stub: String!
+  name: String!
   subprojects: [Project!]!
 }
 

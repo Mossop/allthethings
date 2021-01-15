@@ -1,4 +1,5 @@
-import type { ObjectId } from "mongodb";
+import type { MongoDataSource } from "apollo-datasource-mongodb";
+import { ObjectId } from "mongodb";
 
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
@@ -28,14 +29,14 @@ function filterValid<T extends {}>(val: T | null): val is T {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-function assertValid<T extends {}>(val: T | null): T {
-  if (val === null) {
+function assertValid<T extends {}>(val: T | null | undefined): T {
+  if (val === null || val === undefined) {
     throw new Error("Database inconsistency.");
   }
   return val;
 }
 
-export function equals<T extends BaseImpl<DbObject>>(
+export function equals<T extends Comparable>(
   a: T | null | undefined,
   b: T | null | undefined,
 ): boolean {
@@ -46,11 +47,43 @@ export function equals<T extends BaseImpl<DbObject>>(
   return a.equals(b);
 }
 
-class BaseImpl<T extends DbObject> {
+export class Comparable {
+  public equals(other: Comparable | undefined | null): boolean {
+    return other === this;
+  }
+}
+
+abstract class BaseImpl<T extends DbObject> extends Comparable {
+  public readonly dbId: ObjectId;
+  protected _dbObject: Promise<T> | null;
+
+  public constructor(resolverContext: ResolverContext, dbObject: T);
+  public constructor(resolverContext: ResolverContext, id: ObjectId);
   public constructor(
     protected readonly resolverContext: ResolverContext,
-    protected readonly dbObject: T,
+    arg: T | ObjectId,
   ) {
+    super();
+
+    if (arg instanceof ObjectId) {
+      this.dbId = arg;
+      this._dbObject = null;
+    } else {
+      this.dbId = arg._id;
+      this._dbObject = Promise.resolve(arg);
+    }
+  }
+
+  protected abstract get dataSource(): MongoDataSource<T, ResolverContext>;
+
+  protected get dbObject(): Promise<T> {
+    if (this._dbObject) {
+      return this._dbObject;
+    }
+
+    this._dbObject = this.dataSource.findOneById(this.dbId).then(assertValid);
+
+    return this._dbObject;
   }
 
   public equals(other: BaseImpl<T> | undefined | null): boolean {
@@ -60,12 +93,8 @@ class BaseImpl<T extends DbObject> {
     return this.dbId.equals(other.dbId);
   }
 
-  public get dbId(): ObjectId {
-    return this.dbObject._id;
-  }
-
   public get id(): string {
-    return this.dbObject._id.toHexString();
+    return this.dbId.toHexString();
   }
 
   public get dataSources(): DataSources {
@@ -74,12 +103,16 @@ class BaseImpl<T extends DbObject> {
 }
 
 export class User extends BaseImpl<UserDbObject> implements SchemaResolver<Schema.User> {
-  public get email(): string {
-    return this.dbObject.email;
+  protected get dataSource(): MongoDataSource<UserDbObject, ResolverContext> {
+    return this.dataSources.users;
   }
 
-  public get password(): string {
-    return this.dbObject.password;
+  public get email(): Promise<string> {
+    return this.dbObject.then((obj: UserDbObject) => obj.email);
+  }
+
+  public get password(): Promise<string> {
+    return this.dbObject.then((obj: UserDbObject) => obj.password);
   }
 
   public async contexts(): Promise<readonly Context[]> {
@@ -100,14 +133,20 @@ export class User extends BaseImpl<UserDbObject> implements SchemaResolver<Schem
 }
 
 export class Context extends BaseImpl<ContextDbObject> implements SchemaResolver<Schema.Context> {
-  public get name(): string {
-    return this.dbObject.name;
+  protected get dataSource(): MongoDataSource<ContextDbObject, ResolverContext> {
+    return this.dataSources.contexts;
+  }
+
+  public get name(): Promise<string> {
+    return this.dbObject.then((obj: ContextDbObject) => obj.name);
+  }
+
+  public get stub(): Promise<string> {
+    return this.dbObject.then((obj: ContextDbObject) => obj.stub);
   }
 
   public async user(): Promise<User> {
-    let user = await this.dataSources.users.get(this.dbObject.user);
-
-    return assertValid(user);
+    return this.dbObject.then((obj: ContextDbObject) => new User(this.resolverContext, obj.user));
   }
 
   public async rootProjects(): Promise<readonly Project[]> {
@@ -119,25 +158,40 @@ export class Context extends BaseImpl<ContextDbObject> implements SchemaResolver
 }
 
 export class Project extends BaseImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
-  public async parent(): Promise<Project | null> {
-    if (!this.dbObject.parent) {
-      return null;
-    }
+  protected get dataSource(): MongoDataSource<ProjectDbObject, ResolverContext> {
+    return this.dataSources.projects;
+  }
 
-    return this.dataSources.projects.get(this.dbObject.parent);
+  public async parent(): Promise<Project | null> {
+    return this.dbObject.then((obj: ProjectDbObject) => {
+      if (!obj.parent) {
+        return null;
+      }
+
+      return new Project(this.resolverContext, obj.parent);
+    });
+  }
+
+  public get name(): Promise<string> {
+    return this.dbObject.then((obj: ContextDbObject) => obj.name);
+  }
+
+  public get stub(): Promise<string> {
+    return this.dbObject.then((obj: ContextDbObject) => obj.stub);
   }
 
   public async context(): Promise<Context | null> {
-    if (!this.dbObject.context) {
-      return null;
-    }
+    return this.dbObject.then((obj: ProjectDbObject) => {
+      if (!obj.context) {
+        return null;
+      }
 
-    return this.dataSources.contexts.get(this.dbObject.context);
+      return new Context(this.resolverContext, obj.context);
+    });
   }
 
   public async user(): Promise<User> {
-    let user = await this.dataSources.users.get(this.dbObject.user);
-    return assertValid(user);
+    return this.dbObject.then((obj: ProjectDbObject) => new User(this.resolverContext, obj.user));
   }
 
   public async subprojects(): Promise<Project[]> {

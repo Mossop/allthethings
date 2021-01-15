@@ -11,6 +11,7 @@ type User @entity(additionalFields: [
 type Context @entity {
   id: ID! @id
   user: User! @link
+  stub: String! @column
   name: String! @column
 
   rootProjects: [Project!]!
@@ -21,7 +22,8 @@ type Project @entity {
   user: User! @link
   context: Context @link
   parent: Project @link
-  name: String @column
+  stub: String! @column
+  name: String! @column
 
   subprojects: [Project!]!
 }

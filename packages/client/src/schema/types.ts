@@ -25,6 +25,7 @@ export type Context = {
   __typename?: 'Context';
   id: Scalars['ID'];
   user: User;
+  stub: Scalars['String'];
   name: Scalars['String'];
   rootProjects: Array<Project>;
 };
@@ -35,7 +36,8 @@ export type Project = {
   user: User;
   context?: Maybe<Context>;
   parent?: Maybe<Project>;
-  name?: Maybe<Scalars['String']>;
+  stub: Scalars['String'];
+  name: Scalars['String'];
   subprojects: Array<Project>;
 };
 
@@ -116,19 +118,21 @@ export type UserFieldPolicy = {
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
 	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ContextKeySpecifier = ('id' | 'user' | 'name' | 'rootProjects' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('id' | 'user' | 'stub' | 'name' | 'rootProjects' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'parent' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'parent' | 'stub' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	parent?: FieldPolicy<any> | FieldReadFunction<any>,
+	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
 };

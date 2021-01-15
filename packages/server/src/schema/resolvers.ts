@@ -122,6 +122,7 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
 export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  stub?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   rootProjects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -132,7 +133,8 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   context?: Resolver<Schema.Maybe<ResolversTypes['Context']>, ParentType, ContextType>;
   parent?: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
-  name?: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  stub?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
