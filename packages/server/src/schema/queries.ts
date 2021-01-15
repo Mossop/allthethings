@@ -1,12 +1,12 @@
-import type { ContextDbObject, UserDbObject } from "../db/types";
-import type { AuthedParams, ResolverParams } from "./context";
-import { authed, resolver } from "./context";
-import type { QueryContextArgs, Resolvers } from "./types";
+import type { User } from "../db";
+import type { ResolverParams } from "./context";
+import { resolver } from "./context";
+import type { QueryResolvers } from "./resolvers";
 
-const resolvers: Resolvers["Query"] = {
+const resolvers: QueryResolvers = {
   user: resolver(async ({
     ctx,
-  }: ResolverParams): Promise<UserDbObject | null> => {
+  }: ResolverParams): Promise<User | null> => {
     if (!ctx.userId) {
       return null;
     }
@@ -14,16 +14,10 @@ const resolvers: Resolvers["Query"] = {
     let user = await ctx.dataSources.users.get(ctx.userId);
     if (!user) {
       ctx.logout();
+      return null;
     }
 
     return user;
-  }),
-
-  context: authed(({
-    args: { id },
-    ctx,
-  }: AuthedParams<unknown, QueryContextArgs>): Promise<ContextDbObject | null> => {
-    return ctx.dataSources.contexts.get(id);
   }),
 };
 

@@ -25,9 +25,10 @@ export default ReactMemo(function CreateContextDialog({
   });
 
   let [createContext] = useCreateContextMutation({
-    variables: state,
+    variables: {
+      params: state,
+    },
     refetchQueries: [refetchContextsQuery()],
-
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {

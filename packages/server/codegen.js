@@ -2,35 +2,53 @@ const path = require("path");
 
 module.exports = {
   [path.join(__dirname, "src", "db", "types.ts")]: {
-    plugins: [
-      "typescript",
-      "typescript-mongodb",
-      "add",
-    ],
-    config: {
-      content: "/* eslint-disable */",
-      useTypeImports: true,
-      avoidOptionals: true,
+    plugins: {
+      "typescript-mongodb": {
+        useTypeImports: true,
+        avoidOptionals: true,
+        immutableTypes: true,
+      },
+      "add": {
+        content: [
+          "/* eslint-disable */",
+          "import type { Maybe } from \"../schema/types\";",
+        ],
+      },
     },
   },
   [path.join(__dirname, "src", "schema", "types.ts")]: {
-    plugins: [
-      "typescript",
-      "typescript-resolvers",
-      "add",
-    ],
-    config: {
-      content: "/* eslint-disable */",
-      useTypeImports: true,
-      contextType: "./context#ResolverContext",
-      useIndexSignature: true,
-      mappers: {
-        /* eslint-disable @typescript-eslint/naming-convention */
-        User: "../db/types#UserDbObject",
-        EmptyContext: "../db/types#ContextDbObject",
-        Context: "../db/types#ContextDbObject",
-        Project: "../db/types#ProjectDbObject",
-        /* eslint-enable @typescript-eslint/naming-convention */
+    plugins: {
+      typescript: {
+        useIndexSignature: true,
+        useTypeImports: true,
+        immutableTypes: true,
+      },
+      add: {
+        content: "/* eslint-disable */",
+      },
+    },
+  },
+  [path.join(__dirname, "src", "schema", "resolvers.ts")]: {
+    plugins: {
+      "typescript-resolvers": {
+        contextType: "./context#ResolverContext",
+        useIndexSignature: true,
+        useTypeImports: true,
+        immutableTypes: true,
+        namespacedImportName: "Schema",
+        mappers: {
+          /* eslint-disable @typescript-eslint/naming-convention */
+          User: "../db/implementations#User",
+          Context: "../db/implementations#Context",
+          Project: "../db/implementations#Project",
+          /* eslint-enable @typescript-eslint/naming-convention */
+        },
+      },
+      "add": {
+        content: [
+          "/* eslint-disable */",
+          "import * as Schema from './types';",
+        ],
       },
     },
   },

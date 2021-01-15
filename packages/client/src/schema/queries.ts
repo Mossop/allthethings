@@ -21,6 +21,7 @@ export type ContextsQuery = (
   { __typename?: 'Query' }
   & { user?: Types.Maybe<(
     { __typename?: 'User' }
+    & Pick<Types.User, 'email'>
     & { contexts: Array<(
       { __typename?: 'Context' }
       & Pick<Types.Context, 'id' | 'name'>
@@ -67,6 +68,7 @@ export function refetchCurrentUserQuery(variables?: CurrentUserQueryVariables) {
 export const ContextsDocument = gql`
     query Contexts {
   user {
+    email
     contexts {
       id
       name

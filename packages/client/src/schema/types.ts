@@ -18,30 +18,23 @@ export type User = {
   email: Scalars['String'];
   password: Scalars['String'];
   contexts: Array<Context>;
-  emptyContext?: Maybe<EmptyContext>;
+  rootProjects: Array<Project>;
 };
-
-export type ProjectContext = Context | EmptyContext;
 
 export type Context = {
   __typename?: 'Context';
   id: Scalars['ID'];
   user: User;
   name: Scalars['String'];
-  projects: Array<Project>;
-};
-
-export type EmptyContext = {
-  __typename?: 'EmptyContext';
-  user: User;
-  projects: Array<Project>;
+  rootProjects: Array<Project>;
 };
 
 export type Project = {
   __typename?: 'Project';
   id: Scalars['ID'];
+  user: User;
+  context?: Maybe<Context>;
   parent?: Maybe<Project>;
-  context?: Maybe<ProjectContext>;
   name?: Maybe<Scalars['String']>;
   subprojects: Array<Project>;
 };
@@ -57,14 +50,31 @@ export type QueryContextArgs = {
   id: Scalars['ID'];
 };
 
+export type CreateContextParams = {
+  name: Scalars['String'];
+};
+
+export type CreateProjectParams = {
+  name: Scalars['String'];
+  context?: Maybe<Scalars['ID']>;
+  parent?: Maybe<Scalars['ID']>;
+};
+
+export type UpdateProjectParams = {
+  name?: Maybe<Scalars['String']>;
+  context?: Maybe<Scalars['ID']>;
+  parent?: Maybe<Scalars['ID']>;
+};
+
 export type Mutation = {
   __typename?: 'Mutation';
   login?: Maybe<User>;
   logout?: Maybe<Scalars['Boolean']>;
   createContext: Context;
+  deleteContext: Scalars['Boolean'];
   createProject: Project;
-  assignContext?: Maybe<Project>;
-  assignParent?: Maybe<Project>;
+  updateProject?: Maybe<Project>;
+  deleteProject: Scalars['Boolean'];
 };
 
 
@@ -75,52 +85,50 @@ export type MutationLoginArgs = {
 
 
 export type MutationCreateContextArgs = {
-  name: Scalars['String'];
+  params: CreateContextParams;
+};
+
+
+export type MutationDeleteContextArgs = {
+  id: Scalars['ID'];
 };
 
 
 export type MutationCreateProjectArgs = {
-  name: Scalars['String'];
-  parent?: Maybe<Scalars['ID']>;
-  context?: Maybe<Scalars['ID']>;
+  params: CreateProjectParams;
 };
 
 
-export type MutationAssignContextArgs = {
-  project: Scalars['ID'];
-  context?: Maybe<Scalars['ID']>;
+export type MutationUpdateProjectArgs = {
+  id: Scalars['ID'];
+  params: UpdateProjectParams;
 };
 
 
-export type MutationAssignParentArgs = {
-  project: Scalars['ID'];
-  parent?: Maybe<Scalars['ID']>;
+export type MutationDeleteProjectArgs = {
+  id: Scalars['ID'];
 };
 
-export type UserKeySpecifier = ('email' | 'password' | 'contexts' | 'emptyContext' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('email' | 'password' | 'contexts' | 'rootProjects' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	password?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
-	emptyContext?: FieldPolicy<any> | FieldReadFunction<any>
+	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ContextKeySpecifier = ('id' | 'user' | 'name' | 'projects' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('id' | 'user' | 'name' | 'rootProjects' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
-	projects?: FieldPolicy<any> | FieldReadFunction<any>
+	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type EmptyContextKeySpecifier = ('user' | 'projects' | EmptyContextKeySpecifier)[];
-export type EmptyContextFieldPolicy = {
-	user?: FieldPolicy<any> | FieldReadFunction<any>,
-	projects?: FieldPolicy<any> | FieldReadFunction<any>
-};
-export type ProjectKeySpecifier = ('id' | 'parent' | 'context' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'parent' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	parent?: FieldPolicy<any> | FieldReadFunction<any>,
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
+	parent?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
 };
@@ -129,14 +137,15 @@ export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'createProject' | 'assignContext' | 'assignParent' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'deleteContext' | 'createProject' | 'updateProject' | 'deleteProject' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
 	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	assignContext?: FieldPolicy<any> | FieldReadFunction<any>,
-	assignParent?: FieldPolicy<any> | FieldReadFunction<any>
+	updateProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteProject?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
 	User?: Omit<TypePolicy, "fields" | "keyFields"> & {
@@ -146,10 +155,6 @@ export type TypedTypePolicies = TypePolicies & {
 	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ContextKeySpecifier | (() => undefined | ContextKeySpecifier),
 		fields?: ContextFieldPolicy,
-	},
-	EmptyContext?: Omit<TypePolicy, "fields" | "keyFields"> & {
-		keyFields?: false | EmptyContextKeySpecifier | (() => undefined | EmptyContextKeySpecifier),
-		fields?: EmptyContextFieldPolicy,
 	},
 	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),

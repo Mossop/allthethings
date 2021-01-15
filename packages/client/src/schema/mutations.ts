@@ -26,7 +26,7 @@ export type LogoutMutation = (
 );
 
 export type CreateContextMutationVariables = Types.Exact<{
-  name: Types.Scalars['String'];
+  params: Types.CreateContextParams;
 }>;
 
 
@@ -102,8 +102,8 @@ export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
 export const CreateContextDocument = gql`
-    mutation CreateContext($name: String!) {
-  createContext(name: $name) {
+    mutation CreateContext($params: CreateContextParams!) {
+  createContext(params: $params) {
     id
     name
   }
@@ -124,7 +124,7 @@ export type CreateContextMutationFn = Apollo.MutationFunction<CreateContextMutat
  * @example
  * const [createContextMutation, { data, loading, error }] = useCreateContextMutation({
  *   variables: {
- *      name: // value for 'name'
+ *      params: // value for 'params'
  *   },
  * });
  */

@@ -32,6 +32,7 @@
     "eslint-plugin-mossop": "github:Mossop/eslint-plugin-mossop#1.0.12",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "graphql-codegen-typescript-typegoose": "file:../graphql-codegen-typescript-typegoose",
     "typescript": "^4.1.0"
   }
 }

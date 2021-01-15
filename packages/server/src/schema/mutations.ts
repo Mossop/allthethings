@@ -1,29 +1,42 @@
 import { ObjectId } from "mongodb";
 
-import type { ContextDbObject, ProjectDbObject, UserDbObject } from "../db/types";
+import type { User, Context, Project } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
+import type { MutationResolvers } from "./resolvers";
 import type {
-  Resolvers,
   MutationCreateContextArgs,
-  MutationAssignContextArgs,
   MutationCreateProjectArgs,
-  MutationAssignParentArgs,
+  MutationDeleteProjectArgs,
   MutationLoginArgs,
 } from "./types";
 
-const resolvers: Resolvers["Mutation"] = {
+function intoId(val: ObjectId | string): ObjectId;
+function intoId(val: ObjectId | string | undefined | null): ObjectId | null;
+function intoId(val: ObjectId | string | undefined | null): ObjectId | null {
+  if (val === undefined || val === null) {
+    return null;
+  }
+
+  if (typeof val === "string") {
+    return new ObjectId(val);
+  }
+  return val;
+}
+
+const resolvers: MutationResolvers = {
   login: resolver(async ({
     args: { email, password },
     ctx,
-  }: ResolverParams<unknown, MutationLoginArgs>): Promise<UserDbObject | null> => {
+  }: ResolverParams<unknown, MutationLoginArgs>): Promise<User | null> => {
     let user = await ctx.dataSources.users.verifyUser(email, password);
 
     if (!user) {
-      user = await ctx.dataSources.users.createUser(email, password);
+      user = await ctx.dataSources.users.create(email, password);
     }
 
-    ctx.login(user._id);
+    ctx.login(user);
+
     return user;
   }),
 
@@ -35,38 +48,29 @@ const resolvers: Resolvers["Mutation"] = {
   }),
 
   createContext: authed(({
-    args: { name },
+    args: { params },
     ctx,
-  }: AuthedParams<unknown, MutationCreateContextArgs>): Promise<ContextDbObject> => {
-    return ctx.dataSources.contexts.create(ctx.userId, name);
+  }: AuthedParams<unknown, MutationCreateContextArgs>): Promise<Context> => {
+    return ctx.dataSources.contexts.create(ctx.userId, params);
   }),
 
   createProject: authed(async ({
-    args: { name, parent, context },
+    args: { params },
     ctx,
-  }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<ProjectDbObject> => {
-    let contextId = await ctx.dataSources.contexts.getContextId(ctx.userId, context);
-
-    return ctx.dataSources.projects.create(contextId, parent ? new ObjectId(parent) : null, name);
+  }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<Project> => {
+    return ctx.dataSources.projects.create(ctx.userId, {
+      ...params,
+      context: intoId(params.context),
+      parent: intoId(params.parent),
+    });
   }),
 
-  assignContext: authed(async ({
-    args: { project, context },
+  deleteProject: authed(async ({
+    args: { id },
     ctx,
-  }: AuthedParams<unknown, MutationAssignContextArgs>): Promise<ProjectDbObject | null> => {
-    let contextId = await ctx.dataSources.contexts.getContextId(ctx.userId, context);
-
-    return ctx.dataSources.projects.setContext(new ObjectId(project), contextId);
-  }),
-
-  assignParent: authed(async ({
-    args: { project, parent },
-    ctx,
-  }: AuthedParams<unknown, MutationAssignParentArgs>): Promise<ProjectDbObject | null> => {
-    return ctx.dataSources.projects.setParent(
-      new ObjectId(project),
-      parent ? new ObjectId(parent) : null,
-    );
+  }: AuthedParams<unknown, MutationDeleteProjectArgs>): Promise<boolean> => {
+    await ctx.dataSources.projects.delete(intoId(id));
+    return true;
   }),
 };
 

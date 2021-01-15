@@ -5,29 +5,22 @@ type User @entity(additionalFields: [
   password: String! @column
 
   contexts: [Context!]!
-  emptyContext: EmptyContext
+  rootProjects: [Project!]!
 }
-
-union ProjectContext = Context | EmptyContext
 
 type Context @entity {
   id: ID! @id
   user: User! @link
-  name: String! @column(overrideType: "string | null")
+  name: String! @column
 
-  projects: [Project!]!
-}
-
-type EmptyContext {
-  user: User! @link
-
-  projects: [Project!]!
+  rootProjects: [Project!]!
 }
 
 type Project @entity {
   id: ID! @id
+  user: User! @link
+  context: Context @link
   parent: Project @link
-  context: ProjectContext @column(overrideType: "ObjectID")
   name: String @column
 
   subprojects: [Project!]!
@@ -38,12 +31,30 @@ type Query {
   context(id: ID!): Context
 }
 
+input CreateContextParams {
+  name: String!
+}
+
+input CreateProjectParams {
+  name: String!
+  context: ID
+  parent: ID
+}
+
+input UpdateProjectParams {
+  name: String
+  context: ID
+  parent: ID
+}
+
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
 
-  createContext(name: String!): Context!
-  createProject(name: String!, parent: ID, context: ID): Project!
-  assignContext(project: ID!, context: ID): Project
-  assignParent(project: ID!, parent: ID): Project
+  createContext(params: CreateContextParams!): Context!
+  deleteContext(id: ID!): Boolean!
+
+  createProject(params: CreateProjectParams!): Project!
+  updateProject(id: ID!, params: UpdateProjectParams!): Project
+  deleteProject(id: ID!): Boolean!
 }

@@ -5,6 +5,7 @@
       "ESNext"
     ],
     "allowJs": true,
+    "noEmit": true,
   },
   "include": [
     "packages/server/*.js",

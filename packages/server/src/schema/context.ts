@@ -1,12 +1,12 @@
 import type Koa from "koa";
 import { ObjectId } from "mongodb";
 
-import type { DataSources } from "../db";
-import type { ResolverFn } from "./types";
+import type { DataSources, User } from "../db";
+import type { ResolverFn } from "./resolvers";
 
 export interface BaseContext {
   userId: ObjectId | null;
-  login: (user: ObjectId) => void;
+  login: (user: User) => void;
   logout: () => void;
 }
 
@@ -71,13 +71,13 @@ export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
   return {
     userId: user ? new ObjectId(user) : null,
 
-    login(userId: ObjectId): void {
+    login(user: User): void {
       if (!ctx.session) {
         throw new Error("Session is not initialized.");
       }
 
-      this.userId = userId;
-      ctx.session.userId = userId.toHexString();
+      this.userId = user.dbId;
+      ctx.session.userId = user.id;
       ctx.session.save();
     },
 
