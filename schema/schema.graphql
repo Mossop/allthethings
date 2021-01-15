@@ -1,27 +1,46 @@
-type User @entity(additionalFields: [
- { path: "_id", type: "ObjectID" }
-]) {
+interface Owner {
+  id: ID!
+  user: User!
+  context: Context!
+
+  subprojects: [Project!]!
+}
+
+interface Context {
+  projects: [Project!]!
+}
+
+type User implements Context & Owner @entity {
+  id: ID! @id
   email: String! @column
   password: String! @column
 
-  contexts: [Context!]!
-  rootProjects: [Project!]!
+  namedContexts: [NamedContext!]!
+
+  user: User!
+  context: Context!
+  projects: [Project!]!
+  subprojects: [Project!]!
 }
 
-type Context @entity {
+type NamedContext implements Context & Owner @entity {
   id: ID! @id
   user: User! @link
+  context: Context!
   stub: String! @column
   name: String! @column
 
-  rootProjects: [Project!]!
+  projects: [Project!]!
+  subprojects: [Project!]!
 }
 
-type Project @entity {
+type Project implements Owner @entity {
   id: ID! @id
   user: User! @link
-  context: Context @link
+  context: Context!
+  namedContext: NamedContext @link
   parent: Project @link
+  owner: Owner!
   stub: String! @column
   name: String! @column
 
@@ -30,33 +49,30 @@ type Project @entity {
 
 type Query {
   user: User
-  context(id: ID!): Context
+  owner(id: ID!): Owner
 }
 
-input CreateContextParams {
+input CreateNamedContextParams {
   name: String!
 }
 
 input CreateProjectParams {
   name: String!
-  context: ID
-  parent: ID
+  owner: ID
 }
 
 input UpdateProjectParams {
-  name: String
-  context: ID
-  parent: ID
+  name: String!
+  owner: ID
 }
 
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
 
-  createContext(params: CreateContextParams!): Context!
-  deleteContext(id: ID!): Boolean!
+  createNamedContext(params: CreateNamedContextParams!): NamedContext!
+  deleteNamedContext(id: ID!): Boolean!
 
   createProject(params: CreateProjectParams!): Project!
-  updateProject(id: ID!, params: UpdateProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 }

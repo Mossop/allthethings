@@ -1,10 +1,9 @@
-import type { MongoDataSource } from "apollo-datasource-mongodb";
 import { ObjectId } from "mongodb";
 
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { DataSources } from "./datasources";
-import type { ContextDbObject, ProjectDbObject, UserDbObject } from "./types";
+import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
 
@@ -21,14 +20,6 @@ export type DbObjectFor<T> = T extends BaseImpl<infer D> ? D : never;
 export type ImplBuilder<T, D> = new (resolverContext: ResolverContext, dbObject: D) => T;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-function filterValid<T extends {}>(val: T | null): val is T {
-  if (val === null) {
-    throw new Error("Database inconsistency.");
-  }
-  return true;
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types
 function assertValid<T extends {}>(val: T | null | undefined): T {
   if (val === null || val === undefined) {
     throw new Error("Database inconsistency.");
@@ -36,24 +27,25 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
   return val;
 }
 
-export function equals<T extends Comparable>(
-  a: T | null | undefined,
-  b: T | null | undefined,
+export function equals<T extends BaseImpl>(
+  a: T | ObjectId | null | undefined,
+  b: T | ObjectId | null | undefined,
 ): boolean {
   if (!a) {
     return !b;
   }
 
+  if (!b) {
+    return false;
+  }
+
+  a = a instanceof BaseImpl ? a.dbId : a;
+  b = b instanceof BaseImpl ? b.dbId : b;
+
   return a.equals(b);
 }
 
-export class Comparable {
-  public equals(other: Comparable | undefined | null): boolean {
-    return other === this;
-  }
-}
-
-abstract class BaseImpl<T extends DbObject> extends Comparable {
+abstract class BaseImpl<T extends DbObject = DbObject> {
   public readonly dbId: ObjectId;
   protected _dbObject: Promise<T> | null;
 
@@ -63,8 +55,6 @@ abstract class BaseImpl<T extends DbObject> extends Comparable {
     protected readonly resolverContext: ResolverContext,
     arg: T | ObjectId,
   ) {
-    super();
-
     if (arg instanceof ObjectId) {
       this.dbId = arg;
       this._dbObject = null;
@@ -74,23 +64,20 @@ abstract class BaseImpl<T extends DbObject> extends Comparable {
     }
   }
 
-  protected abstract get dataSource(): MongoDataSource<T, ResolverContext>;
+  protected abstract getDbObject(): Promise<T>;
 
   protected get dbObject(): Promise<T> {
     if (this._dbObject) {
       return this._dbObject;
     }
 
-    this._dbObject = this.dataSource.findOneById(this.dbId).then(assertValid);
+    this._dbObject = this.getDbObject();
 
     return this._dbObject;
   }
 
-  public equals(other: BaseImpl<T> | undefined | null): boolean {
-    if (!other) {
-      return false;
-    }
-    return this.dbId.equals(other.dbId);
+  public equals(other: BaseImpl<T> | ObjectId | undefined | null): boolean {
+    return equals(this, other);
   }
 
   public get id(): string {
@@ -102,54 +89,87 @@ abstract class BaseImpl<T extends DbObject> extends Comparable {
   }
 }
 
-export class User extends BaseImpl<UserDbObject> implements SchemaResolver<Schema.User> {
-  protected get dataSource(): MongoDataSource<UserDbObject, ResolverContext> {
-    return this.dataSources.users;
+export type Owner = User | Project | NamedContext;
+
+export abstract class Context<
+  T extends DbObject = DbObject,
+> extends BaseImpl<T> implements SchemaResolver<Schema.Context> {
+  public abstract projects(): Promise<SchemaResolver<readonly Schema.Project[]>>;
+}
+
+export class User extends Context<UserDbObject> implements SchemaResolver<Schema.User> {
+  protected async getDbObject(): Promise<UserDbObject> {
+    return assertValid(await this.dataSources.users.findOneById(this.dbId));
   }
 
-  public get email(): Promise<string> {
-    return this.dbObject.then((obj: UserDbObject) => obj.email);
+  public async user(): Promise<User> {
+    return this;
   }
 
-  public get password(): Promise<string> {
-    return this.dbObject.then((obj: UserDbObject) => obj.password);
+  public async context(): Promise<Context> {
+    return this;
   }
 
-  public async contexts(): Promise<readonly Context[]> {
-    let contexts = await this.dataSources.contexts.find({
+  public async email(): Promise<string> {
+    return (await this.dbObject).email;
+  }
+
+  public async password(): Promise<string> {
+    return (await this.dbObject).password;
+  }
+
+  public async namedContexts(): Promise<readonly NamedContext[]> {
+    return this.dataSources.namedContexts.find({
       user: this.dbId,
     });
-    return contexts.filter(filterValid);
   }
 
-  public async rootProjects(): Promise<readonly Project[]> {
-    let projects = await this.dataSources.projects.find({
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      user: this.dbId,
+      context: null,
+    });
+  }
+
+  public async subprojects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
       user: this.dbId,
       context: null,
       parent: null,
     });
-    return projects.filter(filterValid);
   }
 }
 
-export class Context extends BaseImpl<ContextDbObject> implements SchemaResolver<Schema.Context> {
-  protected get dataSource(): MongoDataSource<ContextDbObject, ResolverContext> {
-    return this.dataSources.contexts;
-  }
-
-  public get name(): Promise<string> {
-    return this.dbObject.then((obj: ContextDbObject) => obj.name);
-  }
-
-  public get stub(): Promise<string> {
-    return this.dbObject.then((obj: ContextDbObject) => obj.stub);
+export class NamedContext
+  extends Context<NamedContextDbObject> implements SchemaResolver<Schema.NamedContext> {
+  protected async getDbObject(): Promise<NamedContextDbObject> {
+    return assertValid(await this.dataSources.namedContexts.findOneById(this.dbId));
   }
 
   public async user(): Promise<User> {
-    return this.dbObject.then((obj: ContextDbObject) => new User(this.resolverContext, obj.user));
+    return new User(this.resolverContext, (await this.dbObject).user);
   }
 
-  public async rootProjects(): Promise<readonly Project[]> {
+  public async context(): Promise<Context> {
+    return this;
+  }
+
+  public async name(): Promise<string> {
+    return (await this.dbObject).name;
+  }
+
+  public async stub(): Promise<string> {
+    return (await this.dbObject).stub;
+  }
+
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      context: this.dbId,
+      parent: null,
+    });
+  }
+
+  public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
       context: this.dbId,
       parent: null,
@@ -158,72 +178,62 @@ export class Context extends BaseImpl<ContextDbObject> implements SchemaResolver
 }
 
 export class Project extends BaseImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
-  protected get dataSource(): MongoDataSource<ProjectDbObject, ResolverContext> {
-    return this.dataSources.projects;
-  }
-
-  public async parent(): Promise<Project | null> {
-    return this.dbObject.then((obj: ProjectDbObject) => {
-      if (!obj.parent) {
-        return null;
-      }
-
-      return new Project(this.resolverContext, obj.parent);
-    });
-  }
-
-  public get name(): Promise<string> {
-    return this.dbObject.then((obj: ContextDbObject) => obj.name);
-  }
-
-  public get stub(): Promise<string> {
-    return this.dbObject.then((obj: ContextDbObject) => obj.stub);
-  }
-
-  public async context(): Promise<Context | null> {
-    return this.dbObject.then((obj: ProjectDbObject) => {
-      if (!obj.context) {
-        return null;
-      }
-
-      return new Context(this.resolverContext, obj.context);
-    });
+  protected async getDbObject(): Promise<ProjectDbObject> {
+    return assertValid(await this.dataSources.projects.findOneById(this.dbId));
   }
 
   public async user(): Promise<User> {
-    return this.dbObject.then((obj: ProjectDbObject) => new User(this.resolverContext, obj.user));
+    return new User(this.resolverContext, (await this.dbObject).user);
+  }
+
+  public async context(): Promise<Context> {
+    let obj = await this.dbObject;
+    if (obj.namedContext) {
+      return new NamedContext(this.resolverContext, obj.namedContext);
+    }
+    return new User(this.resolverContext, obj.user);
+  }
+
+  public async owner(): Promise<Project | User | NamedContext> {
+    let obj = await this.dbObject;
+    if (obj.parent) {
+      return new Project(this.resolverContext, obj.parent);
+    }
+    if (obj.namedContext) {
+      return new NamedContext(this.resolverContext, obj.namedContext);
+    }
+    return new User(this.resolverContext, obj.user);
+  }
+
+  public async namedContext(): Promise<NamedContext | null> {
+    let obj = await this.dbObject;
+    if (!obj.namedContext) {
+      return null;
+    }
+
+    return new NamedContext(this.resolverContext, obj.namedContext);
+  }
+
+  public async parent(): Promise<Project | null> {
+    let obj = await this.dbObject;
+    if (!obj.parent) {
+      return null;
+    }
+
+    return new Project(this.resolverContext, obj.parent);
+  }
+
+  public async name(): Promise<string> {
+    return (await this.dbObject).name;
+  }
+
+  public get stub(): Promise<string> {
+    return this.dbObject.then((obj: NamedContextDbObject) => obj.stub);
   }
 
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
       parent: this.dbId,
-    });
-  }
-
-  public async setParent(parent: ObjectId | null): Promise<void> {
-    if (parent) {
-      let parentProject = await this.dataSources.projects.get(parent);
-      if (!parentProject) {
-        throw new Error("Parent does not exist.");
-      }
-
-      let context = await parentProject.context();
-
-      await this.dataSources.projects.updateOne(this.dbId, {
-        context: context ? context.dbId : null,
-        parent: parent,
-      });
-    } else {
-      await this.dataSources.projects.updateOne(this.dbId, {
-        parent: null,
-      });
-    }
-  }
-
-  public async setContext(context: ObjectId | null): Promise<void> {
-    await this.dataSources.projects.updateOne(this.dbId, {
-      context,
-      parent: null,
     });
   }
 }

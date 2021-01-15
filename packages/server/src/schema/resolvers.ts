@@ -1,6 +1,6 @@
 /* eslint-disable */
 import type { GraphQLResolveInfo } from 'graphql';
-import type { User, Context, Project } from '../db/implementations';
+import type { User, NamedContext, Project } from '../db/implementations';
 import type { ResolverContext } from './context';
 import * as Schema from './types';
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
@@ -83,13 +83,15 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  Owner: ResolversTypes['User'] | ResolversTypes['NamedContext'] | ResolversTypes['Project'];
+  ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
+  Context: ResolversTypes['User'] | ResolversTypes['NamedContext'];
   User: ResolverTypeWrapper<User>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
-  Context: ResolverTypeWrapper<Context>;
-  ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
+  NamedContext: ResolverTypeWrapper<NamedContext>;
   Project: ResolverTypeWrapper<Project>;
   Query: ResolverTypeWrapper<{}>;
-  CreateContextParams: Schema.CreateContextParams;
+  CreateNamedContextParams: Schema.CreateNamedContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
   UpdateProjectParams: Schema.UpdateProjectParams;
   Mutation: ResolverTypeWrapper<{}>;
@@ -98,41 +100,64 @@ export type ResolversTypes = ResolversObject<{
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  Owner: ResolversParentTypes['User'] | ResolversParentTypes['NamedContext'] | ResolversParentTypes['Project'];
+  ID: Schema.Scalars['ID'];
+  Context: ResolversParentTypes['User'] | ResolversParentTypes['NamedContext'];
   User: User;
   String: Schema.Scalars['String'];
-  Context: Context;
-  ID: Schema.Scalars['ID'];
+  NamedContext: NamedContext;
   Project: Project;
   Query: {};
-  CreateContextParams: Schema.CreateContextParams;
+  CreateNamedContextParams: Schema.CreateNamedContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
   UpdateProjectParams: Schema.UpdateProjectParams;
   Mutation: {};
   Boolean: Schema.Scalars['Boolean'];
 }>;
 
-export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  contexts?: Resolver<ReadonlyArray<ResolversTypes['Context']>, ParentType, ContextType>;
-  rootProjects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+export type OwnerResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Owner'] = ResolversParentTypes['Owner']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'User' | 'NamedContext' | 'Project', ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
+  subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
 }>;
 
 export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
+  __resolveType: TypeResolveFn<'User' | 'NamedContext', ParentType, ContextType>;
+  projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+}>;
+
+export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  email?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  password?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  namedContexts?: Resolver<ReadonlyArray<ResolversTypes['NamedContext']>, ParentType, ContextType>;
+  user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
+  projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type NamedContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NamedContext'] = ResolversParentTypes['NamedContext']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
+  context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
   stub?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  rootProjects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = ResolversObject<{
   id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
-  context?: Resolver<Schema.Maybe<ResolversTypes['Context']>, ParentType, ContextType>;
+  context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
+  namedContext?: Resolver<Schema.Maybe<ResolversTypes['NamedContext']>, ParentType, ContextType>;
   parent?: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType>;
+  owner?: Resolver<ResolversTypes['Owner'], ParentType, ContextType>;
   stub?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
@@ -141,22 +166,23 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   user?: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
-  context?: Resolver<Schema.Maybe<ResolversTypes['Context']>, ParentType, ContextType, RequireFields<Schema.QueryContextArgs, 'id'>>;
+  owner?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.QueryOwnerArgs, 'id'>>;
 }>;
 
 export type MutationResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   login?: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<Schema.MutationLoginArgs, 'email' | 'password'>>;
   logout?: Resolver<Schema.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
-  createContext?: Resolver<ResolversTypes['Context'], ParentType, ContextType, RequireFields<Schema.MutationCreateContextArgs, 'params'>>;
-  deleteContext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteContextArgs, 'id'>>;
+  createNamedContext?: Resolver<ResolversTypes['NamedContext'], ParentType, ContextType, RequireFields<Schema.MutationCreateNamedContextArgs, 'params'>>;
+  deleteNamedContext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteNamedContextArgs, 'id'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<Schema.MutationCreateProjectArgs, 'params'>>;
-  updateProject?: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationUpdateProjectArgs, 'id' | 'params'>>;
   deleteProject?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteProjectArgs, 'id'>>;
 }>;
 
 export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
-  User?: UserResolvers<ContextType>;
+  Owner?: OwnerResolvers<ContextType>;
   Context?: ContextResolvers<ContextType>;
+  User?: UserResolvers<ContextType>;
+  NamedContext?: NamedContextResolvers<ContextType>;
   Project?: ProjectResolvers<ContextType>;
   Query?: QueryResolvers<ContextType>;
   Mutation?: MutationResolvers<ContextType>;

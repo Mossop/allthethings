@@ -1,13 +1,15 @@
 query CurrentUser {
   user {
+    id
     email
   }
 }
 
-query Contexts {
+query NamedContexts {
   user {
+    id
     email
-    contexts {
+    namedContexts {
       id
       name
     }

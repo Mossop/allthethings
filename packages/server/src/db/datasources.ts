@@ -4,9 +4,11 @@ import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type { FilterQuery, MongoClient, ObjectId, UpdateQuery } from "mongodb";
 
 import type { ResolverContext } from "../schema/context";
+import type { CreateNamedContextParams, CreateProjectParams } from "../schema/types";
 import type { DbObjectFor, ImplBuilder } from "./implementations";
-import { equals, Context, User, Project } from "./implementations";
-import type { ContextDbObject, ProjectDbObject } from "./types";
+import { NamedContext, User, Project } from "./implementations";
+
+type Overwrite<A, B> = Omit<A, keyof B> & B;
 
 export interface DbObject {
   // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -151,19 +153,19 @@ export class UserDataSource extends BaseDataSource<User> {
   }
 }
 
-export class ContextDataSource extends BaseDataSource<Context> {
+export class NamedContextDataSource extends BaseDataSource<NamedContext> {
   public constructor(client: MongoClient) {
-    super(client.db().collection("contexts"), Context);
+    super(client.db().collection("contexts"), NamedContext);
   }
 
   public async create(
     user: ObjectId,
-    params: Omit<ContextDbObject, "_id" | "user" | "stub">,
-  ): Promise<Context> {
+    { name }: CreateNamedContextParams,
+  ): Promise<NamedContext> {
     let context = await this.insert({
-      ...params,
+      name,
       user,
-      stub: stub(params.name),
+      stub: stub(name),
     });
 
     await this.context.dataSources.users.updateOne(user, {
@@ -181,61 +183,54 @@ export class ProjectDataSource extends BaseDataSource<Project> {
 
   public async create(
     userId: ObjectId,
-    params: Omit<ProjectDbObject, "_id" | "user" | "stub">,
+    { name, owner }: Overwrite<CreateProjectParams, { owner: ObjectId | null }>,
   ): Promise<Project> {
-    let context: Context | null = null;
-    if (params.context) {
-      context = await this.context.dataSources.contexts.get(params.context);
-      if (!context) {
-        throw new Error("Context is unknown.");
-      }
+    let user: ObjectId = userId;
+    let parent: ObjectId | null = null;
+    let namedContext: ObjectId | null = null;
 
-      let contextUser = await context.user();
-      if (contextUser.dbId != userId) {
-        throw new Error("Context is unknown.");
-      }
-    }
-
-    let parent: Project | null = null;
-    let parentContext: Context | null = null;
-    if (params.parent) {
-      parent = await this.context.dataSources.projects.get(params.parent);
-      if (!parent) {
-        throw new Error("Parent is unknown.");
-      }
-
-      let parentUser = await parent.user();
-      if (parentUser.dbId != userId) {
-        throw new Error("Parent is unknown.");
-      }
-
-      parentContext = await parent.context();
-
-      if (!equals(context, parentContext)) {
-        throw new Error("Parent is in a different context.");
+    if (owner) {
+      let ownerObj = await this.context.getOwner(owner);
+      if (ownerObj instanceof Project) {
+        parent = ownerObj.dbId;
+        let context = await ownerObj.context();
+        if (context instanceof NamedContext) {
+          namedContext = context.dbId;
+          context = await context.user();
+        }
+        user = context.dbId;
+      } else if (ownerObj instanceof NamedContext) {
+        namedContext = ownerObj.dbId;
+        user = (await ownerObj.user()).dbId;
+      } else if (ownerObj instanceof User) {
+        user = ownerObj.dbId;
       }
     }
 
-    let project = await this.insert({
-      ...params,
-      user: userId,
-      stub: stub(params.name),
+    if (!userId.equals(user)) {
+      throw new Error("Owner does not exist.");
+    }
+
+    return this.insert({
+      name,
+      user,
+      namedContext,
+      parent,
+      stub: stub(name),
     });
-
-    return project;
   }
 }
 
 export interface DataSources {
   users: UserDataSource;
-  contexts: ContextDataSource;
+  namedContexts: NamedContextDataSource;
   projects: ProjectDataSource;
 }
 
 export function dataSources(client: MongoClient): DataSources {
   return {
     users: new UserDataSource(client),
-    contexts: new ContextDataSource(client),
+    namedContexts: new NamedContextDataSource(client),
     projects: new ProjectDataSource(client),
   };
 }

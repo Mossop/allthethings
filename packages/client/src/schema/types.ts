@@ -13,29 +13,48 @@ export type Scalars = {
   Float: number;
 };
 
-export type User = {
-  __typename?: 'User';
-  email: Scalars['String'];
-  password: Scalars['String'];
-  contexts: Array<Context>;
-  rootProjects: Array<Project>;
+export type Owner = {
+  id: Scalars['ID'];
+  user: User;
+  context: Context;
+  subprojects: Array<Project>;
 };
 
 export type Context = {
-  __typename?: 'Context';
-  id: Scalars['ID'];
-  user: User;
-  stub: Scalars['String'];
-  name: Scalars['String'];
-  rootProjects: Array<Project>;
+  projects: Array<Project>;
 };
 
-export type Project = {
+export type User = Context & Owner & {
+  __typename?: 'User';
+  id: Scalars['ID'];
+  email: Scalars['String'];
+  password: Scalars['String'];
+  namedContexts: Array<NamedContext>;
+  user: User;
+  context: Context;
+  projects: Array<Project>;
+  subprojects: Array<Project>;
+};
+
+export type NamedContext = Context & Owner & {
+  __typename?: 'NamedContext';
+  id: Scalars['ID'];
+  user: User;
+  context: Context;
+  stub: Scalars['String'];
+  name: Scalars['String'];
+  projects: Array<Project>;
+  subprojects: Array<Project>;
+};
+
+export type Project = Owner & {
   __typename?: 'Project';
   id: Scalars['ID'];
   user: User;
-  context?: Maybe<Context>;
+  context: Context;
+  namedContext?: Maybe<NamedContext>;
   parent?: Maybe<Project>;
+  owner: Owner;
   stub: Scalars['String'];
   name: Scalars['String'];
   subprojects: Array<Project>;
@@ -44,38 +63,35 @@ export type Project = {
 export type Query = {
   __typename?: 'Query';
   user?: Maybe<User>;
-  context?: Maybe<Context>;
+  owner?: Maybe<Owner>;
 };
 
 
-export type QueryContextArgs = {
+export type QueryOwnerArgs = {
   id: Scalars['ID'];
 };
 
-export type CreateContextParams = {
+export type CreateNamedContextParams = {
   name: Scalars['String'];
 };
 
 export type CreateProjectParams = {
   name: Scalars['String'];
-  context?: Maybe<Scalars['ID']>;
-  parent?: Maybe<Scalars['ID']>;
+  owner?: Maybe<Scalars['ID']>;
 };
 
 export type UpdateProjectParams = {
-  name?: Maybe<Scalars['String']>;
-  context?: Maybe<Scalars['ID']>;
-  parent?: Maybe<Scalars['ID']>;
+  name: Scalars['String'];
+  owner?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
   __typename?: 'Mutation';
   login?: Maybe<User>;
   logout?: Maybe<Scalars['Boolean']>;
-  createContext: Context;
-  deleteContext: Scalars['Boolean'];
+  createNamedContext: NamedContext;
+  deleteNamedContext: Scalars['Boolean'];
   createProject: Project;
-  updateProject?: Maybe<Project>;
   deleteProject: Scalars['Boolean'];
 };
 
@@ -86,12 +102,12 @@ export type MutationLoginArgs = {
 };
 
 
-export type MutationCreateContextArgs = {
-  params: CreateContextParams;
+export type MutationCreateNamedContextArgs = {
+  params: CreateNamedContextParams;
 };
 
 
-export type MutationDeleteContextArgs = {
+export type MutationDeleteNamedContextArgs = {
   id: Scalars['ID'];
 };
 
@@ -101,64 +117,84 @@ export type MutationCreateProjectArgs = {
 };
 
 
-export type MutationUpdateProjectArgs = {
-  id: Scalars['ID'];
-  params: UpdateProjectParams;
-};
-
-
 export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
 };
 
-export type UserKeySpecifier = ('email' | 'password' | 'contexts' | 'rootProjects' | UserKeySpecifier)[];
-export type UserFieldPolicy = {
-	email?: FieldPolicy<any> | FieldReadFunction<any>,
-	password?: FieldPolicy<any> | FieldReadFunction<any>,
-	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
-	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
-};
-export type ContextKeySpecifier = ('id' | 'user' | 'stub' | 'name' | 'rootProjects' | ContextKeySpecifier)[];
-export type ContextFieldPolicy = {
+export type OwnerKeySpecifier = ('id' | 'user' | 'context' | 'subprojects' | OwnerKeySpecifier)[];
+export type OwnerFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>,
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type ContextKeySpecifier = ('projects' | ContextKeySpecifier)[];
+export type ContextFieldPolicy = {
+	projects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type UserKeySpecifier = ('id' | 'email' | 'password' | 'namedContexts' | 'user' | 'context' | 'projects' | 'subprojects' | UserKeySpecifier)[];
+export type UserFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	password?: FieldPolicy<any> | FieldReadFunction<any>,
+	namedContexts?: FieldPolicy<any> | FieldReadFunction<any>,
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>,
+	projects?: FieldPolicy<any> | FieldReadFunction<any>,
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type NamedContextKeySpecifier = ('id' | 'user' | 'context' | 'stub' | 'name' | 'projects' | 'subprojects' | NamedContextKeySpecifier)[];
+export type NamedContextFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
-	rootProjects?: FieldPolicy<any> | FieldReadFunction<any>
+	projects?: FieldPolicy<any> | FieldReadFunction<any>,
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'parent' | 'stub' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'namedContext' | 'parent' | 'owner' | 'stub' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
+	namedContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	parent?: FieldPolicy<any> | FieldReadFunction<any>,
+	owner?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'context' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'owner' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
-	context?: FieldPolicy<any> | FieldReadFunction<any>
+	owner?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'deleteContext' | 'createProject' | 'updateProject' | 'deleteProject' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createNamedContext' | 'deleteNamedContext' | 'createProject' | 'deleteProject' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
-	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	createNamedContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteNamedContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	updateProject?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteProject?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
-	User?: Omit<TypePolicy, "fields" | "keyFields"> & {
-		keyFields?: false | UserKeySpecifier | (() => undefined | UserKeySpecifier),
-		fields?: UserFieldPolicy,
+	Owner?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | OwnerKeySpecifier | (() => undefined | OwnerKeySpecifier),
+		fields?: OwnerFieldPolicy,
 	},
 	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ContextKeySpecifier | (() => undefined | ContextKeySpecifier),
 		fields?: ContextFieldPolicy,
+	},
+	User?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | UserKeySpecifier | (() => undefined | UserKeySpecifier),
+		fields?: UserFieldPolicy,
+	},
+	NamedContext?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | NamedContextKeySpecifier | (() => undefined | NamedContextKeySpecifier),
+		fields?: NamedContextFieldPolicy,
 	},
 	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),

@@ -1,7 +1,10 @@
-import type { User } from "../db";
-import type { ResolverParams } from "./context";
-import { resolver } from "./context";
+import { ObjectId } from "mongodb";
+
+import type { NamedContext, Project, User } from "../db";
+import type { AuthedParams, ResolverParams } from "./context";
+import { authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
+import type { QueryOwnerArgs } from "./types";
 
 const resolvers: QueryResolvers = {
   user: resolver(async ({
@@ -18,6 +21,13 @@ const resolvers: QueryResolvers = {
     }
 
     return user;
+  }),
+
+  owner: authed(({
+    ctx,
+    args: { id },
+  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<User | Project | NamedContext> => {
+    return ctx.getOwner(new ObjectId(id));
   }),
 };
 

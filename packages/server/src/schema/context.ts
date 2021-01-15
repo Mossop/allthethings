@@ -1,11 +1,12 @@
 import type Koa from "koa";
 import { ObjectId } from "mongodb";
 
-import type { DataSources, User } from "../db";
+import type { DataSources, Owner, User } from "../db";
 import type { ResolverFn } from "./resolvers";
 
 export interface BaseContext {
   userId: ObjectId | null;
+  getOwner: (id: ObjectId) => Promise<Owner>;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -70,6 +71,25 @@ export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
 
   return {
     userId: user ? new ObjectId(user) : null,
+
+    async getOwner(this: ResolverContext, id: ObjectId): Promise<Owner> {
+      let project = await this.dataSources.projects.get(id);
+      if (project) {
+        return project;
+      }
+
+      let context = await this.dataSources.namedContexts.get(id);
+      if (context) {
+        return context;
+      }
+
+      let user = await this.dataSources.users.get(id);
+      if (user) {
+        return user;
+      }
+
+      throw new Error("Owner does not exist.");
+    },
 
     login(user: User): void {
       if (!ctx.session) {

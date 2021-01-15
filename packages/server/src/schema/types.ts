@@ -12,29 +12,48 @@ export type Scalars = {
   Float: number;
 };
 
-export type User = {
-  readonly __typename?: 'User';
-  readonly email: Scalars['String'];
-  readonly password: Scalars['String'];
-  readonly contexts: ReadonlyArray<Context>;
-  readonly rootProjects: ReadonlyArray<Project>;
+export type Owner = {
+  readonly id: Scalars['ID'];
+  readonly user: User;
+  readonly context: Context;
+  readonly subprojects: ReadonlyArray<Project>;
 };
 
 export type Context = {
-  readonly __typename?: 'Context';
-  readonly id: Scalars['ID'];
-  readonly user: User;
-  readonly stub: Scalars['String'];
-  readonly name: Scalars['String'];
-  readonly rootProjects: ReadonlyArray<Project>;
+  readonly projects: ReadonlyArray<Project>;
 };
 
-export type Project = {
+export type User = Context & Owner & {
+  readonly __typename?: 'User';
+  readonly id: Scalars['ID'];
+  readonly email: Scalars['String'];
+  readonly password: Scalars['String'];
+  readonly namedContexts: ReadonlyArray<NamedContext>;
+  readonly user: User;
+  readonly context: Context;
+  readonly projects: ReadonlyArray<Project>;
+  readonly subprojects: ReadonlyArray<Project>;
+};
+
+export type NamedContext = Context & Owner & {
+  readonly __typename?: 'NamedContext';
+  readonly id: Scalars['ID'];
+  readonly user: User;
+  readonly context: Context;
+  readonly stub: Scalars['String'];
+  readonly name: Scalars['String'];
+  readonly projects: ReadonlyArray<Project>;
+  readonly subprojects: ReadonlyArray<Project>;
+};
+
+export type Project = Owner & {
   readonly __typename?: 'Project';
   readonly id: Scalars['ID'];
   readonly user: User;
-  readonly context?: Maybe<Context>;
+  readonly context: Context;
+  readonly namedContext?: Maybe<NamedContext>;
   readonly parent?: Maybe<Project>;
+  readonly owner: Owner;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
   readonly subprojects: ReadonlyArray<Project>;
@@ -43,38 +62,35 @@ export type Project = {
 export type Query = {
   readonly __typename?: 'Query';
   readonly user?: Maybe<User>;
-  readonly context?: Maybe<Context>;
+  readonly owner?: Maybe<Owner>;
 };
 
 
-export type QueryContextArgs = {
+export type QueryOwnerArgs = {
   id: Scalars['ID'];
 };
 
-export type CreateContextParams = {
+export type CreateNamedContextParams = {
   readonly name: Scalars['String'];
 };
 
 export type CreateProjectParams = {
   readonly name: Scalars['String'];
-  readonly context?: Maybe<Scalars['ID']>;
-  readonly parent?: Maybe<Scalars['ID']>;
+  readonly owner?: Maybe<Scalars['ID']>;
 };
 
 export type UpdateProjectParams = {
-  readonly name?: Maybe<Scalars['String']>;
-  readonly context?: Maybe<Scalars['ID']>;
-  readonly parent?: Maybe<Scalars['ID']>;
+  readonly name: Scalars['String'];
+  readonly owner?: Maybe<Scalars['ID']>;
 };
 
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly login?: Maybe<User>;
   readonly logout?: Maybe<Scalars['Boolean']>;
-  readonly createContext: Context;
-  readonly deleteContext: Scalars['Boolean'];
+  readonly createNamedContext: NamedContext;
+  readonly deleteNamedContext: Scalars['Boolean'];
   readonly createProject: Project;
-  readonly updateProject?: Maybe<Project>;
   readonly deleteProject: Scalars['Boolean'];
 };
 
@@ -85,24 +101,18 @@ export type MutationLoginArgs = {
 };
 
 
-export type MutationCreateContextArgs = {
-  params: CreateContextParams;
+export type MutationCreateNamedContextArgs = {
+  params: CreateNamedContextParams;
 };
 
 
-export type MutationDeleteContextArgs = {
+export type MutationDeleteNamedContextArgs = {
   id: Scalars['ID'];
 };
 
 
 export type MutationCreateProjectArgs = {
   params: CreateProjectParams;
-};
-
-
-export type MutationUpdateProjectArgs = {
-  id: Scalars['ID'];
-  params: UpdateProjectParams;
 };
 
 

@@ -7,7 +7,7 @@ import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/ho
 import { useCallback, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
-import { useContextsQuery } from "../schema/queries";
+import { useNamedContextsQuery } from "../schema/queries";
 import { flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -36,8 +36,8 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
-  let { data } = useContextsQuery();
-  let contexts = data?.user?.contexts ?? [];
+  let { data } = useNamedContextsQuery();
+  let contexts = data?.user?.namedContexts ?? [];
 
   let openCreateDialog = useCallback(() => {
     contextMenuState.close();

@@ -1,11 +1,11 @@
 import { ObjectId } from "mongodb";
 
-import type { User, Context, Project } from "../db";
+import type { User, NamedContext, Project } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
 import type {
-  MutationCreateContextArgs,
+  MutationCreateNamedContextArgs,
   MutationCreateProjectArgs,
   MutationDeleteProjectArgs,
   MutationLoginArgs,
@@ -50,8 +50,8 @@ const resolvers: MutationResolvers = {
   createContext: authed(({
     args: { params },
     ctx,
-  }: AuthedParams<unknown, MutationCreateContextArgs>): Promise<Context> => {
-    return ctx.dataSources.contexts.create(ctx.userId, params);
+  }: AuthedParams<unknown, MutationCreateNamedContextArgs>): Promise<NamedContext> => {
+    return ctx.dataSources.namedContexts.create(ctx.userId, params);
   }),
 
   createProject: authed(async ({
@@ -60,8 +60,7 @@ const resolvers: MutationResolvers = {
   }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<Project> => {
     return ctx.dataSources.projects.create(ctx.userId, {
       ...params,
-      context: intoId(params.context),
-      parent: intoId(params.parent),
+      owner: intoId(params.owner),
     });
   }),
 

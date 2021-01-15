@@ -10,21 +10,21 @@ export type CurrentUserQuery = (
   { __typename?: 'Query' }
   & { user?: Types.Maybe<(
     { __typename?: 'User' }
-    & Pick<Types.User, 'email'>
+    & Pick<Types.User, 'id' | 'email'>
   )> }
 );
 
-export type ContextsQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type NamedContextsQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ContextsQuery = (
+export type NamedContextsQuery = (
   { __typename?: 'Query' }
   & { user?: Types.Maybe<(
     { __typename?: 'User' }
-    & Pick<Types.User, 'email'>
-    & { contexts: Array<(
-      { __typename?: 'Context' }
-      & Pick<Types.Context, 'id' | 'name'>
+    & Pick<Types.User, 'id' | 'email'>
+    & { namedContexts: Array<(
+      { __typename?: 'NamedContext' }
+      & Pick<Types.NamedContext, 'id' | 'name'>
     )> }
   )> }
 );
@@ -33,6 +33,7 @@ export type ContextsQuery = (
 export const CurrentUserDocument = gql`
     query CurrentUser {
   user {
+    id
     email
   }
 }
@@ -65,11 +66,12 @@ export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, Curren
 export function refetchCurrentUserQuery(variables?: CurrentUserQueryVariables) {
       return { query: CurrentUserDocument, variables: variables }
     }
-export const ContextsDocument = gql`
-    query Contexts {
+export const NamedContextsDocument = gql`
+    query NamedContexts {
   user {
+    id
     email
-    contexts {
+    namedContexts {
       id
       name
     }
@@ -78,29 +80,29 @@ export const ContextsDocument = gql`
     `;
 
 /**
- * __useContextsQuery__
+ * __useNamedContextsQuery__
  *
- * To run a query within a React component, call `useContextsQuery` and pass it any options that fit your needs.
- * When your component renders, `useContextsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useNamedContextsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useNamedContextsQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useContextsQuery({
+ * const { data, loading, error } = useNamedContextsQuery({
  *   variables: {
  *   },
  * });
  */
-export function useContextsQuery(baseOptions?: Apollo.QueryHookOptions<ContextsQuery, ContextsQueryVariables>) {
-        return Apollo.useQuery<ContextsQuery, ContextsQueryVariables>(ContextsDocument, baseOptions);
+export function useNamedContextsQuery(baseOptions?: Apollo.QueryHookOptions<NamedContextsQuery, NamedContextsQueryVariables>) {
+        return Apollo.useQuery<NamedContextsQuery, NamedContextsQueryVariables>(NamedContextsDocument, baseOptions);
       }
-export function useContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ContextsQuery, ContextsQueryVariables>) {
-          return Apollo.useLazyQuery<ContextsQuery, ContextsQueryVariables>(ContextsDocument, baseOptions);
+export function useNamedContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NamedContextsQuery, NamedContextsQueryVariables>) {
+          return Apollo.useLazyQuery<NamedContextsQuery, NamedContextsQueryVariables>(NamedContextsDocument, baseOptions);
         }
-export type ContextsQueryHookResult = ReturnType<typeof useContextsQuery>;
-export type ContextsLazyQueryHookResult = ReturnType<typeof useContextsLazyQuery>;
-export type ContextsQueryResult = Apollo.QueryResult<ContextsQuery, ContextsQueryVariables>;
-export function refetchContextsQuery(variables?: ContextsQueryVariables) {
-      return { query: ContextsDocument, variables: variables }
+export type NamedContextsQueryHookResult = ReturnType<typeof useNamedContextsQuery>;
+export type NamedContextsLazyQueryHookResult = ReturnType<typeof useNamedContextsLazyQuery>;
+export type NamedContextsQueryResult = Apollo.QueryResult<NamedContextsQuery, NamedContextsQueryVariables>;
+export function refetchNamedContextsQuery(variables?: NamedContextsQueryVariables) {
+      return { query: NamedContextsDocument, variables: variables }
     }

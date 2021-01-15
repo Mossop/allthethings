@@ -2,12 +2,12 @@
 import type { Maybe } from "../schema/types";
 import { ObjectID } from 'mongodb';
 export type UserDbObject = {
+  _id: ObjectID,
   email: string,
   password: string,
-  _id: ObjectID,
 };
 
-export type ContextDbObject = {
+export type NamedContextDbObject = {
   _id: ObjectID,
   user: UserDbObject['_id'],
   stub: string,
@@ -17,7 +17,7 @@ export type ContextDbObject = {
 export type ProjectDbObject = {
   _id: ObjectID,
   user: UserDbObject['_id'],
-  context: Maybe<ContextDbObject['_id']>,
+  namedContext: Maybe<NamedContextDbObject['_id']>,
   parent: Maybe<ProjectDbObject['_id']>,
   stub: string,
   name: string,

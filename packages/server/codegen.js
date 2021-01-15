@@ -39,7 +39,7 @@ module.exports = {
         mappers: {
           /* eslint-disable @typescript-eslint/naming-convention */
           User: "../db/implementations#User",
-          Context: "../db/implementations#Context",
+          NamedContext: "../db/implementations#NamedContext",
           Project: "../db/implementations#Project",
           /* eslint-enable @typescript-eslint/naming-convention */
         },

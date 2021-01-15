@@ -9,8 +9,8 @@ import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
-import { useCreateContextMutation } from "../schema/mutations";
-import { refetchContextsQuery } from "../schema/queries";
+import { useCreateNamedContextMutation } from "../schema/mutations";
+import { refetchNamedContextsQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -24,11 +24,11 @@ export default ReactMemo(function CreateContextDialog({
     name: "",
   });
 
-  let [createContext] = useCreateContextMutation({
+  let [createContext] = useCreateNamedContextMutation({
     variables: {
       params: state,
     },
-    refetchQueries: [refetchContextsQuery()],
+    refetchQueries: [refetchNamedContextsQuery()],
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {

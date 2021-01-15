@@ -25,16 +25,16 @@ export type LogoutMutation = (
   & Pick<Types.Mutation, 'logout'>
 );
 
-export type CreateContextMutationVariables = Types.Exact<{
-  params: Types.CreateContextParams;
+export type CreateNamedContextMutationVariables = Types.Exact<{
+  params: Types.CreateNamedContextParams;
 }>;
 
 
-export type CreateContextMutation = (
+export type CreateNamedContextMutation = (
   { __typename?: 'Mutation' }
-  & { createContext: (
-    { __typename?: 'Context' }
-    & Pick<Types.Context, 'id' | 'name'>
+  & { createNamedContext: (
+    { __typename?: 'NamedContext' }
+    & Pick<Types.NamedContext, 'id' | 'name'>
   ) }
 );
 
@@ -101,36 +101,36 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
-export const CreateContextDocument = gql`
-    mutation CreateContext($params: CreateContextParams!) {
-  createContext(params: $params) {
+export const CreateNamedContextDocument = gql`
+    mutation CreateNamedContext($params: CreateNamedContextParams!) {
+  createNamedContext(params: $params) {
     id
     name
   }
 }
     `;
-export type CreateContextMutationFn = Apollo.MutationFunction<CreateContextMutation, CreateContextMutationVariables>;
+export type CreateNamedContextMutationFn = Apollo.MutationFunction<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
 
 /**
- * __useCreateContextMutation__
+ * __useCreateNamedContextMutation__
  *
- * To run a mutation, you first call `useCreateContextMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateContextMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateNamedContextMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateNamedContextMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createContextMutation, { data, loading, error }] = useCreateContextMutation({
+ * const [createNamedContextMutation, { data, loading, error }] = useCreateNamedContextMutation({
  *   variables: {
  *      params: // value for 'params'
  *   },
  * });
  */
-export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateContextMutation, CreateContextMutationVariables>) {
-        return Apollo.useMutation<CreateContextMutation, CreateContextMutationVariables>(CreateContextDocument, baseOptions);
+export function useCreateNamedContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>) {
+        return Apollo.useMutation<CreateNamedContextMutation, CreateNamedContextMutationVariables>(CreateNamedContextDocument, baseOptions);
       }
-export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
-export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
-export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
+export type CreateNamedContextMutationHookResult = ReturnType<typeof useCreateNamedContextMutation>;
+export type CreateNamedContextMutationResult = Apollo.MutationResult<CreateNamedContextMutation>;
+export type CreateNamedContextMutationOptions = Apollo.BaseMutationOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>;

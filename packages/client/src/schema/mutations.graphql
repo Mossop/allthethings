@@ -8,8 +8,8 @@ mutation Logout {
   logout
 }
 
-mutation CreateContext($params: CreateContextParams!) {
-  createContext(params: $params) {
+mutation CreateNamedContext($params: CreateNamedContextParams!) {
+  createNamedContext(params: $params) {
     id
     name
   }
