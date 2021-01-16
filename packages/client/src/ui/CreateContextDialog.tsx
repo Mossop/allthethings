@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
 import { useCreateNamedContextMutation } from "../schema/mutations";
-import { refetchNamedContextsQuery } from "../schema/queries";
+import { refetchLookupOwnerQuery, refetchNamedContextsQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -28,14 +28,17 @@ export default ReactMemo(function CreateContextDialog({
     variables: {
       params: state,
     },
-    refetchQueries: [refetchNamedContextsQuery()],
+    refetchQueries: [
+      refetchNamedContextsQuery(),
+      refetchLookupOwnerQuery(),
+    ],
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     await createContext();
     onClose();
-  }, [state, onClose]);
+  }, [createContext, onClose]);
 
   return <Dialog open={true} onClose={onClose}>
     <form onSubmit={submit}>
@@ -43,7 +46,13 @@ export default ReactMemo(function CreateContextDialog({
       <DialogContent>
         <FormControl margin="normal">
           <InputLabel htmlFor="email">Name:</InputLabel>
-          <TextFieldInput id="email" state={state} setState={setState} stateKey="name"/>
+          <TextFieldInput
+            id="email"
+            state={state}
+            setState={setState}
+            stateKey="name"
+            autoFocus={true}
+          />
         </FormControl>
       </DialogContent>
       <DialogActions>

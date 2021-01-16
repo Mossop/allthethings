@@ -46,7 +46,7 @@ export default ReactMemo(function UserMenu({
   let doLogout = useCallback(async (): Promise<void> => {
     userMenuState.close();
     void logout();
-  }, [logout]);
+  }, [logout, userMenuState]);
 
   return <>
     <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>

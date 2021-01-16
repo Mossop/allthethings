@@ -4,12 +4,14 @@ import MenuItem from "@material-ui/core/MenuItem";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
-import { useCallback, useState } from "react";
+import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
 import { useNamedContextsQuery } from "../schema/queries";
+import type { NamedContext } from "../schema/types";
+import { pushState, usePageState } from "../utils/navigation";
 import { flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
+import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import CreateContextDialog from "./CreateContextDialog";
 
@@ -31,18 +33,57 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
+interface ContextMenuItemProps {
+  onClick: () => void;
+  name: string;
+  target: string;
+  selected: boolean;
+}
+
+const ContextMenuItem = ReactMemo(
+  forwardRef(function ContextMenuItem(
+    { target, name, selected, onClick }: ContextMenuItemProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let click = useCallback(() => {
+      pushState(target);
+      onClick();
+    }, [onClick, target]);
+
+    return <MenuItem
+      ref={ref}
+      onClick={click}
+      selected={selected}
+      disabled={selected}
+    >
+      {name}
+    </MenuItem>;
+  }),
+);
+
 export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
+  let { selectedContext } = usePageState();
+
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
   let { data } = useNamedContextsQuery();
-  let contexts = data?.user?.namedContexts ?? [];
+  let contexts = useMemo(() => data?.user?.namedContexts ?? [], [data]);
+
+  let currentContext = useMemo(
+    () => contexts.find((context: { id: string }) => context.id == selectedContext),
+    [contexts, selectedContext],
+  );
+
+  let closeMenu = useCallback(() => {
+    contextMenuState.close();
+  }, [contextMenuState]);
 
   let openCreateDialog = useCallback(() => {
-    contextMenuState.close();
+    closeMenu();
     setShowCreateDialog(true);
-  }, []);
+  }, [closeMenu]);
 
   let closeCreateDialog = useCallback(() => {
     setShowCreateDialog(false);
@@ -60,6 +101,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       {...bindTrigger(contextMenuState)}
     >
       <ContextIcon className={classes.icon}/>
+      {currentContext && <div className={classes.context}>{currentContext.name}</div>}
     </Button>
     <Menu
       {...bindMenu(contextMenuState)}
@@ -77,13 +119,22 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       }
       keepMounted={true}
       getContentAnchorEl={null}
+      variant="menu"
     >
+      <ContextMenuItem
+        name="No Context."
+        selected={!currentContext}
+        target="/"
+        onClick={closeMenu}
+      />
       {
-        contexts.map((context: { id: string; name: string; }) => <MenuItem
+        contexts.map((context: Pick<NamedContext, "id" | "name" | "stub">) => <ContextMenuItem
           key={context.id}
-        >
-          {context.name}
-        </MenuItem>)
+          name={context.name}
+          target={`/${context.stub}/`}
+          selected={context === currentContext}
+          onClick={closeMenu}
+        />)
       }
       <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>
     </Menu>

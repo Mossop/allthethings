@@ -65,7 +65,7 @@ export const TextFieldInput = ReactMemo(
     type = "text",
     ...props
   }: TextFieldInputProps<T, K>): ReactElement {
-    let value = useMemo(() => state[stateKey], [state]);
+    let value = useMemo(() => state[stateKey], [state, stateKey]);
     let change = useFieldState(
       useScopedState(stateKey, setState),
     ) as unknown as Dispatch<FieldEvent<string>>;

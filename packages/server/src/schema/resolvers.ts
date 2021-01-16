@@ -85,9 +85,9 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 export type ResolversTypes = ResolversObject<{
   Owner: ResolversTypes['User'] | ResolversTypes['NamedContext'] | ResolversTypes['Project'];
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
+  String: ResolverTypeWrapper<Schema.Scalars['String']>;
   Context: ResolversTypes['User'] | ResolversTypes['NamedContext'];
   User: ResolverTypeWrapper<User>;
-  String: ResolverTypeWrapper<Schema.Scalars['String']>;
   NamedContext: ResolverTypeWrapper<NamedContext>;
   Project: ResolverTypeWrapper<Project>;
   Query: ResolverTypeWrapper<{}>;
@@ -102,9 +102,9 @@ export type ResolversTypes = ResolversObject<{
 export type ResolversParentTypes = ResolversObject<{
   Owner: ResolversParentTypes['User'] | ResolversParentTypes['NamedContext'] | ResolversParentTypes['Project'];
   ID: Schema.Scalars['ID'];
+  String: Schema.Scalars['String'];
   Context: ResolversParentTypes['User'] | ResolversParentTypes['NamedContext'];
   User: User;
-  String: Schema.Scalars['String'];
   NamedContext: NamedContext;
   Project: Project;
   Query: {};
@@ -121,10 +121,12 @@ export type OwnerResolvers<ContextType = ResolverContext, ParentType extends Res
   user?: Resolver<ResolversTypes['User'], ParentType, ContextType>;
   context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  descend?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.OwnerDescendArgs, 'stubs'>>;
 }>;
 
 export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
   __resolveType: TypeResolveFn<'User' | 'NamedContext', ParentType, ContextType>;
+  id?: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
 }>;
 
@@ -137,6 +139,7 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
   context?: Resolver<ResolversTypes['Context'], ParentType, ContextType>;
   projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  descend?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.UserDescendArgs, 'stubs'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -148,6 +151,7 @@ export type NamedContextResolvers<ContextType = ResolverContext, ParentType exte
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   projects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  descend?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.NamedContextDescendArgs, 'stubs'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -161,6 +165,7 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
   stub?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name?: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   subprojects?: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
+  descend?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.ProjectDescendArgs, 'stubs'>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

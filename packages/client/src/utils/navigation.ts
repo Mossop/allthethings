@@ -1,29 +1,64 @@
 import type { Location, Update } from "history";
 import { createBrowserHistory } from "history";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+
+import { useLookupOwnerQuery } from "../schema/queries";
 
 export const history = createBrowserHistory();
 
 export interface PageState {
+  selectedOwner: string | null;
   selectedContext: string | null;
-  selectedProject: string | null;
 }
 
-function buildPageState(_location: Location): PageState {
-  return {
-    selectedContext: null,
-    selectedProject: null,
-  };
+function useLocation(): Location {
+  let [location, setLocation] = useState(history.location);
+
+  let listener = useCallback(({ location }: Update) => {
+    setLocation(location);
+  }, []);
+
+  useEffect(() => history.listen(listener), [listener]);
+
+  return location;
 }
 
 export function usePageState(): PageState {
-  let [pageState, setPageState] = useState(buildPageState(history.location));
+  let [pageState, setPageState] = useState<PageState>({
+    selectedContext: null,
+    selectedOwner: null,
+  });
 
-  let listener = useCallback((update: Update) => {
-    setPageState(buildPageState(update.location));
-  }, []);
+  let { pathname } = useLocation();
+  let stubs = useMemo(() => {
+    let path = pathname.substring(1);
+    while (path.endsWith("/")) {
+      path = path.substring(0, path.length - 1);
+    }
+    if (path.length == 0) {
+      return [];
+    }
+    return path.split("/");
+  }, [pathname]);
 
-  useEffect(() => history.listen(listener), []);
+  let { data } = useLookupOwnerQuery({
+    variables: {
+      stubs,
+    },
+  });
+
+  useEffect(() => {
+    if (data) {
+      setPageState({
+        selectedContext: data.user?.descend?.context.id ?? null,
+        selectedOwner: data.user?.descend?.id ?? null,
+      });
+    }
+  }, [data]);
 
   return pageState;
+}
+
+export function pushState(path: string): void {
+  history.push(path);
 }

@@ -1,4 +1,4 @@
-import { ApolloClient, InMemoryCache, ApolloProvider, createHttpLink } from "@apollo/client";
+import { ApolloProvider } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";

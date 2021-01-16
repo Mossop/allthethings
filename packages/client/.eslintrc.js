@@ -16,6 +16,7 @@ module.exports = {
 
     extends: [
       "plugin:mossop/react",
+      "plugin:react-hooks/recommended",
     ],
 
     rules: {

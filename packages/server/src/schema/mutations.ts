@@ -47,7 +47,7 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createContext: authed(({
+  createNamedContext: authed(({
     args: { params },
     ctx,
   }: AuthedParams<unknown, MutationCreateNamedContextArgs>): Promise<NamedContext> => {

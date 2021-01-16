@@ -3,9 +3,11 @@ interface Owner {
   user: User!
   context: Context!
   subprojects: [Project!]!
+  descend(stubs: [String!]!): Owner
 }
 
 interface Context {
+  id: ID!
   projects: [Project!]!
 }
 
@@ -18,6 +20,7 @@ type User implements Context & Owner {
   context: Context!
   projects: [Project!]!
   subprojects: [Project!]!
+  descend(stubs: [String!]!): Owner
 }
 
 type NamedContext implements Context & Owner {
@@ -28,6 +31,7 @@ type NamedContext implements Context & Owner {
   name: String!
   projects: [Project!]!
   subprojects: [Project!]!
+  descend(stubs: [String!]!): Owner
 }
 
 type Project implements Owner {
@@ -40,6 +44,7 @@ type Project implements Owner {
   stub: String!
   name: String!
   subprojects: [Project!]!
+  descend(stubs: [String!]!): Owner
 }
 
 type Query {

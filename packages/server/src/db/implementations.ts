@@ -90,14 +90,42 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
 }
 
 export type Owner = User | Project | NamedContext;
+export type Context = User | NamedContext;
 
-export abstract class Context<
-  T extends DbObject = DbObject,
-> extends BaseImpl<T> implements SchemaResolver<Schema.Context> {
-  public abstract projects(): Promise<SchemaResolver<readonly Schema.Project[]>>;
+abstract class OwnerImpl<
+  T extends DbObject,
+> extends BaseImpl<T> implements SchemaResolver<Schema.Owner> {
+  public abstract user(): Promise<User>;
+  public abstract context(): Promise<Context>;
+
+  public abstract subprojects(): Promise<readonly Project[]>;
+
+  public async descend({ stubs }: Schema.OwnerDescendArgs): Promise<Owner | null> {
+    if (stubs.length == 0) {
+      return this as unknown as Owner;
+    }
+
+    let projects = await this.subprojects();
+    for (let project of projects) {
+      let stub = await project.stub();
+      if (stub === stubs[0]) {
+        return project.descend({
+          stubs: stubs.slice(1),
+        });
+      }
+    }
+
+    return null;
+  }
 }
 
-export class User extends Context<UserDbObject> implements SchemaResolver<Schema.User> {
+abstract class ContextImpl<
+  T extends DbObject,
+> extends OwnerImpl<T> implements SchemaResolver<Schema.Context> {
+  public abstract projects(): Promise<readonly Project[]>;
+}
+
+export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Schema.User> {
   protected async getDbObject(): Promise<UserDbObject> {
     return assertValid(await this.dataSources.users.findOneById(this.dbId));
   }
@@ -138,10 +166,30 @@ export class User extends Context<UserDbObject> implements SchemaResolver<Schema
       parent: null,
     });
   }
+
+  public async descend({ stubs }: Schema.OwnerDescendArgs): Promise<Owner | null> {
+    if (stubs.length == 0) {
+      return this;
+    }
+
+    let contexts = await this.namedContexts();
+    for (let context of contexts) {
+      let stub = await context.stub();
+      if (stub == stubs[0]) {
+        return context.descend({
+          stubs: stubs.slice(1),
+        });
+      }
+    }
+
+    return super.descend({
+      stubs,
+    });
+  }
 }
 
 export class NamedContext
-  extends Context<NamedContextDbObject> implements SchemaResolver<Schema.NamedContext> {
+  extends ContextImpl<NamedContextDbObject> implements SchemaResolver<Schema.NamedContext> {
   protected async getDbObject(): Promise<NamedContextDbObject> {
     return assertValid(await this.dataSources.namedContexts.findOneById(this.dbId));
   }
@@ -177,7 +225,7 @@ export class NamedContext
   }
 }
 
-export class Project extends BaseImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
+export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
     return assertValid(await this.dataSources.projects.findOneById(this.dbId));
   }
@@ -227,8 +275,8 @@ export class Project extends BaseImpl<ProjectDbObject> implements SchemaResolver
     return (await this.dbObject).name;
   }
 
-  public get stub(): Promise<string> {
-    return this.dbObject.then((obj: NamedContextDbObject) => obj.stub);
+  public async stub(): Promise<string> {
+    return (await this.dbObject).stub;
   }
 
   public async subprojects(): Promise<Project[]> {

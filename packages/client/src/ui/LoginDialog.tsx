@@ -27,7 +27,7 @@ export default ReactMemo(function LoginDialog(): ReactElement {
   let submit = useCallback((event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     void login();
-  }, [state]);
+  }, [login]);
 
   return <Dialog open={true}>
     <form onSubmit={submit}>

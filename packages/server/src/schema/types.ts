@@ -17,9 +17,16 @@ export type Owner = {
   readonly user: User;
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
+  readonly descend?: Maybe<Owner>;
+};
+
+
+export type OwnerDescendArgs = {
+  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Context = {
+  readonly id: Scalars['ID'];
   readonly projects: ReadonlyArray<Project>;
 };
 
@@ -33,6 +40,12 @@ export type User = Context & Owner & {
   readonly context: Context;
   readonly projects: ReadonlyArray<Project>;
   readonly subprojects: ReadonlyArray<Project>;
+  readonly descend?: Maybe<Owner>;
+};
+
+
+export type UserDescendArgs = {
+  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type NamedContext = Context & Owner & {
@@ -44,6 +57,12 @@ export type NamedContext = Context & Owner & {
   readonly name: Scalars['String'];
   readonly projects: ReadonlyArray<Project>;
   readonly subprojects: ReadonlyArray<Project>;
+  readonly descend?: Maybe<Owner>;
+};
+
+
+export type NamedContextDescendArgs = {
+  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Project = Owner & {
@@ -57,6 +76,12 @@ export type Project = Owner & {
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
   readonly subprojects: ReadonlyArray<Project>;
+  readonly descend?: Maybe<Owner>;
+};
+
+
+export type ProjectDescendArgs = {
+  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Query = {

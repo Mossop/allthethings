@@ -18,9 +18,16 @@ export type Owner = {
   user: User;
   context: Context;
   subprojects: Array<Project>;
+  descend?: Maybe<Owner>;
+};
+
+
+export type OwnerDescendArgs = {
+  stubs: Array<Scalars['String']>;
 };
 
 export type Context = {
+  id: Scalars['ID'];
   projects: Array<Project>;
 };
 
@@ -34,6 +41,12 @@ export type User = Context & Owner & {
   context: Context;
   projects: Array<Project>;
   subprojects: Array<Project>;
+  descend?: Maybe<Owner>;
+};
+
+
+export type UserDescendArgs = {
+  stubs: Array<Scalars['String']>;
 };
 
 export type NamedContext = Context & Owner & {
@@ -45,6 +58,12 @@ export type NamedContext = Context & Owner & {
   name: Scalars['String'];
   projects: Array<Project>;
   subprojects: Array<Project>;
+  descend?: Maybe<Owner>;
+};
+
+
+export type NamedContextDescendArgs = {
+  stubs: Array<Scalars['String']>;
 };
 
 export type Project = Owner & {
@@ -58,6 +77,12 @@ export type Project = Owner & {
   stub: Scalars['String'];
   name: Scalars['String'];
   subprojects: Array<Project>;
+  descend?: Maybe<Owner>;
+};
+
+
+export type ProjectDescendArgs = {
+  stubs: Array<Scalars['String']>;
 };
 
 export type Query = {
@@ -121,18 +146,20 @@ export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
 };
 
-export type OwnerKeySpecifier = ('id' | 'user' | 'context' | 'subprojects' | OwnerKeySpecifier)[];
+export type OwnerKeySpecifier = ('id' | 'user' | 'context' | 'subprojects' | 'descend' | OwnerKeySpecifier)[];
 export type OwnerFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
+	descend?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ContextKeySpecifier = ('projects' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('id' | 'projects' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('id' | 'email' | 'password' | 'namedContexts' | 'user' | 'context' | 'projects' | 'subprojects' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('id' | 'email' | 'password' | 'namedContexts' | 'user' | 'context' | 'projects' | 'subprojects' | 'descend' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -141,9 +168,10 @@ export type UserFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
+	descend?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type NamedContextKeySpecifier = ('id' | 'user' | 'context' | 'stub' | 'name' | 'projects' | 'subprojects' | NamedContextKeySpecifier)[];
+export type NamedContextKeySpecifier = ('id' | 'user' | 'context' | 'stub' | 'name' | 'projects' | 'subprojects' | 'descend' | NamedContextKeySpecifier)[];
 export type NamedContextFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -151,9 +179,10 @@ export type NamedContextFieldPolicy = {
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
+	descend?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'namedContext' | 'parent' | 'owner' | 'stub' | 'name' | 'subprojects' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('id' | 'user' | 'context' | 'namedContext' | 'parent' | 'owner' | 'stub' | 'name' | 'subprojects' | 'descend' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -163,7 +192,8 @@ export type ProjectFieldPolicy = {
 	owner?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
+	descend?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type QueryKeySpecifier = ('user' | 'owner' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {

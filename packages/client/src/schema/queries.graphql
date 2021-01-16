@@ -12,6 +12,19 @@ query NamedContexts {
     namedContexts {
       id
       name
+      stub
+    }
+  }
+}
+
+query LookupOwner($stubs: [String!]!) {
+  user {
+    id
+    descend(stubs: $stubs) {
+      id
+      context {
+        id
+      }
     }
   }
 }
