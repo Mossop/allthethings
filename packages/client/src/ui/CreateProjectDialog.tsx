@@ -9,40 +9,40 @@ import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
-import { useCreateNamedContextMutation } from "../schema/mutations";
-import { refetchLookupOwnerQuery, refetchNamedContextsQuery } from "../schema/queries";
+import { useCreateProjectMutation } from "../schema/mutations";
+import { refetchLookupOwnerQuery, refetchListProjectsQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
-interface CreateContextProps {
+interface CreateProjectProps {
   onClose: () => void;
 }
 
-export default ReactMemo(function CreateContextDialog({
+export default ReactMemo(function CreateProjectDialog({
   onClose,
-}: CreateContextProps): ReactElement {
+}: CreateProjectProps): ReactElement {
   let [state, setState] = useState({
     name: "",
   });
 
-  let [createContext] = useCreateNamedContextMutation({
+  let [createProject] = useCreateProjectMutation({
     variables: {
       params: state,
     },
     refetchQueries: [
-      refetchNamedContextsQuery(),
+      refetchListProjectsQuery(),
       refetchLookupOwnerQuery(),
     ],
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    await createContext();
+    await createProject();
     onClose();
-  }, [createContext, onClose]);
+  }, [createProject, onClose]);
 
   return <Dialog open={true} onClose={onClose}>
     <form onSubmit={submit}>
-      <DialogTitle>Create Context</DialogTitle>
+      <DialogTitle>Create Project</DialogTitle>
       <DialogContent>
         <FormControl margin="normal">
           <InputLabel htmlFor="name">Name:</InputLabel>

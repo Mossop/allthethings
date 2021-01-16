@@ -12,5 +12,14 @@ mutation CreateNamedContext($params: CreateNamedContextParams!) {
   createNamedContext(params: $params) {
     id
     name
+    stub
+  }
+}
+
+mutation CreateProject($params: CreateProjectParams!) {
+  createProject(params: $params) {
+    id
+    name
+    stub
   }
 }

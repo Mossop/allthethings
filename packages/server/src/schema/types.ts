@@ -87,7 +87,13 @@ export type ProjectDescendArgs = {
 export type Query = {
   readonly __typename?: 'Query';
   readonly user?: Maybe<User>;
+  readonly context?: Maybe<Context>;
   readonly owner?: Maybe<Owner>;
+};
+
+
+export type QueryContextArgs = {
+  id: Scalars['ID'];
 };
 
 

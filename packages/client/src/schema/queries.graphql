@@ -28,3 +28,16 @@ query LookupOwner($stubs: [String!]!) {
     }
   }
 }
+
+query ListProjects($id: ID!) {
+  context(id: $id) {
+    projects {
+      id
+      stub
+      name
+      parent {
+        id
+      }
+    }
+  }
+}

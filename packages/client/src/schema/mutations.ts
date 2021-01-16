@@ -34,7 +34,20 @@ export type CreateNamedContextMutation = (
   { __typename?: 'Mutation' }
   & { createNamedContext: (
     { __typename?: 'NamedContext' }
-    & Pick<Types.NamedContext, 'id' | 'name'>
+    & Pick<Types.NamedContext, 'id' | 'name' | 'stub'>
+  ) }
+);
+
+export type CreateProjectMutationVariables = Types.Exact<{
+  params: Types.CreateProjectParams;
+}>;
+
+
+export type CreateProjectMutation = (
+  { __typename?: 'Mutation' }
+  & { createProject: (
+    { __typename?: 'Project' }
+    & Pick<Types.Project, 'id' | 'name' | 'stub'>
   ) }
 );
 
@@ -106,6 +119,7 @@ export const CreateNamedContextDocument = gql`
   createNamedContext(params: $params) {
     id
     name
+    stub
   }
 }
     `;
@@ -134,3 +148,37 @@ export function useCreateNamedContextMutation(baseOptions?: Apollo.MutationHookO
 export type CreateNamedContextMutationHookResult = ReturnType<typeof useCreateNamedContextMutation>;
 export type CreateNamedContextMutationResult = Apollo.MutationResult<CreateNamedContextMutation>;
 export type CreateNamedContextMutationOptions = Apollo.BaseMutationOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
+export const CreateProjectDocument = gql`
+    mutation CreateProject($params: CreateProjectParams!) {
+  createProject(params: $params) {
+    id
+    name
+    stub
+  }
+}
+    `;
+export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutation, CreateProjectMutationVariables>;
+
+/**
+ * __useCreateProjectMutation__
+ *
+ * To run a mutation, you first call `useCreateProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateProjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createProjectMutation, { data, loading, error }] = useCreateProjectMutation({
+ *   variables: {
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOptions<CreateProjectMutation, CreateProjectMutationVariables>) {
+        return Apollo.useMutation<CreateProjectMutation, CreateProjectMutationVariables>(CreateProjectDocument, baseOptions);
+      }
+export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProjectMutation>;
+export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
+export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;

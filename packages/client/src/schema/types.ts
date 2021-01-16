@@ -88,7 +88,13 @@ export type ProjectDescendArgs = {
 export type Query = {
   __typename?: 'Query';
   user?: Maybe<User>;
+  context?: Maybe<Context>;
   owner?: Maybe<Owner>;
+};
+
+
+export type QueryContextArgs = {
+  id: Scalars['ID'];
 };
 
 
@@ -195,9 +201,10 @@ export type ProjectFieldPolicy = {
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	descend?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'owner' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'context' | 'owner' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	owner?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type MutationKeySpecifier = ('login' | 'logout' | 'createNamedContext' | 'deleteNamedContext' | 'createProject' | 'deleteProject' | MutationKeySpecifier)[];

@@ -54,6 +54,7 @@ type Project implements Owner @entity {
 
 type Query {
   user: User
+  context(id: ID!): Context
   owner(id: ID!): Owner
 }
 

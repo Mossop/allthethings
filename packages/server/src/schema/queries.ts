@@ -1,6 +1,6 @@
 import { ObjectId } from "mongodb";
 
-import type { NamedContext, Project, User } from "../db";
+import type { Context, Owner, User } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
@@ -23,10 +23,17 @@ const resolvers: QueryResolvers = {
     return user;
   }),
 
+  context: authed(({
+    ctx,
+    args: { id },
+  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Context | null> => {
+    return ctx.getContext(new ObjectId(id));
+  }),
+
   owner: authed(({
     ctx,
     args: { id },
-  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<User | Project | NamedContext> => {
+  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Owner | null> => {
     return ctx.getOwner(new ObjectId(id));
   }),
 };

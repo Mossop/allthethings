@@ -40,6 +40,11 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
         fontSize: "inherit",
       },
     },
+    MuiListItemIcon: {
+      root: {
+        color: "inherit",
+      },
+    },
     MuiFormControl: {
       marginNormal: {
         marginTop: theme.spacing(1),

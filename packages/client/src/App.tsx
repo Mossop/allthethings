@@ -5,6 +5,7 @@ import Loading from "./components/Loading";
 import Page from "./components/Page";
 import { useCurrentUserQuery } from "./schema/queries";
 import LoginDialog from "./ui/LoginDialog";
+import { UserProvider } from "./utils/user";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -30,9 +31,11 @@ export default function App(): ReactElement | null {
   }
 
   if (data?.user) {
-    return <Page>
-      <p>Logged in.</p>
-    </Page>;
+    return <UserProvider value={data.user}>
+      <Page>
+        <p>Logged in.</p>
+      </Page>
+    </UserProvider>;
   }
 
   return <Page>

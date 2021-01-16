@@ -73,6 +73,36 @@ export type LookupOwnerQuery = (
   )> }
 );
 
+export type ListProjectsQueryVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+}>;
+
+
+export type ListProjectsQuery = (
+  { __typename?: 'Query' }
+  & { context?: Types.Maybe<(
+    { __typename?: 'User' }
+    & { projects: Array<(
+      { __typename?: 'Project' }
+      & Pick<Types.Project, 'id' | 'stub' | 'name'>
+      & { parent?: Types.Maybe<(
+        { __typename?: 'Project' }
+        & Pick<Types.Project, 'id'>
+      )> }
+    )> }
+  ) | (
+    { __typename?: 'NamedContext' }
+    & { projects: Array<(
+      { __typename?: 'Project' }
+      & Pick<Types.Project, 'id' | 'stub' | 'name'>
+      & { parent?: Types.Maybe<(
+        { __typename?: 'Project' }
+        & Pick<Types.Project, 'id'>
+      )> }
+    )> }
+  )> }
+);
+
 
 export const CurrentUserDocument = gql`
     query CurrentUser {
@@ -192,4 +222,47 @@ export type LookupOwnerLazyQueryHookResult = ReturnType<typeof useLookupOwnerLaz
 export type LookupOwnerQueryResult = Apollo.QueryResult<LookupOwnerQuery, LookupOwnerQueryVariables>;
 export function refetchLookupOwnerQuery(variables?: LookupOwnerQueryVariables) {
       return { query: LookupOwnerDocument, variables: variables }
+    }
+export const ListProjectsDocument = gql`
+    query ListProjects($id: ID!) {
+  context(id: $id) {
+    projects {
+      id
+      stub
+      name
+      parent {
+        id
+      }
+    }
+  }
+}
+    `;
+
+/**
+ * __useListProjectsQuery__
+ *
+ * To run a query within a React component, call `useListProjectsQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListProjectsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListProjectsQuery({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useListProjectsQuery(baseOptions: Apollo.QueryHookOptions<ListProjectsQuery, ListProjectsQueryVariables>) {
+        return Apollo.useQuery<ListProjectsQuery, ListProjectsQueryVariables>(ListProjectsDocument, baseOptions);
+      }
+export function useListProjectsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListProjectsQuery, ListProjectsQueryVariables>) {
+          return Apollo.useLazyQuery<ListProjectsQuery, ListProjectsQueryVariables>(ListProjectsDocument, baseOptions);
+        }
+export type ListProjectsQueryHookResult = ReturnType<typeof useListProjectsQuery>;
+export type ListProjectsLazyQueryHookResult = ReturnType<typeof useListProjectsLazyQuery>;
+export type ListProjectsQueryResult = Apollo.QueryResult<ListProjectsQuery, ListProjectsQueryVariables>;
+export function refetchListProjectsQuery(variables?: ListProjectsQueryVariables) {
+      return { query: ListProjectsDocument, variables: variables }
     }

@@ -21,6 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
       ...flexRow,
       alignItems: "center",
       minWidth: "auto",
+      textTransform: "none",
     },
     label: {
       width: "auto",
@@ -70,6 +71,14 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
   let { data } = useNamedContextsQuery();
   let contexts = useMemo(() => data?.user?.namedContexts ?? [], [data]);
+
+  let sorted = useMemo(() => {
+    let results = [...contexts];
+    results.sort(
+      (a: { name: string }, b: { name: string }): number => a.name.localeCompare(b.name),
+    );
+    return results;
+  }, [contexts]);
 
   let currentContext = useMemo(
     () => contexts.find((context: { id: string }) => context.id == selectedContext),
@@ -128,7 +137,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
         onClick={closeMenu}
       />
       {
-        contexts.map((context: Pick<NamedContext, "id" | "name" | "stub">) => <ContextMenuItem
+        sorted.map((context: Pick<NamedContext, "id" | "name" | "stub">) => <ContextMenuItem
           key={context.id}
           name={context.name}
           target={`/${context.stub}/`}

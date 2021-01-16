@@ -171,6 +171,7 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   user?: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  context?: Resolver<Schema.Maybe<ResolversTypes['Context']>, ParentType, ContextType, RequireFields<Schema.QueryContextArgs, 'id'>>;
   owner?: Resolver<Schema.Maybe<ResolversTypes['Owner']>, ParentType, ContextType, RequireFields<Schema.QueryOwnerArgs, 'id'>>;
 }>;
 
