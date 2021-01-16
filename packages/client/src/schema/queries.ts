@@ -1,117 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { gql } from '@apollo/client';
+import * as Operations from './operations';
 import * as Apollo from '@apollo/client';
-export type CurrentUserQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
-
-export type CurrentUserQuery = (
-  { __typename?: 'Query' }
-  & { user?: Types.Maybe<(
-    { __typename?: 'User' }
-    & Pick<Types.User, 'id' | 'email'>
-  )> }
-);
-
-export type NamedContextsQueryVariables = Types.Exact<{ [key: string]: never; }>;
-
-
-export type NamedContextsQuery = (
-  { __typename?: 'Query' }
-  & { user?: Types.Maybe<(
-    { __typename?: 'User' }
-    & Pick<Types.User, 'id' | 'email'>
-    & { namedContexts: Array<(
-      { __typename?: 'NamedContext' }
-      & Pick<Types.NamedContext, 'id' | 'name' | 'stub'>
-    )> }
-  )> }
-);
-
-export type LookupOwnerQueryVariables = Types.Exact<{
-  stubs: Array<Types.Scalars['String']> | Types.Scalars['String'];
-}>;
-
-
-export type LookupOwnerQuery = (
-  { __typename?: 'Query' }
-  & { user?: Types.Maybe<(
-    { __typename?: 'User' }
-    & Pick<Types.User, 'id'>
-    & { descend?: Types.Maybe<(
-      { __typename?: 'User' }
-      & Pick<Types.User, 'id'>
-      & { context: (
-        { __typename?: 'User' }
-        & Pick<Types.User, 'id'>
-      ) | (
-        { __typename?: 'NamedContext' }
-        & Pick<Types.NamedContext, 'id'>
-      ) }
-    ) | (
-      { __typename?: 'NamedContext' }
-      & Pick<Types.NamedContext, 'id'>
-      & { context: (
-        { __typename?: 'User' }
-        & Pick<Types.User, 'id'>
-      ) | (
-        { __typename?: 'NamedContext' }
-        & Pick<Types.NamedContext, 'id'>
-      ) }
-    ) | (
-      { __typename?: 'Project' }
-      & Pick<Types.Project, 'id'>
-      & { context: (
-        { __typename?: 'User' }
-        & Pick<Types.User, 'id'>
-      ) | (
-        { __typename?: 'NamedContext' }
-        & Pick<Types.NamedContext, 'id'>
-      ) }
-    )> }
-  )> }
-);
-
-export type ListProjectsQueryVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-}>;
-
-
-export type ListProjectsQuery = (
-  { __typename?: 'Query' }
-  & { context?: Types.Maybe<(
-    { __typename?: 'User' }
-    & { projects: Array<(
-      { __typename?: 'Project' }
-      & Pick<Types.Project, 'id' | 'stub' | 'name'>
-      & { parent?: Types.Maybe<(
-        { __typename?: 'Project' }
-        & Pick<Types.Project, 'id'>
-      )> }
-    )> }
-  ) | (
-    { __typename?: 'NamedContext' }
-    & { projects: Array<(
-      { __typename?: 'Project' }
-      & Pick<Types.Project, 'id' | 'stub' | 'name'>
-      & { parent?: Types.Maybe<(
-        { __typename?: 'Project' }
-        & Pick<Types.Project, 'id'>
-      )> }
-    )> }
-  )> }
-);
-
-
-export const CurrentUserDocument = gql`
-    query CurrentUser {
-  user {
-    id
-    email
-  }
-}
-    `;
 
 /**
  * __useCurrentUserQuery__
@@ -128,31 +20,18 @@ export const CurrentUserDocument = gql`
  *   },
  * });
  */
-export function useCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
-        return Apollo.useQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, baseOptions);
+export function useCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>) {
+        return Apollo.useQuery<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>(Operations.CurrentUser, baseOptions);
       }
-export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<CurrentUserQuery, CurrentUserQueryVariables>) {
-          return Apollo.useLazyQuery<CurrentUserQuery, CurrentUserQueryVariables>(CurrentUserDocument, baseOptions);
+export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>) {
+          return Apollo.useLazyQuery<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>(Operations.CurrentUser, baseOptions);
         }
 export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
 export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
-export type CurrentUserQueryResult = Apollo.QueryResult<CurrentUserQuery, CurrentUserQueryVariables>;
-export function refetchCurrentUserQuery(variables?: CurrentUserQueryVariables) {
-      return { query: CurrentUserDocument, variables: variables }
+export type CurrentUserQueryResult = Apollo.QueryResult<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>;
+export function refetchCurrentUserQuery(variables?: Operations.CurrentUserQueryVariables) {
+      return { query: Operations.CurrentUser, variables: variables }
     }
-export const NamedContextsDocument = gql`
-    query NamedContexts {
-  user {
-    id
-    email
-    namedContexts {
-      id
-      name
-      stub
-    }
-  }
-}
-    `;
 
 /**
  * __useNamedContextsQuery__
@@ -169,31 +48,18 @@ export const NamedContextsDocument = gql`
  *   },
  * });
  */
-export function useNamedContextsQuery(baseOptions?: Apollo.QueryHookOptions<NamedContextsQuery, NamedContextsQueryVariables>) {
-        return Apollo.useQuery<NamedContextsQuery, NamedContextsQueryVariables>(NamedContextsDocument, baseOptions);
+export function useNamedContextsQuery(baseOptions?: Apollo.QueryHookOptions<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>) {
+        return Apollo.useQuery<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>(Operations.NamedContexts, baseOptions);
       }
-export function useNamedContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<NamedContextsQuery, NamedContextsQueryVariables>) {
-          return Apollo.useLazyQuery<NamedContextsQuery, NamedContextsQueryVariables>(NamedContextsDocument, baseOptions);
+export function useNamedContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>) {
+          return Apollo.useLazyQuery<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>(Operations.NamedContexts, baseOptions);
         }
 export type NamedContextsQueryHookResult = ReturnType<typeof useNamedContextsQuery>;
 export type NamedContextsLazyQueryHookResult = ReturnType<typeof useNamedContextsLazyQuery>;
-export type NamedContextsQueryResult = Apollo.QueryResult<NamedContextsQuery, NamedContextsQueryVariables>;
-export function refetchNamedContextsQuery(variables?: NamedContextsQueryVariables) {
-      return { query: NamedContextsDocument, variables: variables }
+export type NamedContextsQueryResult = Apollo.QueryResult<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>;
+export function refetchNamedContextsQuery(variables?: Operations.NamedContextsQueryVariables) {
+      return { query: Operations.NamedContexts, variables: variables }
     }
-export const LookupOwnerDocument = gql`
-    query LookupOwner($stubs: [String!]!) {
-  user {
-    id
-    descend(stubs: $stubs) {
-      id
-      context {
-        id
-      }
-    }
-  }
-}
-    `;
 
 /**
  * __useLookupOwnerQuery__
@@ -211,32 +77,18 @@ export const LookupOwnerDocument = gql`
  *   },
  * });
  */
-export function useLookupOwnerQuery(baseOptions: Apollo.QueryHookOptions<LookupOwnerQuery, LookupOwnerQueryVariables>) {
-        return Apollo.useQuery<LookupOwnerQuery, LookupOwnerQueryVariables>(LookupOwnerDocument, baseOptions);
+export function useLookupOwnerQuery(baseOptions: Apollo.QueryHookOptions<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>) {
+        return Apollo.useQuery<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>(Operations.LookupOwner, baseOptions);
       }
-export function useLookupOwnerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<LookupOwnerQuery, LookupOwnerQueryVariables>) {
-          return Apollo.useLazyQuery<LookupOwnerQuery, LookupOwnerQueryVariables>(LookupOwnerDocument, baseOptions);
+export function useLookupOwnerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>) {
+          return Apollo.useLazyQuery<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>(Operations.LookupOwner, baseOptions);
         }
 export type LookupOwnerQueryHookResult = ReturnType<typeof useLookupOwnerQuery>;
 export type LookupOwnerLazyQueryHookResult = ReturnType<typeof useLookupOwnerLazyQuery>;
-export type LookupOwnerQueryResult = Apollo.QueryResult<LookupOwnerQuery, LookupOwnerQueryVariables>;
-export function refetchLookupOwnerQuery(variables?: LookupOwnerQueryVariables) {
-      return { query: LookupOwnerDocument, variables: variables }
+export type LookupOwnerQueryResult = Apollo.QueryResult<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>;
+export function refetchLookupOwnerQuery(variables?: Operations.LookupOwnerQueryVariables) {
+      return { query: Operations.LookupOwner, variables: variables }
     }
-export const ListProjectsDocument = gql`
-    query ListProjects($id: ID!) {
-  context(id: $id) {
-    projects {
-      id
-      stub
-      name
-      parent {
-        id
-      }
-    }
-  }
-}
-    `;
 
 /**
  * __useListProjectsQuery__
@@ -254,15 +106,15 @@ export const ListProjectsDocument = gql`
  *   },
  * });
  */
-export function useListProjectsQuery(baseOptions: Apollo.QueryHookOptions<ListProjectsQuery, ListProjectsQueryVariables>) {
-        return Apollo.useQuery<ListProjectsQuery, ListProjectsQueryVariables>(ListProjectsDocument, baseOptions);
+export function useListProjectsQuery(baseOptions: Apollo.QueryHookOptions<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>) {
+        return Apollo.useQuery<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>(Operations.ListProjects, baseOptions);
       }
-export function useListProjectsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListProjectsQuery, ListProjectsQueryVariables>) {
-          return Apollo.useLazyQuery<ListProjectsQuery, ListProjectsQueryVariables>(ListProjectsDocument, baseOptions);
+export function useListProjectsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>) {
+          return Apollo.useLazyQuery<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>(Operations.ListProjects, baseOptions);
         }
 export type ListProjectsQueryHookResult = ReturnType<typeof useListProjectsQuery>;
 export type ListProjectsLazyQueryHookResult = ReturnType<typeof useListProjectsLazyQuery>;
-export type ListProjectsQueryResult = Apollo.QueryResult<ListProjectsQuery, ListProjectsQueryVariables>;
-export function refetchListProjectsQuery(variables?: ListProjectsQueryVariables) {
-      return { query: ListProjectsDocument, variables: variables }
+export type ListProjectsQueryResult = Apollo.QueryResult<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>;
+export function refetchListProjectsQuery(variables?: Operations.ListProjectsQueryVariables) {
+      return { query: Operations.ListProjects, variables: variables }
     }

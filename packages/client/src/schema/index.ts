@@ -1,13 +1,13 @@
 import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
 
-export function connect(): ApolloClient<unknown> {
-  let link = createHttpLink({
+export const client = new ApolloClient({
+  link: createHttpLink({
     uri: "/graphql",
     credentials: "same-origin",
-  });
+  }),
+  cache: new InMemoryCache(),
+});
 
-  return new ApolloClient({
-    link,
-    cache: new InMemoryCache(),
-  });
+export function connect(): ApolloClient<unknown> {
+  return client;
 }

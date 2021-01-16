@@ -8,7 +8,7 @@ import md5 from "md5";
 import { useCallback } from "react";
 
 import { useLogoutMutation } from "../schema/mutations";
-import type { CurrentUserQuery } from "../schema/queries";
+import type { CurrentUserQuery } from "../schema/operations";
 import { refetchCurrentUserQuery } from "../schema/queries";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";

@@ -31,6 +31,9 @@ query LookupOwner($stubs: [String!]!) {
 
 query ListProjects($id: ID!) {
   context(id: $id) {
+    ... on NamedContext {
+      stub
+    }
     projects {
       id
       stub

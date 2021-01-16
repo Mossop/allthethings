@@ -8,13 +8,13 @@ import { Suspense } from "react";
 
 import { useCurrentUserQuery } from "../schema/queries";
 import ContextMenu from "../ui/ContextMenu";
+import ProjectList from "../ui/ProjectList";
 import UserMenu from "../ui/UserMenu";
-import { usePageState } from "../utils/navigation";
+import { useView } from "../utils/navigation";
 import { flexColumn, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import Loading from "./Loading";
-import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -69,29 +69,11 @@ const PageControls = ReactMemo(function PageControls(): ReactResult {
   </div>;
 });
 
-interface SidebarProps {
-  selectedContext: string;
-  selectedOwner: string;
-}
-
-const Sidebar = ReactMemo(function Sidebar({
-  selectedContext,
-  selectedOwner,
-}: SidebarProps): ReactResult {
-  return <Paper elevation={1} component="nav">
-    <ProjectList
-      selectedContext={selectedContext}
-      selectedOwner={selectedOwner}
-    />
-  </Paper>;
-});
-
 export default ReactMemo(function Page({
   children,
 }: PageProps): ReactResult {
   let classes = useStyles();
-
-  let { selectedContext, selectedOwner } = usePageState();
+  let view = useView();
 
   return <div className={clsx(classes.outer)}>
     <AppBar
@@ -103,16 +85,19 @@ export default ReactMemo(function Page({
       <h1 className={classes.title}>AllTheThings</h1>
       <PageControls/>
     </AppBar>
-    <div className={classes.contentSplit}>
-      {
-        selectedContext && selectedOwner && <Sidebar
-          selectedContext={selectedContext}
-          selectedOwner={selectedOwner}
-        />
-      }
-      <Suspense fallback={<Loading className={classes.loading}/>}>
-        {children}
-      </Suspense>
-    </div>
+    {
+      view
+        ? <div className={classes.contentSplit}>
+          <Paper elevation={1} component="nav">
+            <ProjectList view={view}/>
+          </Paper>
+          <Suspense fallback={<Loading className={classes.loading}/>}>
+            {children}
+          </Suspense>
+        </div>
+        : <Suspense fallback={<Loading className={classes.loading}/>}>
+          {children}
+        </Suspense>
+    }
   </div>;
 });

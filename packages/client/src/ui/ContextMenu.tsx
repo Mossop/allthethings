@@ -9,7 +9,7 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 import { ContextIcon } from "../components/Icons";
 import { useNamedContextsQuery } from "../schema/queries";
 import type { NamedContext } from "../schema/types";
-import { pushState, usePageState } from "../utils/navigation";
+import { pushState, useView } from "../utils/navigation";
 import { flexRow } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -66,7 +66,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  let { selectedContext } = usePageState();
+  let view = useView();
 
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
   let { data } = useNamedContextsQuery();
@@ -81,8 +81,8 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   }, [contexts]);
 
   let currentContext = useMemo(
-    () => contexts.find((context: { id: string }) => context.id == selectedContext),
-    [contexts, selectedContext],
+    () => contexts.find((context: { id: string }) => context.id == view?.selectedContext),
+    [contexts, view],
   );
 
   let closeMenu = useCallback(() => {
@@ -97,6 +97,10 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let closeCreateDialog = useCallback(() => {
     setShowCreateDialog(false);
   }, []);
+
+  if (!view) {
+    return null;
+  }
 
   return <>
     <Button

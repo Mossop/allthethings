@@ -1,65 +1,10 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { gql } from '@apollo/client';
+import * as Operations from './operations';
 import * as Apollo from '@apollo/client';
-export type LoginMutationVariables = Types.Exact<{
-  email: Types.Scalars['String'];
-  password: Types.Scalars['String'];
-}>;
 
-
-export type LoginMutation = (
-  { __typename?: 'Mutation' }
-  & { login?: Types.Maybe<(
-    { __typename?: 'User' }
-    & Pick<Types.User, 'email'>
-  )> }
-);
-
-export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
-
-
-export type LogoutMutation = (
-  { __typename?: 'Mutation' }
-  & Pick<Types.Mutation, 'logout'>
-);
-
-export type CreateNamedContextMutationVariables = Types.Exact<{
-  params: Types.CreateNamedContextParams;
-}>;
-
-
-export type CreateNamedContextMutation = (
-  { __typename?: 'Mutation' }
-  & { createNamedContext: (
-    { __typename?: 'NamedContext' }
-    & Pick<Types.NamedContext, 'id' | 'name' | 'stub'>
-  ) }
-);
-
-export type CreateProjectMutationVariables = Types.Exact<{
-  params: Types.CreateProjectParams;
-}>;
-
-
-export type CreateProjectMutation = (
-  { __typename?: 'Mutation' }
-  & { createProject: (
-    { __typename?: 'Project' }
-    & Pick<Types.Project, 'id' | 'name' | 'stub'>
-  ) }
-);
-
-
-export const LoginDocument = gql`
-    mutation Login($email: String!, $password: String!) {
-  login(email: $email, password: $password) {
-    email
-  }
-}
-    `;
-export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutationVariables>;
+export type LoginMutationFn = Apollo.MutationFunction<Operations.LoginMutation, Operations.LoginMutationVariables>;
 
 /**
  * __useLoginMutation__
@@ -79,18 +24,13 @@ export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutati
  *   },
  * });
  */
-export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
-        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, baseOptions);
+export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<Operations.LoginMutation, Operations.LoginMutationVariables>) {
+        return Apollo.useMutation<Operations.LoginMutation, Operations.LoginMutationVariables>(Operations.Login, baseOptions);
       }
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
-export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
-export type LoginMutationOptions = Apollo.BaseMutationOptions<LoginMutation, LoginMutationVariables>;
-export const LogoutDocument = gql`
-    mutation Logout {
-  logout
-}
-    `;
-export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMutationVariables>;
+export type LoginMutationResult = Apollo.MutationResult<Operations.LoginMutation>;
+export type LoginMutationOptions = Apollo.BaseMutationOptions<Operations.LoginMutation, Operations.LoginMutationVariables>;
+export type LogoutMutationFn = Apollo.MutationFunction<Operations.LogoutMutation, Operations.LogoutMutationVariables>;
 
 /**
  * __useLogoutMutation__
@@ -108,22 +48,13 @@ export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMut
  *   },
  * });
  */
-export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<LogoutMutation, LogoutMutationVariables>) {
-        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, baseOptions);
+export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Operations.LogoutMutation, Operations.LogoutMutationVariables>) {
+        return Apollo.useMutation<Operations.LogoutMutation, Operations.LogoutMutationVariables>(Operations.Logout, baseOptions);
       }
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
-export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
-export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
-export const CreateNamedContextDocument = gql`
-    mutation CreateNamedContext($params: CreateNamedContextParams!) {
-  createNamedContext(params: $params) {
-    id
-    name
-    stub
-  }
-}
-    `;
-export type CreateNamedContextMutationFn = Apollo.MutationFunction<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
+export type LogoutMutationResult = Apollo.MutationResult<Operations.LogoutMutation>;
+export type LogoutMutationOptions = Apollo.BaseMutationOptions<Operations.LogoutMutation, Operations.LogoutMutationVariables>;
+export type CreateNamedContextMutationFn = Apollo.MutationFunction<Operations.CreateNamedContextMutation, Operations.CreateNamedContextMutationVariables>;
 
 /**
  * __useCreateNamedContextMutation__
@@ -142,22 +73,13 @@ export type CreateNamedContextMutationFn = Apollo.MutationFunction<CreateNamedCo
  *   },
  * });
  */
-export function useCreateNamedContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>) {
-        return Apollo.useMutation<CreateNamedContextMutation, CreateNamedContextMutationVariables>(CreateNamedContextDocument, baseOptions);
+export function useCreateNamedContextMutation(baseOptions?: Apollo.MutationHookOptions<Operations.CreateNamedContextMutation, Operations.CreateNamedContextMutationVariables>) {
+        return Apollo.useMutation<Operations.CreateNamedContextMutation, Operations.CreateNamedContextMutationVariables>(Operations.CreateNamedContext, baseOptions);
       }
 export type CreateNamedContextMutationHookResult = ReturnType<typeof useCreateNamedContextMutation>;
-export type CreateNamedContextMutationResult = Apollo.MutationResult<CreateNamedContextMutation>;
-export type CreateNamedContextMutationOptions = Apollo.BaseMutationOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
-export const CreateProjectDocument = gql`
-    mutation CreateProject($params: CreateProjectParams!) {
-  createProject(params: $params) {
-    id
-    name
-    stub
-  }
-}
-    `;
-export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutation, CreateProjectMutationVariables>;
+export type CreateNamedContextMutationResult = Apollo.MutationResult<Operations.CreateNamedContextMutation>;
+export type CreateNamedContextMutationOptions = Apollo.BaseMutationOptions<Operations.CreateNamedContextMutation, Operations.CreateNamedContextMutationVariables>;
+export type CreateProjectMutationFn = Apollo.MutationFunction<Operations.CreateProjectMutation, Operations.CreateProjectMutationVariables>;
 
 /**
  * __useCreateProjectMutation__
@@ -176,9 +98,9 @@ export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutat
  *   },
  * });
  */
-export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOptions<CreateProjectMutation, CreateProjectMutationVariables>) {
-        return Apollo.useMutation<CreateProjectMutation, CreateProjectMutationVariables>(CreateProjectDocument, baseOptions);
+export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOptions<Operations.CreateProjectMutation, Operations.CreateProjectMutationVariables>) {
+        return Apollo.useMutation<Operations.CreateProjectMutation, Operations.CreateProjectMutationVariables>(Operations.CreateProject, baseOptions);
       }
 export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProjectMutation>;
-export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
-export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
+export type CreateProjectMutationResult = Apollo.MutationResult<Operations.CreateProjectMutation>;
+export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<Operations.CreateProjectMutation, Operations.CreateProjectMutationVariables>;

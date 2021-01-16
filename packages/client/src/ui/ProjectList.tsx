@@ -8,14 +8,14 @@ import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useState, useCallback, useMemo } from "react";
 
+import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
 import { useListProjectsQuery } from "../schema/queries";
-import CreateProjectDialog from "../ui/CreateProjectDialog";
 import { upsert } from "../utils/collections";
-import { pushState } from "../utils/navigation";
+import type { View } from "../utils/navigation";
+import { pushState, ViewType } from "../utils/navigation";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult } from "../utils/types";
-import { useUser } from "../utils/user";
-import { AddProjectIcon, ProjectIcon } from "./Icons";
+import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
   depth: number;
@@ -120,7 +120,7 @@ interface Project {
 interface ProjectItemProps {
   map: Map<string | null, Project[]>;
   project: Project;
-  selectedOwner: string;
+  selectedOwner: string | null;
   baseUrl: string;
   depth: number
 }
@@ -162,20 +162,18 @@ const ProjectItem = ReactMemo(function ProjectItem({
   </>;
 });
 
-export interface ProjectListProps {
-  selectedContext: string;
-  selectedOwner: string;
+interface ProjectListProps {
+  view: View;
 }
 
 export default ReactMemo(function ProjectList({
-  selectedContext,
-  selectedOwner,
+  view,
 }: ProjectListProps): ReactResult {
-  let user = useUser();
+  let selectedOwner = "selectedOwner" in view ? view.selectedOwner : null;
 
   let { data } = useListProjectsQuery({
     variables: {
-      id: selectedContext,
+      id: view.selectedContext,
     },
   });
 
@@ -193,7 +191,7 @@ export default ReactMemo(function ProjectList({
   }, [data]);
 
   let projects = projectMap.get(null);
-  let baseUrl = selectedContext == user.id ? "/" : `/${selectedContext}/`;
+  let baseUrl = data?.context?.__typename == "NamedContext" ? `/${data.context.stub}/` : "/";
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   let openCreateProjectDialog = useCallback(() => {
@@ -206,9 +204,16 @@ export default ReactMemo(function ProjectList({
   return <>
     <List component="div">
       <Item
+        href={`${baseUrl}inbox`}
+        icon={<InboxIcon/>}
+        selected={view.type == ViewType.Inbox}
+        label="Inbox"
+        depth={0}
+      />
+      <Item
         href={baseUrl}
         icon={<ProjectIcon/>}
-        selected={selectedOwner == selectedContext}
+        selected={selectedOwner == view.selectedContext}
         label="Uncategorized"
         depth={0}
       />
