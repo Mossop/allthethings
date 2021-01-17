@@ -13,18 +13,21 @@ export enum ViewType {
 
 export interface NotFoundView {
   readonly type: ViewType.NotFound;
-  readonly selectedContext: string | null;
+  readonly user: User;
+  readonly selectedNamedContext: NamedContext | null;
 }
 
 export interface InboxView {
   readonly type: ViewType.Inbox;
-  readonly selectedContext: string | null;
+  readonly user: User;
+  readonly selectedNamedContext: NamedContext | null;
 }
 
 export interface OwnerView {
   readonly type: ViewType.Owner;
-  readonly selectedOwner: string;
-  readonly selectedContext: string | null;
+  readonly user: User;
+  readonly selectedOwner: User | NamedContext | Project;
+  readonly selectedNamedContext: NamedContext | null;
 }
 
 export type View = NotFoundView | InboxView | OwnerView;
@@ -41,10 +44,11 @@ export class NavigationHandler {
     this.update(history.location);
   }
 
-  private notFound(selectedContext: string | null = null): void {
+  private notFound(selectedContext: NamedContext | null = null): void {
     this.setView({
       type: ViewType.NotFound,
-      selectedContext,
+      user: this.user,
+      selectedNamedContext: selectedContext,
     });
   }
 
@@ -52,7 +56,7 @@ export class NavigationHandler {
     let pathParts = location.pathname.substring(1).split("/");
 
     let currentContext: User | NamedContext = this.user;
-    let selectedContext: string | null = null;
+    let selectedNamedContext: NamedContext | null = null;
 
     let part = pathParts.shift();
     if (part == "context") {
@@ -70,27 +74,29 @@ export class NavigationHandler {
       }
 
       currentContext = inner;
-      selectedContext = currentContext.id;
+      selectedNamedContext = inner;
       part = pathParts.shift();
     }
 
     switch (part) {
       case "":
         if (pathParts.length) {
-          return this.notFound(selectedContext);
+          return this.notFound(selectedNamedContext);
         }
         return this.setView({
           type: ViewType.Owner,
-          selectedContext,
-          selectedOwner: currentContext.id,
+          user: this.user,
+          selectedNamedContext,
+          selectedOwner: currentContext,
         });
       case "inbox":
         if (pathParts.length) {
-          return this.notFound(selectedContext);
+          return this.notFound(selectedNamedContext);
         }
         return this.setView({
           type: ViewType.Inbox,
-          selectedContext,
+          user: this.user,
+          selectedNamedContext,
         });
       case "project": {
         let owner: User | NamedContext | Project = currentContext;
@@ -98,7 +104,7 @@ export class NavigationHandler {
         while (part) {
           let inner = descend(owner, part);
           if (!inner) {
-            return this.notFound(selectedContext);
+            return this.notFound(selectedNamedContext);
           }
           owner = inner;
 
@@ -106,17 +112,18 @@ export class NavigationHandler {
         }
 
         if (!Object.is(part, "") || pathParts.length) {
-          return this.notFound(selectedContext);
+          return this.notFound(selectedNamedContext);
         }
 
         return this.setView({
           type: ViewType.Owner,
-          selectedContext,
-          selectedOwner: owner.id,
+          user: this.user,
+          selectedNamedContext,
+          selectedOwner: owner,
         });
       }
       default:
-        return this.notFound(selectedContext);
+        return this.notFound(selectedNamedContext);
     }
   }
 

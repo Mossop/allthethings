@@ -13,7 +13,7 @@ import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
 import type { View } from "../utils/navigation";
 import { pushState, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { Project } from "../utils/state";
+import type { NamedContext, Project, User } from "../utils/state";
 import { useCurrentContext } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult } from "../utils/types";
@@ -126,7 +126,7 @@ const Item = ReactMemo(function Item({
 
 interface ProjectItemProps {
   project: Project;
-  selectedOwner: string | null;
+  selectedOwner: User | NamedContext | Project | null;
   depth: number
 }
 
@@ -135,7 +135,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
   selectedOwner,
   depth,
 }: ProjectItemProps): ReactResult {
-  let selected = project.id == selectedOwner;
+  let selected = project.id == selectedOwner?.id;
 
   return <>
     <Item
@@ -196,7 +196,7 @@ export default ReactMemo(function ProjectList({
       <Item
         href={context.baseUrl}
         icon={<ProjectIcon/>}
-        selected={view.type == ViewType.Owner && selectedOwner == context.id}
+        selected={view.type == ViewType.Owner && selectedOwner?.id == context.id}
         label="Tasks"
         depth={0}
       />

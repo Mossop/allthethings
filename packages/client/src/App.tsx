@@ -39,25 +39,19 @@ export default function App(): ReactResult {
   let state = useState();
   let classes = useStyles();
 
-  if (!state) {
+  if (state === undefined) {
     return <Page>
       <Loading className={classes.content}/>
     </Page>;
   }
 
-  if (!state.user) {
+  if (!state) {
     return <Page>
       <LoginDialog/>
     </Page>;
   }
 
-  if (!state.view) {
-    return <Page>
-      <Loading className={classes.content}/>
-    </Page>;
-  }
-
   return <Page>
-    <PageContent view={state.view}/>
+    <PageContent view={state}/>
   </Page>;
 }

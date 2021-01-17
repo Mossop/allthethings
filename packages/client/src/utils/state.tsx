@@ -33,19 +33,14 @@ export function isNamedContext(context: User | NamedContext): context is NamedCo
   return "name" in context;
 }
 
-interface AppState {
-  readonly user: User | null;
-  readonly view: View | null;
-}
+const StateContext = createContext<View | null | undefined>(null);
 
-const StateContext = createContext<AppState | null>(null);
-
-export function useState(): AppState | null {
+export function useState(): View | null | undefined {
   return useReactContext(StateContext);
 }
 
 export function useView(): View | null {
-  return useState()?.view ?? null;
+  return useState() ?? null;
 }
 
 export function useUser(): User | null {
@@ -53,32 +48,21 @@ export function useUser(): User | null {
 }
 
 export function useNamedContexts(): readonly NamedContext[] {
-  return useState()?.user?.namedContexts ?? [];
+  return useUser()?.namedContexts ?? [];
 }
 
 export function useCurrentContext(): User | NamedContext | null {
   let state = useState();
-  if (!state || !state.user || !state.view) {
+  if (!state) {
     return null;
   }
 
-  let { view: { selectedContext }, user } = state;
-  if (!selectedContext) {
-    return user;
-  }
-
-  return user.namedContexts.find(
-    (context: NamedContext): boolean => context.id == selectedContext,
-  ) ?? null;
+  return state.selectedNamedContext ?? state.user;
 }
 
 export function useCurrentNamedContext(): NamedContext | null {
-  let context = useCurrentContext();
-  if (context && isNamedContext(context)) {
-    return context;
-  }
-
-  return null;
+  let state = useState();
+  return state?.selectedNamedContext ?? null;
 }
 
 interface ProjectData {
@@ -133,7 +117,7 @@ function buildProjects(context: ContextData, baseUrl: string): readonly Project[
 
 export function StateListener({ children }: ReactChildren): ReactResult {
   let { loading, data } = useListContextStateQuery();
-  let [view, setView] = useReactState<View | null>(null);
+  let [view, setView] = useReactState<View | null | undefined>(undefined);
 
   let user = useMemo((): User | null => {
     if (!data?.user) {
@@ -160,24 +144,17 @@ export function StateListener({ children }: ReactChildren): ReactResult {
   }, [data]);
 
   useEffect(() => {
+    if (loading) {
+      return;
+    }
+
     if (!user) {
       setView(null);
       return;
     }
 
     return NavigationHandler.watchHistory(user, setView);
-  }, [user, setView]);
+  }, [loading, user, setView]);
 
-  let state = useMemo(() => {
-    if (loading) {
-      return null;
-    }
-
-    return {
-      user,
-      view,
-    };
-  }, [loading, user, view]);
-
-  return <StateContext.Provider value={state}>{children}</StateContext.Provider>;
+  return <StateContext.Provider value={view}>{children}</StateContext.Provider>;
 }
