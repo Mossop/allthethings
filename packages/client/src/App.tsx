@@ -2,8 +2,12 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import Loading from "./components/Loading";
 import Page from "./components/Page";
+import Inbox from "./ui/Inbox";
 import LoginDialog from "./ui/LoginDialog";
+import NotFound from "./ui/NotFound";
+import Owner from "./ui/Owner";
 import type { View } from "./utils/navigation";
+import { ViewType } from "./utils/navigation";
 import { useState } from "./utils/state";
 import type { ReactResult } from "./utils/types";
 
@@ -21,7 +25,14 @@ interface PageContentProps {
 function PageContent({
   view,
 }: PageContentProps): ReactResult {
-  return <p>Hi</p>;
+  switch (view.type) {
+    case ViewType.Inbox:
+      return <Inbox view={view}/>;
+    case ViewType.Owner:
+      return <Owner view={view}/>;
+    case ViewType.NotFound:
+      return <NotFound view={view}/>;
+  }
 }
 
 export default function App(): ReactResult {

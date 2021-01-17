@@ -5,13 +5,14 @@ import clsx from "clsx";
 import { forwardRef } from "react";
 
 import type { ReactRef, ReactResult } from "../utils/types";
+import { ReactMemo } from "../utils/types";
 
 type Classes = typeof useTextStyles extends () => Record<infer K, unknown> ? K : never;
 
 export const useTextStyles = makeStyles(() =>
   createStyles({
     text: {
-      fontSize: "1.05rem",
+      fontSize: "1rem",
     },
   }));
 
@@ -39,7 +40,7 @@ function textBlock(
   // @ts-ignore
   Element.displayName = name;
 
-  return forwardRef(Element);
+  return ReactMemo(forwardRef(Element));
 }
 
 export const Text = textBlock("Text", "p", "text");

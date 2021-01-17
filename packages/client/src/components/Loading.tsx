@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 
 import { flexCentered } from "../utils/styles";
+import { ReactMemo } from "../utils/types";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -12,7 +13,7 @@ const useStyles = makeStyles(() =>
     },
   }));
 
-export default function Loading({
+export default ReactMemo(function Loading({
   className,
   ...divProps
 }: HTMLAttributes<HTMLDivElement>): React.ReactElement {
@@ -24,4 +25,4 @@ export default function Loading({
   >
     <CircularProgress/>
   </div>;
-}
+});

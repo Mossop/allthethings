@@ -1,3 +1,4 @@
+import type { Theme } from "@material-ui/core/styles";
 import type { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 const flex: CSSProperties = {
@@ -21,3 +22,9 @@ export const flexCentered: CSSProperties = {
   alignItems: "center",
   justifyContent: "center",
 };
+
+export function pageStyles(theme: Theme): CSSProperties {
+  return {
+    padding: theme.spacing(3),
+  };
+}
