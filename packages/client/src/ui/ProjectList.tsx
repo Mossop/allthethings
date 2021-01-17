@@ -29,6 +29,9 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingTop: theme.spacing(2),
       paddingBottom: 0,
     },
+    innerList: {
+      padding: 0,
+    },
     divider: {
       marginTop: theme.spacing(1),
       marginBottom: theme.spacing(1),
@@ -136,6 +139,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
   depth,
 }: ProjectItemProps): ReactResult {
   let selected = project.id == selectedOwner?.id;
+  let classes = useStyles({ depth });
 
   return <>
     <Item
@@ -146,7 +150,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
       icon={<ProjectIcon/>}
     />
     {
-      project.subprojects.length > 0 && <List>
+      project.subprojects.length > 0 && <List className={classes.innerList}>
         {
           nameSorted(project.subprojects).map((child: Project) => <ProjectItem
             key={child.id}

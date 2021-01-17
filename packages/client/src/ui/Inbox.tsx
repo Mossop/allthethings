@@ -6,6 +6,7 @@ import type { InboxView } from "../utils/navigation";
 import { pageStyles } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
+import AddDial from "./AddDial";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -17,6 +18,11 @@ const useStyles = makeStyles((theme: Theme) =>
       ...pageStyles(theme),
       height: "100%",
       width: "100%",
+    },
+    floatingAction: {
+      position: "absolute",
+      bottom: theme.spacing(4),
+      right: theme.spacing(4),
     },
   }));
 
@@ -32,6 +38,9 @@ export default ReactMemo(function Inbox({
   return <div className={classes.outer}>
     <div className={classes.content}>
       <Text>Inbox</Text>
+    </div>
+    <div className={classes.floatingAction}>
+      <AddDial viewType={view.type} owner={view.selectedNamedContext ?? view.user}/>
     </div>
   </div>;
 });

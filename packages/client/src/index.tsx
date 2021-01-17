@@ -31,9 +31,15 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
         },
       },
     },
-    MuiSvgIcon: {
-      root: {
-        fontSize: "inherit",
+    // @ts-ignore
+    MuiSpeedDialIcon: {
+      icon: {
+        fontSize: theme.typography.pxToRem(24),
+      },
+    },
+    MuiSpeedDialAction: {
+      fab: {
+        fontSize: theme.typography.pxToRem(24),
       },
     },
     MuiIconButton: {

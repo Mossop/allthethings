@@ -106,7 +106,7 @@ function buildProjects(context: ContextData, baseUrl: string): readonly Project[
         subprojects: [],
       };
 
-      project.subprojects = buildProjects(data.subprojects, baseUrl, project);
+      project.subprojects = buildProjects(data.subprojects, projectUrl, project);
 
       return project;
     });
