@@ -12,15 +12,9 @@ import type { User } from "./user";
 export const history = createBrowserHistory();
 
 export enum ViewType {
-  Pending = "pending",
   Owner = "owner",
   Inbox = "inbox",
   NotFound = "notfound",
-}
-
-export interface PendingView {
-  readonly type: ViewType.Pending;
-  readonly selectedContext: string;
 }
 
 export interface NotFoundView {
@@ -39,7 +33,7 @@ export interface OwnerView {
   readonly selectedContext: string;
 }
 
-export type View = PendingView | NotFoundView | InboxView | OwnerView;
+export type View = NotFoundView | InboxView | OwnerView;
 
 type Listener = (view: View | null) => void;
 

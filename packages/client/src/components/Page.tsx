@@ -88,7 +88,7 @@ export default ReactMemo(function Page({
     {
       view
         ? <div className={classes.contentSplit}>
-          <Paper elevation={1} component="nav">
+          <Paper elevation={2} component="nav" square={true}>
             <ProjectList view={view}/>
           </Paper>
           <Suspense fallback={<Loading className={classes.loading}/>}>

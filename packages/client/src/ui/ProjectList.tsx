@@ -1,3 +1,4 @@
+import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
@@ -23,13 +24,24 @@ interface StyleProps {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    list: {
+      paddingTop: theme.spacing(2),
+      paddingBottom: 0,
+    },
+    divider: {
+      marginTop: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+      marginLeft: theme.spacing(1),
+      marginRight: theme.spacing(1),
+    },
     icon: {
       paddingRight: theme.spacing(1),
       minWidth: theme.spacing(1) + 24,
       fontSize: theme.typography.pxToRem(24),
     },
     item: ({ depth }: StyleProps) => ({
-      paddingLeft: theme.spacing(2 + depth * 2),
+      paddingLeft: theme.spacing(3 + depth * 2),
+      paddingRight: theme.spacing(3),
     }),
     selectedItem: {
       backgroundColor: theme.palette.text.secondary,
@@ -169,6 +181,7 @@ interface ProjectListProps {
 export default ReactMemo(function ProjectList({
   view,
 }: ProjectListProps): ReactResult {
+  let classes = useStyles({ depth: 0 });
   let selectedOwner = "selectedOwner" in view ? view.selectedOwner : null;
 
   let { data } = useListProjectsQuery({
@@ -202,7 +215,7 @@ export default ReactMemo(function ProjectList({
   }, []);
 
   return <>
-    <List component="div">
+    <List component="div" className={classes.list}>
       <Item
         href={`${baseUrl}inbox`}
         icon={<InboxIcon/>}
@@ -214,9 +227,10 @@ export default ReactMemo(function ProjectList({
         href={baseUrl}
         icon={<ProjectIcon/>}
         selected={selectedOwner == view.selectedContext}
-        label="Uncategorized"
+        label="Tasks"
         depth={0}
       />
+      <Divider className={classes.divider}/>
       {
         projects?.map((project: Project) => <ProjectItem
           key={project.id}
