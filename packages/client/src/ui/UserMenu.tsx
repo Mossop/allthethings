@@ -8,8 +8,8 @@ import md5 from "md5";
 import { useCallback } from "react";
 
 import { useLogoutMutation } from "../schema/mutations";
-import type { CurrentUserQuery } from "../schema/operations";
-import { refetchCurrentUserQuery } from "../schema/queries";
+import { refetchListContextStateQuery } from "../schema/queries";
+import type { User } from "../utils/state";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 
@@ -31,7 +31,7 @@ const useStyles = makeStyles(() =>
   }));
 
 interface UserMenuProps {
-  user: NonNullable<CurrentUserQuery["user"]>;
+  user: User;
 }
 
 export default ReactMemo(function UserMenu({
@@ -39,7 +39,7 @@ export default ReactMemo(function UserMenu({
 }: UserMenuProps): ReactResult {
   let classes = useStyles();
   let [logout] = useLogoutMutation({
-    refetchQueries: [refetchCurrentUserQuery()],
+    refetchQueries: [refetchListContextStateQuery()],
   });
   let userMenuState = usePopupState({ variant: "popover", popupId: "user-menu" });
 

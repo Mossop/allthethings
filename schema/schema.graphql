@@ -1,61 +1,74 @@
 interface Owner {
   id: ID!
-  user: User!
   context: Context!
-
   subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
+  projectByStubs(stubs: [String!]!): Project
 }
 
-interface Context {
+interface Context implements Owner {
+  # Owner
   id: ID!
+  context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+
   projects: [Project!]!
+  projectById(id: ID!): Project
 }
 
 type User implements Context & Owner @entity {
+  # Owner
   id: ID! @id
+  context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+
+  # Context
+  projects: [Project!]!
+  projectById(id: ID!): Project
+
   email: String! @column
   password: String! @column
-
   namedContexts: [NamedContext!]!
-
-  user: User!
-  context: Context!
-  projects: [Project!]!
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
 }
 
 type NamedContext implements Context & Owner @entity {
+  # Owner
   id: ID! @id
-  user: User! @link
   context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+
+  # Context
+  projects: [Project!]!
+  projectById(id: ID!): Project
+
+  user: User! @link
   stub: String! @column
   name: String! @column
-
-  projects: [Project!]!
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
 }
 
-type Project implements Owner @entity {
+type Project implements Owner @entity(additionalFields: [
+  { path: "parent", type: "ObjectID | null" },
+  { path: "user", type: "ObjectID" },
+  { path: "namedContext", type: "ObjectID | null" },
+]) {
+  # Owner
   id: ID! @id
-  user: User! @link
   context: Context!
-  namedContext: NamedContext @link
-  parent: Project @link
-  owner: Owner!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+
   stub: String! @column
   name: String! @column
-
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
+  owner: Owner!
 }
 
 type Query {
   user: User
-  context(id: ID!): Context
+
   owner(id: ID!): Owner
+  context(id: ID!): Context
 }
 
 input CreateNamedContextParams {

@@ -84,7 +84,7 @@ export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
         return user;
       }
 
-      throw new Error("Owner does not exist.");
+      throw new Error("Context does not exist.");
     },
 
     async getOwner(this: ResolverContext, id: ObjectId): Promise<Owner | null> {

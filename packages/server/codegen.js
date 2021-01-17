@@ -41,6 +41,8 @@ module.exports = {
           User: "../db/implementations#User",
           NamedContext: "../db/implementations#NamedContext",
           Project: "../db/implementations#Project",
+          Owner: "../db/implementations#Owner",
+          Context: "../db/implementations#Context",
           /* eslint-enable @typescript-eslint/naming-convention */
         },
       },

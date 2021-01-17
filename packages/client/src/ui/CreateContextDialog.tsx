@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
 import { useCreateNamedContextMutation } from "../schema/mutations";
-import { refetchLookupOwnerQuery, refetchNamedContextsQuery } from "../schema/queries";
+import { refetchListContextStateQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -29,8 +29,7 @@ export default ReactMemo(function CreateContextDialog({
       params: state,
     },
     refetchQueries: [
-      refetchNamedContextsQuery(),
-      refetchLookupOwnerQuery(),
+      refetchListContextStateQuery(),
     ],
   });
 

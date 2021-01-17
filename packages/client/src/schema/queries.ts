@@ -1,120 +1,74 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import * as Operations from './operations';
+import { gql } from '@apollo/client';
 import * as Apollo from '@apollo/client';
+export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-/**
- * __useCurrentUserQuery__
- *
- * To run a query within a React component, call `useCurrentUserQuery` and pass it any options that fit your needs.
- * When your component renders, `useCurrentUserQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useCurrentUserQuery({
- *   variables: {
- *   },
- * });
- */
-export function useCurrentUserQuery(baseOptions?: Apollo.QueryHookOptions<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>) {
-        return Apollo.useQuery<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>(Operations.CurrentUser, baseOptions);
-      }
-export function useCurrentUserLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>) {
-          return Apollo.useLazyQuery<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>(Operations.CurrentUser, baseOptions);
-        }
-export type CurrentUserQueryHookResult = ReturnType<typeof useCurrentUserQuery>;
-export type CurrentUserLazyQueryHookResult = ReturnType<typeof useCurrentUserLazyQuery>;
-export type CurrentUserQueryResult = Apollo.QueryResult<Operations.CurrentUserQuery, Operations.CurrentUserQueryVariables>;
-export function refetchCurrentUserQuery(variables?: Operations.CurrentUserQueryVariables) {
-      return { query: Operations.CurrentUser, variables: variables }
+export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<{ readonly __typename?: 'User', readonly email: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }>, readonly namedContexts: ReadonlyArray<{ readonly __typename?: 'NamedContext', readonly stub: string, readonly name: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }> }> }> };
+
+
+export const ListContextStateDocument = gql`
+    query ListContextState {
+  user {
+    email
+    id
+    subprojects {
+      id
     }
-
-/**
- * __useNamedContextsQuery__
- *
- * To run a query within a React component, call `useNamedContextsQuery` and pass it any options that fit your needs.
- * When your component renders, `useNamedContextsQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useNamedContextsQuery({
- *   variables: {
- *   },
- * });
- */
-export function useNamedContextsQuery(baseOptions?: Apollo.QueryHookOptions<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>) {
-        return Apollo.useQuery<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>(Operations.NamedContexts, baseOptions);
+    projects {
+      id
+      stub
+      name
+      subprojects {
+        id
       }
-export function useNamedContextsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>) {
-          return Apollo.useLazyQuery<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>(Operations.NamedContexts, baseOptions);
-        }
-export type NamedContextsQueryHookResult = ReturnType<typeof useNamedContextsQuery>;
-export type NamedContextsLazyQueryHookResult = ReturnType<typeof useNamedContextsLazyQuery>;
-export type NamedContextsQueryResult = Apollo.QueryResult<Operations.NamedContextsQuery, Operations.NamedContextsQueryVariables>;
-export function refetchNamedContextsQuery(variables?: Operations.NamedContextsQueryVariables) {
-      return { query: Operations.NamedContexts, variables: variables }
     }
-
-/**
- * __useLookupOwnerQuery__
- *
- * To run a query within a React component, call `useLookupOwnerQuery` and pass it any options that fit your needs.
- * When your component renders, `useLookupOwnerQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useLookupOwnerQuery({
- *   variables: {
- *      stubs: // value for 'stubs'
- *   },
- * });
- */
-export function useLookupOwnerQuery(baseOptions: Apollo.QueryHookOptions<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>) {
-        return Apollo.useQuery<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>(Operations.LookupOwner, baseOptions);
+    namedContexts {
+      stub
+      name
+      id
+      subprojects {
+        id
       }
-export function useLookupOwnerLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>) {
-          return Apollo.useLazyQuery<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>(Operations.LookupOwner, baseOptions);
+      projects {
+        id
+        stub
+        name
+        subprojects {
+          id
         }
-export type LookupOwnerQueryHookResult = ReturnType<typeof useLookupOwnerQuery>;
-export type LookupOwnerLazyQueryHookResult = ReturnType<typeof useLookupOwnerLazyQuery>;
-export type LookupOwnerQueryResult = Apollo.QueryResult<Operations.LookupOwnerQuery, Operations.LookupOwnerQueryVariables>;
-export function refetchLookupOwnerQuery(variables?: Operations.LookupOwnerQueryVariables) {
-      return { query: Operations.LookupOwner, variables: variables }
+      }
     }
+  }
+}
+    `;
 
 /**
- * __useListProjectsQuery__
+ * __useListContextStateQuery__
  *
- * To run a query within a React component, call `useListProjectsQuery` and pass it any options that fit your needs.
- * When your component renders, `useListProjectsQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * To run a query within a React component, call `useListContextStateQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListContextStateQuery` returns an object from Apollo Client that contains loading, error, and data properties
  * you can use to render your UI.
  *
  * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
  *
  * @example
- * const { data, loading, error } = useListProjectsQuery({
+ * const { data, loading, error } = useListContextStateQuery({
  *   variables: {
- *      id: // value for 'id'
  *   },
  * });
  */
-export function useListProjectsQuery(baseOptions: Apollo.QueryHookOptions<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>) {
-        return Apollo.useQuery<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>(Operations.ListProjects, baseOptions);
+export function useListContextStateQuery(baseOptions?: Apollo.QueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
+        return Apollo.useQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, baseOptions);
       }
-export function useListProjectsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>) {
-          return Apollo.useLazyQuery<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>(Operations.ListProjects, baseOptions);
+export function useListContextStateLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
+          return Apollo.useLazyQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, baseOptions);
         }
-export type ListProjectsQueryHookResult = ReturnType<typeof useListProjectsQuery>;
-export type ListProjectsLazyQueryHookResult = ReturnType<typeof useListProjectsLazyQuery>;
-export type ListProjectsQueryResult = Apollo.QueryResult<Operations.ListProjectsQuery, Operations.ListProjectsQueryVariables>;
-export function refetchListProjectsQuery(variables?: Operations.ListProjectsQueryVariables) {
-      return { query: Operations.ListProjects, variables: variables }
+export type ListContextStateQueryHookResult = ReturnType<typeof useListContextStateQuery>;
+export type ListContextStateLazyQueryHookResult = ReturnType<typeof useListContextStateLazyQuery>;
+export type ListContextStateQueryResult = Apollo.QueryResult<ListContextStateQuery, ListContextStateQueryVariables>;
+export function refetchListContextStateQuery(variables?: ListContextStateQueryVariables) {
+      return { query: ListContextStateDocument, variables: variables }
     }

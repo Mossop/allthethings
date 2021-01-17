@@ -16,9 +16,9 @@ export type NamedContextDbObject = {
 
 export type ProjectDbObject = {
   _id: ObjectID,
-  user: UserDbObject['_id'],
-  namedContext: Maybe<NamedContextDbObject['_id']>,
-  parent: Maybe<ProjectDbObject['_id']>,
   stub: string,
   name: string,
+  parent: ObjectID | null,
+  user: ObjectID,
+  namedContext: ObjectID | null,
 };

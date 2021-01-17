@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
-import { refetchLookupOwnerQuery, refetchListProjectsQuery } from "../schema/queries";
+import { refetchListContextStateQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
 interface CreateProjectProps {
@@ -29,8 +29,7 @@ export default ReactMemo(function CreateProjectDialog({
       params: state,
     },
     refetchQueries: [
-      refetchListProjectsQuery(),
-      refetchLookupOwnerQuery(),
+      refetchListContextStateQuery(),
     ],
   });
 

@@ -6,11 +6,10 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 import { Suspense } from "react";
 
-import { useCurrentUserQuery } from "../schema/queries";
 import ContextMenu from "../ui/ContextMenu";
 import ProjectList from "../ui/ProjectList";
 import UserMenu from "../ui/UserMenu";
-import { useView } from "../utils/navigation";
+import { useUser, useView } from "../utils/state";
 import { flexColumn, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -57,7 +56,7 @@ interface PageProps {
 
 const PageControls = ReactMemo(function PageControls(): ReactResult {
   let classes = useStyles();
-  let { data: { user } = { user: null } } = useCurrentUserQuery();
+  let user = useUser();
 
   if (!user) {
     return null;

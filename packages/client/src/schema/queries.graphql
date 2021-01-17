@@ -1,45 +1,35 @@
-query CurrentUser {
+query ListContextState {
   user {
-    id
     email
-  }
-}
 
-query NamedContexts {
-  user {
     id
-    email
-    namedContexts {
+    subprojects {
       id
-      name
-      stub
-    }
-  }
-}
-
-query LookupOwner($stubs: [String!]!) {
-  user {
-    id
-    descend(stubs: $stubs) {
-      id
-      context {
-        id
-      }
-    }
-  }
-}
-
-query ListProjects($id: ID!) {
-  context(id: $id) {
-    ... on NamedContext {
-      stub
     }
     projects {
       id
       stub
       name
-      parent {
+      subprojects {
         id
+      }
+    }
+
+    namedContexts {
+      stub
+      name
+
+      id
+      subprojects {
+        id
+      }
+      projects {
+        id
+        stub
+        name
+        subprojects {
+          id
+        }
       }
     }
   }

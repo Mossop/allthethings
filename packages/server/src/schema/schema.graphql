@@ -1,56 +1,57 @@
 interface Owner {
   id: ID!
-  user: User!
   context: Context!
   subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
+  projectByStubs(stubs: [String!]!): Project
 }
 
-interface Context {
+interface Context implements Owner {
   id: ID!
+  context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
   projects: [Project!]!
+  projectById(id: ID!): Project
 }
 
 type User implements Context & Owner {
   id: ID!
+  context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+  projects: [Project!]!
+  projectById(id: ID!): Project
   email: String!
   password: String!
   namedContexts: [NamedContext!]!
-  user: User!
-  context: Context!
-  projects: [Project!]!
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
 }
 
 type NamedContext implements Context & Owner {
   id: ID!
-  user: User!
   context: Context!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
+  projects: [Project!]!
+  projectById(id: ID!): Project
+  user: User!
   stub: String!
   name: String!
-  projects: [Project!]!
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
 }
 
 type Project implements Owner {
   id: ID!
-  user: User!
   context: Context!
-  namedContext: NamedContext
-  parent: Project
-  owner: Owner!
+  subprojects: [Project!]!
+  projectByStubs(stubs: [String!]!): Project
   stub: String!
   name: String!
-  subprojects: [Project!]!
-  descend(stubs: [String!]!): Owner
+  owner: Owner!
 }
 
 type Query {
   user: User
-  context(id: ID!): Context
   owner(id: ID!): Owner
+  context(id: ID!): Context
 }
 
 input CreateNamedContextParams {

@@ -7,9 +7,10 @@ import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/ho
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
-import { useNamedContextsQuery } from "../schema/queries";
-import type { NamedContext } from "../schema/types";
-import { pushState, useView } from "../utils/navigation";
+import { pushState } from "../utils/navigation";
+import { nameSorted } from "../utils/sort";
+import type { NamedContext } from "../utils/state";
+import { useCurrentNamedContext, useNamedContexts } from "../utils/state";
 import { flexRow } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -46,7 +47,8 @@ const ContextMenuItem = ReactMemo(
     { target, name, selected, onClick }: ContextMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let click = useCallback(() => {
+    let click = useCallback((event: React.MouseEvent) => {
+      event.preventDefault();
       pushState(target);
       onClick();
     }, [onClick, target]);
@@ -55,7 +57,8 @@ const ContextMenuItem = ReactMemo(
       ref={ref}
       onClick={click}
       selected={selected}
-      disabled={selected}
+      component="a"
+      href={target}
     >
       {name}
     </MenuItem>;
@@ -66,24 +69,11 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  let view = useView();
-
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
-  let { data } = useNamedContextsQuery();
-  let contexts = useMemo(() => data?.user?.namedContexts ?? [], [data]);
+  let contexts = useNamedContexts();
+  let currentContext = useCurrentNamedContext();
 
-  let sorted = useMemo(() => {
-    let results = [...contexts];
-    results.sort(
-      (a: { name: string }, b: { name: string }): number => a.name.localeCompare(b.name),
-    );
-    return results;
-  }, [contexts]);
-
-  let currentContext = useMemo(
-    () => contexts.find((context: { id: string }) => context.id == view?.selectedContext),
-    [contexts, view],
-  );
+  let sorted = useMemo(() => nameSorted(contexts), [contexts]);
 
   let closeMenu = useCallback(() => {
     contextMenuState.close();
@@ -97,10 +87,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let closeCreateDialog = useCallback(() => {
     setShowCreateDialog(false);
   }, []);
-
-  if (!view) {
-    return null;
-  }
 
   return <>
     <Button
@@ -141,11 +127,11 @@ export default ReactMemo(function ContextMenu(): ReactResult {
         onClick={closeMenu}
       />
       {
-        sorted.map((context: Pick<NamedContext, "id" | "name" | "stub">) => <ContextMenuItem
+        sorted.map((context: NamedContext) => <ContextMenuItem
           key={context.id}
           name={context.name}
-          target={`/${context.stub}/`}
-          selected={context === currentContext}
+          target={context.baseUrl}
+          selected={context.id == currentContext?.id}
           onClick={closeMenu}
         />)
       }

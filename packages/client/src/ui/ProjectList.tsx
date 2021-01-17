@@ -7,13 +7,14 @@ import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import type { ReactElement } from "react";
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback } from "react";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
-import { useListProjectsQuery } from "../schema/queries";
-import { upsert } from "../utils/collections";
 import type { View } from "../utils/navigation";
 import { pushState, ViewType } from "../utils/navigation";
+import { nameSorted } from "../utils/sort";
+import type { Project } from "../utils/state";
+import { useCurrentContext } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
@@ -123,49 +124,34 @@ const Item = ReactMemo(function Item({
   }
 });
 
-interface Project {
-  id: string;
-  stub: string;
-  name: string;
-}
-
 interface ProjectItemProps {
-  map: Map<string | null, Project[]>;
   project: Project;
   selectedOwner: string | null;
-  baseUrl: string;
   depth: number
 }
 
 const ProjectItem = ReactMemo(function ProjectItem({
-  map,
   project,
   selectedOwner,
-  baseUrl,
   depth,
 }: ProjectItemProps): ReactResult {
-  let children = map.get(project.id);
   let selected = project.id == selectedOwner;
-
-  baseUrl += `${project.stub}/`;
 
   return <>
     <Item
-      href={baseUrl}
+      href={project.baseUrl}
       label={project.name}
       selected={selected}
       depth={depth}
       icon={<ProjectIcon/>}
     />
     {
-      children && <List>
+      project.subprojects.length > 0 && <List>
         {
-          children.map((child: Project) => <ProjectItem
+          nameSorted(project.subprojects).map((child: Project) => <ProjectItem
             key={child.id}
-            map={map}
             project={child}
             selectedOwner={selectedOwner}
-            baseUrl={baseUrl}
             depth={depth + 1}
           />)
         }
@@ -184,27 +170,7 @@ export default ReactMemo(function ProjectList({
   let classes = useStyles({ depth: 0 });
   let selectedOwner = "selectedOwner" in view ? view.selectedOwner : null;
 
-  let { data } = useListProjectsQuery({
-    variables: {
-      id: view.selectedContext,
-    },
-  });
-
-  let projectMap = useMemo((): Map<string | null, Project[]> => {
-    let map = new Map<string | null, Project[]>();
-
-    for (let project of data?.context?.projects ?? []) {
-      let parent = project.parent?.id ?? null;
-
-      let list = upsert(map, parent, () => []);
-      list.push(project);
-    }
-
-    return map;
-  }, [data]);
-
-  let projects = projectMap.get(null);
-  let baseUrl = data?.context?.__typename == "NamedContext" ? `/${data.context.stub}/` : "/";
+  let context = useCurrentContext();
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   let openCreateProjectDialog = useCallback(() => {
@@ -214,30 +180,32 @@ export default ReactMemo(function ProjectList({
     setShowCreateProjectDialog(false);
   }, []);
 
+  if (!context) {
+    return null;
+  }
+
   return <>
     <List component="div" className={classes.list}>
       <Item
-        href={`${baseUrl}inbox`}
+        href={`${context.baseUrl}inbox`}
         icon={<InboxIcon/>}
         selected={view.type == ViewType.Inbox}
         label="Inbox"
         depth={0}
       />
       <Item
-        href={baseUrl}
+        href={context.baseUrl}
         icon={<ProjectIcon/>}
-        selected={selectedOwner == view.selectedContext}
+        selected={view.type == ViewType.Owner && selectedOwner == context.id}
         label="Tasks"
         depth={0}
       />
       <Divider className={classes.divider}/>
       {
-        projects?.map((project: Project) => <ProjectItem
+        nameSorted(context.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
-          map={projectMap}
           project={project}
           selectedOwner={selectedOwner}
-          baseUrl={baseUrl}
           depth={0}
         />)
       }

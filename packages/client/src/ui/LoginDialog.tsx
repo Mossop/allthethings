@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
 import { useLoginMutation } from "../schema/mutations";
-import { refetchCurrentUserQuery } from "../schema/queries";
+import { refetchListContextStateQuery } from "../schema/queries";
 import { ReactMemo } from "../utils/types";
 
 export default ReactMemo(function LoginDialog(): ReactElement {
@@ -21,7 +21,7 @@ export default ReactMemo(function LoginDialog(): ReactElement {
 
   let [login] = useLoginMutation({
     variables: state,
-    refetchQueries: [refetchCurrentUserQuery()],
+    refetchQueries: [refetchListContextStateQuery()],
   });
 
   let submit = useCallback((event: FormEvent<HTMLFormElement>) => {

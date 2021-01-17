@@ -6,6 +6,7 @@ import { render } from "react-dom";
 
 import App from "./App";
 import { connect } from "./schema";
+import { StateListener } from "./utils/state";
 
 const base = createMuiTheme();
 
@@ -94,7 +95,9 @@ function init(): void {
       <ThemeProvider theme={baseTheme}>
         <ApolloProvider client={client}>
           <CssBaseline/>
-          <App/>
+          <StateListener>
+            <App/>
+          </StateListener>
         </ApolloProvider>
       </ThemeProvider>
     </ThemeProvider>,

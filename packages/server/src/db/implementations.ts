@@ -95,12 +95,10 @@ export type Context = User | NamedContext;
 abstract class OwnerImpl<
   T extends DbObject,
 > extends BaseImpl<T> implements SchemaResolver<Schema.Owner> {
-  public abstract user(): Promise<User>;
   public abstract context(): Promise<Context>;
-
   public abstract subprojects(): Promise<readonly Project[]>;
 
-  public async descend({ stubs }: Schema.OwnerDescendArgs): Promise<Owner | null> {
+  public async projectByStubs({ stubs }: Schema.OwnerProjectByStubsArgs): Promise<Owner | null> {
     if (stubs.length == 0) {
       return this as unknown as Owner;
     }
@@ -109,7 +107,7 @@ abstract class OwnerImpl<
     for (let project of projects) {
       let stub = await project.stub();
       if (stub === stubs[0]) {
-        return project.descend({
+        return project.projectByStubs({
           stubs: stubs.slice(1),
         });
       }
@@ -123,6 +121,11 @@ abstract class ContextImpl<
   T extends DbObject,
 > extends OwnerImpl<T> implements SchemaResolver<Schema.Context> {
   public abstract projects(): Promise<readonly Project[]>;
+
+  public async projectById(id: string): Promise<Project | null> {
+    let projects = await this.projects();
+    return projects.find((project: Project): boolean => project.id == id) ?? null;
+  }
 }
 
 export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Schema.User> {
@@ -130,12 +133,23 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
     return assertValid(await this.dataSources.users.findOneById(this.dbId));
   }
 
-  public async user(): Promise<User> {
+  public async context(): Promise<Context> {
     return this;
   }
 
-  public async context(): Promise<Context> {
-    return this;
+  public async subprojects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      user: this.dbId,
+      namedContext: null,
+      parent: null,
+    });
+  }
+
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      user: this.dbId,
+      context: null,
+    });
   }
 
   public async email(): Promise<string> {
@@ -151,41 +165,6 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
       user: this.dbId,
     });
   }
-
-  public async projects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      user: this.dbId,
-      context: null,
-    });
-  }
-
-  public async subprojects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      user: this.dbId,
-      context: null,
-      parent: null,
-    });
-  }
-
-  public async descend({ stubs }: Schema.OwnerDescendArgs): Promise<Owner | null> {
-    if (stubs.length == 0) {
-      return this;
-    }
-
-    let contexts = await this.namedContexts();
-    for (let context of contexts) {
-      let stub = await context.stub();
-      if (stub == stubs[0]) {
-        return context.descend({
-          stubs: stubs.slice(1),
-        });
-      }
-    }
-
-    return super.descend({
-      stubs,
-    });
-  }
 }
 
 export class NamedContext
@@ -194,27 +173,8 @@ export class NamedContext
     return assertValid(await this.dataSources.namedContexts.findOneById(this.dbId));
   }
 
-  public async user(): Promise<User> {
-    return new User(this.resolverContext, (await this.dbObject).user);
-  }
-
   public async context(): Promise<Context> {
     return this;
-  }
-
-  public async name(): Promise<string> {
-    return (await this.dbObject).name;
-  }
-
-  public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
-  }
-
-  public async projects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      context: this.dbId,
-      parent: null,
-    });
   }
 
   public async subprojects(): Promise<readonly Project[]> {
@@ -223,15 +183,30 @@ export class NamedContext
       parent: null,
     });
   }
+
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      namedContext: this.dbId,
+      parent: null,
+    });
+  }
+
+  public async user(): Promise<User> {
+    return new User(this.resolverContext, (await this.dbObject).user);
+  }
+
+  public async stub(): Promise<string> {
+    return (await this.dbObject).stub;
+  }
+
+  public async name(): Promise<string> {
+    return (await this.dbObject).name;
+  }
 }
 
 export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
     return assertValid(await this.dataSources.projects.findOneById(this.dbId));
-  }
-
-  public async user(): Promise<User> {
-    return new User(this.resolverContext, (await this.dbObject).user);
   }
 
   public async context(): Promise<Context> {
@@ -240,6 +215,20 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
       return new NamedContext(this.resolverContext, obj.namedContext);
     }
     return new User(this.resolverContext, obj.user);
+  }
+
+  public async subprojects(): Promise<Project[]> {
+    return this.dataSources.projects.find({
+      parent: this.dbId,
+    });
+  }
+
+  public async stub(): Promise<string> {
+    return (await this.dbObject).stub;
+  }
+
+  public async name(): Promise<string> {
+    return (await this.dbObject).name;
   }
 
   public async owner(): Promise<Project | User | NamedContext> {
@@ -251,37 +240,5 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
       return new NamedContext(this.resolverContext, obj.namedContext);
     }
     return new User(this.resolverContext, obj.user);
-  }
-
-  public async namedContext(): Promise<NamedContext | null> {
-    let obj = await this.dbObject;
-    if (!obj.namedContext) {
-      return null;
-    }
-
-    return new NamedContext(this.resolverContext, obj.namedContext);
-  }
-
-  public async parent(): Promise<Project | null> {
-    let obj = await this.dbObject;
-    if (!obj.parent) {
-      return null;
-    }
-
-    return new Project(this.resolverContext, obj.parent);
-  }
-
-  public async name(): Promise<string> {
-    return (await this.dbObject).name;
-  }
-
-  public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
-  }
-
-  public async subprojects(): Promise<Project[]> {
-    return this.dataSources.projects.find({
-      parent: this.dbId,
-    });
   }
 }
