@@ -11,14 +11,17 @@ import { useState, useCallback } from "react";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
+import type { NamedContext, Project, User } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 interface CreateProjectProps {
   onClose: () => void;
+  owner: NamedContext | User | Project;
 }
 
 export default ReactMemo(function CreateProjectDialog({
   onClose,
+  owner,
 }: CreateProjectProps): ReactElement {
   let [state, setState] = useState({
     name: "",
@@ -26,7 +29,10 @@ export default ReactMemo(function CreateProjectDialog({
 
   let [createProject] = useCreateProjectMutation({
     variables: {
-      params: state,
+      params: {
+        name: state.name,
+        owner: owner.id,
+      },
     },
     refetchQueries: [
       refetchListContextStateQuery(),

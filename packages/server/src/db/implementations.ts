@@ -148,7 +148,7 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
       user: this.dbId,
-      context: null,
+      namedContext: null,
     });
   }
 
@@ -179,7 +179,7 @@ export class NamedContext
 
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      context: this.dbId,
+      namedContext: this.dbId,
       parent: null,
     });
   }
@@ -187,7 +187,6 @@ export class NamedContext
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
       namedContext: this.dbId,
-      parent: null,
     });
   }
 

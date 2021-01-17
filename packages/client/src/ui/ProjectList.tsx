@@ -216,6 +216,11 @@ export default ReactMemo(function ProjectList({
         depth={0}
       />
     </List>
-    {showCreateProjectDialog && <CreateProjectDialog onClose={closeCreateProjectDialog}/>}
+    {
+      showCreateProjectDialog && <CreateProjectDialog
+        onClose={closeCreateProjectDialog}
+        owner={context}
+      />
+    }
   </>;
 });
