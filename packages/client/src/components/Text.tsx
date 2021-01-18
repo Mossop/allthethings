@@ -14,6 +14,9 @@ export const useTextStyles = makeStyles(() =>
     text: {
       fontSize: "1rem",
     },
+    info: {
+      fontSize: "0.875rem",
+    },
   }));
 
 function textBlock(
@@ -44,3 +47,4 @@ function textBlock(
 }
 
 export const Text = textBlock("Text", "p", "text");
+export const Info = textBlock("Info", "p", "info");

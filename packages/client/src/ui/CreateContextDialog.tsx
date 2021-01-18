@@ -8,9 +8,11 @@ import InputLabel from "@material-ui/core/InputLabel";
 import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateNamedContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
+import { pushState } from "../utils/navigation";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -24,25 +26,33 @@ export default ReactMemo(function CreateContextDialog({
     name: "",
   });
 
-  let [createContext] = useCreateNamedContextMutation({
+  let [createContext, { error }] = useCreateNamedContextMutation({
     variables: {
       params: state,
     },
     refetchQueries: [
       refetchListContextStateQuery(),
     ],
+    awaitRefetchQueries: true,
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    await createContext();
+
+    let { data } = await createContext();
+
     onClose();
+    let stub = data?.createNamedContext.stub;
+    if (stub) {
+      pushState(`/context/${stub}/`);
+    }
   }, [createContext, onClose]);
 
   return <Dialog open={true} onClose={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Context</DialogTitle>
       <DialogContent>
+        {error && <Error error={error}/>}
         <FormControl margin="normal">
           <InputLabel htmlFor="name">Name:</InputLabel>
           <TextFieldInput

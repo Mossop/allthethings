@@ -8,6 +8,7 @@ import InputLabel from "@material-ui/core/InputLabel";
 import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
@@ -27,7 +28,7 @@ export default ReactMemo(function CreateProjectDialog({
     name: "",
   });
 
-  let [createProject] = useCreateProjectMutation({
+  let [createProject, { error }] = useCreateProjectMutation({
     variables: {
       params: {
         name: state.name,
@@ -49,6 +50,7 @@ export default ReactMemo(function CreateProjectDialog({
     <form onSubmit={submit}>
       <DialogTitle>Create Project</DialogTitle>
       <DialogContent>
+        {error && <Error error={error}/>}
         <FormControl margin="normal">
           <InputLabel htmlFor="name">Name:</InputLabel>
           <TextFieldInput
