@@ -11,6 +11,9 @@ type Classes = typeof useTextStyles extends () => Record<infer K, unknown> ? K :
 
 export const useTextStyles = makeStyles(() =>
   createStyles({
+    heading: {
+      fontSize: "2rem",
+    },
     text: {
       fontSize: "1rem",
     },
@@ -46,5 +49,6 @@ function textBlock(
   return ReactMemo(forwardRef(Element));
 }
 
+export const Heading = textBlock("Heading", "h1", "heading");
 export const Text = textBlock("Text", "p", "text");
 export const Info = textBlock("Info", "p", "info");

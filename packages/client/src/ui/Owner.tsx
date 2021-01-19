@@ -1,8 +1,9 @@
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-import { Text } from "../components/Text";
+import { Heading } from "../components/Text";
 import type { OwnerView } from "../utils/navigation";
+import { isProject } from "../utils/state";
 import { pageStyles } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -18,6 +19,9 @@ const useStyles = makeStyles((theme: Theme) =>
       ...pageStyles(theme),
       height: "100%",
       width: "100%",
+    },
+    heading: {
+      paddingBottom: theme.spacing(2),
     },
     floatingAction: {
       position: "absolute",
@@ -37,7 +41,10 @@ export default ReactMemo(function Owner({
 
   return <div className={classes.outer}>
     <div className={classes.content}>
-      <Text>Owner</Text>
+      {
+        isProject(view.selectedOwner) &&
+        <Heading className={classes.heading}>{view.selectedOwner.name}</Heading>
+      }
     </div>
     <div className={classes.floatingAction}>
       <AddDial viewType={view.type} owner={view.selectedOwner}/>
