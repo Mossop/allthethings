@@ -14,7 +14,7 @@ import type { View } from "../utils/navigation";
 import { pushState, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { NamedContext, Project, User } from "../utils/state";
-import { useCurrentContext } from "../utils/state";
+import { useUrl, useCurrentContext } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
@@ -62,16 +62,16 @@ type ItemProps = {
   icon: ReactElement;
   depth: number;
 } & ({
-  href: string;
+  url: URL;
   onClick?: undefined;
 } | {
   onClick: () => void;
-  href?: undefined;
+  url?: URL;
 });
 
 const Item = ReactMemo(function Item({
   selected,
-  href,
+  url,
   onClick,
   label,
   icon,
@@ -85,13 +85,13 @@ const Item = ReactMemo(function Item({
   );
 
   let click = useCallback((event: React.MouseEvent) => {
-    if (event.button != 0 || !href) {
+    if (event.button != 0 || !url) {
       return;
     }
 
     event.preventDefault();
-    pushState(href);
-  }, [href]);
+    pushState(url);
+  }, [url]);
 
   if (selected) {
     return <ListItem
@@ -102,13 +102,13 @@ const Item = ReactMemo(function Item({
       <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
       <ListItemText>{label}</ListItemText>
     </ListItem>;
-  } else if (href) {
+  } else if (url) {
     return <ListItem
       dense={true}
       button={true}
       className={className}
       component="a"
-      href={href}
+      href={url.toString()}
       onClick={click}
     >
       <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
@@ -140,10 +140,14 @@ const ProjectItem = ReactMemo(function ProjectItem({
 }: ProjectItemProps): ReactResult {
   let selected = project.id == selectedOwner?.id;
   let classes = useStyles({ depth });
+  let url = useUrl({
+    type: ViewType.Owner,
+    selectedOwner: project,
+  });
 
   return <>
     <Item
-      href={project.baseUrl}
+      url={url}
       label={project.name}
       selected={selected}
       depth={depth}
@@ -184,6 +188,16 @@ export default ReactMemo(function ProjectList({
     setShowCreateProjectDialog(false);
   }, []);
 
+  let inboxUrl = useUrl({
+    type: ViewType.Inbox,
+  });
+  let tasksUrl = useUrl(context
+    ? {
+      type: ViewType.Owner,
+      selectedOwner: context,
+    }
+    : null);
+
   if (!context) {
     return null;
   }
@@ -191,14 +205,14 @@ export default ReactMemo(function ProjectList({
   return <>
     <List component="div" className={classes.list}>
       <Item
-        href={`${context.baseUrl}inbox`}
+        url={inboxUrl}
         icon={<InboxIcon/>}
         selected={view.type == ViewType.Inbox}
         label="Inbox"
         depth={0}
       />
       <Item
-        href={context.baseUrl}
+        url={tasksUrl}
         icon={<ProjectIcon/>}
         selected={view.type == ViewType.Owner && selectedOwner?.id == context.id}
         label="Tasks"

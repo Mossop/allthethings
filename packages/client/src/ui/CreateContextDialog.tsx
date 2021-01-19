@@ -44,7 +44,7 @@ export default ReactMemo(function CreateContextDialog({
     onClose();
     let stub = data?.createNamedContext.stub;
     if (stub) {
-      pushState(`/context/${stub}/`);
+      pushState(new URL(`/?context=${stub}`));
     }
   }, [createContext, onClose]);
 

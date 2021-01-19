@@ -7,10 +7,18 @@ import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/ho
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
-import { pushState } from "../utils/navigation";
+import type { NavigableView } from "../utils/navigation";
+import { pushState, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { NamedContext } from "../utils/state";
-import { useCurrentNamedContext, useNamedContexts } from "../utils/state";
+import type { NamedContext, User } from "../utils/state";
+import {
+  useView,
+  isNamedContext,
+  useUser,
+  useUrl,
+  useCurrentNamedContext,
+  useNamedContexts,
+} from "../utils/state";
 import { flexRow } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -38,7 +46,7 @@ const useStyles = makeStyles((theme: Theme) =>
 interface ContextMenuItemProps {
   onClick: () => void;
   name: string;
-  target: string;
+  target: User | NamedContext;
   selected: boolean;
 }
 
@@ -47,18 +55,42 @@ const ContextMenuItem = ReactMemo(
     { target, name, selected, onClick }: ContextMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
+    let view = useView();
+
+    let targetView: NavigableView | null;
+    if (view) {
+      switch (view.type) {
+        case ViewType.Inbox:
+          targetView = {
+            type: ViewType.Inbox,
+            selectedNamedContext: isNamedContext(target) ? target : null,
+          };
+          break;
+        default:
+          targetView = {
+            type: ViewType.Owner,
+            selectedOwner: target,
+            selectedNamedContext: isNamedContext(target) ? target : null,
+          };
+      }
+    } else {
+      targetView = null;
+    }
+
+    let url = useUrl(targetView);
+
     let click = useCallback((event: React.MouseEvent) => {
       event.preventDefault();
-      pushState(target);
+      pushState(url);
       onClick();
-    }, [onClick, target]);
+    }, [onClick, url]);
 
     return <MenuItem
       ref={ref}
       onClick={click}
       selected={selected}
       component="a"
-      href={target}
+      href={url.toString()}
     >
       {name}
     </MenuItem>;
@@ -72,6 +104,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
   let contexts = useNamedContexts();
   let currentContext = useCurrentNamedContext();
+  let user = useUser();
 
   let sorted = useMemo(() => nameSorted(contexts), [contexts]);
 
@@ -87,6 +120,10 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let closeCreateDialog = useCallback(() => {
     setShowCreateDialog(false);
   }, []);
+
+  if (!user) {
+    return null;
+  }
 
   return <>
     <Button
@@ -123,14 +160,14 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       <ContextMenuItem
         name="No Context."
         selected={!currentContext}
-        target="/"
+        target={user}
         onClick={closeMenu}
       />
       {
         sorted.map((context: NamedContext) => <ContextMenuItem
           key={context.id}
           name={context.name}
-          target={context.baseUrl}
+          target={context}
           selected={context.id == currentContext?.id}
           onClick={closeMenu}
         />)

@@ -8,8 +8,8 @@ import {
 
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
-import type { View } from "./navigation";
-import { NavigationHandler } from "./navigation";
+import type { NavigableView, View } from "./navigation";
+import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
 export type Project = Pick<Schema.Project, "id" | "stub" | "name"> & {
@@ -29,14 +29,31 @@ export type NamedContext = Pick<Schema.NamedContext, "id" | "stub" | "name"> & {
   readonly subprojects: readonly Project[];
 };
 
-export function isNamedContext(context: User | NamedContext): context is NamedContext {
-  return "name" in context;
+export function isNamedContext(owner: User | NamedContext | Project): owner is NamedContext {
+  return "stub" in owner && !isProject(owner);
+}
+
+export function isProject(owner: User | NamedContext | Project): owner is Project {
+  return "parent" in owner;
+}
+
+export function isUser(owner: User | NamedContext | Project): owner is User {
+  return "email" in owner;
 }
 
 const StateContext = createContext<View | null | undefined>(null);
 
 export function useState(): View | null | undefined {
   return useReactContext(StateContext);
+}
+
+export function useUrl(view: NavigableView | null): URL {
+  let currentView = useView();
+  if (!currentView || !view) {
+    return new URL("/", document.URL);
+  }
+
+  return viewToUrl(view, currentView);
 }
 
 export function useView(): View | null {
