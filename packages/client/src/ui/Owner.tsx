@@ -42,12 +42,12 @@ export default ReactMemo(function Owner({
   return <div className={classes.outer}>
     <div className={classes.content}>
       {
-        isProject(view.selectedOwner) &&
-        <Heading className={classes.heading}>{view.selectedOwner.name}</Heading>
+        isProject(view.owner) &&
+        <Heading className={classes.heading}>{view.owner.name}</Heading>
       }
     </div>
     <div className={classes.floatingAction}>
-      <AddDial viewType={view.type} owner={view.selectedOwner}/>
+      <AddDial viewType={view.type} owner={view.owner}/>
     </div>
   </div>;
 });

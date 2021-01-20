@@ -3,12 +3,12 @@ import {
   useContext as useReactContext,
   useEffect,
   useMemo,
-  useState as useReactState,
+  useState,
 } from "react";
 
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
-import type { NavigableView, View } from "./navigation";
+import type { BaseView, InboxView, OwnerView, View } from "./navigation";
 import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
@@ -19,10 +19,12 @@ export type Project = Pick<Schema.Project, "id" | "stub" | "name"> & {
 
 export type User = Pick<Schema.User, "id" | "email"> & {
   readonly subprojects: readonly Project[];
-  readonly namedContexts: readonly NamedContext[];
+  readonly projects: ReadonlyMap<string, Project>;
+  readonly namedContexts: ReadonlyMap<string, NamedContext>;
 };
 
 export type NamedContext = Pick<Schema.NamedContext, "id" | "stub" | "name"> & {
+  readonly projects: ReadonlyMap<string, Project>;
   readonly subprojects: readonly Project[];
 };
 
@@ -40,9 +42,12 @@ export function isUser(owner: User | NamedContext | Project): owner is User {
 
 const StateContext = createContext<View | null | undefined>(null);
 
-export function useState(): View | null | undefined {
-  return useReactContext(StateContext);
-}
+export type NavigableView = {
+  namedContext?: NamedContext | null;
+} & (
+  Omit<InboxView, keyof BaseView | "namedContext"> |
+  Omit<OwnerView, keyof BaseView | "namedContext">
+);
 
 export function useUrl(view: NavigableView | null): URL {
   let currentView = useView();
@@ -50,33 +55,35 @@ export function useUrl(view: NavigableView | null): URL {
     return new URL("/", document.URL);
   }
 
-  return viewToUrl(view, currentView);
+  let newView = {
+    user: currentView.user,
+    namedContext: currentView.namedContext,
+    ...view,
+  };
+
+  return viewToUrl(newView);
 }
 
-export function useView(): View | null {
-  return useState() ?? null;
+export function useView(): View | undefined | null {
+  return useReactContext(StateContext);
 }
 
 export function useUser(): User | null {
-  return useState()?.user ?? null;
+  return useView()?.user ?? null;
 }
 
-export function useNamedContexts(): readonly NamedContext[] {
-  return useUser()?.namedContexts ?? [];
+export function useNamedContexts(): ReadonlyMap<string, NamedContext> {
+  return useUser()?.namedContexts ?? new Map();
 }
 
 export function useCurrentContext(): User | NamedContext | null {
-  let state = useState();
-  if (!state) {
-    return null;
-  }
-
-  return state.selectedNamedContext ?? state.user;
+  let state = useView();
+  return state?.namedContext ?? state?.user ?? null;
 }
 
 export function useCurrentNamedContext(): NamedContext | null {
-  let state = useState();
-  return state?.selectedNamedContext ?? null;
+  let state = useView();
+  return state?.namedContext ?? null;
 }
 
 interface ProjectData {
@@ -94,16 +101,17 @@ interface ContextData {
   readonly projects: readonly ProjectData[]
 }
 
-function buildProjects(context: ContextData, baseUrl: string): readonly Project[] {
+function buildProjects(context: ContextData): Pick<User, "projects" | "subprojects"> {
   let projectMap = new Map(
     context.projects.map((data: ProjectData): [string, ProjectData] => {
       return [data.id, data];
     }),
   );
 
+  let projects = new Map<string, Project>();
+
   let buildProjects = (
     list: readonly { readonly id: string }[],
-    baseUrl: string,
     parent: Project | null,
   ): readonly Project[] => {
     return list.map(({ id }: { id: string }): Project => {
@@ -112,25 +120,30 @@ function buildProjects(context: ContextData, baseUrl: string): readonly Project[
         throw new Error("Unknown project.");
       }
 
-      let projectUrl = `${baseUrl}${data.stub}/`;
       let project: Omit<Project, "subprojects"> & { subprojects: readonly Project[] } = {
         ...data,
         parent,
         subprojects: [],
       };
 
-      project.subprojects = buildProjects(data.subprojects, projectUrl, project);
+      project.subprojects = buildProjects(data.subprojects, project);
+      projects.set(project.id, project);
 
       return project;
     });
   };
 
-  return buildProjects(context.subprojects, `${baseUrl}project/`, null);
+  return {
+    projects,
+    subprojects: buildProjects(context.subprojects, null),
+  };
 }
 
 export function StateListener({ children }: ReactChildren): ReactResult {
-  let { loading, data } = useListContextStateQuery();
-  let [view, setView] = useReactState<View | null | undefined>(undefined);
+  let { data } = useListContextStateQuery();
+  let [view, setView] = useState<View | null | undefined>(undefined);
+
+  let navHandler = useMemo(() => new NavigationHandler(setView), []);
 
   let user = useMemo((): User | null => {
     if (!data?.user) {
@@ -141,31 +154,21 @@ export function StateListener({ children }: ReactChildren): ReactResult {
       ...data.user,
 
       // eslint-disable-next-line @typescript-eslint/typedef
-      namedContexts: data.user.namedContexts.map((namedContext): NamedContext => {
-        let baseUrl = `/context/${namedContext.stub}/`;
-        return {
+      namedContexts: new Map(data.user.namedContexts.map((namedContext): [string, NamedContext] => {
+        return [namedContext.id, {
           ...namedContext,
 
-          subprojects: buildProjects(namedContext, baseUrl),
-        };
-      }),
+          ...buildProjects(namedContext),
+        }];
+      })),
 
-      subprojects: buildProjects(data.user, "/"),
+      ...buildProjects(data.user),
     };
   }, [data]);
 
   useEffect(() => {
-    if (loading) {
-      return;
-    }
-
-    if (!user) {
-      setView(null);
-      return;
-    }
-
-    return NavigationHandler.watchHistory(user, setView);
-  }, [loading, user, setView]);
+    return navHandler.watch(user);
+  }, [navHandler, user]);
 
   return <StateContext.Provider value={view}>{children}</StateContext.Provider>;
 }

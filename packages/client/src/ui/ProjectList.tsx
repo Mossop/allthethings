@@ -163,7 +163,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
   let selected = project.id == selectedOwner?.id;
   let url = useUrl({
     type: ViewType.Owner,
-    selectedOwner: project,
+    owner: project,
   });
 
   let [{ isDragging }, dragRef] = useDrag({
@@ -261,9 +261,9 @@ export default ReactMemo(function ProjectList({
   view,
 }: ProjectListProps): ReactResult {
   let classes = useStyles({ depth: 0 });
-  let selectedOwner = "selectedOwner" in view ? view.selectedOwner : null;
 
   let context = useCurrentContext();
+  let selectedOwner = "owner" in view ? view.owner : null;
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   let openCreateProjectDialog = useCallback(() => {
@@ -279,7 +279,7 @@ export default ReactMemo(function ProjectList({
   let tasksUrl = useUrl(context
     ? {
       type: ViewType.Owner,
-      selectedOwner: context,
+      owner: context,
     }
     : null);
 

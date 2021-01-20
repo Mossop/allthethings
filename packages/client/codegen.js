@@ -3,10 +3,13 @@ const path = require("path");
 module.exports = {
   [path.join(__dirname, "src", "schema", "types.ts")]: {
     plugins: {
-      typescript: {
+      "typescript": {
         immutableTypes: true,
       },
-      add: {
+      "typescript-apollo-client-helpers": {
+        useTypeImports: true,
+      },
+      "add": {
         content: [
           "/* eslint-disable */",
         ],

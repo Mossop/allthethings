@@ -1,6 +1,6 @@
 export type Comparator<T> = (a: T, b: T) => number;
 
-export function sorted<T>(list: readonly T[], comparator: Comparator<T>): T[] {
+export function sorted<T>(list: Iterable<T>, comparator: Comparator<T>): T[] {
   let result = [...list];
   result.sort(comparator);
   return result;
@@ -20,6 +20,6 @@ interface Named {
   name: string;
 }
 
-export function nameSorted<T extends Named>(list: readonly T[]): T[] {
+export function nameSorted<T extends Named>(list: Iterable<T>): T[] {
   return sorted(list, keyedComparator("name", stringComparator));
 }

@@ -9,12 +9,12 @@ export type LoginMutationVariables = Types.Exact<{
 }>;
 
 
-export type LoginMutation = { readonly __typename?: 'Mutation', readonly login?: Types.Maybe<{ readonly __typename?: 'User', readonly email: string }> };
+export type LoginMutation = { readonly __typename?: 'Mutation', readonly login: Types.Maybe<{ readonly __typename?: 'User', readonly email: string }> };
 
 export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { readonly __typename?: 'Mutation', readonly logout?: Types.Maybe<boolean> };
+export type LogoutMutation = { readonly __typename?: 'Mutation', readonly logout: Types.Maybe<boolean> };
 
 export type CreateNamedContextMutationVariables = Types.Exact<{
   params: Types.CreateNamedContextParams;
@@ -36,7 +36,7 @@ export type EditProjectMutationVariables = Types.Exact<{
 }>;
 
 
-export type EditProjectMutation = { readonly __typename?: 'Mutation', readonly editProject?: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string, readonly owner: { readonly __typename?: 'User', readonly id: string } | { readonly __typename?: 'NamedContext', readonly id: string } | { readonly __typename?: 'Project', readonly id: string } }> };
+export type EditProjectMutation = { readonly __typename?: 'Mutation', readonly editProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string, readonly owner: { readonly __typename?: 'User', readonly id: string } | { readonly __typename?: 'NamedContext', readonly id: string } | { readonly __typename?: 'Project', readonly id: string } }> };
 
 
 export const LoginDocument = gql`

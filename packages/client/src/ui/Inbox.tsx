@@ -40,7 +40,7 @@ export default ReactMemo(function Inbox({
       <Text>Inbox</Text>
     </div>
     <div className={classes.floatingAction}>
-      <AddDial viewType={view.type} owner={view.selectedNamedContext ?? view.user}/>
+      <AddDial viewType={view.type} owner={view.namedContext ?? view.user}/>
     </div>
   </div>;
 });

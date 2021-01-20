@@ -7,10 +7,9 @@ import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/ho
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
-import type { NavigableView } from "../utils/navigation";
 import { pushState, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { NamedContext, User } from "../utils/state";
+import type { NavigableView, NamedContext, User } from "../utils/state";
 import {
   useView,
   isNamedContext,
@@ -63,14 +62,14 @@ const ContextMenuItem = ReactMemo(
         case ViewType.Inbox:
           targetView = {
             type: ViewType.Inbox,
-            selectedNamedContext: isNamedContext(target) ? target : null,
+            namedContext: isNamedContext(target) ? target : null,
           };
           break;
         default:
           targetView = {
             type: ViewType.Owner,
-            selectedOwner: target,
-            selectedNamedContext: isNamedContext(target) ? target : null,
+            owner: target,
+            namedContext: isNamedContext(target) ? target : null,
           };
       }
     } else {
@@ -106,7 +105,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let currentContext = useCurrentNamedContext();
   let user = useUser();
 
-  let sorted = useMemo(() => nameSorted(contexts), [contexts]);
+  let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
 
   let closeMenu = useCallback(() => {
     contextMenuState.close();

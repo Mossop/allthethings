@@ -2,7 +2,7 @@ import type { Location, To, Update } from "history";
 import { createBrowserHistory } from "history";
 
 import type { NamedContext, Project, User } from "./state";
-import { isProject } from "./state";
+import { isNamedContext, isUser, isProject } from "./state";
 
 export const history = createBrowserHistory();
 
@@ -14,7 +14,7 @@ export enum ViewType {
 
 export interface BaseView {
   readonly user: User;
-  readonly selectedNamedContext: NamedContext | null;
+  readonly namedContext: NamedContext | null;
 }
 
 export type NotFoundView = BaseView & {
@@ -27,7 +27,7 @@ export type InboxView = BaseView & {
 
 export type OwnerView = BaseView & {
   readonly type: ViewType.Owner;
-  readonly selectedOwner: User | NamedContext | Project;
+  readonly owner: User | NamedContext | Project;
 };
 
 export type View =
@@ -35,24 +35,63 @@ export type View =
   InboxView |
   OwnerView;
 
-export type NavigableView = {
-  selectedNamedContext?: NamedContext | null;
-} & (
-  Omit<InboxView, keyof BaseView | "selectedNamedContext"> |
-  Omit<OwnerView, keyof BaseView | "selectedNamedContext">
-);
+function updateView(view: View, user: User): View {
+  let base: BaseView = {
+    user,
+    namedContext: view.namedContext ? user.namedContexts.get(view.namedContext.id) ?? null : null,
+  };
 
-export function viewToUrl(view: NavigableView, currentView?: View): URL {
+  switch (view.type) {
+    case ViewType.NotFound:
+      return {
+        ...base,
+        type: view.type,
+      };
+    case ViewType.Inbox:
+      return {
+        ...base,
+        type: view.type,
+      };
+    case ViewType.Owner: {
+      let owner: User | NamedContext | Project;
+
+      if (isUser(view.owner)) {
+        owner = user;
+      } else if (isNamedContext(view.owner)) {
+        let context = user.namedContexts.get(view.owner.id);
+        if (!context) {
+          return {
+            ...base,
+            type: ViewType.NotFound,
+          };
+        }
+        owner = context;
+      } else {
+        let project = (base.namedContext ?? base.user).projects.get(view.owner.id);
+        if (!project) {
+          return {
+            ...base,
+            type: ViewType.NotFound,
+          };
+        }
+        owner = project;
+      }
+
+      return {
+        ...base,
+        type: view.type,
+        owner,
+      };
+    }
+  }
+}
+
+export function viewToUrl(view: InboxView | OwnerView): URL {
   let path: string;
   let searchParams = new URLSearchParams();
 
-  let namedContext = currentView?.selectedNamedContext;
-  if (view.selectedNamedContext !== undefined) {
-    namedContext = view.selectedNamedContext;
-  }
-
-  if (namedContext) {
-    searchParams.set("context", namedContext.stub);
+  if (view.namedContext) {
+    searchParams.set("context", view.namedContext.stub);
   }
 
   switch (view.type) {
@@ -60,9 +99,9 @@ export function viewToUrl(view: NavigableView, currentView?: View): URL {
       path = "/inbox";
       break;
     case ViewType.Owner:
-      if (isProject(view.selectedOwner)) {
-        let parts = [view.selectedOwner.stub];
-        let parent = view.selectedOwner.parent;
+      if (isProject(view.owner)) {
+        let parts = [view.owner.stub];
+        let parent = view.owner.parent;
         while (parent) {
           parts.unshift(parent.stub);
           parent = parent.parent;
@@ -86,22 +125,22 @@ export function urlToView(user: User, url: URL): View {
   let pathParts = url.pathname.substring(1).split("/");
 
   let currentContext: User | NamedContext = user;
-  let selectedNamedContext: NamedContext | null = null;
+  let namedContext: NamedContext | null = null;
   let selectedContext = url.searchParams.get("context");
   if (selectedContext) {
-    selectedNamedContext = user.namedContexts.find(
+    namedContext = [...user.namedContexts.values()].find(
       (context: NamedContext): boolean => context.stub == selectedContext,
     ) ?? null;
 
-    if (selectedNamedContext) {
-      currentContext = selectedNamedContext;
+    if (namedContext) {
+      currentContext = namedContext;
     }
   }
 
   let notFound: View = {
     type: ViewType.NotFound,
     user,
-    selectedNamedContext,
+    namedContext,
   };
 
   switch (pathParts.shift()) {
@@ -112,8 +151,8 @@ export function urlToView(user: User, url: URL): View {
       return {
         type: ViewType.Owner,
         user,
-        selectedNamedContext,
-        selectedOwner: currentContext,
+        namedContext,
+        owner: currentContext,
       };
     case "inbox":
       if (pathParts.length) {
@@ -122,7 +161,7 @@ export function urlToView(user: User, url: URL): View {
       return {
         type: ViewType.Inbox,
         user,
-        selectedNamedContext,
+        namedContext,
       };
     case "project": {
       let owner: User | NamedContext | Project = currentContext;
@@ -144,8 +183,8 @@ export function urlToView(user: User, url: URL): View {
       return {
         type: ViewType.Owner,
         user: user,
-        selectedNamedContext,
-        selectedOwner: owner,
+        namedContext,
+        owner,
       };
     }
     default:
@@ -157,26 +196,50 @@ function descend(owner: User | NamedContext | Project, stub: string): Project | 
   return owner.subprojects.find((project: Project): boolean => project.stub == stub) ?? null;
 }
 
-export class NavigationHandler {
-  private destroy: () => void;
+function urlForLocation(location: Location): URL {
+  return new URL(`${location.pathname}${location.search}${location.hash}`, document.URL);
+}
 
-  private constructor(private user: User, private setView: (view: View) => void) {
-    this.destroy = history.listen(({ location }: Update) => this.update(location));
+export class NavigationHandler {
+  private user: User | null = null;
+  private view: View | null = null;
+
+  public constructor(private callback: (view: View) => void) {
     this.update(history.location);
   }
 
+  private setView(view: View): void {
+    this.view = view;
+    this.callback(view);
+  }
+
   private update(location: Location): void {
+    if (!this.user) {
+      return;
+    }
+
     this.setView(
-      urlToView(
-        this.user,
-        new URL(`${location.pathname}${location.search}${location.hash}`, document.URL),
-      ),
+      urlToView(this.user, urlForLocation(location)),
     );
   }
 
-  public static watchHistory(user: User, callback: (view: View) => void): () => void {
-    let handler = new NavigationHandler(user, callback);
-    return () => handler.destroy();
+  public watch(user: User | null): void | (() => void) {
+    this.user = user;
+    if (!user) {
+      return;
+    }
+
+    if (this.view && this.view.type != ViewType.NotFound) {
+      let newView = updateView(this.view, user);
+      this.setView(newView);
+      if (newView.type != ViewType.NotFound) {
+        replaceState(viewToUrl(newView));
+      }
+    } else {
+      this.update(history.location);
+    }
+
+    return history.listen(({ location }: Update) => this.update(location));
   }
 }
 

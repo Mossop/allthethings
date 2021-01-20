@@ -8,7 +8,7 @@ import NotFound from "./ui/NotFound";
 import Owner from "./ui/Owner";
 import type { View } from "./utils/navigation";
 import { ViewType } from "./utils/navigation";
-import { useState } from "./utils/state";
+import { useView } from "./utils/state";
 import type { ReactResult } from "./utils/types";
 
 const useStyles = makeStyles(() =>
@@ -36,7 +36,7 @@ function PageContent({
 }
 
 export default function App(): ReactResult {
-  let state = useState();
+  let state = useView();
   let classes = useStyles();
 
   if (state === undefined) {
