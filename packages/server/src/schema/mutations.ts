@@ -8,6 +8,7 @@ import type {
   MutationCreateNamedContextArgs,
   MutationCreateProjectArgs,
   MutationDeleteProjectArgs,
+  MutationEditProjectArgs,
   MutationLoginArgs,
 } from "./types";
 
@@ -62,6 +63,36 @@ const resolvers: MutationResolvers = {
       ...params,
       owner: intoId(params.owner),
     });
+  }),
+
+  editProject: authed(async ({
+    args: { id, params },
+    ctx,
+  }: AuthedParams<unknown, MutationEditProjectArgs>): Promise<Project | null> => {
+    let project = await ctx.dataSources.projects.get(id);
+    if (!project) {
+      return null;
+    }
+
+    let ownerId: ObjectId | undefined;
+    if (params.owner === undefined) {
+      ownerId = undefined;
+    } else if (params.owner) {
+      ownerId = new ObjectId(params.owner);
+    } else {
+      ownerId = ctx.userId;
+    }
+
+    let owner = ownerId ? await ctx.getOwner(ownerId) : undefined;
+    if (owner === null) {
+      throw new Error("Owner not found.");
+    }
+
+    await project.edit({
+      ...params,
+      owner,
+    });
+    return project;
   }),
 
   deleteProject: authed(async ({

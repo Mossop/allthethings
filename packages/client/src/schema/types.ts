@@ -131,7 +131,7 @@ export type CreateProjectParams = {
   readonly owner?: Maybe<Scalars['ID']>;
 };
 
-export type UpdateProjectParams = {
+export type EditProjectParams = {
   readonly name: Scalars['String'];
   readonly owner?: Maybe<Scalars['ID']>;
 };
@@ -143,6 +143,7 @@ export type Mutation = {
   readonly createNamedContext: NamedContext;
   readonly deleteNamedContext: Scalars['Boolean'];
   readonly createProject: Project;
+  readonly editProject?: Maybe<Project>;
   readonly deleteProject: Scalars['Boolean'];
 };
 
@@ -165,6 +166,12 @@ export type MutationDeleteNamedContextArgs = {
 
 export type MutationCreateProjectArgs = {
   params: CreateProjectParams;
+};
+
+
+export type MutationEditProjectArgs = {
+  id: Scalars['ID'];
+  params: EditProjectParams;
 };
 
 

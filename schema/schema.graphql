@@ -80,7 +80,7 @@ input CreateProjectParams {
   owner: ID
 }
 
-input UpdateProjectParams {
+input EditProjectParams {
   name: String!
   owner: ID
 }
@@ -93,5 +93,6 @@ type Mutation {
   deleteNamedContext(id: ID!): Boolean!
 
   createProject(params: CreateProjectParams!): Project!
+  editProject(id: ID!, params: EditProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 }

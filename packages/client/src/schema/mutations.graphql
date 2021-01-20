@@ -23,3 +23,14 @@ mutation CreateProject($params: CreateProjectParams!) {
     stub
   }
 }
+
+mutation EditProject($id: ID!, $params: EditProjectParams!) {
+  editProject(id: $id, params: $params) {
+    id
+    name
+    stub
+    owner {
+      id
+    }
+  }
+}

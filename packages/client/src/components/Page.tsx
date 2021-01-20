@@ -1,5 +1,4 @@
 import AppBar from "@material-ui/core/AppBar";
-import Paper from "@material-ui/core/Paper";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
@@ -87,9 +86,7 @@ export default ReactMemo(function Page({
     {
       view
         ? <div className={classes.contentSplit}>
-          <Paper elevation={2} component="nav" square={true}>
-            <ProjectList view={view}/>
-          </Paper>
+          <ProjectList view={view}/>
           <Suspense fallback={<Loading className={classes.loading}/>}>
             {children}
           </Suspense>

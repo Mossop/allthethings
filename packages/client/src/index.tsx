@@ -2,6 +2,8 @@ import { ApolloProvider } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import { DndProvider } from "react-dnd";
+import { HTML5Backend } from "react-dnd-html5-backend";
 import { render } from "react-dom";
 
 import App from "./App";
@@ -101,9 +103,11 @@ function init(): void {
       <ThemeProvider theme={baseTheme}>
         <ApolloProvider client={client}>
           <CssBaseline/>
-          <StateListener>
-            <App/>
-          </StateListener>
+          <DndProvider backend={HTML5Backend}>
+            <StateListener>
+              <App/>
+            </StateListener>
+          </DndProvider>
         </ApolloProvider>
       </ThemeProvider>
     </ThemeProvider>,

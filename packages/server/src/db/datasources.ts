@@ -15,7 +15,7 @@ export interface DbObject {
   _id: ObjectId;
 }
 
-function stub(name: string): string {
+export function stub(name: string): string {
   return name.toLocaleLowerCase().replaceAll(" ", "-");
 }
 
@@ -92,14 +92,15 @@ class BaseDataSource<
   public async updateOne(
     id: ObjectId,
     update: UpdateQuery<Omit<D, "_id">> | Partial<Omit<D, "_id">>,
-  ): Promise<T | null> {
+  ): Promise<D | null> {
     await this.collection.updateOne({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       _id: id,
     }, update);
     await this.deleteFromCacheById(id);
 
-    return this.get(id);
+    let doc = await this.findOneById(id);
+    return doc ?? null;
   }
 
   public async insert(fields: Omit<D, "_id">): Promise<T> {

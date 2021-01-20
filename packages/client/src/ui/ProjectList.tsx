@@ -3,20 +3,27 @@ import List from "@material-ui/core/List";
 import ListItem from "@material-ui/core/ListItem";
 import ListItemIcon from "@material-ui/core/ListItemIcon";
 import ListItemText from "@material-ui/core/ListItemText";
+import Paper from "@material-ui/core/Paper";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
+import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { useState, useCallback } from "react";
+import { forwardRef, useState, useCallback } from "react";
+import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
+import { useEditProjectMutation } from "../schema/mutations";
+import { refetchListContextStateQuery } from "../schema/queries";
+import type { DraggedObject } from "../utils/drag";
+import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
 import { pushState, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { NamedContext, Project, User } from "../utils/state";
 import { useUrl, useCurrentContext } from "../utils/state";
 import { ReactMemo } from "../utils/types";
-import type { ReactResult } from "../utils/types";
+import type { ReactResult, ReactRef } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -47,6 +54,15 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(3 + depth * 2),
       paddingRight: theme.spacing(3),
     }),
+    dragging: {
+      opacity: 0.5,
+    },
+    dropping: {
+      backgroundColor: alpha(theme.palette.text.secondary, 0.2),
+    },
+    projectList: {
+      backgroundColor: alpha(theme.palette.text.secondary, 0.2),
+    },
     selectedItem: {
       backgroundColor: theme.palette.text.secondary,
       color: theme.palette.getContrastText(theme.palette.text.secondary),
@@ -61,6 +77,7 @@ type ItemProps = {
   label: string;
   icon: ReactElement;
   depth: number;
+  className?: string;
 } & ({
   url: URL;
   onClick?: undefined;
@@ -69,19 +86,21 @@ type ItemProps = {
   url?: URL;
 });
 
-const Item = ReactMemo(function Item({
+const Item = ReactMemo(forwardRef(function Item({
   selected,
   url,
   onClick,
   label,
   icon,
   depth,
-}: ItemProps): ReactResult {
+  className: providedClass,
+}: ItemProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles({ depth });
 
   let className = clsx(
     classes.item,
     selected ? classes.selectedItem : classes.selectableItem,
+    providedClass,
   );
 
   let click = useCallback((event: React.MouseEvent) => {
@@ -95,6 +114,7 @@ const Item = ReactMemo(function Item({
 
   if (selected) {
     return <ListItem
+      ref={ref}
       dense={true}
       className={className}
       component="div"
@@ -104,6 +124,7 @@ const Item = ReactMemo(function Item({
     </ListItem>;
   } else if (url) {
     return <ListItem
+      ref={ref}
       dense={true}
       button={true}
       className={className}
@@ -116,6 +137,7 @@ const Item = ReactMemo(function Item({
     </ListItem>;
   } else {
     return <ListItem
+      ref={ref}
       dense={true}
       button={true}
       className={className}
@@ -125,7 +147,7 @@ const Item = ReactMemo(function Item({
       <ListItemText>{label}</ListItemText>
     </ListItem>;
   }
-});
+}));
 
 interface ProjectItemProps {
   project: Project;
@@ -139,19 +161,82 @@ const ProjectItem = ReactMemo(function ProjectItem({
   depth,
 }: ProjectItemProps): ReactResult {
   let selected = project.id == selectedOwner?.id;
-  let classes = useStyles({ depth });
   let url = useUrl({
     type: ViewType.Owner,
     selectedOwner: project,
   });
 
+  let [{ isDragging }, dragRef] = useDrag({
+    item: {
+      type: DragType.Project,
+      project,
+    },
+    collect: (monitor: DragSourceMonitor) => {
+      return {
+        isDragging: monitor.isDragging(),
+      };
+    },
+  });
+
+  let canDrop = useCallback((item: DraggedObject): boolean => {
+    let parent: Project | null = project;
+    while (parent) {
+      if (parent.id == item.project.id) {
+        return false;
+      }
+
+      parent = parent.parent;
+    }
+    return true;
+  }, [project]);
+
+  let [editProject] = useEditProjectMutation({
+    refetchQueries: [refetchListContextStateQuery()],
+  });
+
+  let drop = useCallback((item: DraggedObject, monitor: DropTargetMonitor): void => {
+    if (monitor.didDrop()) {
+      return;
+    }
+
+    void editProject({
+      variables: {
+        id: item.project.id,
+        params: {
+          name: item.project.name,
+          owner: project.id,
+        },
+      },
+    });
+  }, [editProject, project]);
+
+  let [{ isDropping }, dropRef] = useDrop({
+    accept: DragType.Project,
+    canDrop,
+    collect: (monitor: DropTargetMonitor) => {
+      return {
+        isDropping: monitor.isOver() && monitor.canDrop(),
+      };
+    },
+    drop,
+  });
+
+  let ref = useCallback((element: ReactElement | Element | null) => {
+    dragRef(element);
+    dropRef(element);
+  }, [dragRef, dropRef]);
+
+  let classes = useStyles({ depth });
+
   return <>
     <Item
+      ref={ref}
       url={url}
       label={project.name}
-      selected={selected}
+      selected={selected && !isDragging}
       depth={depth}
       icon={<ProjectIcon/>}
+      className={clsx(isDragging && classes.dragging, isDropping && classes.dropping)}
     />
     {
       project.subprojects.length > 0 && <List className={classes.innerList}>
@@ -198,11 +283,51 @@ export default ReactMemo(function ProjectList({
     }
     : null);
 
+  let [editProject] = useEditProjectMutation({
+    refetchQueries: [refetchListContextStateQuery()],
+  });
+
+  let drop = useCallback((item: DraggedObject, monitor: DropTargetMonitor): void => {
+    if (monitor.didDrop() || !context) {
+      return;
+    }
+
+    void editProject({
+      variables: {
+        id: item.project.id,
+        params: {
+          name: item.project.name,
+          owner: context.id,
+        },
+      },
+    });
+  }, [editProject, context]);
+
+  let [{ isDragging, isOver }, dropRef] = useDrop({
+    accept: DragType.Project,
+    canDrop(item: DraggedObject): boolean {
+      return !!item.project.parent;
+    },
+    collect: (monitor: DropTargetMonitor) => {
+      return {
+        isDragging: monitor.isOver(),
+        isOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
+      };
+    },
+    drop,
+  });
+
   if (!context) {
     return null;
   }
 
-  return <>
+  return <Paper
+    elevation={2}
+    component="nav"
+    square={true}
+    className={clsx(isOver && classes.projectList)}
+    ref={dropRef}
+  >
     <List component="div" className={classes.list}>
       <Item
         url={inboxUrl}
@@ -223,7 +348,7 @@ export default ReactMemo(function ProjectList({
         nameSorted(context.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
-          selectedOwner={selectedOwner}
+          selectedOwner={isDragging ? null : selectedOwner}
           depth={0}
         />)
       }
@@ -240,5 +365,5 @@ export default ReactMemo(function ProjectList({
         owner={context}
       />
     }
-  </>;
+  </Paper>;
 });

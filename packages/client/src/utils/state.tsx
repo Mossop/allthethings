@@ -13,19 +13,16 @@ import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
 export type Project = Pick<Schema.Project, "id" | "stub" | "name"> & {
-  readonly baseUrl: string;
   readonly parent: Project | null;
   readonly subprojects: readonly Project[];
 };
 
 export type User = Pick<Schema.User, "id" | "email"> & {
-  readonly baseUrl: string;
   readonly subprojects: readonly Project[];
   readonly namedContexts: readonly NamedContext[];
 };
 
 export type NamedContext = Pick<Schema.NamedContext, "id" | "stub" | "name"> & {
-  readonly baseUrl: string;
   readonly subprojects: readonly Project[];
 };
 
@@ -118,7 +115,6 @@ function buildProjects(context: ContextData, baseUrl: string): readonly Project[
       let projectUrl = `${baseUrl}${data.stub}/`;
       let project: Omit<Project, "subprojects"> & { subprojects: readonly Project[] } = {
         ...data,
-        baseUrl: projectUrl,
         parent,
         subprojects: [],
       };
@@ -143,14 +139,12 @@ export function StateListener({ children }: ReactChildren): ReactResult {
 
     return {
       ...data.user,
-      baseUrl: "/",
 
       // eslint-disable-next-line @typescript-eslint/typedef
       namedContexts: data.user.namedContexts.map((namedContext): NamedContext => {
         let baseUrl = `/context/${namedContext.stub}/`;
         return {
           ...namedContext,
-          baseUrl,
 
           subprojects: buildProjects(namedContext, baseUrl),
         };

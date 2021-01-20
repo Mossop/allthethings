@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { DataSources } from "./datasources";
+import { stub } from "./datasources";
 import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
@@ -203,9 +204,53 @@ export class NamedContext
   }
 }
 
+type ProjectEditParams = Partial<Pick<ProjectDbObject, "name">> & {
+  owner?: User | NamedContext | Project;
+};
+
 export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
     return assertValid(await this.dataSources.projects.findOneById(this.dbId));
+  }
+
+  public async edit({
+    owner,
+    ...params
+  }: ProjectEditParams): Promise<void> {
+    let update: Partial<Omit<ProjectDbObject, "_id">> = params;
+    if (update.name) {
+      update.stub = stub(update.name);
+    }
+
+    if (owner) {
+      if (owner instanceof User) {
+        update.user = owner.dbId;
+        update.parent = null;
+        update.namedContext = null;
+      } else if (owner instanceof NamedContext) {
+        update.user = (await owner.user()).dbId;
+        update.namedContext = owner.dbId;
+        update.parent = null;
+      } else {
+        let context = await owner.context();
+        if (context instanceof NamedContext) {
+          update.user = (await context.user()).dbId;
+          update.namedContext = context.dbId;
+        } else {
+          update.user = context.dbId;
+          update.namedContext = null;
+        }
+        update.parent = owner.dbId;
+      }
+    }
+
+    let newProject = await this.dataSources.projects.updateOne(this.dbId, {
+      $set: update,
+    });
+    if (!newProject) {
+      throw new Error("Missing project in database.");
+    }
+    this._dbObject = Promise.resolve(newProject);
   }
 
   public async context(): Promise<Context> {

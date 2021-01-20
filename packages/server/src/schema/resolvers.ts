@@ -93,7 +93,7 @@ export type ResolversTypes = ResolversObject<{
   Query: ResolverTypeWrapper<{}>;
   CreateNamedContextParams: Schema.CreateNamedContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
-  UpdateProjectParams: Schema.UpdateProjectParams;
+  EditProjectParams: Schema.EditProjectParams;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 }>;
@@ -110,7 +110,7 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   CreateNamedContextParams: Schema.CreateNamedContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
-  UpdateProjectParams: Schema.UpdateProjectParams;
+  EditProjectParams: Schema.EditProjectParams;
   Mutation: {};
   Boolean: Schema.Scalars['Boolean'];
 }>;
@@ -182,6 +182,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   createNamedContext?: Resolver<ResolversTypes['NamedContext'], ParentType, ContextType, RequireFields<Schema.MutationCreateNamedContextArgs, 'params'>>;
   deleteNamedContext?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteNamedContextArgs, 'id'>>;
   createProject?: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<Schema.MutationCreateProjectArgs, 'params'>>;
+  editProject?: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationEditProjectArgs, 'id' | 'params'>>;
   deleteProject?: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteProjectArgs, 'id'>>;
 }>;
 
