@@ -50,7 +50,7 @@ export async function connect(): Promise<MongoClient> {
 
     await client.db().collection("projects").createIndex({
       user: 1,
-      context: 1,
+      namedContext: 1,
       parent: 1,
       stub: 1,
     }, {
