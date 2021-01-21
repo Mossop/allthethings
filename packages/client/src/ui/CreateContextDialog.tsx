@@ -6,13 +6,14 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import FormControl from "@material-ui/core/FormControl";
 import InputLabel from "@material-ui/core/InputLabel";
 import type { FormEvent, ReactElement } from "react";
-import { useState, useCallback } from "react";
+import { useMemo, useEffect, useState, useCallback } from "react";
 
 import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateNamedContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
-import { pushState } from "../utils/navigation";
+import { pushState, ViewType } from "../utils/navigation";
+import { useUrl, useUser } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -25,8 +26,9 @@ export default ReactMemo(function CreateContextDialog({
   let [state, setState] = useState({
     name: "",
   });
+  let user = useUser();
 
-  let [createContext, { error }] = useCreateNamedContextMutation({
+  let [createContext, { data, error }] = useCreateNamedContextMutation({
     variables: {
       params: state,
     },
@@ -36,17 +38,37 @@ export default ReactMemo(function CreateContextDialog({
     awaitRefetchQueries: true,
   });
 
+  let newContext = useMemo(() => {
+    if (!data || !user) {
+      return null;
+    }
+
+    return user.namedContexts.get(data.createNamedContext.id) ?? null;
+  }, [data, user]);
+
+  let newContextUrl = useUrl(
+    newContext
+      ? {
+        type: ViewType.Owner,
+        namedContext: newContext,
+        owner: newContext,
+      }
+      : null,
+  );
+
+  useEffect(() => {
+    if (!newContext) {
+      return;
+    }
+
+    pushState(newContextUrl);
+    onClose();
+  }, [newContext, newContextUrl, onClose]);
+
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-
-    let { data } = await createContext();
-
-    onClose();
-    let stub = data?.createNamedContext.stub;
-    if (stub) {
-      pushState(new URL(`/?context=${stub}`));
-    }
-  }, [createContext, onClose]);
+    void createContext();
+  }, [createContext]);
 
   return <Dialog open={true} onClose={onClose}>
     <form onSubmit={submit}>
