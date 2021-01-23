@@ -12,9 +12,9 @@ import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
-import { pushState, ViewType } from "../utils/navigation";
+import { pushView, ViewType } from "../utils/navigation";
 import type { NamedContext, Project, User } from "../utils/state";
-import { useCurrentContext, useUrl } from "../utils/state";
+import { useView, useCurrentContext } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 interface CreateProjectProps {
@@ -30,6 +30,7 @@ export default ReactMemo(function CreateProjectDialog({
     name: "",
   });
   let currentContext = useCurrentContext();
+  let view = useView();
 
   let [createProject, { data, error }] = useCreateProjectMutation({
     variables: {
@@ -44,30 +45,25 @@ export default ReactMemo(function CreateProjectDialog({
   });
 
   let newProject = useMemo(() => {
-    if (!data || !currentContext) {
+    if (!data) {
       return null;
     }
 
     return currentContext.projects.get(data.createProject.id) ?? null;
   }, [data, currentContext]);
 
-  let newProjectUrl = useUrl(
-    newProject
-      ? {
-        type: ViewType.Owner,
-        owner: newProject,
-      }
-      : null,
-  );
-
   useEffect(() => {
     if (!newProject) {
       return;
     }
 
-    pushState(newProjectUrl);
+    pushView({
+      type: ViewType.Owner,
+      owner: newProject,
+    }, view);
+
     onClose();
-  }, [newProject, newProjectUrl, onClose]);
+  }, [newProject, onClose, view]);
 
   let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();

@@ -8,7 +8,7 @@ import { Suspense } from "react";
 import ContextMenu from "../ui/ContextMenu";
 import ProjectList from "../ui/ProjectList";
 import UserMenu from "../ui/UserMenu";
-import { useUser, useView } from "../utils/state";
+import { useUser, useMaybeView } from "../utils/state";
 import { flexColumn, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -57,10 +57,6 @@ const PageControls = ReactMemo(function PageControls(): ReactResult {
   let classes = useStyles();
   let user = useUser();
 
-  if (!user) {
-    return null;
-  }
-
   return <div className={classes.pageControls}>
     <ContextMenu/>
     <UserMenu user={user}/>
@@ -71,7 +67,7 @@ export default ReactMemo(function Page({
   children,
 }: PageProps): ReactResult {
   let classes = useStyles();
-  let view = useView();
+  let view = useMaybeView();
 
   return <div className={clsx(classes.outer)}>
     <AppBar
@@ -81,7 +77,7 @@ export default ReactMemo(function Page({
       role="banner"
     >
       <h1 className={classes.title}>AllTheThings</h1>
-      <PageControls/>
+      {view && <PageControls/>}
     </AppBar>
     {
       view

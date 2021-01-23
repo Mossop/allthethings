@@ -18,7 +18,7 @@ import { refetchListContextStateQuery } from "../schema/queries";
 import type { DraggedObject } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
-import { pushState, ViewType } from "../utils/navigation";
+import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { NamedContext, Project, User } from "../utils/state";
 import { useUrl, useCurrentContext } from "../utils/state";
@@ -109,7 +109,7 @@ const Item = ReactMemo(forwardRef(function Item({
     }
 
     event.preventDefault();
-    pushState(url);
+    pushUrl(url);
   }, [url]);
 
   if (selected) {
@@ -276,19 +276,17 @@ export default ReactMemo(function ProjectList({
   let inboxUrl = useUrl({
     type: ViewType.Inbox,
   });
-  let tasksUrl = useUrl(context
-    ? {
-      type: ViewType.Owner,
-      owner: context,
-    }
-    : null);
+  let tasksUrl = useUrl({
+    type: ViewType.Owner,
+    owner: context,
+  });
 
   let [editProject] = useEditProjectMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
 
   let drop = useCallback((item: DraggedObject, monitor: DropTargetMonitor): void => {
-    if (monitor.didDrop() || !context) {
+    if (monitor.didDrop()) {
       return;
     }
 
@@ -316,10 +314,6 @@ export default ReactMemo(function ProjectList({
     },
     drop,
   });
-
-  if (!context) {
-    return null;
-  }
 
   return <Paper
     elevation={2}

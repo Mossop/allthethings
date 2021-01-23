@@ -49,11 +49,8 @@ export type NavigableView = {
   Omit<OwnerView, keyof BaseView | "namedContext">
 );
 
-export function useUrl(view: NavigableView | null): URL {
+export function useUrl(view: NavigableView): URL {
   let currentView = useView();
-  if (!currentView || !view) {
-    return new URL("/", document.URL);
-  }
 
   let newView = {
     user: currentView.user,
@@ -64,26 +61,34 @@ export function useUrl(view: NavigableView | null): URL {
   return viewToUrl(newView);
 }
 
-export function useView(): View | undefined | null {
+export function useMaybeView(): View | undefined | null {
   return useReactContext(StateContext);
 }
 
-export function useUser(): User | null {
-  return useView()?.user ?? null;
+export function useView(): View {
+  let view = useMaybeView();
+  if (!view) {
+    throw new Error("App not initialized.");
+  }
+  return view;
+}
+
+export function useUser(): User {
+  return useView().user;
 }
 
 export function useNamedContexts(): ReadonlyMap<string, NamedContext> {
-  return useUser()?.namedContexts ?? new Map();
+  return useUser().namedContexts;
 }
 
-export function useCurrentContext(): User | NamedContext | null {
+export function useCurrentContext(): User | NamedContext {
   let state = useView();
-  return state?.namedContext ?? state?.user ?? null;
+  return state.namedContext ?? state.user;
 }
 
 export function useCurrentNamedContext(): NamedContext | null {
   let state = useView();
-  return state?.namedContext ?? null;
+  return state.namedContext ?? null;
 }
 
 interface ProjectData {

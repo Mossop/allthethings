@@ -1,7 +1,7 @@
 import type { Location, To, Update } from "history";
 import { createBrowserHistory } from "history";
 
-import type { NamedContext, Project, User } from "./state";
+import type { NamedContext, NavigableView, Project, User } from "./state";
 import { isNamedContext, isUser, isProject } from "./state";
 
 export const history = createBrowserHistory();
@@ -31,7 +31,10 @@ export type OwnerView = BaseView & {
 };
 
 export type View =
-  NotFoundView |
+  LinkableView |
+  NotFoundView;
+
+export type LinkableView =
   InboxView |
   OwnerView;
 
@@ -204,11 +207,11 @@ export class NavigationHandler {
   private user: User | null = null;
   private view: View | null = null;
 
-  public constructor(private callback: (view: View) => void) {
+  public constructor(private callback: (view: View | null) => void) {
     this.update(history.location);
   }
 
-  private setView(view: View): void {
+  private setView(view: View | null): void {
     this.view = view;
     this.callback(view);
   }
@@ -226,6 +229,7 @@ export class NavigationHandler {
   public watch(user: User | null): void | (() => void) {
     this.user = user;
     if (!user) {
+      this.setView(null);
       return;
     }
 
@@ -233,7 +237,7 @@ export class NavigationHandler {
       let newView = updateView(this.view, user);
       this.setView(newView);
       if (newView.type != ViewType.NotFound) {
-        replaceState(viewToUrl(newView));
+        replaceUrl(viewToUrl(newView));
       }
     } else {
       this.update(history.location);
@@ -243,7 +247,39 @@ export class NavigationHandler {
   }
 }
 
-export function pushState({ pathname, search }: URL): void {
+function buildView(
+  args: [view: LinkableView] | [view: NavigableView, currentView: View],
+): LinkableView {
+  if (args.length == 2) {
+    let [newView, currentView] = args;
+    return {
+      user: currentView.user,
+      namedContext: currentView.namedContext,
+      ...newView,
+    };
+  } else {
+    let [view] = args;
+    return view;
+  }
+}
+
+export function pushView(
+  ...args: [view: LinkableView] | [view: NavigableView, currentView: View]
+): void {
+  let view = buildView(args);
+
+  pushUrl(viewToUrl(view));
+}
+
+export function replaceView(
+  ...args: [view: LinkableView] | [view: NavigableView, currentView: View]
+): void {
+  let view = buildView(args);
+
+  replaceUrl(viewToUrl(view));
+}
+
+export function pushUrl({ pathname, search }: URL): void {
   let to: To = {
     pathname,
     search: search.length > 1 ? search : "",
@@ -252,7 +288,7 @@ export function pushState({ pathname, search }: URL): void {
   history.push(to);
 }
 
-export function replaceState({ pathname, search }: URL): void {
+export function replaceUrl({ pathname, search }: URL): void {
   let to: To = {
     pathname,
     search: search.length > 1 ? search : "",

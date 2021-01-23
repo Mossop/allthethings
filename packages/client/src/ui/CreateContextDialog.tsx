@@ -12,8 +12,8 @@ import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateNamedContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
-import { pushState, ViewType } from "../utils/navigation";
-import { useUrl, useUser } from "../utils/state";
+import { pushView, ViewType } from "../utils/navigation";
+import { useView } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 interface CreateContextProps {
@@ -26,7 +26,8 @@ export default ReactMemo(function CreateContextDialog({
   let [state, setState] = useState({
     name: "",
   });
-  let user = useUser();
+  let view = useView();
+  let user = view.user;
 
   let [createContext, { data, error }] = useCreateNamedContextMutation({
     variables: {
@@ -39,31 +40,25 @@ export default ReactMemo(function CreateContextDialog({
   });
 
   let newContext = useMemo(() => {
-    if (!data || !user) {
+    if (!data) {
       return null;
     }
 
     return user.namedContexts.get(data.createNamedContext.id) ?? null;
   }, [data, user]);
 
-  let newContextUrl = useUrl(
-    newContext
-      ? {
-        type: ViewType.Owner,
-        namedContext: newContext,
-        owner: newContext,
-      }
-      : null,
-  );
-
   useEffect(() => {
     if (!newContext) {
       return;
     }
 
-    pushState(newContextUrl);
+    pushView({
+      type: ViewType.Owner,
+      namedContext: newContext,
+      owner: newContext,
+    }, view);
     onClose();
-  }, [newContext, newContextUrl, onClose]);
+  }, [newContext, view, onClose]);
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
