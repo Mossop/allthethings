@@ -1,5 +1,7 @@
 import { MongoClient } from "mongodb";
 
+import type { DatabaseConfig } from "../config";
+
 export * from "./implementations";
 export { dataSources } from "./datasources";
 export type { DataSources } from "./datasources";
@@ -28,10 +30,13 @@ async function setSchemaVersion(client: MongoClient, version: number): Promise<v
   });
 }
 
-export async function connect(): Promise<MongoClient> {
-  let client = await MongoClient.connect("mongodb://localhost:27017/allthethings", {
-    useUnifiedTopology: true,
-  });
+export async function connect(config: DatabaseConfig): Promise<MongoClient> {
+  let client = await MongoClient.connect(
+    `mongodb://${config.host}:${config.port}/${config.database}`,
+    {
+      useUnifiedTopology: true,
+    },
+  );
 
   let schemaVersion = await getSchemaVersion(client);
   if (schemaVersion < 1) {

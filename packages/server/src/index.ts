@@ -9,6 +9,7 @@ import koaSession from "koa-session";
 import koaStatic from "koa-static";
 import { install } from "source-map-support";
 
+import { parseConfig } from "./config";
 import { connect, dataSources } from "./db";
 import { loadSchema, resolvers } from "./schema";
 import { buildContext } from "./schema/context";
@@ -16,9 +17,15 @@ import { buildContext } from "./schema/context";
 install();
 
 async function init(): Promise<void> {
+  if (process.argv.length < 3) {
+    throw new Error("Must pass the path to a config file.");
+  }
+
+  let config = await parseConfig(process.argv[2]);
+
   let clientRoot = path.normalize(path.join(__dirname, "..", "..", "client", "dist"));
 
-  let client = await connect();
+  let client = await connect(config.database);
 
   let gqlServer = new ApolloServer({
     typeDefs: await loadSchema(),
@@ -63,7 +70,7 @@ async function init(): Promise<void> {
     ctx.body = stream;
   });
 
-  app.listen(3000);
+  app.listen(config.port);
 }
 
 init().catch((e: Error) => console.error(e));
