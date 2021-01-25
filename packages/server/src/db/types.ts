@@ -18,7 +18,15 @@ export type ProjectDbObject = {
   id: string,
   stub: string,
   name: string,
-  parent: ProjectDbObject['id'] | null,
   user: UserDbObject['id'],
   namedContext: NamedContextDbObject['id'] | null,
+  parent: ProjectDbObject['id'] | null,
+};
+
+export type SectionDbObject = {
+  id: string,
+  name: string,
+  user: UserDbObject['id'],
+  namedContext: NamedContextDbObject['id'] | null,
+  project: ProjectDbObject['id'] | null,
 };

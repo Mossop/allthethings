@@ -1,4 +1,4 @@
-import type { Context, Owner, User } from "../db";
+import type { Context, ProjectOwner, User } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
@@ -31,7 +31,7 @@ const resolvers: QueryResolvers = {
   owner: authed(({
     ctx,
     args: { id },
-  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Owner | null> => {
+  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<ProjectOwner | null> => {
     return ctx.getOwner(id);
   }),
 };

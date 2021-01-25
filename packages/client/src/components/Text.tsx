@@ -14,6 +14,9 @@ export const useTextStyles = makeStyles(() =>
     heading: {
       fontSize: "2rem",
     },
+    subheading: {
+      fontSize: "1.8rem",
+    },
     text: {
       fontSize: "1rem",
     },
@@ -50,5 +53,6 @@ function textBlock(
 }
 
 export const Heading = textBlock("Heading", "h1", "heading");
+export const SubHeading = textBlock("SubHeading", "h2", "subheading");
 export const Text = textBlock("Text", "p", "text");
 export const Info = textBlock("Info", "p", "info");

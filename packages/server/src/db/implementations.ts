@@ -1,7 +1,7 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { AppDataSources } from "./datasources";
-import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
+import type { NamedContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
 
@@ -81,19 +81,20 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
   }
 }
 
-export type Owner = User | Project | NamedContext;
+export type ProjectOwner = User | Project | NamedContext;
 export type Context = User | NamedContext;
 
-abstract class OwnerImpl<
+abstract class ProjectOwnerImpl<
   T extends DbObject,
-> extends BaseImpl<T> implements SchemaResolver<Schema.Owner> {
+> extends BaseImpl<T> implements SchemaResolver<Schema.ProjectOwner> {
   public abstract context(): Promise<Context>;
   public abstract subprojects(): Promise<readonly Project[]>;
+  public abstract sections(): Promise<readonly Section[]>;
 }
 
 abstract class ContextImpl<
   T extends DbObject,
-> extends OwnerImpl<T> implements SchemaResolver<Schema.Context> {
+> extends ProjectOwnerImpl<T> implements SchemaResolver<Schema.Context> {
   public abstract projects(): Promise<readonly Project[]>;
 
   public async projectById(id: string): Promise<Project | null> {
@@ -123,6 +124,14 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
     return this.dataSources.projects.find({
       user: this.id,
       namedContext: null,
+    });
+  }
+
+  public async sections(): Promise<readonly Section[]> {
+    return this.dataSources.sections.find({
+      user: this.id,
+      namedContext: null,
+      project: null,
     });
   }
 
@@ -164,6 +173,13 @@ export class NamedContext
     });
   }
 
+  public async sections(): Promise<readonly Section[]> {
+    return this.dataSources.sections.find({
+      namedContext: this.id,
+      project: null,
+    });
+  }
+
   public async user(): Promise<User> {
     return new User(this.resolverContext, (await this.dbObject).user);
   }
@@ -177,13 +193,14 @@ export class NamedContext
   }
 }
 
-export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
+export class Project extends ProjectOwnerImpl<ProjectDbObject>
+  implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
     return assertValid(await this.dataSources.projects.get(this.id));
   }
 
   public async move(owner: User | NamedContext | Project): Promise<void> {
-    let update: Partial<Omit<ProjectDbObject, "_id">> = {};
+    let update: Partial<Omit<ProjectDbObject, "id">> = {};
     if (owner instanceof User) {
       update.user = owner.id;
       update.parent = null;
@@ -211,6 +228,10 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
     this._dbObject = Promise.resolve(newProject);
   }
 
+  public async delete(): Promise<void> {
+    return this.dataSources.projects.delete(this.id);
+  }
+
   public async context(): Promise<Context> {
     let obj = await this.dbObject;
     if (obj.namedContext) {
@@ -225,6 +246,12 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
     });
   }
 
+  public async sections(): Promise<readonly Section[]> {
+    return this.dataSources.sections.find({
+      project: this.id,
+    });
+  }
+
   public async stub(): Promise<string> {
     return (await this.dbObject).stub;
   }
@@ -234,13 +261,67 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
   }
 
   public async owner(): Promise<Project | User | NamedContext> {
-    let obj = await this.dbObject;
-    if (obj.parent) {
-      return new Project(this.resolverContext, obj.parent);
+    let { parent, namedContext, user } = await this.dbObject;
+    if (parent) {
+      return new Project(this.resolverContext, parent);
     }
-    if (obj.namedContext) {
-      return new NamedContext(this.resolverContext, obj.namedContext);
+    if (namedContext) {
+      return new NamedContext(this.resolverContext, namedContext);
     }
-    return new User(this.resolverContext, obj.user);
+    return new User(this.resolverContext, user);
+  }
+}
+
+export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver<Schema.Section> {
+  protected getDbObject(): Promise<SectionDbObject> {
+    throw new Error("Method not implemented.");
+  }
+
+  public async move(owner: User | NamedContext | Project): Promise<void> {
+    let update: Partial<Omit<SectionDbObject, "id">> = {};
+    if (owner instanceof User) {
+      update.user = owner.id;
+      update.project = null;
+      update.namedContext = null;
+    } else if (owner instanceof NamedContext) {
+      update.user = (await owner.user()).id;
+      update.namedContext = owner.id;
+      update.project = null;
+    } else {
+      let context = await owner.context();
+      if (context instanceof NamedContext) {
+        update.user = (await context.user()).id;
+        update.namedContext = context.id;
+      } else {
+        update.user = context.id;
+        update.namedContext = null;
+      }
+      update.project = owner.id;
+    }
+
+    let newSection = await this.dataSources.sections.updateOne(this.id, update);
+    if (!newSection) {
+      throw new Error("Missing section in database.");
+    }
+    this._dbObject = Promise.resolve(newSection);
+  }
+
+  public async delete(): Promise<void> {
+    return this.dataSources.sections.delete(this.id);
+  }
+
+  public async name(): Promise<string> {
+    return (await this.dbObject).name;
+  }
+
+  public async owner(): Promise<Project | User | NamedContext> {
+    let { project, namedContext, user } = await this.dbObject;
+    if (project) {
+      return new Project(this.resolverContext, project);
+    }
+    if (namedContext) {
+      return new NamedContext(this.resolverContext, namedContext);
+    }
+    return new User(this.resolverContext, user);
   }
 }

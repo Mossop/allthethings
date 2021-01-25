@@ -1,8 +1,9 @@
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-import { Heading } from "../components/Text";
+import { Heading, SubHeading } from "../components/Text";
 import type { OwnerView } from "../utils/navigation";
+import type { Section } from "../utils/state";
 import { isProject } from "../utils/state";
 import { pageStyles } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
@@ -22,6 +23,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     heading: {
       paddingBottom: theme.spacing(2),
+    },
+    section: {
+      paddingTop: theme.spacing(2),
+    },
+    sectionHeading: {
     },
     floatingAction: {
       position: "absolute",
@@ -44,6 +50,14 @@ export default ReactMemo(function Owner({
       {
         isProject(view.owner) &&
         <Heading className={classes.heading}>{view.owner.name}</Heading>
+      }
+      {
+        view.owner.sections.map((section: Section) => <div
+          key={section.id}
+          className={classes.section}
+        >
+          <SubHeading className={classes.sectionHeading}>{section.name}</SubHeading>
+        </div>)
       }
     </div>
     <div className={classes.floatingAction}>

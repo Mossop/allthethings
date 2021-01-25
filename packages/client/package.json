@@ -31,6 +31,7 @@
     "html-webpack-plugin": "^4.5.1",
     "html-webpack-tags-plugin": "^2.0.17",
     "ts-loader": "^8.0.14",
+    "typescript": "^4.1.0",
     "webpack": "^5.12.3",
     "webpack-cli": "^4.3.1"
   }

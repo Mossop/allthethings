@@ -1,21 +1,14 @@
-import type { User, NamedContext, Project } from "../db";
+import type { User, NamedContext, Project, Section } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
-import type {
-  MutationCreateNamedContextArgs,
-  MutationCreateProjectArgs,
-  MutationDeleteNamedContextArgs,
-  MutationDeleteProjectArgs,
-  MutationLoginArgs,
-  MutationMoveProjectArgs,
-} from "./types";
+import type * as Types from "./types";
 
 const resolvers: MutationResolvers = {
   login: resolver(async ({
     args: { email, password },
     ctx,
-  }: ResolverParams<unknown, MutationLoginArgs>): Promise<User | null> => {
+  }: ResolverParams<unknown, Types.MutationLoginArgs>): Promise<User | null> => {
     let user = await ctx.dataSources.users.verifyUser(email, password);
 
     if (!user) {
@@ -37,14 +30,14 @@ const resolvers: MutationResolvers = {
   createNamedContext: authed(({
     args: { params },
     ctx,
-  }: AuthedParams<unknown, MutationCreateNamedContextArgs>): Promise<NamedContext> => {
+  }: AuthedParams<unknown, Types.MutationCreateNamedContextArgs>): Promise<NamedContext> => {
     return ctx.dataSources.namedContexts.create(ctx.userId, params);
   }),
 
   deleteNamedContext: authed(async ({
     args: { id },
     ctx,
-  }: AuthedParams<unknown, MutationDeleteNamedContextArgs>): Promise<boolean> => {
+  }: AuthedParams<unknown, Types.MutationDeleteNamedContextArgs>): Promise<boolean> => {
     await ctx.dataSources.namedContexts.delete(id);
     return true;
   }),
@@ -52,7 +45,7 @@ const resolvers: MutationResolvers = {
   createProject: authed(async ({
     args: { params },
     ctx,
-  }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<Project> => {
+  }: AuthedParams<unknown, Types.MutationCreateProjectArgs>): Promise<Project> => {
     return ctx.dataSources.projects.create(ctx.userId, {
       ...params,
       owner: params.owner ?? null,
@@ -62,7 +55,7 @@ const resolvers: MutationResolvers = {
   moveProject: authed(async ({
     args: { id, owner: ownerId },
     ctx,
-  }: AuthedParams<unknown, MutationMoveProjectArgs>): Promise<Project | null> => {
+  }: AuthedParams<unknown, Types.MutationMoveProjectArgs>): Promise<Project | null> => {
     let project = await ctx.dataSources.projects.getOne(id);
     if (!project) {
       return null;
@@ -80,8 +73,54 @@ const resolvers: MutationResolvers = {
   deleteProject: authed(async ({
     args: { id },
     ctx,
-  }: AuthedParams<unknown, MutationDeleteProjectArgs>): Promise<boolean> => {
-    await ctx.dataSources.projects.delete(id);
+  }: AuthedParams<unknown, Types.MutationDeleteProjectArgs>): Promise<boolean> => {
+    let project = await ctx.dataSources.projects.getOne(id);
+    if (!project) {
+      return false;
+    }
+
+    await project.delete();
+    return true;
+  }),
+
+  createSection: authed(async ({
+    args: { params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationCreateSectionArgs>): Promise<Section> => {
+    return ctx.dataSources.sections.create(ctx.userId, {
+      ...params,
+      owner: params.owner ?? null,
+    });
+  }),
+
+  moveSection: authed(async ({
+    args: { id, owner: ownerId },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
+    let section = await ctx.dataSources.sections.getOne(id);
+    if (!section) {
+      return null;
+    }
+
+    let owner = await ctx.getOwner(ownerId ?? ctx.userId);
+    if (owner === null) {
+      throw new Error("Owner not found.");
+    }
+
+    await section.move(owner);
+    return section;
+  }),
+
+  deleteSection: authed(async ({
+    args: { id },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationDeleteSectionArgs>): Promise<boolean> => {
+    let section = await ctx.dataSources.sections.getOne(id);
+    if (!section) {
+      return false;
+    }
+
+    await section.delete();
     return true;
   }),
 };

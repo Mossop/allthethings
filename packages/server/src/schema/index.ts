@@ -4,14 +4,15 @@ import path from "path";
 
 import { ApolloServer } from "apollo-server-koa";
 
-import type { Context, Owner } from "../db";
+import type { Overwrite } from "../../../utils";
+import type { Context, ProjectOwner } from "../db";
 import { NamedContext, User, dataSources } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { ResolverContext } from "./context";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
 import QueryResolvers from "./queries";
-import type { ContextResolvers, OwnerResolvers, Resolvers } from "./resolvers";
+import type { ContextResolvers, ProjectOwnerResolvers, Resolvers } from "./resolvers";
 
 function loadSchema(): Promise<string> {
   return fs.readFile(path.join(__dirname, "..", "..", "src", "schema", "schema.graphql"), {
@@ -19,18 +20,17 @@ function loadSchema(): Promise<string> {
   });
 }
 
-type Overwrite<A, B> = Omit<A, keyof B> & B;
 type RootResolvers<ContextType = ResolverContext> = Overwrite<
-  Omit<Resolvers<ContextType>, "User" | "NamedContext" | "Project">,
+  Omit<Resolvers<ContextType>, "User" | "NamedContext" | "Project" | "Section">,
   {
-    Owner: Pick<OwnerResolvers<ContextType>, "__resolveType">,
+    ProjectOwner: Pick<ProjectOwnerResolvers<ContextType>, "__resolveType">,
     Context: Pick<ContextResolvers<ContextType>, "__resolveType">,
   }
 >;
 
 export const resolvers: RootResolvers = {
-  Owner: {
-    __resolveType(parent: Owner): "User" | "NamedContext" | "Project" {
+  ProjectOwner: {
+    __resolveType(parent: ProjectOwner): "User" | "NamedContext" | "Project" {
       if (parent instanceof User) {
         return "User";
       }

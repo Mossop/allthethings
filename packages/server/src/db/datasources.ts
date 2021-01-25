@@ -4,14 +4,13 @@ import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type Knex from "knex";
 import { customAlphabet } from "nanoid/async";
 
+import type { Overwrite } from "../../../utils";
 import type { ResolverContext } from "../schema/context";
-import type { CreateNamedContextParams, CreateProjectParams } from "../schema/types";
+import type * as Schema from "../schema/types";
 import type { DatabaseConnection } from "./connection";
 import type { ImplBuilder } from "./implementations";
-import { NamedContext, User, Project } from "./implementations";
-import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
-
-type Overwrite<A, B> = Omit<A, keyof B> & B;
+import { NamedContext, User, Project, Section } from "./implementations";
+import type { NamedContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -184,7 +183,7 @@ export class NamedContextDataSource extends DbDataSource<NamedContext, NamedCont
 
   public async create(
     user: string,
-    { name }: CreateNamedContextParams,
+    { name }: Schema.CreateNamedContextParams,
   ): Promise<NamedContext> {
     return this.build(this.insert({
       name,
@@ -200,7 +199,7 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
 
   public async create(
     userId: string,
-    { name, owner }: Overwrite<CreateProjectParams, { owner: string | null }>,
+    { name, owner }: Overwrite<Schema.CreateProjectParams, { owner: string | null }>,
   ): Promise<Project> {
     let user: string = userId;
     let parent: string | null = null;
@@ -238,10 +237,54 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
   }
 }
 
+export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
+  protected tableName = "Section";
+  protected builder = Section;
+
+  public async create(
+    userId: string,
+    { name, owner }: Overwrite<Schema.CreateSectionParams, { owner: string | null }>,
+  ): Promise<Section> {
+    let user: string = userId;
+    let project: string | null = null;
+    let namedContext: string | null = null;
+
+    if (owner) {
+      let ownerObj = await this.context.getOwner(owner);
+      if (ownerObj instanceof Project) {
+        project = ownerObj.id;
+        let context = await ownerObj.context();
+        if (context instanceof NamedContext) {
+          namedContext = context.id;
+          context = await context.user();
+        }
+        user = context.id;
+      } else if (ownerObj instanceof NamedContext) {
+        namedContext = ownerObj.id;
+        user = (await ownerObj.user()).id;
+      } else if (ownerObj instanceof User) {
+        user = ownerObj.id;
+      }
+    }
+
+    if (userId != user) {
+      throw new Error("Owner does not exist.");
+    }
+
+    return this.build(this.insert({
+      name,
+      user,
+      namedContext,
+      project,
+    }));
+  }
+}
+
 export interface AppDataSources {
   users: UserDataSource,
   namedContexts: NamedContextDataSource;
   projects: ProjectDataSource;
+  sections: SectionDataSource;
 }
 
 export function dataSources(): AppDataSources {
@@ -249,5 +292,6 @@ export function dataSources(): AppDataSources {
     users: new UserDataSource(),
     namedContexts: new NamedContextDataSource(),
     projects: new ProjectDataSource(),
+    sections: new SectionDataSource(),
   };
 }

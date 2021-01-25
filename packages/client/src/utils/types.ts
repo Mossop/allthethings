@@ -1,8 +1,6 @@
 import type { MutableRefObject } from "react";
 import { memo } from "react";
 
-export type Overwrite<A, B> = Omit<A, keyof B> & B;
-
 export interface ReactChildren {
   children?: React.ReactNode;
 }

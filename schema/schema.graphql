@@ -1,24 +1,27 @@
-interface Owner {
+interface ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 }
 
-interface Context implements Owner {
-  # Owner
+interface Context implements ProjectOwner {
+  # ProjectOwner
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 
   projects: [Project!]!
   projectById(id: ID!): Project
 }
 
-type User implements Context & Owner @entity {
-  # Owner
+type User implements Context & ProjectOwner @entity {
+  # ProjectOwner
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 
   # Context
   projects: [Project!]!
@@ -29,11 +32,12 @@ type User implements Context & Owner @entity {
   namedContexts: [NamedContext!]!
 }
 
-type NamedContext implements Context & Owner @entity {
-  # Owner
+type NamedContext implements Context & ProjectOwner @entity {
+  # ProjectOwner
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 
   # Context
   projects: [Project!]!
@@ -44,25 +48,37 @@ type NamedContext implements Context & Owner @entity {
   name: String! @column
 }
 
-type Project implements Owner @entity(additionalFields: [
-  { path: "parent", type: "ProjectDbObject['id'] | null" },
+type Project implements ProjectOwner @entity(additionalFields: [
   { path: "user", type: "UserDbObject['id']" },
   { path: "namedContext", type: "NamedContextDbObject['id'] | null" },
+  { path: "parent", type: "ProjectDbObject['id'] | null" },
 ]) {
-  # Owner
+  # ProjectOwner
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 
   stub: String! @column
   name: String! @column
-  owner: Owner!
+  owner: ProjectOwner!
+}
+
+type Section @entity(additionalFields: [
+  { path: "user", type: "UserDbObject['id']" },
+  { path: "namedContext", type: "NamedContextDbObject['id'] | null" },
+  { path: "project", type: "ProjectDbObject['id'] | null" },
+]) {
+  id: ID! @id
+  owner: ProjectOwner!
+
+  name: String! @column
 }
 
 type Query {
   user: User
 
-  owner(id: ID!): Owner
+  owner(id: ID!): ProjectOwner
   context(id: ID!): Context
 }
 
@@ -71,6 +87,11 @@ input CreateNamedContextParams {
 }
 
 input CreateProjectParams {
+  owner: ID
+  name: String!
+}
+
+input CreateSectionParams {
   owner: ID
   name: String!
 }
@@ -85,4 +106,8 @@ type Mutation {
   createProject(params: CreateProjectParams!): Project!
   moveProject(id: ID!, owner: ID): Project
   deleteProject(id: ID!): Boolean!
+
+  createSection(params: CreateSectionParams!): Section!
+  moveSection(id: ID!, owner: ID): Section
+  deleteSection(id: ID!): Boolean!
 }

@@ -1,6 +1,6 @@
 import type Koa from "koa";
 
-import type { Context, AppDataSources, Owner, User } from "../db";
+import type { Context, AppDataSources, ProjectOwner, User } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { AppContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
@@ -9,7 +9,7 @@ export interface BaseContext {
   db: DatabaseConnection;
   userId: string | null;
   getContext: (id: string) => Promise<Context | null>;
-  getOwner: (id: string) => Promise<Owner | null>;
+  getOwner: (id: string) => Promise<ProjectOwner | null>;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -93,7 +93,7 @@ export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseCo
       throw new Error("Context does not exist.");
     },
 
-    async getOwner(this: ResolverContext, id: string): Promise<Owner | null> {
+    async getOwner(this: ResolverContext, id: string): Promise<ProjectOwner | null> {
       let project = await this.dataSources.projects.getOne(id);
       if (project) {
         return project;

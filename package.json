@@ -7,9 +7,10 @@
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
   "scripts": {
     "build-schema": "graphql-codegen",
+    "build-utils": "cd packages/utils && npm run build",
     "build-client": "cd packages/client && npm run build",
     "build-server": "cd packages/server && npm run build",
-    "build": "npm run build-schema && npm run build-client && npm run build-server",
+    "build": "npm run build-schema && npm run build-utils && npm run build-client && npm run build-server",
     "start": "cd packages/server && npm start -- ../../testing/config.json",
     "lint": "eslint ."
   },

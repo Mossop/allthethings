@@ -1,21 +1,24 @@
-interface Owner {
+interface ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
 }
 
-interface Context implements Owner {
+interface Context implements ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
 }
 
-type User implements Context & Owner {
+type User implements Context & ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
   email: String!
@@ -23,10 +26,11 @@ type User implements Context & Owner {
   namedContexts: [NamedContext!]!
 }
 
-type NamedContext implements Context & Owner {
+type NamedContext implements Context & ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
   user: User!
@@ -34,18 +38,25 @@ type NamedContext implements Context & Owner {
   name: String!
 }
 
-type Project implements Owner {
+type Project implements ProjectOwner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
+  sections: [Section!]!
   stub: String!
   name: String!
-  owner: Owner!
+  owner: ProjectOwner!
+}
+
+type Section {
+  id: ID!
+  owner: ProjectOwner!
+  name: String!
 }
 
 type Query {
   user: User
-  owner(id: ID!): Owner
+  owner(id: ID!): ProjectOwner
   context(id: ID!): Context
 }
 
@@ -58,6 +69,11 @@ input CreateProjectParams {
   name: String!
 }
 
+input CreateSectionParams {
+  owner: ID
+  name: String!
+}
+
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
@@ -66,4 +82,7 @@ type Mutation {
   createProject(params: CreateProjectParams!): Project!
   moveProject(id: ID!, owner: ID): Project
   deleteProject(id: ID!): Boolean!
+  createSection(params: CreateSectionParams!): Section!
+  moveSection(id: ID!, owner: ID): Section
+  deleteSection(id: ID!): Boolean!
 }

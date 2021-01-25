@@ -6,27 +6,35 @@ import {
   useState,
 } from "react";
 
+import type { Overwrite } from "../../../utils";
+import type { ListContextStateQuery } from "../schema/queries";
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import type { BaseView, InboxView, OwnerView, View } from "./navigation";
 import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
-export type Project = Pick<Schema.Project, "id" | "stub" | "name"> & {
+export type Project = Overwrite<Omit<Schema.Project, "context" | "owner">, {
   readonly parent: Project | null;
   readonly subprojects: readonly Project[];
-};
+  readonly sections: readonly Section[];
+}>;
 
-export type User = Pick<Schema.User, "id" | "email"> & {
+export type User = Overwrite<Omit<Schema.User, "context" | "user" | "password">, {
   readonly subprojects: readonly Project[];
   readonly projects: ReadonlyMap<string, Project>;
   readonly namedContexts: ReadonlyMap<string, NamedContext>;
-};
+  readonly sections: readonly Section[];
+}>;
 
-export type NamedContext = Pick<Schema.NamedContext, "id" | "stub" | "name"> & {
+export type NamedContext = Overwrite<Omit<Schema.NamedContext, "context" | "user">, {
   readonly projects: ReadonlyMap<string, Project>;
   readonly subprojects: readonly Project[];
-};
+  readonly sections: readonly Section[];
+}>;
+
+export type Section = Overwrite<Omit<Schema.Section, "owner">, {
+}>;
 
 export function isNamedContext(owner: User | NamedContext | Project): owner is NamedContext {
   return "stub" in owner && !isProject(owner);
@@ -91,22 +99,14 @@ export function useCurrentNamedContext(): NamedContext | null {
   return state.namedContext ?? null;
 }
 
-interface ProjectData {
-  readonly id: string,
-  readonly stub: string,
-  readonly name: string,
-  readonly subprojects: readonly {
-    readonly id: string
-  }[]
-}
-interface ContextData {
-  readonly subprojects: readonly {
-    readonly id: string
-  }[],
-  readonly projects: readonly ProjectData[]
-}
+type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
+type UserState = NonNullable<ListContextStateQuery["user"]>;
+type ContextState = ArrayContents<UserState["namedContexts"]>;
+type ProjectData = ArrayContents<UserState["projects"]>;
 
-function buildProjects(context: ContextData): Pick<User, "projects" | "subprojects"> {
+function buildProjects(
+  context: UserState | ContextState,
+): Pick<User, "projects" | "subprojects" | "sections"> {
   let projectMap = new Map(
     context.projects.map((data: ProjectData): [string, ProjectData] => {
       return [data.id, data];
@@ -114,9 +114,10 @@ function buildProjects(context: ContextData): Pick<User, "projects" | "subprojec
   );
 
   let projects = new Map<string, Project>();
+  let sections: Section[] = [];
 
   let buildProjects = (
-    list: readonly { readonly id: string }[],
+    list: readonly { id: string }[],
     parent: Project | null,
   ): readonly Project[] => {
     return list.map(({ id }: { id: string }): Project => {
@@ -125,10 +126,11 @@ function buildProjects(context: ContextData): Pick<User, "projects" | "subprojec
         throw new Error("Unknown project.");
       }
 
-      let project: Omit<Project, "subprojects"> & { subprojects: readonly Project[] } = {
+      let project: Overwrite<Project, { subprojects: readonly Project[] }> = {
         ...data,
         parent,
         subprojects: [],
+        sections: [],
       };
 
       project.subprojects = buildProjects(data.subprojects, project);
@@ -141,6 +143,7 @@ function buildProjects(context: ContextData): Pick<User, "projects" | "subprojec
   return {
     projects,
     subprojects: buildProjects(context.subprojects, null),
+    sections,
   };
 }
 

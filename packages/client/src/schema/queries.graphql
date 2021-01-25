@@ -13,6 +13,10 @@ query ListContextState {
       subprojects {
         id
       }
+      sections {
+        id
+        name
+      }
     }
 
     namedContexts {
@@ -29,6 +33,10 @@ query ListContextState {
         name
         subprojects {
           id
+        }
+        sections {
+          id
+          name
         }
       }
     }
