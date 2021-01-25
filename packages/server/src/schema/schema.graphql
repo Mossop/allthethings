@@ -2,14 +2,12 @@ interface Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 }
 
 interface Context implements Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
   projects: [Project!]!
   projectById(id: ID!): Project
 }
@@ -18,7 +16,6 @@ type User implements Context & Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
   projects: [Project!]!
   projectById(id: ID!): Project
   email: String!
@@ -30,7 +27,6 @@ type NamedContext implements Context & Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
   projects: [Project!]!
   projectById(id: ID!): Project
   user: User!
@@ -42,7 +38,6 @@ type Project implements Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
   stub: String!
   name: String!
   owner: Owner!

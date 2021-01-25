@@ -2,7 +2,6 @@ interface Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 }
 
 interface Context implements Owner {
@@ -10,7 +9,6 @@ interface Context implements Owner {
   id: ID!
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 
   projects: [Project!]!
   projectById(id: ID!): Project
@@ -21,7 +19,6 @@ type User implements Context & Owner @entity {
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 
   # Context
   projects: [Project!]!
@@ -37,7 +34,6 @@ type NamedContext implements Context & Owner @entity {
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 
   # Context
   projects: [Project!]!
@@ -57,7 +53,6 @@ type Project implements Owner @entity(additionalFields: [
   id: ID! @id
   context: Context!
   subprojects: [Project!]!
-  projectByStubs(stubs: [String!]!): Project
 
   stub: String! @column
   name: String! @column

@@ -17,26 +17,14 @@ export type Owner = {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
-};
-
-
-export type OwnerProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Context = {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
-};
-
-
-export type ContextProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -49,17 +37,11 @@ export type User = Context & Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly email: Scalars['String'];
   readonly password: Scalars['String'];
   readonly namedContexts: ReadonlyArray<NamedContext>;
-};
-
-
-export type UserProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -72,17 +54,11 @@ export type NamedContext = Context & Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly user: User;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
-};
-
-
-export type NamedContextProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -95,15 +71,9 @@ export type Project = Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
   readonly owner: Owner;
-};
-
-
-export type ProjectProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Query = {
@@ -180,52 +150,47 @@ export type MutationDeleteProjectArgs = {
   id: Scalars['ID'];
 };
 
-export type OwnerKeySpecifier = ('id' | 'context' | 'subprojects' | 'projectByStubs' | OwnerKeySpecifier)[];
+export type OwnerKeySpecifier = ('id' | 'context' | 'subprojects' | OwnerKeySpecifier)[];
 export type OwnerFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectByStubs?: FieldPolicy<any> | FieldReadFunction<any>
+	subprojects?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ContextKeySpecifier = ('id' | 'context' | 'subprojects' | 'projectByStubs' | 'projects' | 'projectById' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('id' | 'context' | 'subprojects' | 'projects' | 'projectById' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectByStubs?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('id' | 'context' | 'subprojects' | 'projectByStubs' | 'projects' | 'projectById' | 'email' | 'password' | 'namedContexts' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('id' | 'context' | 'subprojects' | 'projects' | 'projectById' | 'email' | 'password' | 'namedContexts' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectByStubs?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	password?: FieldPolicy<any> | FieldReadFunction<any>,
 	namedContexts?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type NamedContextKeySpecifier = ('id' | 'context' | 'subprojects' | 'projectByStubs' | 'projects' | 'projectById' | 'user' | 'stub' | 'name' | NamedContextKeySpecifier)[];
+export type NamedContextKeySpecifier = ('id' | 'context' | 'subprojects' | 'projects' | 'projectById' | 'user' | 'stub' | 'name' | NamedContextKeySpecifier)[];
 export type NamedContextFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectByStubs?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('id' | 'context' | 'subprojects' | 'projectByStubs' | 'stub' | 'name' | 'owner' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('id' | 'context' | 'subprojects' | 'stub' | 'name' | 'owner' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	context?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectByStubs?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	owner?: FieldPolicy<any> | FieldReadFunction<any>

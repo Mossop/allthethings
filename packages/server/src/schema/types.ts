@@ -16,26 +16,14 @@ export type Owner = {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
-};
-
-
-export type OwnerProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Context = {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
-};
-
-
-export type ContextProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -48,17 +36,11 @@ export type User = Context & Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly email: Scalars['String'];
   readonly password: Scalars['String'];
   readonly namedContexts: ReadonlyArray<NamedContext>;
-};
-
-
-export type UserProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -71,17 +53,11 @@ export type NamedContext = Context & Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly user: User;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
-};
-
-
-export type NamedContextProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 
@@ -94,15 +70,9 @@ export type Project = Owner & {
   readonly id: Scalars['ID'];
   readonly context: Context;
   readonly subprojects: ReadonlyArray<Project>;
-  readonly projectByStubs?: Maybe<Project>;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
   readonly owner: Owner;
-};
-
-
-export type ProjectProjectByStubsArgs = {
-  stubs: ReadonlyArray<Scalars['String']>;
 };
 
 export type Query = {

@@ -90,24 +90,6 @@ abstract class OwnerImpl<
 > extends BaseImpl<T> implements SchemaResolver<Schema.Owner> {
   public abstract context(): Promise<Context>;
   public abstract subprojects(): Promise<readonly Project[]>;
-
-  public async projectByStubs({ stubs }: Schema.OwnerProjectByStubsArgs): Promise<Owner | null> {
-    if (stubs.length == 0) {
-      return this as unknown as Owner;
-    }
-
-    let projects = await this.subprojects();
-    for (let project of projects) {
-      let stub = await project.stub();
-      if (stub === stubs[0]) {
-        return project.projectByStubs({
-          stubs: stubs.slice(1),
-        });
-      }
-    }
-
-    return null;
-  }
 }
 
 abstract class ContextImpl<
