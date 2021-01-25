@@ -7,10 +7,11 @@ import { ApolloServer } from "apollo-server-koa";
 import type { Context, Owner } from "../db";
 import { NamedContext, User, dataSources } from "../db";
 import type { DatabaseConnection } from "../db/connection";
+import type { ResolverContext } from "./context";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
 import QueryResolvers from "./queries";
-import type { Resolvers } from "./resolvers";
+import type { ContextResolvers, OwnerResolvers, Resolvers } from "./resolvers";
 
 function loadSchema(): Promise<string> {
   return fs.readFile(path.join(__dirname, "..", "..", "src", "schema", "schema.graphql"), {
@@ -18,7 +19,16 @@ function loadSchema(): Promise<string> {
   });
 }
 
-export const resolvers: Resolvers = {
+type Overwrite<A, B> = Omit<A, keyof B> & B;
+type RootResolvers<ContextType = ResolverContext> = Overwrite<
+  Omit<Resolvers<ContextType>, "User" | "NamedContext" | "Project">,
+  {
+    Owner: Pick<OwnerResolvers<ContextType>, "__resolveType">,
+    Context: Pick<ContextResolvers<ContextType>, "__resolveType">,
+  }
+>;
+
+export const resolvers: RootResolvers = {
   Owner: {
     __resolveType(parent: Owner): "User" | "NamedContext" | "Project" {
       if (parent instanceof User) {

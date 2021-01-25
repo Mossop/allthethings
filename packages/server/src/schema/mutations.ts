@@ -5,9 +5,10 @@ import type { MutationResolvers } from "./resolvers";
 import type {
   MutationCreateNamedContextArgs,
   MutationCreateProjectArgs,
+  MutationDeleteNamedContextArgs,
   MutationDeleteProjectArgs,
-  MutationEditProjectArgs,
   MutationLoginArgs,
+  MutationMoveProjectArgs,
 } from "./types";
 
 const resolvers: MutationResolvers = {
@@ -40,6 +41,14 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.namedContexts.create(ctx.userId, params);
   }),
 
+  deleteNamedContext: authed(async ({
+    args: { id },
+    ctx,
+  }: AuthedParams<unknown, MutationDeleteNamedContextArgs>): Promise<boolean> => {
+    await ctx.dataSources.namedContexts.delete(id);
+    return true;
+  }),
+
   createProject: authed(async ({
     args: { params },
     ctx,
@@ -50,33 +59,21 @@ const resolvers: MutationResolvers = {
     });
   }),
 
-  editProject: authed(async ({
-    args: { id, params },
+  moveProject: authed(async ({
+    args: { id, owner: ownerId },
     ctx,
-  }: AuthedParams<unknown, MutationEditProjectArgs>): Promise<Project | null> => {
+  }: AuthedParams<unknown, MutationMoveProjectArgs>): Promise<Project | null> => {
     let project = await ctx.dataSources.projects.getOne(id);
     if (!project) {
       return null;
     }
 
-    let ownerId: string | undefined;
-    if (params.owner === undefined) {
-      ownerId = undefined;
-    } else if (params.owner) {
-      ownerId = params.owner;
-    } else {
-      ownerId = ctx.userId;
-    }
-
-    let owner = ownerId ? await ctx.getOwner(ownerId) : undefined;
+    let owner = await ctx.getOwner(ownerId ?? ctx.userId);
     if (owner === null) {
       throw new Error("Owner not found.");
     }
 
-    await project.edit({
-      ...params,
-      owner,
-    });
+    await project.move(owner);
     return project;
   }),
 

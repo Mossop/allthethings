@@ -13,7 +13,7 @@ import { forwardRef, useState, useCallback } from "react";
 import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
-import { useEditProjectMutation } from "../schema/mutations";
+import { useMoveProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import type { DraggedObject } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
@@ -190,7 +190,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
     return true;
   }, [project]);
 
-  let [editProject] = useEditProjectMutation({
+  let [moveProject] = useMoveProjectMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
 
@@ -199,16 +199,13 @@ const ProjectItem = ReactMemo(function ProjectItem({
       return;
     }
 
-    void editProject({
+    void moveProject({
       variables: {
         id: item.project.id,
-        params: {
-          name: item.project.name,
-          owner: project.id,
-        },
+        owner: project.id,
       },
     });
-  }, [editProject, project]);
+  }, [moveProject, project]);
 
   let [{ isDropping }, dropRef] = useDrop({
     accept: DragType.Project,
@@ -281,7 +278,7 @@ export default ReactMemo(function ProjectList({
     owner: context,
   });
 
-  let [editProject] = useEditProjectMutation({
+  let [moveProject] = useMoveProjectMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
 
@@ -290,16 +287,13 @@ export default ReactMemo(function ProjectList({
       return;
     }
 
-    void editProject({
+    void moveProject({
       variables: {
         id: item.project.id,
-        params: {
-          name: item.project.name,
-          owner: context.id,
-        },
+        owner: context.id,
       },
     });
-  }, [editProject, context]);
+  }, [moveProject, context]);
 
   let [{ isDragging, isOver }, dropRef] = useDrop({
     accept: DragType.Project,

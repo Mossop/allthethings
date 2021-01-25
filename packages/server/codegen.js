@@ -37,6 +37,7 @@ module.exports = {
         useIndexSignature: true,
         useTypeImports: true,
         immutableTypes: true,
+        avoidOptionals: true,
         namespacedImportName: "Schema",
         mappers: {
           /* eslint-disable @typescript-eslint/naming-convention */

@@ -54,13 +54,8 @@ input CreateNamedContextParams {
 }
 
 input CreateProjectParams {
-  name: String!
   owner: ID
-}
-
-input EditProjectParams {
   name: String!
-  owner: ID
 }
 
 type Mutation {
@@ -69,6 +64,6 @@ type Mutation {
   createNamedContext(params: CreateNamedContextParams!): NamedContext!
   deleteNamedContext(id: ID!): Boolean!
   createProject(params: CreateProjectParams!): Project!
-  editProject(id: ID!, params: EditProjectParams!): Project
+  moveProject(id: ID!, owner: ID): Project
   deleteProject(id: ID!): Boolean!
 }

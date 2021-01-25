@@ -1,7 +1,6 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { AppDataSources } from "./datasources";
-import { stub } from "./datasources";
 import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
@@ -178,44 +177,31 @@ export class NamedContext
   }
 }
 
-type ProjectEditParams = Partial<Pick<ProjectDbObject, "name">> & {
-  owner?: User | NamedContext | Project;
-};
-
 export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
     return assertValid(await this.dataSources.projects.get(this.id));
   }
 
-  public async edit({
-    owner,
-    ...params
-  }: ProjectEditParams): Promise<void> {
-    let update: Partial<Omit<ProjectDbObject, "_id">> = params;
-    if (update.name) {
-      update.stub = stub(update.name);
-    }
-
-    if (owner) {
-      if (owner instanceof User) {
-        update.user = owner.id;
-        update.parent = null;
-        update.namedContext = null;
-      } else if (owner instanceof NamedContext) {
-        update.user = (await owner.user()).id;
-        update.namedContext = owner.id;
-        update.parent = null;
+  public async move(owner: User | NamedContext | Project): Promise<void> {
+    let update: Partial<Omit<ProjectDbObject, "_id">> = {};
+    if (owner instanceof User) {
+      update.user = owner.id;
+      update.parent = null;
+      update.namedContext = null;
+    } else if (owner instanceof NamedContext) {
+      update.user = (await owner.user()).id;
+      update.namedContext = owner.id;
+      update.parent = null;
+    } else {
+      let context = await owner.context();
+      if (context instanceof NamedContext) {
+        update.user = (await context.user()).id;
+        update.namedContext = context.id;
       } else {
-        let context = await owner.context();
-        if (context instanceof NamedContext) {
-          update.user = (await context.user()).id;
-          update.namedContext = context.id;
-        } else {
-          update.user = context.id;
-          update.namedContext = null;
-        }
-        update.parent = owner.id;
+        update.user = context.id;
+        update.namedContext = null;
       }
+      update.parent = owner.id;
     }
 
     let newProject = await this.dataSources.projects.updateOne(this.id, update);

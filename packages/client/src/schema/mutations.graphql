@@ -24,8 +24,8 @@ mutation CreateProject($params: CreateProjectParams!) {
   }
 }
 
-mutation EditProject($id: ID!, $params: EditProjectParams!) {
-  editProject(id: $id, params: $params) {
+mutation MoveProject($id: ID!, $owner: ID) {
+  moveProject(id: $id, owner: $owner) {
     id
     name
     stub
