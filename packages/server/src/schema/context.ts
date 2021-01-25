@@ -1,23 +1,25 @@
 import type Koa from "koa";
-import { ObjectId } from "mongodb";
 
-import type { Context, DataSources, Owner, User } from "../db";
+import type { Context, AppDataSources, Owner, User } from "../db";
+import type { DatabaseConnection } from "../db/connection";
+import type { AppContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
 
 export interface BaseContext {
-  userId: ObjectId | null;
-  getContext: (id: ObjectId) => Promise<Context | null>;
-  getOwner: (id: ObjectId) => Promise<Owner | null>;
+  db: DatabaseConnection;
+  userId: string | null;
+  getContext: (id: string) => Promise<Context | null>;
+  getOwner: (id: string) => Promise<Owner | null>;
   login: (user: User) => void;
   logout: () => void;
 }
 
 export type ResolverContext = BaseContext & {
-  dataSources: DataSources;
+  dataSources: AppDataSources;
 };
 
 type AuthedContext = Omit<ResolverContext, "userId"> & {
-  userId: ObjectId;
+  userId: string;
 };
 
 interface Params<TContext, TParent, TArgs> {
@@ -67,19 +69,23 @@ export function resolver<TResult, TParent, TArgs>(
   };
 }
 
-export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
-  let user = ctx.session?.userId;
+export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseContext {
+  let user = ctx.session?.userId ?? null;
 
   return {
-    userId: user ? new ObjectId(user) : null,
+    userId: user,
 
-    async getContext(this: ResolverContext, id: ObjectId): Promise<Context | null> {
-      let context = await this.dataSources.namedContexts.get(id);
+    get db(): DatabaseConnection {
+      return ctx.db;
+    },
+
+    async getContext(this: ResolverContext, id: string): Promise<Context | null> {
+      let context = await this.dataSources.namedContexts.getOne(id);
       if (context) {
         return context;
       }
 
-      let user = await this.dataSources.users.get(id);
+      let user = await this.dataSources.users.getOne(id);
       if (user) {
         return user;
       }
@@ -87,8 +93,8 @@ export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
       throw new Error("Context does not exist.");
     },
 
-    async getOwner(this: ResolverContext, id: ObjectId): Promise<Owner | null> {
-      let project = await this.dataSources.projects.get(id);
+    async getOwner(this: ResolverContext, id: string): Promise<Owner | null> {
+      let project = await this.dataSources.projects.getOne(id);
       if (project) {
         return project;
       }
@@ -101,7 +107,7 @@ export function buildContext({ ctx }: { ctx: Koa.Context }): BaseContext {
         throw new Error("Session is not initialized.");
       }
 
-      this.userId = user.dbId;
+      this.userId = user.id;
       ctx.session.userId = user.id;
       ctx.session.save();
     },

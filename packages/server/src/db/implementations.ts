@@ -1,8 +1,6 @@
-import { ObjectId } from "mongodb";
-
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
-import type { DataSources } from "./datasources";
+import type { AppDataSources } from "./datasources";
 import { stub } from "./datasources";
 import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
 
@@ -12,12 +10,6 @@ type SchemaResolver<T> = {
   [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
 };
 
-interface DbObject {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  _id: ObjectId;
-}
-
-export type DbObjectFor<T> = T extends BaseImpl<infer D> ? D : never;
 export type ImplBuilder<T, D> = new (resolverContext: ResolverContext, dbObject: D) => T;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -29,8 +21,8 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
 }
 
 export function equals<T extends BaseImpl>(
-  a: T | ObjectId | null | undefined,
-  b: T | ObjectId | null | undefined,
+  a: T | string | null | undefined,
+  b: T | string | null | undefined,
 ): boolean {
   if (!a) {
     return !b;
@@ -40,27 +32,31 @@ export function equals<T extends BaseImpl>(
     return false;
   }
 
-  a = a instanceof BaseImpl ? a.dbId : a;
-  b = b instanceof BaseImpl ? b.dbId : b;
+  a = a instanceof BaseImpl ? a.id : a;
+  b = b instanceof BaseImpl ? b.id : b;
 
-  return a.equals(b);
+  return a == b;
+}
+
+interface DbObject {
+  id: string;
 }
 
 abstract class BaseImpl<T extends DbObject = DbObject> {
-  public readonly dbId: ObjectId;
+  public readonly id: string;
   protected _dbObject: Promise<T> | null;
 
   public constructor(resolverContext: ResolverContext, dbObject: T);
-  public constructor(resolverContext: ResolverContext, id: ObjectId);
+  public constructor(resolverContext: ResolverContext, id: string);
   public constructor(
     protected readonly resolverContext: ResolverContext,
-    arg: T | ObjectId,
+    arg: T | string,
   ) {
-    if (arg instanceof ObjectId) {
-      this.dbId = arg;
+    if (typeof arg == "string") {
+      this.id = arg;
       this._dbObject = null;
     } else {
-      this.dbId = arg._id;
+      this.id = arg.id;
       this._dbObject = Promise.resolve(arg);
     }
   }
@@ -77,15 +73,11 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
     return this._dbObject;
   }
 
-  public equals(other: BaseImpl<T> | ObjectId | undefined | null): boolean {
+  public equals(other: BaseImpl<T> | string | undefined | null): boolean {
     return equals(this, other);
   }
 
-  public get id(): string {
-    return this.dbId.toHexString();
-  }
-
-  public get dataSources(): DataSources {
+  public get dataSources(): AppDataSources {
     return this.resolverContext.dataSources;
   }
 }
@@ -131,7 +123,7 @@ abstract class ContextImpl<
 
 export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Schema.User> {
   protected async getDbObject(): Promise<UserDbObject> {
-    return assertValid(await this.dataSources.users.findOneById(this.dbId));
+    return assertValid(await this.dataSources.users.get(this.id));
   }
 
   public async context(): Promise<Context> {
@@ -140,7 +132,7 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
 
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      user: this.dbId,
+      user: this.id,
       namedContext: null,
       parent: null,
     });
@@ -148,7 +140,7 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
 
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      user: this.dbId,
+      user: this.id,
       namedContext: null,
     });
   }
@@ -163,7 +155,7 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
 
   public async namedContexts(): Promise<readonly NamedContext[]> {
     return this.dataSources.namedContexts.find({
-      user: this.dbId,
+      user: this.id,
     });
   }
 }
@@ -171,7 +163,7 @@ export class User extends ContextImpl<UserDbObject> implements SchemaResolver<Sc
 export class NamedContext
   extends ContextImpl<NamedContextDbObject> implements SchemaResolver<Schema.NamedContext> {
   protected async getDbObject(): Promise<NamedContextDbObject> {
-    return assertValid(await this.dataSources.namedContexts.findOneById(this.dbId));
+    return assertValid(await this.dataSources.namedContexts.get(this.id));
   }
 
   public async context(): Promise<Context> {
@@ -180,14 +172,14 @@ export class NamedContext
 
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      namedContext: this.dbId,
+      namedContext: this.id,
       parent: null,
     });
   }
 
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      namedContext: this.dbId,
+      namedContext: this.id,
     });
   }
 
@@ -210,7 +202,7 @@ type ProjectEditParams = Partial<Pick<ProjectDbObject, "name">> & {
 
 export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolver<Schema.Project> {
   protected async getDbObject(): Promise<ProjectDbObject> {
-    return assertValid(await this.dataSources.projects.findOneById(this.dbId));
+    return assertValid(await this.dataSources.projects.get(this.id));
   }
 
   public async edit({
@@ -224,29 +216,27 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
 
     if (owner) {
       if (owner instanceof User) {
-        update.user = owner.dbId;
+        update.user = owner.id;
         update.parent = null;
         update.namedContext = null;
       } else if (owner instanceof NamedContext) {
-        update.user = (await owner.user()).dbId;
-        update.namedContext = owner.dbId;
+        update.user = (await owner.user()).id;
+        update.namedContext = owner.id;
         update.parent = null;
       } else {
         let context = await owner.context();
         if (context instanceof NamedContext) {
-          update.user = (await context.user()).dbId;
-          update.namedContext = context.dbId;
+          update.user = (await context.user()).id;
+          update.namedContext = context.id;
         } else {
-          update.user = context.dbId;
+          update.user = context.id;
           update.namedContext = null;
         }
-        update.parent = owner.dbId;
+        update.parent = owner.id;
       }
     }
 
-    let newProject = await this.dataSources.projects.updateOne(this.dbId, {
-      $set: update,
-    });
+    let newProject = await this.dataSources.projects.updateOne(this.id, update);
     if (!newProject) {
       throw new Error("Missing project in database.");
     }
@@ -263,7 +253,7 @@ export class Project extends OwnerImpl<ProjectDbObject> implements SchemaResolve
 
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
-      parent: this.dbId,
+      parent: this.id,
     });
   }
 

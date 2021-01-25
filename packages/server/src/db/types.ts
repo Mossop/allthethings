@@ -1,24 +1,24 @@
 /* eslint-disable */
 import type { Maybe } from "../schema/types";
-import { ObjectID } from 'mongodb';
+
 export type UserDbObject = {
-  _id: ObjectID,
+  id: string,
   email: string,
   password: string,
 };
 
 export type NamedContextDbObject = {
-  _id: ObjectID,
-  user: UserDbObject['_id'],
+  id: string,
+  user: UserDbObject['id'],
   stub: string,
   name: string,
 };
 
 export type ProjectDbObject = {
-  _id: ObjectID,
+  id: string,
   stub: string,
   name: string,
-  parent: ObjectID | null,
-  user: ObjectID,
-  namedContext: ObjectID | null,
+  parent: ProjectDbObject['id'] | null,
+  user: UserDbObject['id'],
+  namedContext: NamedContextDbObject['id'] | null,
 };

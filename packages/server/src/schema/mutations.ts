@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 import type { User, NamedContext, Project } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
@@ -11,19 +9,6 @@ import type {
   MutationEditProjectArgs,
   MutationLoginArgs,
 } from "./types";
-
-function intoId(val: ObjectId | string): ObjectId;
-function intoId(val: ObjectId | string | undefined | null): ObjectId | null;
-function intoId(val: ObjectId | string | undefined | null): ObjectId | null {
-  if (val === undefined || val === null) {
-    return null;
-  }
-
-  if (typeof val === "string") {
-    return new ObjectId(val);
-  }
-  return val;
-}
 
 const resolvers: MutationResolvers = {
   login: resolver(async ({
@@ -61,7 +46,7 @@ const resolvers: MutationResolvers = {
   }: AuthedParams<unknown, MutationCreateProjectArgs>): Promise<Project> => {
     return ctx.dataSources.projects.create(ctx.userId, {
       ...params,
-      owner: intoId(params.owner),
+      owner: params.owner ?? null,
     });
   }),
 
@@ -69,16 +54,16 @@ const resolvers: MutationResolvers = {
     args: { id, params },
     ctx,
   }: AuthedParams<unknown, MutationEditProjectArgs>): Promise<Project | null> => {
-    let project = await ctx.dataSources.projects.get(id);
+    let project = await ctx.dataSources.projects.getOne(id);
     if (!project) {
       return null;
     }
 
-    let ownerId: ObjectId | undefined;
+    let ownerId: string | undefined;
     if (params.owner === undefined) {
       ownerId = undefined;
     } else if (params.owner) {
-      ownerId = new ObjectId(params.owner);
+      ownerId = params.owner;
     } else {
       ownerId = ctx.userId;
     }
@@ -99,7 +84,7 @@ const resolvers: MutationResolvers = {
     args: { id },
     ctx,
   }: AuthedParams<unknown, MutationDeleteProjectArgs>): Promise<boolean> => {
-    await ctx.dataSources.projects.delete(intoId(id));
+    await ctx.dataSources.projects.delete(id);
     return true;
   }),
 };

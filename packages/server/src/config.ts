@@ -5,6 +5,8 @@ import { JsonDecoder } from "ts.data.json";
 export interface DatabaseConfig {
   host: string;
   port: number;
+  username: string;
+  password: string;
   database: string;
 }
 
@@ -22,6 +24,8 @@ const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
   host: JsonDecoder.optional(JsonDecoder.string),
   port: JsonDecoder.optional(JsonDecoder.number),
   database: JsonDecoder.optional(JsonDecoder.string),
+  username: JsonDecoder.optional(JsonDecoder.string),
+  password: JsonDecoder.optional(JsonDecoder.string),
 }, "DatabaseConfig");
 
 const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
@@ -40,8 +44,10 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
     ...config,
     database: {
       host: "localhost",
-      port: 27017,
+      port: 5432,
       database: "allthethings",
+      username: "allthethings",
+      password: "allthethings",
       ...config.database ?? {},
     },
   };

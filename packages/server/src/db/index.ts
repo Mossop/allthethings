@@ -1,69 +1,12 @@
-import { MongoClient } from "mongodb";
-
-import type { DatabaseConfig } from "../config";
+import type { ServerConfig } from "../config";
+import { DatabaseConnection } from "./connection";
 
 export * from "./implementations";
 export { dataSources } from "./datasources";
-export type { DataSources } from "./datasources";
+export type { AppDataSources } from "./datasources";
 
-async function getSchemaVersion(client: MongoClient): Promise<number> {
-  let doc = await client.db().collection("schema").findOne({
-    key: "version",
-  });
-
-  if (doc) {
-    let value = parseInt(doc.value);
-    return Number.isNaN(value) ? 0 : value;
-  }
-
-  return 0;
-}
-
-async function setSchemaVersion(client: MongoClient, version: number): Promise<void> {
-  await client.db().collection("schema").findOneAndReplace({
-    key: "version",
-  }, {
-    key: "version",
-    value: version,
-  }, {
-    upsert: true,
-  });
-}
-
-export async function connect(config: DatabaseConfig): Promise<MongoClient> {
-  let client = await MongoClient.connect(
-    `mongodb://${config.host}:${config.port}/${config.database}`,
-    {
-      useUnifiedTopology: true,
-    },
-  );
-
-  let schemaVersion = await getSchemaVersion(client);
-  if (schemaVersion < 1) {
-    await client.db().collection("users").createIndex({
-      email: 1,
-    }, {
-      unique: true,
-    });
-
-    await client.db().collection("contexts").createIndex({
-      user: 1,
-      stub: 1,
-    }, {
-      unique: true,
-    });
-
-    await client.db().collection("projects").createIndex({
-      user: 1,
-      namedContext: 1,
-      parent: 1,
-      stub: 1,
-    }, {
-      unique: true,
-    });
-
-    await setSchemaVersion(client, 1);
-  }
-
-  return client;
+export async function createDbConnection(config: ServerConfig): Promise<DatabaseConnection> {
+  let db = await DatabaseConnection.connect(config.database);
+  await db.migrate();
+  return db;
 }

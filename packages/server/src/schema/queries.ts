@@ -1,5 +1,3 @@
-import { ObjectId } from "mongodb";
-
 import type { Context, Owner, User } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { authed, resolver } from "./context";
@@ -14,7 +12,7 @@ const resolvers: QueryResolvers = {
       return null;
     }
 
-    let user = await ctx.dataSources.users.get(ctx.userId);
+    let user = await ctx.dataSources.users.getOne(ctx.userId);
     if (!user) {
       ctx.logout();
       return null;
@@ -27,14 +25,14 @@ const resolvers: QueryResolvers = {
     ctx,
     args: { id },
   }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Context | null> => {
-    return ctx.getContext(new ObjectId(id));
+    return ctx.getContext(id);
   }),
 
   owner: authed(({
     ctx,
     args: { id },
   }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Owner | null> => {
-    return ctx.getOwner(new ObjectId(id));
+    return ctx.getOwner(id);
   }),
 };
 

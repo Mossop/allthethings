@@ -2,13 +2,17 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import { ApolloServer } from "apollo-server-koa";
+
 import type { Context, Owner } from "../db";
-import { NamedContext, User } from "../db";
+import { NamedContext, User, dataSources } from "../db";
+import type { DatabaseConnection } from "../db/connection";
+import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
 import QueryResolvers from "./queries";
 import type { Resolvers } from "./resolvers";
 
-export function loadSchema(): Promise<string> {
+function loadSchema(): Promise<string> {
   return fs.readFile(path.join(__dirname, "..", "..", "src", "schema", "schema.graphql"), {
     encoding: "utf8",
   });
@@ -42,3 +46,13 @@ export const resolvers: Resolvers = {
   ...QueryResolvers,
   ...MutationResolvers,
 };
+
+export async function createGqlServer(db: DatabaseConnection): Promise<ApolloServer> {
+  return new ApolloServer({
+    typeDefs: await loadSchema(),
+    resolvers,
+    context: buildContext,
+    // @ts-ignore
+    dataSources: () => dataSources(db),
+  });
+}

@@ -49,9 +49,9 @@ type NamedContext implements Context & Owner @entity {
 }
 
 type Project implements Owner @entity(additionalFields: [
-  { path: "parent", type: "ObjectID | null" },
-  { path: "user", type: "ObjectID" },
-  { path: "namedContext", type: "ObjectID | null" },
+  { path: "parent", type: "ProjectDbObject['id'] | null" },
+  { path: "user", type: "UserDbObject['id']" },
+  { path: "namedContext", type: "NamedContextDbObject['id'] | null" },
 ]) {
   # Owner
   id: ID! @id

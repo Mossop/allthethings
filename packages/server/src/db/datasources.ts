@@ -1,144 +1,168 @@
-import type { ModelOrCollection } from "apollo-datasource-mongodb";
-import { MongoDataSource } from "apollo-datasource-mongodb";
+import type { DataSourceConfig } from "apollo-datasource";
+import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
-import type { FilterQuery, MongoClient, ObjectId, UpdateQuery } from "mongodb";
+import type Knex from "knex";
+import { customAlphabet } from "nanoid/async";
 
 import type { ResolverContext } from "../schema/context";
 import type { CreateNamedContextParams, CreateProjectParams } from "../schema/types";
-import type { DbObjectFor, ImplBuilder } from "./implementations";
+import type { DatabaseConnection } from "./connection";
+import type { ImplBuilder } from "./implementations";
 import { NamedContext, User, Project } from "./implementations";
+import type { NamedContextDbObject, ProjectDbObject, UserDbObject } from "./types";
 
 type Overwrite<A, B> = Omit<A, keyof B> & B;
 
-export interface DbObject {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  _id: ObjectId;
-}
+type PromiseLike<T> = T | Promise<T>;
+type Maybe<T> = T | null | undefined;
+
+const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+const id = customAlphabet(ALPHABET, 28);
 
 export function stub(name: string): string {
   return name.toLocaleLowerCase().replaceAll(" ", "-");
 }
 
-class BaseDataSource<
-  T,
-  D extends DbObject = DbObjectFor<T>,
-> extends MongoDataSource<D, ResolverContext> {
-  public constructor(
-    collection: ModelOrCollection<D>,
-    protected readonly builder: ImplBuilder<T, D>,
-  ) {
-    super(collection);
+interface DbObject {
+  id: string;
+}
+
+abstract class DbDataSource<
+  T extends { id: string },
+  D extends DbObject = DbObject,
+> extends DataSource<ResolverContext> {
+  protected readonly abstract tableName: string;
+  protected readonly abstract builder: ImplBuilder<T, D>;
+  private _config: DataSourceConfig<ResolverContext> | null = null;
+
+  protected get config(): DataSourceConfig<ResolverContext> {
+    if (!this._config) {
+      throw new Error("Not initialized.");
+    }
+
+    return this._config;
   }
 
-  protected build(dbObject: D): T;
-  protected build(dbObject: D | null | undefined): T | null;
-  protected build(dbObject: D | null | undefined): T | null {
+  protected get context(): ResolverContext {
+    return this.config.context;
+  }
+
+  protected get connection(): DatabaseConnection {
+    return this.context.db;
+  }
+
+  protected get knex(): Knex<D, D[]> {
+    return this.connection.knex as Knex<D, D[]>;
+  }
+
+  public initialize(config: DataSourceConfig<ResolverContext>): void {
+    this._config = config;
+  }
+
+  protected ref(field: keyof D | "*"): string {
+    return `${this.tableName}.${field}`;
+  }
+
+  protected table(): Knex.QueryBuilder<D, D[]> {
+    return this.knex.table(this.tableName);
+  }
+
+  protected select(query: Knex.QueryBuilder<D, D[]>): Promise<D[]> {
+    return query.select("*") as Promise<D[]>;
+  }
+
+  protected build(dbObject: PromiseLike<D>): Promise<T>;
+  protected build(dbObject: PromiseLike<Maybe<D>>): Promise<T | null>;
+  protected async build(dbObject: PromiseLike<Maybe<D>>): Promise<T | null> {
+    dbObject = await dbObject;
     if (!dbObject) {
       return null;
     }
     return new this.builder(this.context, dbObject);
   }
 
-  public async get(id: string | ObjectId): Promise<T | null> {
-    let doc = await this.findOneById(id);
-    return this.build(doc);
+  protected buildAll(dbObjects: PromiseLike<D[]>): Promise<T[]>;
+  protected buildAll(dbObjects: PromiseLike<Maybe<D>[]>): Promise<(T | null)[]>;
+  protected async buildAll(dbObjects: PromiseLike<Maybe<D>[]>): Promise<(T | null)[]> {
+    dbObjects = await dbObjects;
+    return await Promise.all(dbObjects.map((obj: Maybe<D>): Promise<T | null> => this.build(obj)));
   }
 
-  public async getAll(ids: string[] | ObjectId[]): Promise<(T | null)[]> {
-    let docs = await this.findManyByIds(ids);
-    return docs.map(
-      (doc: D | null | undefined): T | null => this.build(doc),
-    );
-  }
+  public async get(id: string): Promise<D | null> {
+    let results = await this.select(this.table().whereIn(this.ref("id"), [id]));
 
-  public async find(query: FilterQuery<D> = {}): Promise<T[]> {
-    let docs = await this.collection.find<D>(query, {
-      projection: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        _id: 1,
-      },
-    }).toArray();
-    return this.getAll(docs.map((doc: D): ObjectId => doc._id)) as Promise<T[]>;
-  }
-
-  public async findOne(query: FilterQuery<D>): Promise<T | null> {
-    let doc = await this.collection.findOne<D>(query, {
-      projection: {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        _id: 1,
-      },
-    });
-
-    return this.build(doc);
-  }
-
-  public async update(
-    filter: FilterQuery<D>,
-    update: UpdateQuery<D> | Partial<D>,
-  ): Promise<number> {
-    let toUpdate = await this.collection.find(filter).toArray();
-    if (toUpdate.length == 0) {
-      return 0;
+    if (!results.length) {
+      return null;
+    } else if (results.length == 1) {
+      return results[0];
+    } else {
+      throw new Error("Unexpected multiple records with the same ID.");
     }
+  }
 
-    await this.collection.updateMany(filter, update);
-    for (let item of toUpdate) {
-      await this.deleteFromCacheById(item._id);
+  public async getOne(id: string): Promise<T | null> {
+    return this.build(await this.get(id));
+  }
+
+  public async find(fields: Partial<D>): Promise<T[]> {
+    return this.buildAll(this.select(this.table().where(fields)));
+  }
+
+  public async query(fn: (knex: Knex.QueryBuilder<D, D[]>) => void | Promise<void>): Promise<T[]> {
+    let query = this.table();
+    await fn(query);
+    return this.buildAll(this.select(query));
+  }
+
+  public async insert(item: Omit<D, "id">): Promise<D> {
+    // @ts-ignore
+    let results: D[] = await this.table().insert({
+      ...item,
+      id: await id(),
+    }).returning("*");
+
+    if (!results.length) {
+      throw new Error("Unexpectedly failed to create a record.");
+    } else if (results.length == 1) {
+      return results[0];
+    } else {
+      throw new Error("Unexpectedly created multiple records.");
     }
-
-    return toUpdate.length;
   }
 
-  public async updateOne(
-    id: ObjectId,
-    update: UpdateQuery<Omit<D, "_id">> | Partial<Omit<D, "_id">>,
-  ): Promise<D | null> {
-    await this.collection.updateOne({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      _id: id,
-    }, update);
-    await this.deleteFromCacheById(id);
-
-    let doc = await this.findOneById(id);
-    return doc ?? null;
+  public async updateOne(id: string, item: Partial<Omit<D, "id">>): Promise<D | null> {
+    // @ts-ignore
+    let results: D[] = await this.table().where(this.ref("id"), id).update(item).returning("*");
+    if (!results.length) {
+      return null;
+    } else if (results.length > 1) {
+      throw new Error("Unexpectedly updated mutiple records.");
+    } else {
+      return results[0];
+    }
   }
 
-  public async insert(fields: Omit<D, "_id">): Promise<T> {
-    let { insertedId } = await this.collection.insertOne(fields);
-    let doc = {
-      ...fields,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      _id: insertedId,
-    } as D;
-
-    return this.build(doc);
-  }
-
-  public async delete(id: ObjectId): Promise<void> {
-    await this.collection.deleteOne({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
-      _id: id,
-    });
-    await this.deleteFromCacheById(id);
+  public delete(id: string): Promise<void> {
+    return this.table().where(this.ref("id"), id).delete();
   }
 }
 
-export class UserDataSource extends BaseDataSource<User> {
-  public constructor(client: MongoClient) {
-    super(client.db().collection("users"), User);
-  }
+export class UserDataSource extends DbDataSource<User, UserDbObject> {
+  protected tableName = "User";
+  protected builder = User;
 
   public async verifyUser(email: string, password: string): Promise<User | null> {
-    let user = await this.collection.findOne({
+    let users = await this.select(this.table().where({
       email,
-    });
+    }));
 
-    if (!user) {
+    if (users.length != 1) {
       return null;
     }
 
-    if (await bcryptCompare(password, user.password)) {
-      return this.build(user);
+    if (await bcryptCompare(password, users[0].password)) {
+      return this.build(users[0]);
     }
 
     return null;
@@ -147,91 +171,83 @@ export class UserDataSource extends BaseDataSource<User> {
   public async create(email: string, password: string): Promise<User> {
     password = await bcryptHash(password, 12);
 
-    return this.insert({
+    return this.build(this.insert({
       email,
       password,
-    });
+    }));
   }
 }
 
-export class NamedContextDataSource extends BaseDataSource<NamedContext> {
-  public constructor(client: MongoClient) {
-    super(client.db().collection("contexts"), NamedContext);
-  }
+export class NamedContextDataSource extends DbDataSource<NamedContext, NamedContextDbObject> {
+  protected tableName = "NamedContext";
+  protected builder = NamedContext;
 
   public async create(
-    user: ObjectId,
+    user: string,
     { name }: CreateNamedContextParams,
   ): Promise<NamedContext> {
-    let context = await this.insert({
+    return this.build(this.insert({
       name,
       user,
       stub: stub(name),
-    });
-
-    await this.context.dataSources.users.updateOne(user, {
-      $addToSet: { contexts: context.dbId },
-    });
-
-    return context;
+    }));
   }
 }
 
-export class ProjectDataSource extends BaseDataSource<Project> {
-  public constructor(client: MongoClient) {
-    super(client.db().collection("projects"), Project);
-  }
+export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
+  protected tableName = "Project";
+  protected builder = Project;
 
   public async create(
-    userId: ObjectId,
-    { name, owner }: Overwrite<CreateProjectParams, { owner: ObjectId | null }>,
+    userId: string,
+    { name, owner }: Overwrite<CreateProjectParams, { owner: string | null }>,
   ): Promise<Project> {
-    let user: ObjectId = userId;
-    let parent: ObjectId | null = null;
-    let namedContext: ObjectId | null = null;
+    let user: string = userId;
+    let parent: string | null = null;
+    let namedContext: string | null = null;
 
     if (owner) {
       let ownerObj = await this.context.getOwner(owner);
       if (ownerObj instanceof Project) {
-        parent = ownerObj.dbId;
+        parent = ownerObj.id;
         let context = await ownerObj.context();
         if (context instanceof NamedContext) {
-          namedContext = context.dbId;
+          namedContext = context.id;
           context = await context.user();
         }
-        user = context.dbId;
+        user = context.id;
       } else if (ownerObj instanceof NamedContext) {
-        namedContext = ownerObj.dbId;
-        user = (await ownerObj.user()).dbId;
+        namedContext = ownerObj.id;
+        user = (await ownerObj.user()).id;
       } else if (ownerObj instanceof User) {
-        user = ownerObj.dbId;
+        user = ownerObj.id;
       }
     }
 
-    if (!userId.equals(user)) {
+    if (userId != user) {
       throw new Error("Owner does not exist.");
     }
 
-    return this.insert({
+    return this.build(this.insert({
       name,
       user,
       namedContext,
       parent,
       stub: stub(name),
-    });
+    }));
   }
 }
 
-export interface DataSources {
-  users: UserDataSource;
+export interface AppDataSources {
+  users: UserDataSource,
   namedContexts: NamedContextDataSource;
   projects: ProjectDataSource;
 }
 
-export function dataSources(client: MongoClient): DataSources {
+export function dataSources(): AppDataSources {
   return {
-    users: new UserDataSource(client),
-    namedContexts: new NamedContextDataSource(client),
-    projects: new ProjectDataSource(client),
+    users: new UserDataSource(),
+    namedContexts: new NamedContextDataSource(),
+    projects: new ProjectDataSource(),
   };
 }

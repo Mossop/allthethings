@@ -7,6 +7,8 @@ module.exports = {
         useTypeImports: true,
         avoidOptionals: true,
         immutableTypes: true,
+        idFieldName: "id",
+        objectIdType: "string",
       },
       "add": {
         content: [
