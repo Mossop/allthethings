@@ -10,13 +10,11 @@ export type UserDbObject = {
 export type ContextDbObject = {
   id: string,
   user: UserDbObject['id'],
-  stub: string,
   name: string,
 };
 
 export type ProjectDbObject = {
   id: string,
-  stub: string,
   name: string,
   user: UserDbObject['id'],
   context: ContextDbObject['id'] | null,

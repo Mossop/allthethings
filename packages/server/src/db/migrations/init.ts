@@ -20,11 +20,9 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Context", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("stub").notNullable();
     table.text("name").notNullable();
 
     table.unique(["id", "user"]);
-    table.unique(["user", "stub"]);
 
     table.text("user").notNullable();
     table.foreign("user", "foreign_User")
@@ -33,14 +31,22 @@ export async function up(knex: Knex): Promise<void> {
       .onUpdate("CASCADE");
   });
 
+  await knex.raw(
+    "CREATE UNIQUE INDEX :indexName: ON :table: (:user:, replace(lower(:name:), ' ', '-'))",
+    {
+      indexName: "context_name",
+      table: "Context",
+      user: "user",
+      name: "name",
+    },
+  );
+
   await knex.schema.createTable("Project", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("stub").notNullable();
     table.text("name").notNullable();
 
     table.unique(["id", "user", "context"]);
-    table.unique(["user", "context", "stub"]);
 
     table.text("user").notNullable();
     table.foreign("user", "foreign_User")
@@ -60,6 +66,21 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
+
+  await knex.raw(
+    `CREATE UNIQUE INDEX :indexName: ON :table: (
+      COALESCE(:parent:, :context:, :user:),
+      replace(lower(:name:), ' ', '-')
+    )`,
+    {
+      indexName: "project_name",
+      table: "Project",
+      parent: "parent",
+      context: "context",
+      user: "user",
+      name: "name",
+    },
+  );
 
   await knex.schema.createTable("Section", (table: Knex.CreateTableBuilder): void => {
     id(table);
@@ -84,6 +105,21 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
+
+  await knex.raw(
+    `CREATE UNIQUE INDEX :indexName: ON :table: (
+      COALESCE(:project:, :context:, :user:),
+      lower(:name:)
+    )`,
+    {
+      indexName: "section_name",
+      table: "Section",
+      project: "project",
+      context: "context",
+      user: "user",
+      name: "name",
+    },
+  );
 }
 
 export async function down(knex: Knex): Promise<void> {

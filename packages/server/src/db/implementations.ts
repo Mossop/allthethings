@@ -1,6 +1,7 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { AppDataSources } from "./datasources";
+import { stub } from "./datasources";
 import type { ContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
@@ -205,7 +206,7 @@ export class Context
   }
 
   public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
+    return stub(await this.name());
   }
 
   public async name(): Promise<string> {
@@ -263,7 +264,7 @@ export class Project extends TaskListImpl<ProjectDbObject>
   }
 
   public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
+    return stub(await this.name());
   }
 
   public async name(): Promise<string> {

@@ -187,7 +187,6 @@ export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
     return this.build(this.insert({
       name,
       user,
-      stub: stub(name),
     }));
   }
 }
@@ -222,7 +221,6 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
       user,
       context,
       parent,
-      stub: stub(name),
     }));
   }
 }

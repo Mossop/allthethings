@@ -38,7 +38,7 @@ type Context implements ProjectRoot & TaskList @entity {
 
   id: ID! @id
   user: User! @link
-  stub: String! @column
+  stub: String!
   name: String! @column
 }
 
@@ -52,7 +52,7 @@ type Project implements TaskList @entity(additionalFields: [
   sections: [Section!]!
 
   id: ID! @id
-  stub: String! @column
+  stub: String!
   name: String! @column
   taskList: TaskList!
 }
