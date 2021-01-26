@@ -5,14 +5,14 @@ import path from "path";
 import { ApolloServer } from "apollo-server-koa";
 
 import type { Overwrite } from "../../../utils";
-import type { Context, ProjectOwner } from "../db";
-import { NamedContext, User, dataSources } from "../db";
+import type { ProjectRoot, TaskList } from "../db";
+import { Context, User, dataSources } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { ResolverContext } from "./context";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
 import QueryResolvers from "./queries";
-import type { ContextResolvers, ProjectOwnerResolvers, Resolvers } from "./resolvers";
+import type * as Resolvers from "./resolvers";
 
 function loadSchema(): Promise<string> {
   return fs.readFile(path.join(__dirname, "..", "..", "src", "schema", "schema.graphql"), {
@@ -21,35 +21,35 @@ function loadSchema(): Promise<string> {
 }
 
 type RootResolvers<ContextType = ResolverContext> = Overwrite<
-  Omit<Resolvers<ContextType>, "User" | "NamedContext" | "Project" | "Section">,
+  Omit<Resolvers.Resolvers<ContextType>, "User" | "Context" | "Project" | "Section">,
   {
-    ProjectOwner: Pick<ProjectOwnerResolvers<ContextType>, "__resolveType">,
-    Context: Pick<ContextResolvers<ContextType>, "__resolveType">,
+    TaskList: Pick<Resolvers.TaskListResolvers<ContextType>, "__resolveType">,
+    ProjectRoot: Pick<Resolvers.ContextResolvers<ContextType>, "__resolveType">,
   }
 >;
 
 export const resolvers: RootResolvers = {
-  ProjectOwner: {
-    __resolveType(parent: ProjectOwner): "User" | "NamedContext" | "Project" {
+  TaskList: {
+    __resolveType(parent: TaskList): "User" | "Context" | "Project" {
       if (parent instanceof User) {
         return "User";
       }
 
-      if (parent instanceof NamedContext) {
-        return "NamedContext";
+      if (parent instanceof Context) {
+        return "Context";
       }
 
       return "Project";
     },
   },
 
-  Context: {
-    __resolveType(parent: Context): "User" | "NamedContext" {
+  ProjectRoot: {
+    __resolveType(parent: ProjectRoot): "User" | "Context" {
       if (parent instanceof User) {
         return "User";
       }
 
-      return "NamedContext";
+      return "Context";
     },
   },
 

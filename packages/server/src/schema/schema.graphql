@@ -1,88 +1,80 @@
-interface ProjectOwner {
-  id: ID!
-  context: Context!
+interface TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
 }
 
-interface Context implements ProjectOwner {
-  id: ID!
-  context: Context!
+interface ProjectRoot implements TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
 }
 
-type User implements Context & ProjectOwner {
-  id: ID!
-  context: Context!
+type User implements ProjectRoot & TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
+  id: ID!
   email: String!
   password: String!
-  namedContexts: [NamedContext!]!
+  contexts: [Context!]!
 }
 
-type NamedContext implements Context & ProjectOwner {
-  id: ID!
-  context: Context!
+type Context implements ProjectRoot & TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
   projects: [Project!]!
   projectById(id: ID!): Project
+  id: ID!
   user: User!
   stub: String!
   name: String!
 }
 
-type Project implements ProjectOwner {
-  id: ID!
-  context: Context!
+type Project implements TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  id: ID!
   stub: String!
   name: String!
-  owner: ProjectOwner!
+  taskList: TaskList!
 }
 
 type Section {
   id: ID!
-  owner: ProjectOwner!
   name: String!
 }
 
 type Query {
   user: User
-  owner(id: ID!): ProjectOwner
-  context(id: ID!): Context
+  taskList(id: ID!): TaskList
+  root(id: ID!): ProjectRoot
 }
 
-input CreateNamedContextParams {
+input CreateContextParams {
   name: String!
 }
 
 input CreateProjectParams {
-  owner: ID
+  taskList: ID
   name: String!
 }
 
 input CreateSectionParams {
-  owner: ID
+  taskList: ID
   name: String!
 }
 
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
-  createNamedContext(params: CreateNamedContextParams!): NamedContext!
-  deleteNamedContext(id: ID!): Boolean!
+  createContext(params: CreateContextParams!): Context!
+  deleteContext(id: ID!): Boolean!
   createProject(params: CreateProjectParams!): Project!
-  moveProject(id: ID!, owner: ID): Project
+  moveProject(id: ID!, taskList: ID): Project
   deleteProject(id: ID!): Boolean!
   createSection(params: CreateSectionParams!): Section!
-  moveSection(id: ID!, owner: ID): Section
+  moveSection(id: ID!, taskList: ID): Section
   deleteSection(id: ID!): Boolean!
 }

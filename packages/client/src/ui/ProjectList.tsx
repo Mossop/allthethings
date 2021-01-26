@@ -20,8 +20,8 @@ import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
 import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { NamedContext, Project, User } from "../utils/state";
-import { useUrl, useCurrentContext } from "../utils/state";
+import type { Project, TaskList } from "../utils/state";
+import { useUrl, useProjectRoot } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
@@ -151,19 +151,19 @@ const Item = ReactMemo(forwardRef(function Item({
 
 interface ProjectItemProps {
   project: Project;
-  selectedOwner: User | NamedContext | Project | null;
+  taskList: TaskList | null;
   depth: number
 }
 
 const ProjectItem = ReactMemo(function ProjectItem({
   project,
-  selectedOwner,
+  taskList,
   depth,
 }: ProjectItemProps): ReactResult {
-  let selected = project.id == selectedOwner?.id;
+  let selected = project.id == taskList?.id;
   let url = useUrl({
-    type: ViewType.Owner,
-    owner: project,
+    type: ViewType.TaskList,
+    taskList: project,
   });
 
   let [{ isDragging }, dragRef] = useDrag({
@@ -202,7 +202,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
     void moveProject({
       variables: {
         id: item.project.id,
-        owner: project.id,
+        taskList: project.id,
       },
     });
   }, [moveProject, project]);
@@ -241,7 +241,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
           nameSorted(project.subprojects).map((child: Project) => <ProjectItem
             key={child.id}
             project={child}
-            selectedOwner={selectedOwner}
+            taskList={taskList}
             depth={depth + 1}
           />)
         }
@@ -259,8 +259,8 @@ export default ReactMemo(function ProjectList({
 }: ProjectListProps): ReactResult {
   let classes = useStyles({ depth: 0 });
 
-  let context = useCurrentContext();
-  let selectedOwner = "owner" in view ? view.owner : null;
+  let context = useProjectRoot();
+  let taskList = "taskList" in view ? view.taskList : null;
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
   let openCreateProjectDialog = useCallback(() => {
@@ -274,8 +274,8 @@ export default ReactMemo(function ProjectList({
     type: ViewType.Inbox,
   });
   let tasksUrl = useUrl({
-    type: ViewType.Owner,
-    owner: context,
+    type: ViewType.TaskList,
+    taskList: context,
   });
 
   let [moveProject] = useMoveProjectMutation({
@@ -290,7 +290,7 @@ export default ReactMemo(function ProjectList({
     void moveProject({
       variables: {
         id: item.project.id,
-        owner: context.id,
+        taskList: context.id,
       },
     });
   }, [moveProject, context]);
@@ -327,7 +327,7 @@ export default ReactMemo(function ProjectList({
       <Item
         url={tasksUrl}
         icon={<ProjectIcon/>}
-        selected={view.type == ViewType.Owner && selectedOwner?.id == context.id}
+        selected={view.type == ViewType.TaskList && taskList?.id == context.id}
         label="Tasks"
         depth={0}
       />
@@ -336,7 +336,7 @@ export default ReactMemo(function ProjectList({
         nameSorted(context.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
-          selectedOwner={isDragging ? null : selectedOwner}
+          taskList={isDragging ? null : taskList}
           depth={0}
         />)
       }
@@ -350,7 +350,7 @@ export default ReactMemo(function ProjectList({
     {
       showCreateProjectDialog && <CreateProjectDialog
         onClose={closeCreateProjectDialog}
-        owner={context}
+        taskList={context}
       />
     }
   </Paper>;

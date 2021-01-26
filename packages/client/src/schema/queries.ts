@@ -6,7 +6,7 @@ import * as Apollo from '@apollo/client';
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<{ readonly __typename?: 'User', readonly email: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }>, readonly namedContexts: ReadonlyArray<{ readonly __typename?: 'NamedContext', readonly stub: string, readonly name: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }> }> }> };
+export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<{ readonly __typename?: 'User', readonly email: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }>, readonly contexts: ReadonlyArray<{ readonly __typename?: 'Context', readonly stub: string, readonly name: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }> }> }> };
 
 
 export const ListContextStateDocument = gql`
@@ -29,7 +29,7 @@ export const ListContextStateDocument = gql`
         name
       }
     }
-    namedContexts {
+    contexts {
       stub
       name
       id

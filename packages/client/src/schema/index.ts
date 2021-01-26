@@ -11,7 +11,7 @@ let typePolicies: TypedTypePolicies = {
       },
     },
   },
-  NamedContext: {
+  Context: {
     fields: {
       subprojects: {
         merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,

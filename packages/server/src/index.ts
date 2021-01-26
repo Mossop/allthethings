@@ -15,6 +15,11 @@ async function init(): Promise<void> {
   let config = await parseConfig(process.argv[2]);
 
   let db = await createDbConnection(config);
+  if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
+    await db.rollback(true);
+  }
+  await db.migrate();
+
   let gqlServer = await createGqlServer(db);
   await createWebServer(config, db, gqlServer);
 }

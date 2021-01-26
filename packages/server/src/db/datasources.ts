@@ -4,13 +4,12 @@ import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type Knex from "knex";
 import { customAlphabet } from "nanoid/async";
 
-import type { Overwrite } from "../../../utils";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { DatabaseConnection } from "./connection";
 import type { ImplBuilder } from "./implementations";
-import { NamedContext, User, Project, Section } from "./implementations";
-import type { NamedContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
+import { Context, User, Project, Section, getTaskListIds } from "./implementations";
+import type { ContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -177,14 +176,14 @@ export class UserDataSource extends DbDataSource<User, UserDbObject> {
   }
 }
 
-export class NamedContextDataSource extends DbDataSource<NamedContext, NamedContextDbObject> {
-  protected tableName = "NamedContext";
-  protected builder = NamedContext;
+export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
+  protected tableName = "Context";
+  protected builder = Context;
 
   public async create(
     user: string,
-    { name }: Schema.CreateNamedContextParams,
-  ): Promise<NamedContext> {
+    { name }: Schema.CreateContextParams,
+  ): Promise<Context> {
     return this.build(this.insert({
       name,
       user,
@@ -199,38 +198,29 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
 
   public async create(
     userId: string,
-    { name, owner }: Overwrite<Schema.CreateProjectParams, { owner: string | null }>,
+    { name, taskList }: Schema.CreateProjectParams,
   ): Promise<Project> {
     let user: string = userId;
     let parent: string | null = null;
-    let namedContext: string | null = null;
+    let context: string | null = null;
 
-    if (owner) {
-      let ownerObj = await this.context.getOwner(owner);
-      if (ownerObj instanceof Project) {
-        parent = ownerObj.id;
-        let context = await ownerObj.context();
-        if (context instanceof NamedContext) {
-          namedContext = context.id;
-          context = await context.user();
-        }
-        user = context.id;
-      } else if (ownerObj instanceof NamedContext) {
-        namedContext = ownerObj.id;
-        user = (await ownerObj.user()).id;
-      } else if (ownerObj instanceof User) {
-        user = ownerObj.id;
+    if (taskList) {
+      let obj = await this.context.getTaskList(taskList);
+      if (!obj) {
+        throw new Error("TaskList does not exist.");
       }
-    }
 
-    if (userId != user) {
-      throw new Error("Owner does not exist.");
+      ({ user, context, project: parent } = await getTaskListIds(obj));
+
+      if (userId != user) {
+        throw new Error("TaskList does not exist.");
+      }
     }
 
     return this.build(this.insert({
       name,
       user,
-      namedContext,
+      context,
       parent,
       stub: stub(name),
     }));
@@ -243,38 +233,29 @@ export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
 
   public async create(
     userId: string,
-    { name, owner }: Overwrite<Schema.CreateSectionParams, { owner: string | null }>,
+    { name, taskList }: Schema.CreateSectionParams,
   ): Promise<Section> {
     let user: string = userId;
     let project: string | null = null;
-    let namedContext: string | null = null;
+    let context: string | null = null;
 
-    if (owner) {
-      let ownerObj = await this.context.getOwner(owner);
-      if (ownerObj instanceof Project) {
-        project = ownerObj.id;
-        let context = await ownerObj.context();
-        if (context instanceof NamedContext) {
-          namedContext = context.id;
-          context = await context.user();
-        }
-        user = context.id;
-      } else if (ownerObj instanceof NamedContext) {
-        namedContext = ownerObj.id;
-        user = (await ownerObj.user()).id;
-      } else if (ownerObj instanceof User) {
-        user = ownerObj.id;
+    if (taskList) {
+      let obj = await this.context.getTaskList(taskList);
+      if (!obj) {
+        throw new Error("TaskList does not exist.");
       }
-    }
 
-    if (userId != user) {
-      throw new Error("Owner does not exist.");
+      ({ user, context, project } = await getTaskListIds(obj));
+
+      if (userId != user) {
+        throw new Error("TaskList does not exist.");
+      }
     }
 
     return this.build(this.insert({
       name,
       user,
-      namedContext,
+      context,
       project,
     }));
   }
@@ -282,7 +263,7 @@ export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
 
 export interface AppDataSources {
   users: UserDataSource,
-  namedContexts: NamedContextDataSource;
+  contexts: ContextDataSource;
   projects: ProjectDataSource;
   sections: SectionDataSource;
 }
@@ -290,7 +271,7 @@ export interface AppDataSources {
 export function dataSources(): AppDataSources {
   return {
     users: new UserDataSource(),
-    namedContexts: new NamedContextDataSource(),
+    contexts: new ContextDataSource(),
     projects: new ProjectDataSource(),
     sections: new SectionDataSource(),
   };

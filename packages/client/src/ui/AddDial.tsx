@@ -5,19 +5,18 @@ import { useCallback, useState } from "react";
 
 import { ProjectIcon } from "../components/Icons";
 import type { ViewType } from "../utils/navigation";
-import type { User, NamedContext, Project } from "../utils/state";
+import type { TaskList } from "../utils/state";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface AddDialProps {
-  owner: User | NamedContext | Project;
+  taskList: TaskList;
   viewType: ViewType;
 }
 
 export default ReactMemo(function AddDial({
-  owner,
-  viewType,
+  taskList,
 }: AddDialProps): ReactResult {
   let [open, setOpen] = useState(false);
   let [projectAddDialogOpen, setProjectAddDialogOpen] = useState(false);
@@ -47,6 +46,6 @@ export default ReactMemo(function AddDial({
         onClick={openAddProject}
       />
     </SpeedDial>
-    {projectAddDialogOpen && <CreateProjectDialog owner={owner} onClose={closeAddProject}/>}
+    {projectAddDialogOpen && <CreateProjectDialog taskList={taskList} onClose={closeAddProject}/>}
   </>;
 });

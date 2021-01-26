@@ -2,7 +2,7 @@ import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
 import { Heading, SubHeading } from "../components/Text";
-import type { OwnerView } from "../utils/navigation";
+import type { TaskListView } from "../utils/navigation";
 import type { Section } from "../utils/state";
 import { isProject } from "../utils/state";
 import { pageStyles } from "../utils/styles";
@@ -36,23 +36,23 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-interface OwnerProps {
-  view: OwnerView;
+interface TaskListProps {
+  view: TaskListView;
 }
 
-export default ReactMemo(function Owner({
+export default ReactMemo(function TaskList({
   view,
-}: OwnerProps): ReactResult {
+}: TaskListProps): ReactResult {
   let classes = useStyles();
 
   return <div className={classes.outer}>
     <div className={classes.content}>
       {
-        isProject(view.owner) &&
-        <Heading className={classes.heading}>{view.owner.name}</Heading>
+        isProject(view.taskList) &&
+        <Heading className={classes.heading}>{view.taskList.name}</Heading>
       }
       {
-        view.owner.sections.map((section: Section) => <div
+        view.taskList.sections.map((section: Section) => <div
           key={section.id}
           className={classes.section}
         >
@@ -61,7 +61,7 @@ export default ReactMemo(function Owner({
       }
     </div>
     <div className={classes.floatingAction}>
-      <AddDial viewType={view.type} owner={view.owner}/>
+      <AddDial viewType={view.type} taskList={view.taskList}/>
     </div>
   </div>;
 });

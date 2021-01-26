@@ -16,12 +16,12 @@ export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
 
 export type LogoutMutation = { readonly __typename?: 'Mutation', readonly logout: Types.Maybe<boolean> };
 
-export type CreateNamedContextMutationVariables = Types.Exact<{
-  params: Types.CreateNamedContextParams;
+export type CreateContextMutationVariables = Types.Exact<{
+  params: Types.CreateContextParams;
 }>;
 
 
-export type CreateNamedContextMutation = { readonly __typename?: 'Mutation', readonly createNamedContext: { readonly __typename?: 'NamedContext', readonly id: string, readonly name: string, readonly stub: string } };
+export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
 export type CreateProjectMutationVariables = Types.Exact<{
   params: Types.CreateProjectParams;
@@ -32,11 +32,11 @@ export type CreateProjectMutation = { readonly __typename?: 'Mutation', readonly
 
 export type MoveProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  owner: Types.Maybe<Types.Scalars['ID']>;
+  taskList: Types.Maybe<Types.Scalars['ID']>;
 }>;
 
 
-export type MoveProjectMutation = { readonly __typename?: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string, readonly owner: { readonly __typename?: 'User', readonly id: string } | { readonly __typename?: 'NamedContext', readonly id: string } | { readonly __typename?: 'Project', readonly id: string } }> };
+export type MoveProjectMutation = { readonly __typename?: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
 
 
 export const LoginDocument = gql`
@@ -101,40 +101,40 @@ export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<Logou
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
-export const CreateNamedContextDocument = gql`
-    mutation CreateNamedContext($params: CreateNamedContextParams!) {
-  createNamedContext(params: $params) {
+export const CreateContextDocument = gql`
+    mutation CreateContext($params: CreateContextParams!) {
+  createContext(params: $params) {
     id
     name
     stub
   }
 }
     `;
-export type CreateNamedContextMutationFn = Apollo.MutationFunction<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
+export type CreateContextMutationFn = Apollo.MutationFunction<CreateContextMutation, CreateContextMutationVariables>;
 
 /**
- * __useCreateNamedContextMutation__
+ * __useCreateContextMutation__
  *
- * To run a mutation, you first call `useCreateNamedContextMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useCreateNamedContextMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useCreateContextMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateContextMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [createNamedContextMutation, { data, loading, error }] = useCreateNamedContextMutation({
+ * const [createContextMutation, { data, loading, error }] = useCreateContextMutation({
  *   variables: {
  *      params: // value for 'params'
  *   },
  * });
  */
-export function useCreateNamedContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>) {
-        return Apollo.useMutation<CreateNamedContextMutation, CreateNamedContextMutationVariables>(CreateNamedContextDocument, baseOptions);
+export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateContextMutation, CreateContextMutationVariables>) {
+        return Apollo.useMutation<CreateContextMutation, CreateContextMutationVariables>(CreateContextDocument, baseOptions);
       }
-export type CreateNamedContextMutationHookResult = ReturnType<typeof useCreateNamedContextMutation>;
-export type CreateNamedContextMutationResult = Apollo.MutationResult<CreateNamedContextMutation>;
-export type CreateNamedContextMutationOptions = Apollo.BaseMutationOptions<CreateNamedContextMutation, CreateNamedContextMutationVariables>;
+export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
+export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
+export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
 export const CreateProjectDocument = gql`
     mutation CreateProject($params: CreateProjectParams!) {
   createProject(params: $params) {
@@ -170,14 +170,11 @@ export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProject
 export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
 export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
 export const MoveProjectDocument = gql`
-    mutation MoveProject($id: ID!, $owner: ID) {
-  moveProject(id: $id, owner: $owner) {
+    mutation MoveProject($id: ID!, $taskList: ID) {
+  moveProject(id: $id, taskList: $taskList) {
     id
     name
     stub
-    owner {
-      id
-    }
   }
 }
     `;
@@ -197,7 +194,7 @@ export type MoveProjectMutationFn = Apollo.MutationFunction<MoveProjectMutation,
  * const [moveProjectMutation, { data, loading, error }] = useMoveProjectMutation({
  *   variables: {
  *      id: // value for 'id'
- *      owner: // value for 'owner'
+ *      taskList: // value for 'taskList'
  *   },
  * });
  */

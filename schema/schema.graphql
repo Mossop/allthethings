@@ -1,14 +1,10 @@
-interface ProjectOwner {
-  id: ID!
-  context: Context!
+interface TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
 }
 
-interface Context implements ProjectOwner {
-  # ProjectOwner
-  id: ID!
-  context: Context!
+interface ProjectRoot implements TaskList {
+  # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
 
@@ -16,83 +12,78 @@ interface Context implements ProjectOwner {
   projectById(id: ID!): Project
 }
 
-type User implements Context & ProjectOwner @entity {
-  # ProjectOwner
+type User implements ProjectRoot & TaskList @entity {
+  # TaskList
+  subprojects: [Project!]!
+  sections: [Section!]!
+
+  # ProjectRoot
+  projects: [Project!]!
+  projectById(id: ID!): Project
+
   id: ID! @id
-  context: Context!
-  subprojects: [Project!]!
-  sections: [Section!]!
-
-  # Context
-  projects: [Project!]!
-  projectById(id: ID!): Project
-
   email: String! @column
   password: String! @column
-  namedContexts: [NamedContext!]!
+  contexts: [Context!]!
 }
 
-type NamedContext implements Context & ProjectOwner @entity {
-  # ProjectOwner
-  id: ID! @id
-  context: Context!
+type Context implements ProjectRoot & TaskList @entity {
+  # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
 
-  # Context
+  # ProjectRoot
   projects: [Project!]!
   projectById(id: ID!): Project
 
+  id: ID! @id
   user: User! @link
   stub: String! @column
   name: String! @column
 }
 
-type Project implements ProjectOwner @entity(additionalFields: [
+type Project implements TaskList @entity(additionalFields: [
   { path: "user", type: "UserDbObject['id']" },
-  { path: "namedContext", type: "NamedContextDbObject['id'] | null" },
+  { path: "context", type: "ContextDbObject['id'] | null" },
   { path: "parent", type: "ProjectDbObject['id'] | null" },
 ]) {
-  # ProjectOwner
-  id: ID! @id
-  context: Context!
+  # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
 
+  id: ID! @id
   stub: String! @column
   name: String! @column
-  owner: ProjectOwner!
+  taskList: TaskList!
 }
 
 type Section @entity(additionalFields: [
   { path: "user", type: "UserDbObject['id']" },
-  { path: "namedContext", type: "NamedContextDbObject['id'] | null" },
+  { path: "context", type: "ContextDbObject['id'] | null" },
   { path: "project", type: "ProjectDbObject['id'] | null" },
 ]) {
   id: ID! @id
-  owner: ProjectOwner!
-
   name: String! @column
 }
 
 type Query {
   user: User
 
-  owner(id: ID!): ProjectOwner
-  context(id: ID!): Context
+  taskList(id: ID!): TaskList
+  root(id: ID!): ProjectRoot
 }
 
-input CreateNamedContextParams {
+input CreateContextParams {
   name: String!
 }
 
 input CreateProjectParams {
-  owner: ID
+  taskList: ID
   name: String!
 }
 
 input CreateSectionParams {
-  owner: ID
+  taskList: ID
   name: String!
 }
 
@@ -100,14 +91,14 @@ type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
 
-  createNamedContext(params: CreateNamedContextParams!): NamedContext!
-  deleteNamedContext(id: ID!): Boolean!
+  createContext(params: CreateContextParams!): Context!
+  deleteContext(id: ID!): Boolean!
 
   createProject(params: CreateProjectParams!): Project!
-  moveProject(id: ID!, owner: ID): Project
+  moveProject(id: ID!, taskList: ID): Project
   deleteProject(id: ID!): Boolean!
 
   createSection(params: CreateSectionParams!): Section!
-  moveSection(id: ID!, owner: ID): Section
+  moveSection(id: ID!, taskList: ID): Section
   deleteSection(id: ID!): Boolean!
 }

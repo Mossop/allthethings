@@ -58,6 +58,18 @@ export class DatabaseConnection {
     await this.knex.migrate.latest(migrateConfig);
   }
 
+  public async rollback(all: boolean = false): Promise<void> {
+    if (this.isInTransaction) {
+      throw new Error("Cannot rollback while in a transaction.");
+    }
+
+    let migrateConfig = {
+      migrationSource: new DbMigrations(),
+    };
+
+    await this.knex.migrate.rollback(migrateConfig, all);
+  }
+
   public get isInTransaction(): boolean {
     return !!this._transaction;
   }

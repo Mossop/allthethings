@@ -9,14 +9,14 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 import { ContextIcon } from "../components/Icons";
 import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { NavigableView, NamedContext, User } from "../utils/state";
+import type { NavigableView, Context, ProjectRoot } from "../utils/state";
 import {
   useView,
-  isNamedContext,
+  isContext,
   useUser,
   useUrl,
-  useCurrentNamedContext,
-  useNamedContexts,
+  useCurrentContext,
+  useContexts,
 } from "../utils/state";
 import { flexRow } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
@@ -45,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) =>
 interface ContextMenuItemProps {
   onClick: () => void;
   name: string;
-  target: User | NamedContext;
+  target: ProjectRoot;
   selected: boolean;
 }
 
@@ -61,14 +61,14 @@ const ContextMenuItem = ReactMemo(
       case ViewType.Inbox:
         targetView = {
           type: ViewType.Inbox,
-          namedContext: isNamedContext(target) ? target : null,
+          context: isContext(target) ? target : null,
         };
         break;
       default:
         targetView = {
-          type: ViewType.Owner,
-          owner: target,
-          namedContext: isNamedContext(target) ? target : null,
+          type: ViewType.TaskList,
+          taskList: target,
+          context: isContext(target) ? target : null,
         };
     }
 
@@ -97,8 +97,8 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
   let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
-  let contexts = useNamedContexts();
-  let currentContext = useCurrentNamedContext();
+  let contexts = useContexts();
+  let currentContext = useCurrentContext();
   let user = useUser();
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
@@ -155,7 +155,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
         onClick={closeMenu}
       />
       {
-        sorted.map((context: NamedContext) => <ContextMenuItem
+        sorted.map((context: Context) => <ContextMenuItem
           key={context.id}
           name={context.name}
           target={context}

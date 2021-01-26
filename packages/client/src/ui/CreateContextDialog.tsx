@@ -10,7 +10,7 @@ import { useMemo, useEffect, useState, useCallback } from "react";
 
 import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
-import { useCreateNamedContextMutation } from "../schema/mutations";
+import { useCreateContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import { pushView, ViewType } from "../utils/navigation";
 import { useView } from "../utils/state";
@@ -29,7 +29,7 @@ export default ReactMemo(function CreateContextDialog({
   let view = useView();
   let user = view.user;
 
-  let [createContext, { data, error }] = useCreateNamedContextMutation({
+  let [createContext, { data, error }] = useCreateContextMutation({
     variables: {
       params: state,
     },
@@ -44,7 +44,7 @@ export default ReactMemo(function CreateContextDialog({
       return null;
     }
 
-    return user.namedContexts.get(data.createNamedContext.id) ?? null;
+    return user.contexts.get(data.createContext.id) ?? null;
   }, [data, user]);
 
   useEffect(() => {
@@ -53,9 +53,9 @@ export default ReactMemo(function CreateContextDialog({
     }
 
     pushView({
-      type: ViewType.Owner,
-      namedContext: newContext,
-      owner: newContext,
+      type: ViewType.TaskList,
+      context: newContext,
+      taskList: newContext,
     }, view);
     onClose();
   }, [newContext, view, onClose]);

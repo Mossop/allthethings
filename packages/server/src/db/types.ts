@@ -7,7 +7,7 @@ export type UserDbObject = {
   password: string,
 };
 
-export type NamedContextDbObject = {
+export type ContextDbObject = {
   id: string,
   user: UserDbObject['id'],
   stub: string,
@@ -19,7 +19,7 @@ export type ProjectDbObject = {
   stub: string,
   name: string,
   user: UserDbObject['id'],
-  namedContext: NamedContextDbObject['id'] | null,
+  context: ContextDbObject['id'] | null,
   parent: ProjectDbObject['id'] | null,
 };
 
@@ -27,6 +27,6 @@ export type SectionDbObject = {
   id: string,
   name: string,
   user: UserDbObject['id'],
-  namedContext: NamedContextDbObject['id'] | null,
+  context: ContextDbObject['id'] | null,
   project: ProjectDbObject['id'] | null,
 };

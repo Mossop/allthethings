@@ -1,8 +1,8 @@
-import type { Context, ProjectOwner, User } from "../db";
+import type { ProjectRoot, TaskList, User } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
-import type { QueryOwnerArgs } from "./types";
+import type { QueryRootArgs, QueryTaskListArgs } from "./types";
 
 const resolvers: QueryResolvers = {
   user: resolver(async ({
@@ -21,18 +21,18 @@ const resolvers: QueryResolvers = {
     return user;
   }),
 
-  context: authed(({
+  root: authed(({
     ctx,
     args: { id },
-  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<Context | null> => {
-    return ctx.getContext(id);
+  }: AuthedParams<unknown, QueryRootArgs>): Promise<ProjectRoot | null> => {
+    return ctx.getRoot(id);
   }),
 
-  owner: authed(({
+  taskList: authed(({
     ctx,
     args: { id },
-  }: AuthedParams<unknown, QueryOwnerArgs>): Promise<ProjectOwner | null> => {
-    return ctx.getOwner(id);
+  }: AuthedParams<unknown, QueryTaskListArgs>): Promise<TaskList | null> => {
+    return ctx.getTaskList(id);
   }),
 };
 

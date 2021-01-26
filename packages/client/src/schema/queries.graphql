@@ -19,7 +19,7 @@ query ListContextState {
       }
     }
 
-    namedContexts {
+    contexts {
       stub
       name
 

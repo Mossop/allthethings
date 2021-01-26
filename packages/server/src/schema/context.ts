@@ -1,6 +1,6 @@
 import type Koa from "koa";
 
-import type { Context, AppDataSources, ProjectOwner, User } from "../db";
+import type { ProjectRoot, AppDataSources, TaskList, User } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { AppContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
@@ -8,8 +8,8 @@ import type { ResolverFn } from "./resolvers";
 export interface BaseContext {
   db: DatabaseConnection;
   userId: string | null;
-  getContext: (id: string) => Promise<Context | null>;
-  getOwner: (id: string) => Promise<ProjectOwner | null>;
+  getRoot: (id: string) => Promise<ProjectRoot | null>;
+  getTaskList: (id: string) => Promise<TaskList | null>;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -79,8 +79,8 @@ export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseCo
       return ctx.db;
     },
 
-    async getContext(this: ResolverContext, id: string): Promise<Context | null> {
-      let context = await this.dataSources.namedContexts.getOne(id);
+    async getRoot(this: ResolverContext, id: string): Promise<ProjectRoot | null> {
+      let context = await this.dataSources.contexts.getOne(id);
       if (context) {
         return context;
       }
@@ -93,13 +93,13 @@ export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseCo
       throw new Error("Context does not exist.");
     },
 
-    async getOwner(this: ResolverContext, id: string): Promise<ProjectOwner | null> {
+    async getTaskList(this: ResolverContext, id: string): Promise<TaskList | null> {
       let project = await this.dataSources.projects.getOne(id);
       if (project) {
         return project;
       }
 
-      return this.getContext(id);
+      return this.getRoot(id);
     },
 
     login(user: User): void {

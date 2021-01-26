@@ -1,20 +1,20 @@
 import type { Location, To, Update } from "history";
 import { createBrowserHistory } from "history";
 
-import type { NamedContext, NavigableView, Project, User } from "./state";
-import { isNamedContext, isUser, isProject } from "./state";
+import type { Context, NavigableView, Project, ProjectRoot, TaskList, User } from "./state";
+import { isContext, isUser, isProject } from "./state";
 
 export const history = createBrowserHistory();
 
 export enum ViewType {
-  Owner = "owner",
+  TaskList = "tasklist",
   Inbox = "inbox",
   NotFound = "notfound",
 }
 
 export interface BaseView {
   readonly user: User;
-  readonly namedContext: NamedContext | null;
+  readonly context: Context | null;
 }
 
 export type NotFoundView = BaseView & {
@@ -25,9 +25,9 @@ export type InboxView = BaseView & {
   readonly type: ViewType.Inbox;
 };
 
-export type OwnerView = BaseView & {
-  readonly type: ViewType.Owner;
-  readonly owner: User | NamedContext | Project;
+export type TaskListView = BaseView & {
+  readonly type: ViewType.TaskList;
+  readonly taskList: TaskList;
 };
 
 export type View =
@@ -36,12 +36,12 @@ export type View =
 
 export type LinkableView =
   InboxView |
-  OwnerView;
+  TaskListView;
 
 function updateView(view: View, user: User): View {
   let base: BaseView = {
     user,
-    namedContext: view.namedContext ? user.namedContexts.get(view.namedContext.id) ?? null : null,
+    context: view.context ? user.contexts.get(view.context.id) ?? null : null,
   };
 
   switch (view.type) {
@@ -55,56 +55,56 @@ function updateView(view: View, user: User): View {
         ...base,
         type: view.type,
       };
-    case ViewType.Owner: {
-      let owner: User | NamedContext | Project;
+    case ViewType.TaskList: {
+      let taskList: TaskList;
 
-      if (isUser(view.owner)) {
-        owner = user;
-      } else if (isNamedContext(view.owner)) {
-        let context = user.namedContexts.get(view.owner.id);
+      if (isUser(view.taskList)) {
+        taskList = user;
+      } else if (isContext(view.taskList)) {
+        let context = user.contexts.get(view.taskList.id);
         if (!context) {
           return {
             ...base,
             type: ViewType.NotFound,
           };
         }
-        owner = context;
+        taskList = context;
       } else {
-        let project = (base.namedContext ?? base.user).projects.get(view.owner.id);
+        let project = (base.context ?? base.user).projects.get(view.taskList.id);
         if (!project) {
           return {
             ...base,
             type: ViewType.NotFound,
           };
         }
-        owner = project;
+        taskList = project;
       }
 
       return {
         ...base,
         type: view.type,
-        owner,
+        taskList: taskList,
       };
     }
   }
 }
 
-export function viewToUrl(view: InboxView | OwnerView): URL {
+export function viewToUrl(view: InboxView | TaskListView): URL {
   let path: string;
   let searchParams = new URLSearchParams();
 
-  if (view.namedContext) {
-    searchParams.set("context", view.namedContext.stub);
+  if (view.context) {
+    searchParams.set("context", view.context.stub);
   }
 
   switch (view.type) {
     case ViewType.Inbox:
       path = "/inbox";
       break;
-    case ViewType.Owner:
-      if (isProject(view.owner)) {
-        let parts = [view.owner.stub];
-        let parent = view.owner.parent;
+    case ViewType.TaskList:
+      if (isProject(view.taskList)) {
+        let parts = [view.taskList.stub];
+        let parent = view.taskList.parent;
         while (parent) {
           parts.unshift(parent.stub);
           parent = parent.parent;
@@ -127,23 +127,23 @@ export function viewToUrl(view: InboxView | OwnerView): URL {
 export function urlToView(user: User, url: URL): View {
   let pathParts = url.pathname.substring(1).split("/");
 
-  let currentContext: User | NamedContext = user;
-  let namedContext: NamedContext | null = null;
+  let root: ProjectRoot = user;
+  let context: Context | null = null;
   let selectedContext = url.searchParams.get("context");
   if (selectedContext) {
-    namedContext = [...user.namedContexts.values()].find(
-      (context: NamedContext): boolean => context.stub == selectedContext,
+    context = [...user.contexts.values()].find(
+      (context: Context): boolean => context.stub == selectedContext,
     ) ?? null;
 
-    if (namedContext) {
-      currentContext = namedContext;
+    if (context) {
+      root = context;
     }
   }
 
   let notFound: View = {
     type: ViewType.NotFound,
     user,
-    namedContext,
+    context,
   };
 
   switch (pathParts.shift()) {
@@ -152,10 +152,10 @@ export function urlToView(user: User, url: URL): View {
         return notFound;
       }
       return {
-        type: ViewType.Owner,
+        type: ViewType.TaskList,
         user,
-        namedContext,
-        owner: currentContext,
+        context,
+        taskList: root,
       };
     case "inbox":
       if (pathParts.length) {
@@ -164,17 +164,17 @@ export function urlToView(user: User, url: URL): View {
       return {
         type: ViewType.Inbox,
         user,
-        namedContext,
+        context,
       };
     case "project": {
-      let owner: User | NamedContext | Project = currentContext;
+      let taskList: TaskList = root;
       let part = pathParts.shift();
       while (part) {
-        let inner = descend(owner, part);
+        let inner = descend(taskList, part);
         if (!inner) {
           return notFound;
         }
-        owner = inner;
+        taskList = inner;
 
         part = pathParts.shift();
       }
@@ -184,10 +184,10 @@ export function urlToView(user: User, url: URL): View {
       }
 
       return {
-        type: ViewType.Owner,
-        user: user,
-        namedContext,
-        owner,
+        type: ViewType.TaskList,
+        user,
+        context,
+        taskList,
       };
     }
     default:
@@ -195,8 +195,8 @@ export function urlToView(user: User, url: URL): View {
   }
 }
 
-function descend(owner: User | NamedContext | Project, stub: string): Project | null {
-  return owner.subprojects.find((project: Project): boolean => project.stub == stub) ?? null;
+function descend(taskList: TaskList, stub: string): Project | null {
+  return taskList.subprojects.find((project: Project): boolean => project.stub == stub) ?? null;
 }
 
 function urlForLocation(location: Location): URL {
@@ -254,7 +254,7 @@ function buildView(
     let [newView, currentView] = args;
     return {
       user: currentView.user,
-      namedContext: currentView.namedContext,
+      context: currentView.context,
       ...newView,
     };
   } else {

@@ -1,4 +1,4 @@
-import type { User, NamedContext, Project, Section } from "../db";
+import type { User, Context, Project, Section } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
@@ -27,18 +27,18 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createNamedContext: authed(({
+  createContext: authed(({
     args: { params },
     ctx,
-  }: AuthedParams<unknown, Types.MutationCreateNamedContextArgs>): Promise<NamedContext> => {
-    return ctx.dataSources.namedContexts.create(ctx.userId, params);
+  }: AuthedParams<unknown, Types.MutationCreateContextArgs>): Promise<Context> => {
+    return ctx.dataSources.contexts.create(ctx.userId, params);
   }),
 
-  deleteNamedContext: authed(async ({
+  deleteContext: authed(async ({
     args: { id },
     ctx,
-  }: AuthedParams<unknown, Types.MutationDeleteNamedContextArgs>): Promise<boolean> => {
-    await ctx.dataSources.namedContexts.delete(id);
+  }: AuthedParams<unknown, Types.MutationDeleteContextArgs>): Promise<boolean> => {
+    await ctx.dataSources.contexts.delete(id);
     return true;
   }),
 
@@ -46,14 +46,11 @@ const resolvers: MutationResolvers = {
     args: { params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateProjectArgs>): Promise<Project> => {
-    return ctx.dataSources.projects.create(ctx.userId, {
-      ...params,
-      owner: params.owner ?? null,
-    });
+    return ctx.dataSources.projects.create(ctx.userId, params);
   }),
 
   moveProject: authed(async ({
-    args: { id, owner: ownerId },
+    args: { id, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveProjectArgs>): Promise<Project | null> => {
     let project = await ctx.dataSources.projects.getOne(id);
@@ -61,12 +58,12 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    let owner = await ctx.getOwner(ownerId ?? ctx.userId);
-    if (owner === null) {
-      throw new Error("Owner not found.");
+    let list = await ctx.getTaskList(taskList ?? ctx.userId);
+    if (list === null) {
+      throw new Error("TaskList not found.");
     }
 
-    await project.move(owner);
+    await project.move(list);
     return project;
   }),
 
@@ -87,14 +84,11 @@ const resolvers: MutationResolvers = {
     args: { params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateSectionArgs>): Promise<Section> => {
-    return ctx.dataSources.sections.create(ctx.userId, {
-      ...params,
-      owner: params.owner ?? null,
-    });
+    return ctx.dataSources.sections.create(ctx.userId, params);
   }),
 
   moveSection: authed(async ({
-    args: { id, owner: ownerId },
+    args: { id, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
     let section = await ctx.dataSources.sections.getOne(id);
@@ -102,12 +96,12 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    let owner = await ctx.getOwner(ownerId ?? ctx.userId);
-    if (owner === null) {
-      throw new Error("Owner not found.");
+    let list = await ctx.getTaskList(taskList ?? ctx.userId);
+    if (list === null) {
+      throw new Error("TaskList not found.");
     }
 
-    await section.move(owner);
+    await section.move(list);
     return section;
   }),
 

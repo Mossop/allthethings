@@ -42,11 +42,11 @@ module.exports = {
         mappers: {
           /* eslint-disable @typescript-eslint/naming-convention */
           User: "../db/implementations#User",
-          NamedContext: "../db/implementations#NamedContext",
+          Context: "../db/implementations#Context",
           Project: "../db/implementations#Project",
           Section: "../db/implementations#Section",
-          ProjectOwner: "../db/implementations#ProjectOwner",
-          Context: "../db/implementations#Context",
+          TaskList: "../db/implementations#TaskList",
+          ProjectRoot: "../db/implementations#ProjectRoot",
           /* eslint-enable @typescript-eslint/naming-convention */
         },
       },

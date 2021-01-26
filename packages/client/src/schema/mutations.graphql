@@ -8,8 +8,8 @@ mutation Logout {
   logout
 }
 
-mutation CreateNamedContext($params: CreateNamedContextParams!) {
-  createNamedContext(params: $params) {
+mutation CreateContext($params: CreateContextParams!) {
+  createContext(params: $params) {
     id
     name
     stub
@@ -24,13 +24,10 @@ mutation CreateProject($params: CreateProjectParams!) {
   }
 }
 
-mutation MoveProject($id: ID!, $owner: ID) {
-  moveProject(id: $id, owner: $owner) {
+mutation MoveProject($id: ID!, $taskList: ID) {
+  moveProject(id: $id, taskList: $taskList) {
     id
     name
     stub
-    owner {
-      id
-    }
   }
 }

@@ -5,7 +5,7 @@ import Page from "./components/Page";
 import Inbox from "./ui/Inbox";
 import LoginDialog from "./ui/LoginDialog";
 import NotFound from "./ui/NotFound";
-import Owner from "./ui/Owner";
+import TaskList from "./ui/TaskList";
 import type { View } from "./utils/navigation";
 import { ViewType } from "./utils/navigation";
 import { useMaybeView } from "./utils/state";
@@ -28,8 +28,8 @@ function PageContent({
   switch (view.type) {
     case ViewType.Inbox:
       return <Inbox view={view}/>;
-    case ViewType.Owner:
-      return <Owner view={view}/>;
+    case ViewType.TaskList:
+      return <TaskList view={view}/>;
     case ViewType.NotFound:
       return <NotFound view={view}/>;
   }

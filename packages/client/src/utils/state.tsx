@@ -10,51 +10,53 @@ import type { Overwrite } from "../../../utils";
 import type { ListContextStateQuery } from "../schema/queries";
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
-import type { BaseView, InboxView, OwnerView, View } from "./navigation";
+import type { BaseView, InboxView, TaskListView, View } from "./navigation";
 import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
-export type Project = Overwrite<Omit<Schema.Project, "context" | "owner">, {
+export type Project = Overwrite<Omit<Schema.Project, "taskList">, {
   readonly parent: Project | null;
   readonly subprojects: readonly Project[];
   readonly sections: readonly Section[];
 }>;
 
-export type User = Overwrite<Omit<Schema.User, "context" | "user" | "password">, {
+export type User = Overwrite<Omit<Schema.User, "password">, {
   readonly subprojects: readonly Project[];
   readonly projects: ReadonlyMap<string, Project>;
-  readonly namedContexts: ReadonlyMap<string, NamedContext>;
+  readonly contexts: ReadonlyMap<string, Context>;
   readonly sections: readonly Section[];
 }>;
 
-export type NamedContext = Overwrite<Omit<Schema.NamedContext, "context" | "user">, {
+export type Context = Overwrite<Omit<Schema.Context, "user">, {
   readonly projects: ReadonlyMap<string, Project>;
   readonly subprojects: readonly Project[];
   readonly sections: readonly Section[];
 }>;
 
-export type Section = Overwrite<Omit<Schema.Section, "owner">, {
-}>;
+export type Section = Schema.Section;
 
-export function isNamedContext(owner: User | NamedContext | Project): owner is NamedContext {
-  return "stub" in owner && !isProject(owner);
+export type TaskList = User | Project | Context;
+export type ProjectRoot = User | Context;
+
+export function isContext(taskList: TaskList): taskList is Context {
+  return "stub" in taskList && !isProject(taskList);
 }
 
-export function isProject(owner: User | NamedContext | Project): owner is Project {
-  return "parent" in owner;
+export function isProject(taskList: TaskList): taskList is Project {
+  return "parent" in taskList;
 }
 
-export function isUser(owner: User | NamedContext | Project): owner is User {
-  return "email" in owner;
+export function isUser(taskList: TaskList): taskList is User {
+  return "email" in taskList;
 }
 
 const StateContext = createContext<View | null | undefined>(null);
 
 export type NavigableView = {
-  namedContext?: NamedContext | null;
+  context?: Context | null;
 } & (
-  Omit<InboxView, keyof BaseView | "namedContext"> |
-  Omit<OwnerView, keyof BaseView | "namedContext">
+  Omit<InboxView, keyof BaseView | "context"> |
+  Omit<TaskListView, keyof BaseView | "context">
 );
 
 export function useUrl(view: NavigableView): URL {
@@ -62,7 +64,7 @@ export function useUrl(view: NavigableView): URL {
 
   let newView = {
     user: currentView.user,
-    namedContext: currentView.namedContext,
+    context: currentView.context,
     ...view,
   };
 
@@ -85,30 +87,30 @@ export function useUser(): User {
   return useView().user;
 }
 
-export function useNamedContexts(): ReadonlyMap<string, NamedContext> {
-  return useUser().namedContexts;
+export function useContexts(): ReadonlyMap<string, Context> {
+  return useUser().contexts;
 }
 
-export function useCurrentContext(): User | NamedContext {
+export function useProjectRoot(): ProjectRoot {
   let state = useView();
-  return state.namedContext ?? state.user;
+  return state.context ?? state.user;
 }
 
-export function useCurrentNamedContext(): NamedContext | null {
+export function useCurrentContext(): Context | null {
   let state = useView();
-  return state.namedContext ?? null;
+  return state.context ?? null;
 }
 
 type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
 type UserState = NonNullable<ListContextStateQuery["user"]>;
-type ContextState = ArrayContents<UserState["namedContexts"]>;
+type ContextState = ArrayContents<UserState["contexts"]>;
 type ProjectData = ArrayContents<UserState["projects"]>;
 
 function buildProjects(
-  context: UserState | ContextState,
+  root: UserState | ContextState,
 ): Pick<User, "projects" | "subprojects" | "sections"> {
   let projectMap = new Map(
-    context.projects.map((data: ProjectData): [string, ProjectData] => {
+    root.projects.map((data: ProjectData): [string, ProjectData] => {
       return [data.id, data];
     }),
   );
@@ -142,7 +144,7 @@ function buildProjects(
 
   return {
     projects,
-    subprojects: buildProjects(context.subprojects, null),
+    subprojects: buildProjects(root.subprojects, null),
     sections,
   };
 }
@@ -162,11 +164,11 @@ export function StateListener({ children }: ReactChildren): ReactResult {
       ...data.user,
 
       // eslint-disable-next-line @typescript-eslint/typedef
-      namedContexts: new Map(data.user.namedContexts.map((namedContext): [string, NamedContext] => {
-        return [namedContext.id, {
-          ...namedContext,
+      contexts: new Map(data.user.contexts.map((context): [string, Context] => {
+        return [context.id, {
+          ...context,
 
-          ...buildProjects(namedContext),
+          ...buildProjects(context),
         }];
       })),
 

@@ -13,30 +13,30 @@ import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import { pushView, ViewType } from "../utils/navigation";
-import type { NamedContext, Project, User } from "../utils/state";
-import { useView, useCurrentContext } from "../utils/state";
+import type { TaskList } from "../utils/state";
+import { useView, useProjectRoot } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 interface CreateProjectProps {
   onClose: () => void;
-  owner: NamedContext | User | Project;
+  taskList: TaskList;
 }
 
 export default ReactMemo(function CreateProjectDialog({
   onClose,
-  owner,
+  taskList,
 }: CreateProjectProps): ReactElement {
   let [state, setState] = useState({
     name: "",
   });
-  let currentContext = useCurrentContext();
+  let currentContext = useProjectRoot();
   let view = useView();
 
   let [createProject, { data, error }] = useCreateProjectMutation({
     variables: {
       params: {
         name: state.name,
-        owner: owner.id,
+        taskList: taskList.id,
       },
     },
     refetchQueries: [
@@ -58,8 +58,8 @@ export default ReactMemo(function CreateProjectDialog({
     }
 
     pushView({
-      type: ViewType.Owner,
-      owner: newProject,
+      type: ViewType.TaskList,
+      taskList: newProject,
     }, view);
 
     onClose();

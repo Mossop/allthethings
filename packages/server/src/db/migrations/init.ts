@@ -5,8 +5,9 @@ function id(table: Knex.CreateTableBuilder): void {
 }
 
 export async function up(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists("Section");
   await knex.schema.dropTableIfExists("Project");
-  await knex.schema.dropTableIfExists("NamedContext");
+  await knex.schema.dropTableIfExists("Context");
   await knex.schema.dropTableIfExists("User");
 
   await knex.schema.createTable("User", (table: Knex.CreateTableBuilder): void => {
@@ -16,7 +17,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text("password").notNullable();
   });
 
-  await knex.schema.createTable("NamedContext", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("Context", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
     table.text("stub").notNullable();
@@ -38,8 +39,8 @@ export async function up(knex: Knex): Promise<void> {
     table.text("stub").notNullable();
     table.text("name").notNullable();
 
-    table.unique(["id", "user", "namedContext"]);
-    table.unique(["user", "namedContext", "stub"]);
+    table.unique(["id", "user", "context"]);
+    table.unique(["user", "context", "stub"]);
 
     table.text("user").notNullable();
     table.foreign("user", "foreign_User")
@@ -47,15 +48,15 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
 
-    table.text("namedContext").nullable();
-    table.foreign(["user", "namedContext"], "foreign_NamedContext")
-      .references(["user", "id"]).inTable("NamedContext")
+    table.text("context").nullable();
+    table.foreign(["user", "context"], "foreign_Context")
+      .references(["user", "id"]).inTable("Context")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
 
     table.text("parent").nullable();
-    table.foreign(["user", "namedContext", "parent"], "foreign_Project")
-      .references(["user", "namedContext", "id"]).inTable("Project")
+    table.foreign(["user", "context", "parent"], "foreign_Project")
+      .references(["user", "context", "id"]).inTable("Project")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
@@ -71,16 +72,24 @@ export async function up(knex: Knex): Promise<void> {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
 
-    table.text("namedContext").nullable();
-    table.foreign(["user", "namedContext"], "foreign_NamedContext")
-      .references(["user", "id"]).inTable("NamedContext")
+    table.text("context").nullable();
+    table.foreign(["user", "context"], "foreign_Context")
+      .references(["user", "id"]).inTable("Context")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
 
     table.text("project").nullable();
-    table.foreign(["user", "namedContext", "project"], "foreign_Project")
-      .references(["user", "namedContext", "id"]).inTable("Project")
+    table.foreign(["user", "context", "project"], "foreign_Project")
+      .references(["user", "context", "id"]).inTable("Project")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
+}
+
+export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists("Section");
+  await knex.schema.dropTableIfExists("Project");
+  await knex.schema.dropTableIfExists("Context");
+  await knex.schema.dropTableIfExists("NamedContext");
+  await knex.schema.dropTableIfExists("User");
 }
