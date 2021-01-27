@@ -23,6 +23,13 @@ export type CreateContextMutationVariables = Types.Exact<{
 
 export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
+export type CreateSectionMutationVariables = Types.Exact<{
+  params: Types.CreateSectionParams;
+}>;
+
+
+export type CreateSectionMutation = { readonly __typename?: 'Mutation', readonly createSection: { readonly __typename?: 'Section', readonly id: string, readonly name: string } };
+
 export type CreateProjectMutationVariables = Types.Exact<{
   params: Types.CreateProjectParams;
 }>;
@@ -135,6 +142,39 @@ export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
 export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
+export const CreateSectionDocument = gql`
+    mutation CreateSection($params: CreateSectionParams!) {
+  createSection(params: $params) {
+    id
+    name
+  }
+}
+    `;
+export type CreateSectionMutationFn = Apollo.MutationFunction<CreateSectionMutation, CreateSectionMutationVariables>;
+
+/**
+ * __useCreateSectionMutation__
+ *
+ * To run a mutation, you first call `useCreateSectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateSectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createSectionMutation, { data, loading, error }] = useCreateSectionMutation({
+ *   variables: {
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateSectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateSectionMutation, CreateSectionMutationVariables>) {
+        return Apollo.useMutation<CreateSectionMutation, CreateSectionMutationVariables>(CreateSectionDocument, baseOptions);
+      }
+export type CreateSectionMutationHookResult = ReturnType<typeof useCreateSectionMutation>;
+export type CreateSectionMutationResult = Apollo.MutationResult<CreateSectionMutation>;
+export type CreateSectionMutationOptions = Apollo.BaseMutationOptions<CreateSectionMutation, CreateSectionMutationVariables>;
 export const CreateProjectDocument = gql`
     mutation CreateProject($params: CreateProjectParams!) {
   createProject(params: $params) {

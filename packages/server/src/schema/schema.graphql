@@ -1,11 +1,21 @@
+interface Item {
+  id: ID!
+}
+
+type Task implements Item {
+  id: ID!
+}
+
 interface TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 }
 
 interface ProjectRoot implements TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
   projects: [Project!]!
   projectById(id: ID!): Project
 }
@@ -13,6 +23,7 @@ interface ProjectRoot implements TaskList {
 type User implements ProjectRoot & TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
   projects: [Project!]!
   projectById(id: ID!): Project
   id: ID!
@@ -24,6 +35,7 @@ type User implements ProjectRoot & TaskList {
 type Context implements ProjectRoot & TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
   projects: [Project!]!
   projectById(id: ID!): Project
   id: ID!
@@ -35,6 +47,7 @@ type Context implements ProjectRoot & TaskList {
 type Project implements TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
   id: ID!
   stub: String!
   name: String!
@@ -42,6 +55,7 @@ type Project implements TaskList {
 }
 
 type Section {
+  items: [Item!]!
   id: ID!
   name: String!
 }

@@ -3,12 +3,13 @@ import SpeedDialAction from "@material-ui/lab/SpeedDialAction";
 import SpeedDialIcon from "@material-ui/lab/SpeedDialIcon";
 import { useCallback, useState } from "react";
 
-import { ProjectIcon } from "../components/Icons";
+import { ProjectIcon, SectionIcon } from "../components/Icons";
 import type { ViewType } from "../utils/navigation";
 import type { TaskList } from "../utils/state";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
+import CreateSectionDialog from "./CreateSectionDialog";
 
 interface AddDialProps {
   taskList: TaskList;
@@ -20,6 +21,7 @@ export default ReactMemo(function AddDial({
 }: AddDialProps): ReactResult {
   let [open, setOpen] = useState(false);
   let [projectAddDialogOpen, setProjectAddDialogOpen] = useState(false);
+  let [sectionAddDialogOpen, setSectionAddDialogOpen] = useState(false);
 
   let openDial = useCallback(() => setOpen(true), []);
   let closeDial = useCallback(() => setOpen(false), []);
@@ -29,6 +31,13 @@ export default ReactMemo(function AddDial({
   }, []);
   let closeAddProject = useCallback(() => {
     setProjectAddDialogOpen(false);
+  }, []);
+
+  let openAddSection = useCallback(() => {
+    setSectionAddDialogOpen(true);
+  }, []);
+  let closeAddSection = useCallback(() => {
+    setSectionAddDialogOpen(false);
   }, []);
 
   return <>
@@ -45,7 +54,13 @@ export default ReactMemo(function AddDial({
         icon={<ProjectIcon/>}
         onClick={openAddProject}
       />
+      <SpeedDialAction
+        tooltipTitle="Add Section..."
+        icon={<SectionIcon/>}
+        onClick={openAddSection}
+      />
     </SpeedDial>
     {projectAddDialogOpen && <CreateProjectDialog taskList={taskList} onClose={closeAddProject}/>}
+    {sectionAddDialogOpen && <CreateSectionDialog taskList={taskList} onClose={closeAddSection}/>}
   </>;
 });

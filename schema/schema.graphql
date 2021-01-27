@@ -1,12 +1,23 @@
+interface Item {
+  id: ID!
+}
+
+type Task implements Item {
+  # Item
+  id: ID!
+}
+
 interface TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 }
 
 interface ProjectRoot implements TaskList {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 
   projects: [Project!]!
   projectById(id: ID!): Project
@@ -16,6 +27,7 @@ type User implements ProjectRoot & TaskList @entity {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 
   # ProjectRoot
   projects: [Project!]!
@@ -31,6 +43,7 @@ type Context implements ProjectRoot & TaskList @entity {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 
   # ProjectRoot
   projects: [Project!]!
@@ -50,6 +63,7 @@ type Project implements TaskList @entity(additionalFields: [
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
+  items: [Item!]!
 
   id: ID! @id
   stub: String!
@@ -62,6 +76,8 @@ type Section @entity(additionalFields: [
   { path: "context", type: "ContextDbObject['id'] | null" },
   { path: "project", type: "ProjectDbObject['id'] | null" },
 ]) {
+  items: [Item!]!
+
   id: ID! @id
   name: String! @column
 }

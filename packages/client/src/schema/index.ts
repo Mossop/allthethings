@@ -3,25 +3,45 @@ import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
 
 import type { TypedTypePolicies } from "./types";
 
+const merge = (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming;
+
 let typePolicies: TypedTypePolicies = {
   Project: {
     fields: {
       subprojects: {
-        merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
+        merge,
+      },
+      items: {
+        merge,
+      },
+      sections: {
+        merge,
       },
     },
   },
   Context: {
     fields: {
       subprojects: {
-        merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
+        merge,
+      },
+      items: {
+        merge,
+      },
+      sections: {
+        merge,
       },
     },
   },
   User: {
     fields: {
       subprojects: {
-        merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
+        merge,
+      },
+      items: {
+        merge,
+      },
+      sections: {
+        merge,
       },
     },
   },

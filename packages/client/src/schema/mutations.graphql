@@ -16,6 +16,13 @@ mutation CreateContext($params: CreateContextParams!) {
   }
 }
 
+mutation CreateSection($params: CreateSectionParams!) {
+  createSection(params: $params) {
+    id
+    name
+  }
+}
+
 mutation CreateProject($params: CreateProjectParams!) {
   createProject(params: $params) {
     id

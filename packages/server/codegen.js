@@ -47,6 +47,8 @@ module.exports = {
           Section: "../db/implementations#Section",
           TaskList: "../db/implementations#TaskList",
           ProjectRoot: "../db/implementations#ProjectRoot",
+          Item: "../db/implementations#Item",
+          Task: "../db/implementations#Item",
           /* eslint-enable @typescript-eslint/naming-convention */
         },
       },

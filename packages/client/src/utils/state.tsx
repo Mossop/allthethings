@@ -14,23 +14,20 @@ import type { BaseView, InboxView, TaskListView, View } from "./navigation";
 import { viewToUrl, NavigationHandler } from "./navigation";
 import type { ReactChildren, ReactResult } from "./types";
 
-export type Project = Overwrite<Omit<Schema.Project, "taskList">, {
+export type Project = Overwrite<Omit<Schema.Project, "taskList" | "sections" | "items">, {
   readonly parent: Project | null;
   readonly subprojects: readonly Project[];
-  readonly sections: readonly Section[];
 }>;
 
-export type User = Overwrite<Omit<Schema.User, "password">, {
+export type User = Overwrite<Omit<Schema.User, "password" | "sections" | "items">, {
   readonly subprojects: readonly Project[];
   readonly projects: ReadonlyMap<string, Project>;
   readonly contexts: ReadonlyMap<string, Context>;
-  readonly sections: readonly Section[];
 }>;
 
-export type Context = Overwrite<Omit<Schema.Context, "user">, {
+export type Context = Overwrite<Omit<Schema.Context, "user" | "sections" | "items">, {
   readonly projects: ReadonlyMap<string, Project>;
   readonly subprojects: readonly Project[];
-  readonly sections: readonly Section[];
 }>;
 
 export type Section = Schema.Section;
@@ -108,7 +105,7 @@ type ProjectData = ArrayContents<UserState["projects"]>;
 
 function buildProjects(
   root: UserState | ContextState,
-): Pick<User, "projects" | "subprojects" | "sections"> {
+): Pick<User, "projects" | "subprojects"> {
   let projectMap = new Map(
     root.projects.map((data: ProjectData): [string, ProjectData] => {
       return [data.id, data];
@@ -116,7 +113,6 @@ function buildProjects(
   );
 
   let projects = new Map<string, Project>();
-  let sections: Section[] = [];
 
   let buildProjects = (
     list: readonly { id: string }[],
@@ -132,7 +128,6 @@ function buildProjects(
         ...data,
         parent,
         subprojects: [],
-        sections: [],
       };
 
       project.subprojects = buildProjects(data.subprojects, project);
@@ -145,7 +140,6 @@ function buildProjects(
   return {
     projects,
     subprojects: buildProjects(root.subprojects, null),
-    sections,
   };
 }
 

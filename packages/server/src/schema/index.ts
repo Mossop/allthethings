@@ -23,12 +23,19 @@ function loadSchema(): Promise<string> {
 type RootResolvers<ContextType = ResolverContext> = Overwrite<
   Omit<Resolvers.Resolvers<ContextType>, "User" | "Context" | "Project" | "Section">,
   {
+    Item: Pick<Resolvers.ItemResolvers<ContextType>, "__resolveType">,
     TaskList: Pick<Resolvers.TaskListResolvers<ContextType>, "__resolveType">,
     ProjectRoot: Pick<Resolvers.ContextResolvers<ContextType>, "__resolveType">,
   }
 >;
 
 export const resolvers: RootResolvers = {
+  Item: {
+    __resolveType(): "Task" {
+      return "Task";
+    },
+  },
+
   TaskList: {
     __resolveType(parent: TaskList): "User" | "Context" | "Project" {
       if (parent instanceof User) {

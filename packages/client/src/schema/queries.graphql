@@ -42,3 +42,20 @@ query ListContextState {
     }
   }
 }
+
+query ListTaskList($taskList: ID!) {
+  taskList(id: $taskList) {
+    items {
+      id
+    }
+
+    sections {
+      id
+      name
+
+      items {
+        id
+      }
+    }
+  }
+}

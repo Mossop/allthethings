@@ -12,14 +12,25 @@ export type Scalars = {
   Float: number;
 };
 
+export type Item = {
+  readonly id: Scalars['ID'];
+};
+
+export type Task = Item & {
+  readonly __typename?: 'Task';
+  readonly id: Scalars['ID'];
+};
+
 export type TaskList = {
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
 };
 
 export type ProjectRoot = {
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
 };
@@ -33,6 +44,7 @@ export type User = ProjectRoot & TaskList & {
   readonly __typename?: 'User';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
@@ -50,6 +62,7 @@ export type Context = ProjectRoot & TaskList & {
   readonly __typename?: 'Context';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
@@ -67,6 +80,7 @@ export type Project = TaskList & {
   readonly __typename?: 'Project';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
@@ -75,6 +89,7 @@ export type Project = TaskList & {
 
 export type Section = {
   readonly __typename?: 'Section';
+  readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
 };

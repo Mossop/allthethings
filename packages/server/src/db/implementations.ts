@@ -110,6 +110,7 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
   }
 }
 
+export type Item = Schema.Item;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 export type ItemGroup = User | Project | Context | Section;
@@ -119,6 +120,9 @@ abstract class TaskListImpl<
 > extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
   public abstract subprojects(): Promise<readonly Project[]>;
   public abstract sections(): Promise<readonly Section[]>;
+  public async items(): Promise<readonly Item[]> {
+    return [];
+  }
 }
 
 abstract class ProjectRootImpl<
@@ -286,6 +290,10 @@ export class Project extends TaskListImpl<ProjectDbObject>
 export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver<Schema.Section> {
   protected getDbObject(): Promise<SectionDbObject> {
     throw new Error("Method not implemented.");
+  }
+
+  public async items(): Promise<readonly Item[]> {
+    return [];
   }
 
   public async move(taskList: User | Context | Project): Promise<void> {
