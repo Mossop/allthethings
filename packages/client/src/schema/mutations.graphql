@@ -31,6 +31,14 @@ mutation CreateProject($params: CreateProjectParams!) {
   }
 }
 
+mutation EditProject($id: ID!, $params: EditProjectParams!) {
+  editProject(id: $id, params: $params) {
+    id
+    name
+    stub
+  }
+}
+
 mutation MoveProject($id: ID!, $taskList: ID) {
   moveProject(id: $id, taskList: $taskList) {
     id

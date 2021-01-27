@@ -49,6 +49,23 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.projects.create(ctx.userId, params);
   }),
 
+  editProject: authed(async ({
+    args: { id, params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditProjectArgs>): Promise<Project | null> => {
+    let project = await ctx.dataSources.projects.getOne(id);
+
+    if (!project) {
+      return null;
+    }
+
+    await project.edit({
+      name: params.name ?? undefined,
+    });
+
+    return project;
+  }),
+
   moveProject: authed(async ({
     args: { id, taskList },
     ctx,

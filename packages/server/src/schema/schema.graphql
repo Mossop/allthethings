@@ -75,6 +75,10 @@ input CreateProjectParams {
   name: String!
 }
 
+input EditProjectParams {
+  name: String
+}
+
 input CreateSectionParams {
   taskList: ID
   name: String!
@@ -87,6 +91,7 @@ type Mutation {
   deleteContext(id: ID!): Boolean!
   createProject(params: CreateProjectParams!): Project!
   moveProject(id: ID!, taskList: ID): Project
+  editProject(id: ID!, params: EditProjectParams!): Project
   deleteProject(id: ID!): Boolean!
   createSection(params: CreateSectionParams!): Section!
   moveSection(id: ID!, taskList: ID): Section

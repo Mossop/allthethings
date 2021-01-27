@@ -125,6 +125,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
         }
       }
       variant="outlined"
+      color="inherit"
       {...bindTrigger(contextMenuState)}
     >
       <ContextIcon className={classes.icon}/>

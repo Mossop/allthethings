@@ -9,21 +9,23 @@ import { ReactMemo } from "../utils/types";
 
 type Classes = typeof useTextStyles extends () => Record<infer K, unknown> ? K : never;
 
+export const TextStyles = {
+  heading: {
+    fontSize: "2rem",
+  },
+  subheading: {
+    fontSize: "1.8rem",
+  },
+  text: {
+    fontSize: "1rem",
+  },
+  info: {
+    fontSize: "0.875rem",
+  },
+};
+
 export const useTextStyles = makeStyles(() =>
-  createStyles({
-    heading: {
-      fontSize: "2rem",
-    },
-    subheading: {
-      fontSize: "1.8rem",
-    },
-    text: {
-      fontSize: "1rem",
-    },
-    info: {
-      fontSize: "0.875rem",
-    },
-  }));
+  createStyles(TextStyles));
 
 function textBlock(
   name: string,

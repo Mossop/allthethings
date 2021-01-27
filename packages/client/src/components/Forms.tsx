@@ -1,5 +1,5 @@
-import type { InputProps } from "@material-ui/core/Input";
-import Input from "@material-ui/core/Input";
+import type { OutlinedInputProps } from "@material-ui/core/OutlinedInput";
+import OutlinedInput from "@material-ui/core/OutlinedInput";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
 
@@ -47,7 +47,7 @@ interface FieldProps<T, K extends keyof T> {
 }
 
 type TextFieldInputProps<T, K extends keyof T> = Overwrite<
-  Omit<InputProps, "onChange" | "value" | "multiline">,
+  Omit<OutlinedInputProps, "onChange" | "value" | "multiline">,
   {
     type?: "email" | "password" | "text" | "url";
   }
@@ -70,7 +70,7 @@ export const TextFieldInput = ReactMemo(
       useScopedState(stateKey, setState),
     ) as unknown as Dispatch<FieldEvent<string>>;
 
-    return <Input
+    return <OutlinedInput
       {...props}
       type={type}
       value={value}

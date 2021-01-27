@@ -121,6 +121,10 @@ export type CreateProjectParams = {
   readonly name: Scalars['String'];
 };
 
+export type EditProjectParams = {
+  readonly name?: Maybe<Scalars['String']>;
+};
+
 export type CreateSectionParams = {
   readonly taskList?: Maybe<Scalars['ID']>;
   readonly name: Scalars['String'];
@@ -134,6 +138,7 @@ export type Mutation = {
   readonly deleteContext: Scalars['Boolean'];
   readonly createProject: Project;
   readonly moveProject?: Maybe<Project>;
+  readonly editProject?: Maybe<Project>;
   readonly deleteProject: Scalars['Boolean'];
   readonly createSection: Section;
   readonly moveSection?: Maybe<Section>;
@@ -165,6 +170,12 @@ export type MutationCreateProjectArgs = {
 export type MutationMoveProjectArgs = {
   id: Scalars['ID'];
   taskList?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationEditProjectArgs = {
+  id: Scalars['ID'];
+  params: EditProjectParams;
 };
 
 
@@ -256,7 +267,7 @@ export type QueryFieldPolicy = {
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	root?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'deleteSection' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'deleteSection' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -264,6 +275,7 @@ export type MutationFieldPolicy = {
 	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	editProject?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteProject?: FieldPolicy<any> | FieldReadFunction<any>,
 	createSection?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveSection?: FieldPolicy<any> | FieldReadFunction<any>,

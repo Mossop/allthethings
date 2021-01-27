@@ -4,10 +4,12 @@ import ListItem from "@material-ui/core/ListItem";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { Fragment } from "react";
+import { Fragment, useCallback } from "react";
 
-import { Heading } from "../components/Text";
-import { useListTaskListQuery } from "../schema/queries";
+import HiddenInput from "../components/HiddenInput";
+import { TextStyles } from "../components/Text";
+import { useEditProjectMutation } from "../schema/mutations";
+import { refetchListContextStateQuery, useListTaskListQuery } from "../schema/queries";
 import type { Item } from "../schema/types";
 import type { TaskListView } from "../utils/navigation";
 import type { Section } from "../utils/state";
@@ -31,6 +33,7 @@ const useStyles = makeStyles((theme: Theme) =>
     heading: {
       paddingBottom: theme.spacing(2),
     },
+    headingInput: TextStyles.heading,
     section: {
     },
     sectionHeading: {
@@ -56,6 +59,21 @@ export default ReactMemo(function TaskList({
     },
   });
 
+  let [editProject] = useEditProjectMutation({
+    refetchQueries: [refetchListContextStateQuery()],
+  });
+
+  let changeTaskListName = useCallback((name: string): void => {
+    void editProject({
+      variables: {
+        id: view.taskList.id,
+        params: {
+          name,
+        },
+      },
+    });
+  }, [editProject, view]);
+
   if (!data?.taskList) {
     return null;
   }
@@ -66,7 +84,13 @@ export default ReactMemo(function TaskList({
     <div className={classes.content}>
       {
         isProject(view.taskList) &&
-        <Heading className={classes.heading}>{view.taskList.name}</Heading>
+        <div className={classes.heading}>
+          <HiddenInput
+            className={classes.headingInput}
+            initialValue={view.taskList.name}
+            onSubmit={changeTaskListName}
+          />
+        </div>
       }
       <List>
         {

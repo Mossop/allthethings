@@ -224,6 +224,14 @@ export class Project extends TaskListImpl<ProjectDbObject>
     return assertValid(await this.dataSources.projects.get(this.id));
   }
 
+  private async update(props: Partial<Omit<ProjectDbObject, "id">>): Promise<void> {
+    let newProject = await this.dataSources.projects.updateOne(this.id, props);
+    if (!newProject) {
+      throw new Error("Missing project in database.");
+    }
+    this._dbObject = Promise.resolve(newProject);
+  }
+
   public async user(): Promise<User> {
     return new User(this.resolverContext, (await this.dbObject).user);
   }
@@ -236,19 +244,19 @@ export class Project extends TaskListImpl<ProjectDbObject>
     return new Context(this.resolverContext, context);
   }
 
+  public async edit(
+    props: Partial<Omit<ProjectDbObject, "id" | "user" | "context" | "parent">>,
+  ): Promise<void> {
+    await this.update(props);
+  }
+
   public async move(taskList: User | Context | Project): Promise<void> {
     let { user, project: parent, context } = await getTaskListIds(taskList);
-    let update: Partial<Omit<ProjectDbObject, "id">> = {
+    await this.update({
       user,
       parent,
       context,
-    };
-
-    let newProject = await this.dataSources.projects.updateOne(this.id, update);
-    if (!newProject) {
-      throw new Error("Missing project in database.");
-    }
-    this._dbObject = Promise.resolve(newProject);
+    });
   }
 
   public async delete(): Promise<void> {

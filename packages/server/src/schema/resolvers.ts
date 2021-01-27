@@ -96,6 +96,7 @@ export type ResolversTypes = ResolversObject<{
   Query: ResolverTypeWrapper<{}>;
   CreateContextParams: Schema.CreateContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
+  EditProjectParams: Schema.EditProjectParams;
   CreateSectionParams: Schema.CreateSectionParams;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
@@ -116,6 +117,7 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   CreateContextParams: Schema.CreateContextParams;
   CreateProjectParams: Schema.CreateProjectParams;
+  EditProjectParams: Schema.EditProjectParams;
   CreateSectionParams: Schema.CreateSectionParams;
   Mutation: {};
   Boolean: Schema.Scalars['Boolean'];
@@ -204,6 +206,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   deleteContext: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteContextArgs, 'id'>>;
   createProject: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<Schema.MutationCreateProjectArgs, 'params'>>;
   moveProject: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationMoveProjectArgs, 'id'>>;
+  editProject: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationEditProjectArgs, 'id' | 'params'>>;
   deleteProject: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteProjectArgs, 'id'>>;
   createSection: Resolver<ResolversTypes['Section'], ParentType, ContextType, RequireFields<Schema.MutationCreateSectionArgs, 'params'>>;
   moveSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationMoveSectionArgs, 'id'>>;

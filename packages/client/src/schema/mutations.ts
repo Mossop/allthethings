@@ -37,6 +37,14 @@ export type CreateProjectMutationVariables = Types.Exact<{
 
 export type CreateProjectMutation = { readonly __typename?: 'Mutation', readonly createProject: { readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string } };
 
+export type EditProjectMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  params: Types.EditProjectParams;
+}>;
+
+
+export type EditProjectMutation = { readonly __typename?: 'Mutation', readonly editProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+
 export type MoveProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
   taskList: Types.Maybe<Types.Scalars['ID']>;
@@ -209,6 +217,41 @@ export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProjectMutation>;
 export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
 export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
+export const EditProjectDocument = gql`
+    mutation EditProject($id: ID!, $params: EditProjectParams!) {
+  editProject(id: $id, params: $params) {
+    id
+    name
+    stub
+  }
+}
+    `;
+export type EditProjectMutationFn = Apollo.MutationFunction<EditProjectMutation, EditProjectMutationVariables>;
+
+/**
+ * __useEditProjectMutation__
+ *
+ * To run a mutation, you first call `useEditProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditProjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editProjectMutation, { data, loading, error }] = useEditProjectMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditProjectMutation(baseOptions?: Apollo.MutationHookOptions<EditProjectMutation, EditProjectMutationVariables>) {
+        return Apollo.useMutation<EditProjectMutation, EditProjectMutationVariables>(EditProjectDocument, baseOptions);
+      }
+export type EditProjectMutationHookResult = ReturnType<typeof useEditProjectMutation>;
+export type EditProjectMutationResult = Apollo.MutationResult<EditProjectMutation>;
+export type EditProjectMutationOptions = Apollo.BaseMutationOptions<EditProjectMutation, EditProjectMutationVariables>;
 export const MoveProjectDocument = gql`
     mutation MoveProject($id: ID!, $taskList: ID) {
   moveProject(id: $id, taskList: $taskList) {

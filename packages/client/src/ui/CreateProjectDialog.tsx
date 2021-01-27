@@ -75,10 +75,11 @@ export default ReactMemo(function CreateProjectDialog({
       <DialogTitle>Create Project</DialogTitle>
       <DialogContent>
         {error && <Error error={error}/>}
-        <FormControl margin="normal">
+        <FormControl margin="normal" variant="outlined">
           <InputLabel htmlFor="name">Name:</InputLabel>
           <TextFieldInput
             id="name"
+            label="Name:"
             state={state}
             setState={setState}
             stateKey="name"

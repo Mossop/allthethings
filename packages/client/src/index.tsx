@@ -16,6 +16,14 @@ const base = createMuiTheme();
 const baseTheme = (theme: Theme): Theme => createMuiTheme({
   palette: {
     type: "dark",
+    primary: {
+      main: "#CEA07E",
+      contrastText: "#000000",
+    },
+    secondary: {
+      main: "#b3afa7",
+      contrastText: "#000000",
+    },
   },
   overrides: {
     MuiCssBaseline: {
@@ -45,6 +53,11 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
       },
     },
     MuiIconButton: {
+      root: {
+        fontSize: "inherit",
+      },
+    },
+    MuiSvgIcon: {
       root: {
         fontSize: "inherit",
       },
