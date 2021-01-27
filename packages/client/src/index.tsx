@@ -57,11 +57,6 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
         fontSize: "inherit",
       },
     },
-    MuiSvgIcon: {
-      root: {
-        fontSize: "inherit",
-      },
-    },
     MuiListItemIcon: {
       root: {
         color: "inherit",

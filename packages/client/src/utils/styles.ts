@@ -23,6 +23,10 @@ export const flexCentered: CSSProperties = {
   justifyContent: "center",
 };
 
+export const dragging: CSSProperties = {
+  opacity: 0.5,
+};
+
 export function pageStyles(theme: Theme): CSSProperties {
   return {
     padding: theme.spacing(3),

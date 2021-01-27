@@ -15,13 +15,14 @@ import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
 import { useMoveProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
-import type { DraggedObject } from "../utils/drag";
+import type { DraggedObject, DraggedProject } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
 import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { Project, TaskList } from "../utils/state";
 import { useUrl, useProjectRoot } from "../utils/state";
+import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
 import CreateProjectDialog from "./CreateProjectDialog";
@@ -32,6 +33,9 @@ interface StyleProps {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    grabHandle: {
+      cursor: "grab",
+    },
     list: {
       paddingTop: theme.spacing(2),
       paddingBottom: 0,
@@ -54,9 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(3 + depth * 2),
       paddingRight: theme.spacing(3),
     }),
-    dragging: {
-      opacity: 0.5,
-    },
+    dragging,
     dropping: {
       backgroundColor: alpha(theme.palette.text.secondary, 0.2),
     },
@@ -232,7 +234,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
       label={project.name}
       selected={selected && !isDragging}
       depth={depth}
-      icon={<ProjectIcon/>}
+      icon={<ProjectIcon className={classes.grabHandle}/>}
       className={clsx(isDragging && classes.dragging, isDropping && classes.dropping)}
     />
     {
@@ -297,7 +299,7 @@ export default ReactMemo(function ProjectList({
 
   let [{ isDragging, isOver }, dropRef] = useDrop({
     accept: DragType.Project,
-    canDrop(item: DraggedObject): boolean {
+    canDrop(item: DraggedProject): boolean {
       return !!item.project.parent;
     },
     collect: (monitor: DropTargetMonitor) => {

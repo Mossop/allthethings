@@ -4,23 +4,35 @@ import ListItem from "@material-ui/core/ListItem";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { useCallback } from "react";
+import clsx from "clsx";
+import { useCallback, Fragment } from "react";
+import type { DragSourceMonitor } from "react-dnd";
+import { useDrag } from "react-dnd";
 
 import HiddenInput from "../components/HiddenInput";
+import { ProjectIcon, SectionIcon } from "../components/Icons";
 import { TextStyles } from "../components/Text";
 import { useEditProjectMutation, useEditSectionMutation } from "../schema/mutations";
 import { useListTaskListQuery } from "../schema/queries";
 import type { Item } from "../schema/types";
+import { DragType } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
-import type { Section } from "../utils/state";
+import type { Project, Section } from "../utils/state";
 import { isProject } from "../utils/state";
-import { pageStyles } from "../utils/styles";
+import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import AddDial from "./AddDial";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    dragContainer: {
+      ...flexCentered,
+    },
+    dragHandle: {
+      cursor: "grab",
+    },
+    dragging,
     outer: {
       flex: 1,
       position: "relative",
@@ -31,14 +43,17 @@ const useStyles = makeStyles((theme: Theme) =>
       width: "100%",
     },
     heading: {
+      ...flexRow,
+      alignItems: "center",
       paddingBottom: theme.spacing(2),
     },
     headingInput: TextStyles.heading,
-    sectionHeadingInput: TextStyles.subheading,
-    section: {
-    },
     sectionHeading: {
+      ...flexRow,
+      alignItems: "center",
+      color: theme.palette.text.primary,
     },
+    sectionHeadingInput: TextStyles.subheading,
     floatingAction: {
       position: "absolute",
       bottom: theme.spacing(4),
@@ -55,6 +70,18 @@ const SectionList = ReactMemo(function SectionList({
 }: SectionListProps): ReactResult {
   let classes = useStyles();
 
+  let [{ isDragging }, dragRef, previewRef] = useDrag({
+    item: {
+      type: DragType.Section,
+      section,
+    },
+    collect: (monitor: DragSourceMonitor) => {
+      return {
+        isDragging: monitor.isDragging(),
+      };
+    },
+  });
+
   let [editSection] = useEditSectionMutation();
 
   let changeSectionName = useCallback((name: string): void => {
@@ -68,23 +95,80 @@ const SectionList = ReactMemo(function SectionList({
     });
   }, [section, editSection]);
 
-  return <>
-    <Divider/>
-    <List>
-      <ListSubheader>
-        <HiddenInput
-          className={classes.sectionHeadingInput}
-          initialValue={section.name}
-          onSubmit={changeSectionName}
-        />
-      </ListSubheader>
-      {
-        section.items.map((item: Item) => <ListItem key={item.id}>
-          Foo
-        </ListItem>)
-      }
-    </List>
-  </>;
+  return <List>
+    <ListSubheader
+      ref={previewRef}
+      className={clsx(classes.sectionHeading, isDragging && classes.dragging)}
+    >
+      <div
+        className={classes.dragContainer}
+        ref={dragRef}
+      >
+        <SectionIcon className={classes.dragHandle}/>
+      </div>
+      <HiddenInput
+        className={classes.sectionHeadingInput}
+        initialValue={section.name}
+        onSubmit={changeSectionName}
+      />
+    </ListSubheader>
+    {
+      section.items.map((item: Item) => <ListItem key={item.id}>
+        Foo
+      </ListItem>)
+    }
+  </List>;
+});
+
+interface ProjectHeaderProps {
+  project: Project;
+}
+
+const ProjectHeader = ReactMemo(function ProjectHeader({
+  project,
+}: ProjectHeaderProps): ReactResult {
+  let classes = useStyles();
+  let [editProject] = useEditProjectMutation();
+
+  let changeTaskListName = useCallback((name: string): void => {
+    void editProject({
+      variables: {
+        id: project.id,
+        params: {
+          name,
+        },
+      },
+    });
+  }, [editProject, project]);
+
+  let [{ isDragging }, dragRef, previewRef] = useDrag({
+    item: {
+      type: DragType.Project,
+      project,
+    },
+    collect: (monitor: DragSourceMonitor) => {
+      return {
+        isDragging: monitor.isDragging(),
+      };
+    },
+  });
+
+  return <div
+    ref={previewRef}
+    className={clsx(classes.heading, isDragging && classes.dragging)}
+  >
+    <div
+      className={classes.dragContainer}
+      ref={dragRef}
+    >
+      <ProjectIcon className={classes.dragHandle}/>
+    </div>
+    <HiddenInput
+      className={classes.headingInput}
+      initialValue={project.name}
+      onSubmit={changeTaskListName}
+    />
+  </div>;
 });
 
 interface TaskListProps {
@@ -101,18 +185,21 @@ export default ReactMemo(function TaskList({
     },
   });
 
-  let [editProject] = useEditProjectMutation();
+  let shouldShowDivider = useCallback((index: number): boolean => {
+    if (index > 0) {
+      return true;
+    }
 
-  let changeTaskListName = useCallback((name: string): void => {
-    void editProject({
-      variables: {
-        id: view.taskList.id,
-        params: {
-          name,
-        },
-      },
-    });
-  }, [editProject, view]);
+    if (isProject(view.taskList)) {
+      return true;
+    }
+
+    if ((data?.taskList?.items.length ?? 0) > 0) {
+      return true;
+    }
+
+    return false;
+  }, [view, data]);
 
   if (!data?.taskList) {
     return null;
@@ -123,14 +210,7 @@ export default ReactMemo(function TaskList({
   return <div className={classes.outer}>
     <div className={classes.content}>
       {
-        isProject(view.taskList) &&
-        <div className={classes.heading}>
-          <HiddenInput
-            className={classes.headingInput}
-            initialValue={view.taskList.name}
-            onSubmit={changeTaskListName}
-          />
-        </div>
+        isProject(view.taskList) && <ProjectHeader project={view.taskList}/>
       }
       <List>
         {
@@ -139,10 +219,15 @@ export default ReactMemo(function TaskList({
           </ListItem>)
         }
         {
-          taskList.sections.map((section: Section) => <SectionList
+          taskList.sections.map((section: Section, index: number) => <Fragment
             key={section.id}
-            section={section}
-          />)
+          >
+            {shouldShowDivider(index) && <Divider/>}
+            <SectionList
+              key={section.id}
+              section={section}
+            />
+          </Fragment>)
         }
       </List>
     </div>

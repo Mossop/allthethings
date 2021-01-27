@@ -7,10 +7,12 @@ import type {
 } from "react-dnd";
 import { useDrag as drag, useDrop as drop } from "react-dnd";
 
-import type { Project } from "./state";
+import type { Overwrite } from "../../../utils/src";
+import type { Project, Section } from "./state";
 
 export enum DragType {
   Project = "project",
+  Section = "section",
 }
 
 export interface DraggedProject {
@@ -18,7 +20,12 @@ export interface DraggedProject {
   project: Project;
 }
 
-export type DraggedObject = DraggedProject;
+export interface DraggedSection {
+  type: DragType.Section;
+  project: Section;
+}
+
+export type DraggedObject = DraggedProject | DraggedSection;
 
 export function useDrag<CollectedProps>(
   spec: DragSourceHookSpec<DraggedObject, unknown, CollectedProps>,
@@ -26,12 +33,15 @@ export function useDrag<CollectedProps>(
   return drag<DraggedObject, unknown, CollectedProps>(spec);
 }
 
-type DropSpec<DropResult, CollectedProps> = {
-  accept: DragType | DragType[];
-} & Omit<DropTargetHookSpec<DraggedObject, DropResult, CollectedProps>, "accept">;
+type DropSpec<DropType extends DraggedObject, DropResult, CollectedProps> = Overwrite<
+  DropTargetHookSpec<DropType, DropResult, CollectedProps>,
+  {
+    accept: DropType["type"] | DropType["type"][];
+  }
+>;
 
-export function useDrop<DropResult, CollectedProps>(
-  spec: DropSpec<DropResult, CollectedProps>,
+export function useDrop<DropType extends DraggedObject, DropResult, CollectedProps>(
+  spec: DropSpec<DropType, DropResult, CollectedProps>,
 ): [CollectedProps, ConnectDropTarget] {
-  return drop<DraggedObject, DropResult, CollectedProps>(spec);
+  return drop<DropType, DropResult, CollectedProps>(spec);
 }
