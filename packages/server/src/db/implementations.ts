@@ -1,6 +1,13 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
-import type { AppDataSources } from "./datasources";
+import type {
+  AppDataSources,
+  ContextDataSource,
+  DbDataSource,
+  ProjectDataSource,
+  SectionDataSource,
+  UserDataSource,
+} from "./datasources";
 import { stub } from "./datasources";
 import type { ContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
@@ -20,7 +27,7 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
   return val;
 }
 
-export function equals<T extends BaseImpl>(
+export function equals<D extends DbObject, T extends BaseImpl<D>>(
   a: T | string | null | undefined,
   b: T | string | null | undefined,
 ): boolean {
@@ -70,15 +77,15 @@ export async function getTaskListIds(taskList: User | Context | Project): Promis
   }
 }
 
-abstract class BaseImpl<T extends DbObject = DbObject> {
+abstract class BaseImpl<D extends DbObject = DbObject> {
   public readonly id: string;
-  protected _dbObject: Promise<T> | null;
+  protected _dbObject: Promise<D> | null;
 
-  public constructor(resolverContext: ResolverContext, dbObject: T);
+  public constructor(resolverContext: ResolverContext, dbObject: D);
   public constructor(resolverContext: ResolverContext, id: string);
   public constructor(
     protected readonly resolverContext: ResolverContext,
-    arg: T | string,
+    arg: D | string,
   ) {
     if (typeof arg == "string") {
       this.id = arg;
@@ -89,9 +96,11 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
     }
   }
 
-  protected abstract getDbObject(): Promise<T>;
+  protected abstract getDbObject(): Promise<D>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected abstract readonly dataSource: DbDataSource<any, D>;
 
-  protected get dbObject(): Promise<T> {
+  protected get dbObject(): Promise<D> {
     if (this._dbObject) {
       return this._dbObject;
     }
@@ -101,12 +110,21 @@ abstract class BaseImpl<T extends DbObject = DbObject> {
     return this._dbObject;
   }
 
-  public equals(other: BaseImpl<T> | string | undefined | null): boolean {
+  public equals(other: BaseImpl<D> | string | undefined | null): boolean {
+    // @ts-ignore
     return equals(this, other);
   }
 
   public get dataSources(): AppDataSources {
     return this.resolverContext.dataSources;
+  }
+
+  protected async update(props: Partial<Omit<D, "id">>): Promise<void> {
+    let newObject = await this.dataSource.updateOne(this.id, props);
+    if (!newObject) {
+      throw new Error("Missing item in database.");
+    }
+    this._dbObject = Promise.resolve(newObject);
   }
 }
 
@@ -139,6 +157,10 @@ abstract class ProjectRootImpl<
 export class User extends ProjectRootImpl<UserDbObject> implements SchemaResolver<Schema.User> {
   protected async getDbObject(): Promise<UserDbObject> {
     return assertValid(await this.dataSources.users.get(this.id));
+  }
+
+  protected get dataSource(): UserDataSource {
+    return this.dataSources.users;
   }
 
   public async subprojects(): Promise<readonly Project[]> {
@@ -185,6 +207,10 @@ export class Context
     return assertValid(await this.dataSources.contexts.get(this.id));
   }
 
+  protected get dataSource(): ContextDataSource {
+    return this.dataSources.contexts;
+  }
+
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
       context: this.id,
@@ -224,12 +250,8 @@ export class Project extends TaskListImpl<ProjectDbObject>
     return assertValid(await this.dataSources.projects.get(this.id));
   }
 
-  private async update(props: Partial<Omit<ProjectDbObject, "id">>): Promise<void> {
-    let newProject = await this.dataSources.projects.updateOne(this.id, props);
-    if (!newProject) {
-      throw new Error("Missing project in database.");
-    }
-    this._dbObject = Promise.resolve(newProject);
+  protected get dataSource(): ProjectDataSource {
+    return this.dataSources.projects;
   }
 
   public async user(): Promise<User> {
@@ -247,7 +269,7 @@ export class Project extends TaskListImpl<ProjectDbObject>
   public async edit(
     props: Partial<Omit<ProjectDbObject, "id" | "user" | "context" | "parent">>,
   ): Promise<void> {
-    await this.update(props);
+    return this.update(props);
   }
 
   public async move(taskList: User | Context | Project): Promise<void> {
@@ -300,17 +322,22 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
     throw new Error("Method not implemented.");
   }
 
+  protected get dataSource(): SectionDataSource {
+    return this.dataSources.sections;
+  }
+
   public async items(): Promise<readonly Item[]> {
     return [];
   }
 
+  public async edit(
+    props: Partial<Omit<SectionDbObject, "id" | "user" | "context" | "project">>,
+  ): Promise<void> {
+    return this.update(props);
+  }
+
   public async move(taskList: User | Context | Project): Promise<void> {
-    let update: Partial<Omit<SectionDbObject, "id">> = await getTaskListIds(taskList);
-    let newSection = await this.dataSources.sections.updateOne(this.id, update);
-    if (!newSection) {
-      throw new Error("Missing section in database.");
-    }
-    this._dbObject = Promise.resolve(newSection);
+    await this.update(await getTaskListIds(taskList));
   }
 
   public async delete(): Promise<void> {

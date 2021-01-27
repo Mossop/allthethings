@@ -23,6 +23,13 @@ mutation CreateSection($params: CreateSectionParams!) {
   }
 }
 
+mutation EditSection($id: ID!, $params: EditSectionParams!) {
+  editSection(id: $id, params: $params) {
+    id
+    name
+  }
+}
+
 mutation CreateProject($params: CreateProjectParams!) {
   createProject(params: $params) {
     id

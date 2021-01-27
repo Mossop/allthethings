@@ -4,12 +4,12 @@ import ListItem from "@material-ui/core/ListItem";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { Fragment, useCallback } from "react";
+import { useCallback } from "react";
 
 import HiddenInput from "../components/HiddenInput";
 import { TextStyles } from "../components/Text";
-import { useEditProjectMutation } from "../schema/mutations";
-import { refetchListContextStateQuery, useListTaskListQuery } from "../schema/queries";
+import { useEditProjectMutation, useEditSectionMutation } from "../schema/mutations";
+import { useListTaskListQuery } from "../schema/queries";
 import type { Item } from "../schema/types";
 import type { TaskListView } from "../utils/navigation";
 import type { Section } from "../utils/state";
@@ -34,6 +34,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingBottom: theme.spacing(2),
     },
     headingInput: TextStyles.heading,
+    sectionHeadingInput: TextStyles.subheading,
     section: {
     },
     sectionHeading: {
@@ -44,6 +45,47 @@ const useStyles = makeStyles((theme: Theme) =>
       right: theme.spacing(4),
     },
   }));
+
+interface SectionListProps {
+  section: Section;
+}
+
+const SectionList = ReactMemo(function SectionList({
+  section,
+}: SectionListProps): ReactResult {
+  let classes = useStyles();
+
+  let [editSection] = useEditSectionMutation();
+
+  let changeSectionName = useCallback((name: string): void => {
+    void editSection({
+      variables: {
+        id: section.id,
+        params: {
+          name,
+        },
+      },
+    });
+  }, [section, editSection]);
+
+  return <>
+    <Divider/>
+    <List>
+      <ListSubheader>
+        <HiddenInput
+          className={classes.sectionHeadingInput}
+          initialValue={section.name}
+          onSubmit={changeSectionName}
+        />
+      </ListSubheader>
+      {
+        section.items.map((item: Item) => <ListItem key={item.id}>
+          Foo
+        </ListItem>)
+      }
+    </List>
+  </>;
+});
 
 interface TaskListProps {
   view: TaskListView;
@@ -59,9 +101,7 @@ export default ReactMemo(function TaskList({
     },
   });
 
-  let [editProject] = useEditProjectMutation({
-    refetchQueries: [refetchListContextStateQuery()],
-  });
+  let [editProject] = useEditProjectMutation();
 
   let changeTaskListName = useCallback((name: string): void => {
     void editProject({
@@ -99,17 +139,10 @@ export default ReactMemo(function TaskList({
           </ListItem>)
         }
         {
-          taskList.sections.map((section: Section, index: number) => <Fragment key={section.id}>
-            {index + taskList.items.length > 0 && <Divider/>}
-            <List>
-              <ListSubheader>{section.name}</ListSubheader>
-              {
-                section.items.map((item: Item) => <ListItem key={item.id}>
-                  Foo
-                </ListItem>)
-              }
-            </List>
-          </Fragment>)
+          taskList.sections.map((section: Section) => <SectionList
+            key={section.id}
+            section={section}
+          />)
         }
       </List>
     </div>

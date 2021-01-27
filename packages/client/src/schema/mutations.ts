@@ -30,6 +30,14 @@ export type CreateSectionMutationVariables = Types.Exact<{
 
 export type CreateSectionMutation = { readonly __typename?: 'Mutation', readonly createSection: { readonly __typename?: 'Section', readonly id: string, readonly name: string } };
 
+export type EditSectionMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  params: Types.EditSectionParams;
+}>;
+
+
+export type EditSectionMutation = { readonly __typename?: 'Mutation', readonly editSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
+
 export type CreateProjectMutationVariables = Types.Exact<{
   params: Types.CreateProjectParams;
 }>;
@@ -183,6 +191,40 @@ export function useCreateSectionMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateSectionMutationHookResult = ReturnType<typeof useCreateSectionMutation>;
 export type CreateSectionMutationResult = Apollo.MutationResult<CreateSectionMutation>;
 export type CreateSectionMutationOptions = Apollo.BaseMutationOptions<CreateSectionMutation, CreateSectionMutationVariables>;
+export const EditSectionDocument = gql`
+    mutation EditSection($id: ID!, $params: EditSectionParams!) {
+  editSection(id: $id, params: $params) {
+    id
+    name
+  }
+}
+    `;
+export type EditSectionMutationFn = Apollo.MutationFunction<EditSectionMutation, EditSectionMutationVariables>;
+
+/**
+ * __useEditSectionMutation__
+ *
+ * To run a mutation, you first call `useEditSectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditSectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editSectionMutation, { data, loading, error }] = useEditSectionMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditSectionMutation(baseOptions?: Apollo.MutationHookOptions<EditSectionMutation, EditSectionMutationVariables>) {
+        return Apollo.useMutation<EditSectionMutation, EditSectionMutationVariables>(EditSectionDocument, baseOptions);
+      }
+export type EditSectionMutationHookResult = ReturnType<typeof useEditSectionMutation>;
+export type EditSectionMutationResult = Apollo.MutationResult<EditSectionMutation>;
+export type EditSectionMutationOptions = Apollo.BaseMutationOptions<EditSectionMutation, EditSectionMutationVariables>;
 export const CreateProjectDocument = gql`
     mutation CreateProject($params: CreateProjectParams!) {
   createProject(params: $params) {

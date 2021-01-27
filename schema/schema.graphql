@@ -107,6 +107,10 @@ input CreateSectionParams {
   name: String!
 }
 
+input EditSectionParams {
+  name: String
+}
+
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
@@ -121,5 +125,6 @@ type Mutation {
 
   createSection(params: CreateSectionParams!): Section!
   moveSection(id: ID!, taskList: ID): Section
+  editSection(id: ID!, params: EditSectionParams!): Section
   deleteSection(id: ID!): Boolean!
 }

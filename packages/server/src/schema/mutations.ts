@@ -104,6 +104,23 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.sections.create(ctx.userId, params);
   }),
 
+  editSection: authed(async ({
+    args: { id, params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditSectionArgs>): Promise<Section | null> => {
+    let section = await ctx.dataSources.sections.getOne(id);
+
+    if (!section) {
+      return null;
+    }
+
+    await section.edit({
+      name: params.name ?? undefined,
+    });
+
+    return section;
+  }),
+
   moveSection: authed(async ({
     args: { id, taskList },
     ctx,

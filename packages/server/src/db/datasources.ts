@@ -26,7 +26,7 @@ interface DbObject {
   id: string;
 }
 
-abstract class DbDataSource<
+export abstract class DbDataSource<
   T extends { id: string },
   D extends DbObject = DbObject,
 > extends DataSource<ResolverContext> {

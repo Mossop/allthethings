@@ -14,7 +14,7 @@ export const TextStyles = {
     fontSize: "2rem",
   },
   subheading: {
-    fontSize: "1.8rem",
+    fontSize: "1.5rem",
   },
   text: {
     fontSize: "1rem",

@@ -129,6 +129,10 @@ export type CreateSectionParams = {
   readonly name: Scalars['String'];
 };
 
+export type EditSectionParams = {
+  readonly name?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly login?: Maybe<User>;
@@ -141,6 +145,7 @@ export type Mutation = {
   readonly deleteProject: Scalars['Boolean'];
   readonly createSection: Section;
   readonly moveSection?: Maybe<Section>;
+  readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
 };
 
@@ -191,6 +196,12 @@ export type MutationCreateSectionArgs = {
 export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
   taskList?: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationEditSectionArgs = {
+  id: Scalars['ID'];
+  params: EditSectionParams;
 };
 
 

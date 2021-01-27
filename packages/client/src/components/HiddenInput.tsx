@@ -62,9 +62,16 @@ export default ReactMemo(function HiddenInput({
   let ref = useRef<HTMLInputElement | null>(null);
 
   let updateState = useFieldState(setValue);
-  let activate = useCallback(() => {
+
+  let focus = useCallback(() => {
     setShowButtons(true);
   }, []);
+  let blur = useCallback(() => {
+    if (value == initialValue) {
+      setShowButtons(false);
+    }
+  }, [value, initialValue]);
+
   let submit = useCallback(() => {
     onSubmit(value);
     setShowButtons(false);
@@ -92,7 +99,8 @@ export default ReactMemo(function HiddenInput({
   >
     <input
       ref={ref}
-      onFocus={activate}
+      onFocus={focus}
+      onBlur={blur}
       type="text"
       className={clsx(className, classes.inputShared)}
       onChange={updateState}
