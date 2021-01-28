@@ -14,7 +14,7 @@ import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
 import { useMoveProjectMutation, useMoveSectionMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
+import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { DraggedProject, DraggedSection } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
@@ -222,6 +222,14 @@ const ProjectItem = ReactMemo(function ProjectItem({
             taskList: project.id,
             index: null,
           },
+          refetchQueries: [
+            refetchListTaskListQuery({
+              taskList: project.id,
+            }),
+            refetchListTaskListQuery({
+              taskList: item.section.taskList.id,
+            }),
+          ],
         });
       }
     },
