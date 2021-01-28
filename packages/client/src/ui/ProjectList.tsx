@@ -288,7 +288,7 @@ export default ReactMemo(function ProjectList({
 }: ProjectListProps): ReactResult {
   let classes = useStyles({ depth: 0 });
 
-  let context = useProjectRoot();
+  let root = useProjectRoot();
   let taskList = "taskList" in view ? view.taskList : null;
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
@@ -304,29 +304,55 @@ export default ReactMemo(function ProjectList({
   });
   let tasksUrl = useUrl({
     type: ViewType.TaskList,
-    taskList: context,
+    taskList: root,
   });
 
   let [moveProject] = useMoveProjectMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
+  let [moveSection] = useMoveSectionMutation();
 
-  let drop = useCallback((item: DraggedProject, monitor: DropTargetMonitor): void => {
-    if (monitor.didDrop()) {
-      return;
-    }
+  let drop = useCallback(
+    (item: DraggedProject | DraggedSection, monitor: DropTargetMonitor): void => {
+      if (monitor.didDrop() || !("taskList" in view)) {
+        return;
+      }
 
-    void moveProject({
-      variables: {
-        id: item.project.id,
-        taskList: context.id,
-      },
-    });
-  }, [moveProject, context]);
+      if (item.type == DragType.Project) {
+        void moveProject({
+          variables: {
+            id: item.project.id,
+            taskList: root.id,
+          },
+        });
+      } else {
+        void moveSection({
+          variables: {
+            id: item.section.id,
+            taskList: root.id,
+            index: null,
+          },
+          refetchQueries: [
+            refetchListTaskListQuery({
+              taskList: root.id,
+            }),
+            refetchListTaskListQuery({
+              taskList: item.section.taskList.id,
+            }),
+          ],
+        });
+      }
+    },
+    [moveProject, moveSection, view, root],
+  );
 
   let [{ isDragging, isOver }, dropRef] = useDrop({
-    accept: DragType.Project,
-    canDrop(item: DraggedProject): boolean {
+    accept: [DragType.Project, DragType.Section],
+    canDrop(item: DraggedProject | DraggedSection): boolean {
+      if (item.type == DragType.Section) {
+        return item.section.taskList !== root;
+      }
+
       return !!item.project.parent;
     },
     collect: (monitor: DropTargetMonitor) => {
@@ -356,13 +382,13 @@ export default ReactMemo(function ProjectList({
       <Item
         url={tasksUrl}
         icon={<ProjectIcon/>}
-        selected={view.type == ViewType.TaskList && taskList?.id == context.id}
+        selected={view.type == ViewType.TaskList && taskList?.id == root.id}
         label="Tasks"
         depth={0}
       />
       <Divider className={classes.divider}/>
       {
-        nameSorted(context.subprojects).map((project: Project) => <ProjectItem
+        nameSorted(root.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
           taskList={isDragging ? null : taskList}
@@ -379,7 +405,7 @@ export default ReactMemo(function ProjectList({
     {
       showCreateProjectDialog && <CreateProjectDialog
         onClose={closeCreateProjectDialog}
-        taskList={context}
+        taskList={root}
       />
     }
   </Paper>;
