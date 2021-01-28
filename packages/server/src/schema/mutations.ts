@@ -27,11 +27,15 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createContext: authed(({
+  createContext: authed(async ({
     args: { params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateContextArgs>): Promise<Context> => {
-    return ctx.dataSources.contexts.create(ctx.userId, params);
+    let user = await ctx.dataSources.users.getOne(ctx.userId);
+    if (!user) {
+      throw new Error("Unknown user.");
+    }
+    return ctx.dataSources.contexts.create(user, params);
   }),
 
   deleteContext: authed(async ({
@@ -43,10 +47,15 @@ const resolvers: MutationResolvers = {
   }),
 
   createProject: authed(async ({
-    args: { params },
+    args: { taskList: taskListId, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateProjectArgs>): Promise<Project> => {
-    return ctx.dataSources.projects.create(ctx.userId, params);
+    let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
+    if (!taskList) {
+      throw new Error("Unknown task list.");
+    }
+
+    return ctx.dataSources.projects.create(taskList, params);
   }),
 
   editProject: authed(async ({
@@ -98,10 +107,15 @@ const resolvers: MutationResolvers = {
   }),
 
   createSection: authed(async ({
-    args: { params },
+    args: { taskList: taskListId, index, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateSectionArgs>): Promise<Section> => {
-    return ctx.dataSources.sections.create(ctx.userId, params);
+    let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
+    if (!taskList) {
+      throw new Error("Unknown task list.");
+    }
+
+    return ctx.dataSources.sections.create(taskList, index, params);
   }),
 
   editSection: authed(async ({
@@ -122,7 +136,7 @@ const resolvers: MutationResolvers = {
   }),
 
   moveSection: authed(async ({
-    args: { id, taskList },
+    args: { id, index, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
     let section = await ctx.dataSources.sections.getOne(id);
@@ -135,7 +149,7 @@ const resolvers: MutationResolvers = {
       throw new Error("TaskList not found.");
     }
 
-    await section.move(list);
+    await section.move(list, index);
     return section;
   }),
 

@@ -24,6 +24,7 @@ export type CreateContextMutationVariables = Types.Exact<{
 export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
 export type CreateSectionMutationVariables = Types.Exact<{
+  taskList: Types.Maybe<Types.Scalars['ID']>;
   params: Types.CreateSectionParams;
 }>;
 
@@ -38,7 +39,17 @@ export type EditSectionMutationVariables = Types.Exact<{
 
 export type EditSectionMutation = { readonly __typename?: 'Mutation', readonly editSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
 
+export type MoveSectionMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  taskList: Types.Maybe<Types.Scalars['ID']>;
+  index: Types.Maybe<Types.Scalars['Int']>;
+}>;
+
+
+export type MoveSectionMutation = { readonly __typename?: 'Mutation', readonly moveSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
+
 export type CreateProjectMutationVariables = Types.Exact<{
+  taskList: Types.Maybe<Types.Scalars['ID']>;
   params: Types.CreateProjectParams;
 }>;
 
@@ -159,8 +170,8 @@ export type CreateContextMutationHookResult = ReturnType<typeof useCreateContext
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
 export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
 export const CreateSectionDocument = gql`
-    mutation CreateSection($params: CreateSectionParams!) {
-  createSection(params: $params) {
+    mutation CreateSection($taskList: ID, $params: CreateSectionParams!) {
+  createSection(taskList: $taskList, params: $params) {
     id
     name
   }
@@ -181,6 +192,7 @@ export type CreateSectionMutationFn = Apollo.MutationFunction<CreateSectionMutat
  * @example
  * const [createSectionMutation, { data, loading, error }] = useCreateSectionMutation({
  *   variables: {
+ *      taskList: // value for 'taskList'
  *      params: // value for 'params'
  *   },
  * });
@@ -225,9 +237,44 @@ export function useEditSectionMutation(baseOptions?: Apollo.MutationHookOptions<
 export type EditSectionMutationHookResult = ReturnType<typeof useEditSectionMutation>;
 export type EditSectionMutationResult = Apollo.MutationResult<EditSectionMutation>;
 export type EditSectionMutationOptions = Apollo.BaseMutationOptions<EditSectionMutation, EditSectionMutationVariables>;
+export const MoveSectionDocument = gql`
+    mutation MoveSection($id: ID!, $taskList: ID, $index: Int) {
+  moveSection(id: $id, taskList: $taskList, index: $index) {
+    id
+    name
+  }
+}
+    `;
+export type MoveSectionMutationFn = Apollo.MutationFunction<MoveSectionMutation, MoveSectionMutationVariables>;
+
+/**
+ * __useMoveSectionMutation__
+ *
+ * To run a mutation, you first call `useMoveSectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMoveSectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [moveSectionMutation, { data, loading, error }] = useMoveSectionMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      taskList: // value for 'taskList'
+ *      index: // value for 'index'
+ *   },
+ * });
+ */
+export function useMoveSectionMutation(baseOptions?: Apollo.MutationHookOptions<MoveSectionMutation, MoveSectionMutationVariables>) {
+        return Apollo.useMutation<MoveSectionMutation, MoveSectionMutationVariables>(MoveSectionDocument, baseOptions);
+      }
+export type MoveSectionMutationHookResult = ReturnType<typeof useMoveSectionMutation>;
+export type MoveSectionMutationResult = Apollo.MutationResult<MoveSectionMutation>;
+export type MoveSectionMutationOptions = Apollo.BaseMutationOptions<MoveSectionMutation, MoveSectionMutationVariables>;
 export const CreateProjectDocument = gql`
-    mutation CreateProject($params: CreateProjectParams!) {
-  createProject(params: $params) {
+    mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
+  createProject(taskList: $taskList, params: $params) {
     id
     name
     stub
@@ -249,6 +296,7 @@ export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutat
  * @example
  * const [createProjectMutation, { data, loading, error }] = useCreateProjectMutation({
  *   variables: {
+ *      taskList: // value for 'taskList'
  *      params: // value for 'params'
  *   },
  * });

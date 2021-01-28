@@ -22,7 +22,7 @@ export interface DraggedProject {
 
 export interface DraggedSection {
   type: DragType.Section;
-  project: Section;
+  section: Section;
 }
 
 export type DraggedObject = DraggedProject | DraggedSection;

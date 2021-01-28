@@ -85,6 +85,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Section", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
+    table.integer("index").notNullable();
     table.text("name").notNullable();
 
     table.text("user").notNullable();
@@ -118,6 +119,21 @@ export async function up(knex: Knex): Promise<void> {
       context: "context",
       user: "user",
       name: "name",
+    },
+  );
+
+  await knex.raw(
+    `CREATE UNIQUE INDEX :indexName: ON :table: (
+      COALESCE(:project:, :context:, :user:),
+      :index:
+    )`,
+    {
+      indexName: "section_index",
+      table: "Section",
+      project: "project",
+      context: "context",
+      user: "user",
+      index: "index",
     },
   );
 }

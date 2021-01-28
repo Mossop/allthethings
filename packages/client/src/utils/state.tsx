@@ -30,7 +30,12 @@ export type Context = Overwrite<Omit<Schema.Context, "user" | "sections" | "item
   readonly subprojects: readonly Project[];
 }>;
 
-export type Section = Schema.Section;
+export type Section = Overwrite<Schema.Section, {
+  readonly items: Item[];
+  readonly taskList: TaskList;
+}>;
+
+export type Item = Schema.Item;
 
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
@@ -141,6 +146,18 @@ function buildProjects(
     projects,
     subprojects: buildProjects(root.subprojects, null),
   };
+}
+
+export function buildItems(items: readonly Schema.Item[]): Item[] {
+  return [...items];
+}
+
+export function buildSections(taskList: TaskList, sections: readonly Schema.Section[]): Section[] {
+  return sections.map((section: Schema.Section): Section => ({
+    ...section,
+    items: buildItems(section.items),
+    taskList,
+  }));
 }
 
 export function StateListener({ children }: ReactChildren): ReactResult {

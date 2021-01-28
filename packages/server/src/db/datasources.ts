@@ -7,7 +7,7 @@ import { customAlphabet } from "nanoid/async";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { DatabaseConnection } from "./connection";
-import type { ImplBuilder } from "./implementations";
+import type { ImplBuilder, TaskList } from "./implementations";
 import { Context, User, Project, Section, getTaskListIds } from "./implementations";
 import type { ContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
 
@@ -50,7 +50,7 @@ export abstract class DbDataSource<
     return this.context.db;
   }
 
-  protected get knex(): Knex<D, D[]> {
+  public get knex(): Knex<D, D[]> {
     return this.connection.knex as Knex<D, D[]>;
   }
 
@@ -58,11 +58,11 @@ export abstract class DbDataSource<
     this._config = config;
   }
 
-  protected ref(field: keyof D | "*"): string {
+  public ref(field: keyof D | "*"): string {
     return `${this.tableName}.${field}`;
   }
 
-  protected table(): Knex.QueryBuilder<D, D[]> {
+  public get table(): Knex.QueryBuilder<D, D[]> {
     return this.knex.table(this.tableName);
   }
 
@@ -88,7 +88,7 @@ export abstract class DbDataSource<
   }
 
   public async get(id: string): Promise<D | null> {
-    let results = await this.select(this.table().whereIn(this.ref("id"), [id]));
+    let results = await this.select(this.table.whereIn(this.ref("id"), [id]));
 
     if (!results.length) {
       return null;
@@ -104,18 +104,18 @@ export abstract class DbDataSource<
   }
 
   public async find(fields: Partial<D>): Promise<T[]> {
-    return this.buildAll(this.select(this.table().where(fields)));
+    return this.buildAll(this.select(this.table.where(fields)));
   }
 
   public async query(fn: (knex: Knex.QueryBuilder<D, D[]>) => void | Promise<void>): Promise<T[]> {
-    let query = this.table();
+    let query = this.table;
     await fn(query);
     return this.buildAll(this.select(query));
   }
 
   public async insert(item: Omit<D, "id">): Promise<D> {
     // @ts-ignore
-    let results: D[] = await this.table().insert({
+    let results: D[] = await this.table.insert({
       ...item,
       id: await id(),
     }).returning("*");
@@ -131,7 +131,7 @@ export abstract class DbDataSource<
 
   public async updateOne(id: string, item: Partial<Omit<D, "id">>): Promise<D | null> {
     // @ts-ignore
-    let results: D[] = await this.table().where(this.ref("id"), id).update(item).returning("*");
+    let results: D[] = await this.table.where(this.ref("id"), id).update(item).returning("*");
     if (!results.length) {
       return null;
     } else if (results.length > 1) {
@@ -142,7 +142,7 @@ export abstract class DbDataSource<
   }
 
   public delete(id: string): Promise<void> {
-    return this.table().where(this.ref("id"), id).delete();
+    return this.table.where(this.ref("id"), id).delete();
   }
 }
 
@@ -151,7 +151,7 @@ export class UserDataSource extends DbDataSource<User, UserDbObject> {
   protected builder = User;
 
   public async verifyUser(email: string, password: string): Promise<User | null> {
-    let users = await this.select(this.table().where({
+    let users = await this.select(this.table.where({
       email,
     }));
 
@@ -181,12 +181,12 @@ export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
   protected builder = Context;
 
   public async create(
-    user: string,
+    user: User,
     { name }: Schema.CreateContextParams,
   ): Promise<Context> {
     return this.build(this.insert({
       name,
-      user,
+      user: user.id,
     }));
   }
 }
@@ -196,25 +196,10 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
   protected builder = Project;
 
   public async create(
-    userId: string,
-    { name, taskList }: Schema.CreateProjectParams,
+    taskList: TaskList,
+    { name }: Pick<ProjectDbObject, "name">,
   ): Promise<Project> {
-    let user: string = userId;
-    let parent: string | null = null;
-    let context: string | null = null;
-
-    if (taskList) {
-      let obj = await this.context.getTaskList(taskList);
-      if (!obj) {
-        throw new Error("TaskList does not exist.");
-      }
-
-      ({ user, context, project: parent } = await getTaskListIds(obj));
-
-      if (userId != user) {
-        throw new Error("TaskList does not exist.");
-      }
-    }
+    let { user, context, project: parent } = await getTaskListIds(taskList);
 
     return this.build(this.insert({
       name,
@@ -229,25 +214,27 @@ export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
   protected tableName = "Section";
   protected builder = Section;
 
+  public async find(fields: Partial<SectionDbObject>): Promise<Section[]> {
+    return this.buildAll(this.select(this.table.where(fields).orderBy("index")));
+  }
+
   public async create(
-    userId: string,
-    { name, taskList }: Schema.CreateSectionParams,
+    taskList: TaskList,
+    index: number | null | undefined,
+    { name }: Pick<SectionDbObject, "name">,
   ): Promise<Section> {
-    let user: string = userId;
-    let project: string | null = null;
-    let context: string | null = null;
-
-    if (taskList) {
-      let obj = await this.context.getTaskList(taskList);
-      if (!obj) {
-        throw new Error("TaskList does not exist.");
-      }
-
-      ({ user, context, project } = await getTaskListIds(obj));
-
-      if (userId != user) {
-        throw new Error("TaskList does not exist.");
-      }
+    let { user, context, project } = await getTaskListIds(taskList);
+    let existing = await taskList.sections();
+    if (index === undefined || index === null || index >= existing.length) {
+      index = existing.length;
+    } else {
+      await this.table.where({
+        user,
+        context,
+        project,
+      }).andWhere("index", ">=", index).update("index", this.knex.raw(":index: + 1", {
+        index: "index",
+      }));
     }
 
     return this.build(this.insert({
@@ -255,6 +242,7 @@ export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
       user,
       context,
       project,
+      index,
     }));
   }
 }

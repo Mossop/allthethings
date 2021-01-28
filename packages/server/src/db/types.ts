@@ -27,4 +27,5 @@ export type SectionDbObject = {
   user: UserDbObject['id'],
   context: ContextDbObject['id'] | null,
   project: ProjectDbObject['id'] | null,
+  index: number,
 };

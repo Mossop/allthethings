@@ -1,9 +1,10 @@
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 
-import { Text } from "../components/Text";
+import { InboxIcon } from "../components/Icons";
+import { Heading } from "../components/Text";
 import type { InboxView } from "../utils/navigation";
-import { pageStyles } from "../utils/styles";
+import { flexRow, pageStyles } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import AddDial from "./AddDial";
@@ -18,6 +19,13 @@ const useStyles = makeStyles((theme: Theme) =>
       ...pageStyles(theme),
       height: "100%",
       width: "100%",
+    },
+    heading: {
+      ...flexRow,
+      alignItems: "center",
+    },
+    headingText: {
+      padding: theme.spacing(1),
     },
     floatingAction: {
       position: "absolute",
@@ -37,7 +45,10 @@ export default ReactMemo(function Inbox({
 
   return <div className={classes.outer}>
     <div className={classes.content}>
-      <Text>Inbox</Text>
+      <div className={classes.heading}>
+        <InboxIcon/>
+        <Heading className={classes.headingText}>Inbox</Heading>
+      </div>
     </div>
     <div className={classes.floatingAction}>
       <AddDial viewType={view.type} taskList={view.context ?? view.user}/>

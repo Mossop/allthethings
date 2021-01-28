@@ -34,9 +34,9 @@ export default ReactMemo(function CreateProjectDialog({
 
   let [createProject, { data, error }] = useCreateProjectMutation({
     variables: {
+      taskList: taskList.id,
       params: {
         name: state.name,
-        taskList: taskList.id,
       },
     },
     refetchQueries: [

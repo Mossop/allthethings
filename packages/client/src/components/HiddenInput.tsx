@@ -62,10 +62,12 @@ export default ReactMemo(function HiddenInput({
   let ref = useRef<HTMLInputElement | null>(null);
 
   let updateState = useFieldState(setValue);
+  let currentValue = active ? value : initialValue;
 
   let focus = useCallback(() => {
+    setValue(initialValue);
     setShowButtons(true);
-  }, []);
+  }, [initialValue]);
   let blur = useCallback(() => {
     if (value == initialValue) {
       setShowButtons(false);
@@ -105,7 +107,7 @@ export default ReactMemo(function HiddenInput({
       className={clsx(className, classes.inputShared)}
       onChange={updateState}
       onKeyDown={keypress}
-      value={value}
+      value={currentValue}
     />
     <IconButton
       className={clsx(classes.buttonShared, !active && classes.buttonInactive)}

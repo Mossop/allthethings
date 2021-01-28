@@ -75,6 +75,7 @@ type Section @entity(additionalFields: [
   { path: "user", type: "UserDbObject['id']" },
   { path: "context", type: "ContextDbObject['id'] | null" },
   { path: "project", type: "ProjectDbObject['id'] | null" },
+  { path: "index", type: "number" },
 ]) {
   items: [Item!]!
 
@@ -94,7 +95,6 @@ input CreateContextParams {
 }
 
 input CreateProjectParams {
-  taskList: ID
   name: String!
 }
 
@@ -103,7 +103,6 @@ input EditProjectParams {
 }
 
 input CreateSectionParams {
-  taskList: ID
   name: String!
 }
 
@@ -118,13 +117,13 @@ type Mutation {
   createContext(params: CreateContextParams!): Context!
   deleteContext(id: ID!): Boolean!
 
-  createProject(params: CreateProjectParams!): Project!
+  createProject(taskList: ID, params: CreateProjectParams!): Project!
   moveProject(id: ID!, taskList: ID): Project
   editProject(id: ID!, params: EditProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 
-  createSection(params: CreateSectionParams!): Section!
-  moveSection(id: ID!, taskList: ID): Section
+  createSection(taskList: ID, index: Int, params: CreateSectionParams!): Section!
+  moveSection(id: ID!, taskList: ID, index: Int): Section
   editSection(id: ID!, params: EditSectionParams!): Section
   deleteSection(id: ID!): Boolean!
 }

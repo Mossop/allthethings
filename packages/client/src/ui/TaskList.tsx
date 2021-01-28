@@ -1,11 +1,10 @@
 import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { useCallback, Fragment } from "react";
+import { useCallback, Fragment, useMemo } from "react";
 import type { DragSourceMonitor } from "react-dnd";
 import { useDrag } from "react-dnd";
 
@@ -14,11 +13,10 @@ import { ProjectIcon, SectionIcon } from "../components/Icons";
 import { TextStyles } from "../components/Text";
 import { useEditProjectMutation, useEditSectionMutation } from "../schema/mutations";
 import { useListTaskListQuery } from "../schema/queries";
-import type { Item } from "../schema/types";
 import { DragType } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
 import type { Project, Section } from "../utils/state";
-import { isProject } from "../utils/state";
+import { buildItems, buildSections, isProject } from "../utils/state";
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -112,11 +110,6 @@ const SectionList = ReactMemo(function SectionList({
         onSubmit={changeSectionName}
       />
     </ListSubheader>
-    {
-      section.items.map((item: Item) => <ListItem key={item.id}>
-        Foo
-      </ListItem>)
-    }
   </List>;
 });
 
@@ -185,6 +178,15 @@ export default ReactMemo(function TaskList({
     },
   });
 
+  let items = useMemo(
+    () => data?.taskList ? buildItems(data.taskList.items) : [],
+    [data],
+  );
+  let sections = useMemo(
+    () => data?.taskList ? buildSections(view.taskList, data.taskList.sections) : [],
+    [data, view],
+  );
+
   let shouldShowDivider = useCallback((index: number): boolean => {
     if (index > 0) {
       return true;
@@ -194,18 +196,12 @@ export default ReactMemo(function TaskList({
       return true;
     }
 
-    if ((data?.taskList?.items.length ?? 0) > 0) {
+    if (items.length > 0) {
       return true;
     }
 
     return false;
-  }, [view, data]);
-
-  if (!data?.taskList) {
-    return null;
-  }
-
-  let { taskList } = data;
+  }, [view, items]);
 
   return <div className={classes.outer}>
     <div className={classes.content}>
@@ -214,12 +210,7 @@ export default ReactMemo(function TaskList({
       }
       <List>
         {
-          taskList.items.map((item: Item) => <ListItem key={item.id}>
-            Foo
-          </ListItem>)
-        }
-        {
-          taskList.sections.map((section: Section, index: number) => <Fragment
+          sections.map((section: Section, index: number) => <Fragment
             key={section.id}
           >
             {shouldShowDivider(index) && <Divider/>}

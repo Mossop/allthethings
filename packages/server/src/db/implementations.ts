@@ -77,6 +77,11 @@ export async function getTaskListIds(taskList: User | Context | Project): Promis
   }
 }
 
+export type Item = Schema.Item;
+export type TaskList = User | Project | Context;
+export type ProjectRoot = User | Context;
+export type ItemGroup = User | Project | Context | Section;
+
 abstract class BaseImpl<D extends DbObject = DbObject> {
   public readonly id: string;
   protected _dbObject: Promise<D> | null;
@@ -127,11 +132,6 @@ abstract class BaseImpl<D extends DbObject = DbObject> {
     this._dbObject = Promise.resolve(newObject);
   }
 }
-
-export type Item = Schema.Item;
-export type TaskList = User | Project | Context;
-export type ProjectRoot = User | Context;
-export type ItemGroup = User | Project | Context | Section;
 
 abstract class TaskListImpl<
   T extends DbObject,
@@ -336,8 +336,95 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
     return this.update(props);
   }
 
-  public async move(taskList: User | Context | Project): Promise<void> {
-    await this.update(await getTaskListIds(taskList));
+  public async move(
+    taskList: User | Context | Project,
+    targetIndex: number | null | undefined,
+  ): Promise<void> {
+    let {
+      user: targetUser,
+      context: targetContext,
+      project: targetProject,
+    } = await getTaskListIds(taskList);
+    let existing = await taskList.sections();
+
+    let dbObject = await this.dbObject;
+    let {
+      user: existingUser,
+      context: existingContext,
+      project: existingProject,
+      index: existingIndex,
+    } = dbObject;
+
+    // The initial index we will move to.
+    let dbIndex: number;
+
+    if (existingUser == targetUser &&
+      existingContext == targetContext &&
+      existingProject == targetProject) {
+      // With nothing else use the current last index.
+      if (targetIndex === null || targetIndex === undefined || targetIndex > existing.length - 1) {
+        targetIndex = existing.length - 1;
+      }
+
+      if (existingIndex == targetIndex) {
+        // Same tasklist, same index. Nothing to do.
+        return;
+      }
+
+      // Have to re-order the list.
+
+      // If we're moving to a higher position then initially move to one index above as we will be
+      // decrementing all the indexes above the existing position.
+      dbIndex = existingIndex < targetIndex ? targetIndex + 1 : targetIndex;
+    } else {
+      // With nothing else use the new last index.
+      if (targetIndex === null || targetIndex === undefined || targetIndex > existing.length) {
+        targetIndex = existing.length;
+      }
+
+      dbIndex = targetIndex;
+    }
+
+    // Create a gap at the target index.
+    await this.dataSource.table
+      .where({
+        user: targetUser,
+        context: targetContext,
+        project: targetProject,
+      })
+      .andWhere("index", ">=", dbIndex)
+      .update("index", this.dataSource.knex.raw(":index: + 1", {
+        index: "index",
+      }));
+
+    // Move into the gap.
+    await this.dataSource.table
+      .where({
+        id: this.id,
+      })
+      .update({
+        user: targetUser,
+        context: targetContext,
+        project: targetProject,
+        index: dbIndex,
+      });
+
+    // Close the gap that was left.
+    await this.dataSource.table
+      .where({
+        user: existingUser,
+        context: existingContext,
+        project: existingProject,
+      })
+      .andWhere("index", ">", existingIndex)
+      .update("index", this.dataSource.knex.raw(":index: - 1", {
+        index: "index",
+      }));
+
+    dbObject.user = targetUser;
+    dbObject.context = targetContext;
+    dbObject.project = targetProject;
+    dbObject.index = targetIndex;
   }
 
   public async delete(): Promise<void> {

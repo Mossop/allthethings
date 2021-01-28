@@ -117,7 +117,6 @@ export type CreateContextParams = {
 };
 
 export type CreateProjectParams = {
-  readonly taskList?: Maybe<Scalars['ID']>;
   readonly name: Scalars['String'];
 };
 
@@ -126,7 +125,6 @@ export type EditProjectParams = {
 };
 
 export type CreateSectionParams = {
-  readonly taskList?: Maybe<Scalars['ID']>;
   readonly name: Scalars['String'];
 };
 
@@ -168,6 +166,7 @@ export type MutationDeleteContextArgs = {
 
 
 export type MutationCreateProjectArgs = {
+  taskList?: Maybe<Scalars['ID']>;
   params: CreateProjectParams;
 };
 
@@ -190,6 +189,8 @@ export type MutationDeleteProjectArgs = {
 
 
 export type MutationCreateSectionArgs = {
+  taskList?: Maybe<Scalars['ID']>;
+  index?: Maybe<Scalars['Int']>;
   params: CreateSectionParams;
 };
 
@@ -197,6 +198,7 @@ export type MutationCreateSectionArgs = {
 export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
   taskList?: Maybe<Scalars['ID']>;
+  index?: Maybe<Scalars['Int']>;
 };
 
 

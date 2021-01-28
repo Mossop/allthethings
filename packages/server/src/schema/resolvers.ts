@@ -101,6 +101,7 @@ export type ResolversTypes = ResolversObject<{
   EditSectionParams: Schema.EditSectionParams;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
+  Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -123,6 +124,7 @@ export type ResolversParentTypes = ResolversObject<{
   EditSectionParams: Schema.EditSectionParams;
   Mutation: {};
   Boolean: Schema.Scalars['Boolean'];
+  Int: Schema.Scalars['Int'];
 }>;
 
 export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = ResolversObject<{

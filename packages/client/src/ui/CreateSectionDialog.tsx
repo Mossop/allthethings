@@ -30,9 +30,9 @@ export default ReactMemo(function CreateSectionDialog({
 
   let [createSection, { error }] = useCreateSectionMutation({
     variables: {
+      taskList: taskList.id,
       params: {
         name: state.name,
-        taskList: taskList.id,
       },
     },
     refetchQueries: [

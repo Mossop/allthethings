@@ -16,8 +16,8 @@ mutation CreateContext($params: CreateContextParams!) {
   }
 }
 
-mutation CreateSection($params: CreateSectionParams!) {
-  createSection(params: $params) {
+mutation CreateSection($taskList: ID, $params: CreateSectionParams!) {
+  createSection(taskList: $taskList, params: $params) {
     id
     name
   }
@@ -30,8 +30,15 @@ mutation EditSection($id: ID!, $params: EditSectionParams!) {
   }
 }
 
-mutation CreateProject($params: CreateProjectParams!) {
-  createProject(params: $params) {
+mutation MoveSection($id: ID!, $taskList: ID, $index: Int) {
+  moveSection(id: $id, taskList: $taskList, index: $index) {
+    id
+    name
+  }
+}
+
+mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
+  createProject(taskList: $taskList, params: $params) {
     id
     name
     stub

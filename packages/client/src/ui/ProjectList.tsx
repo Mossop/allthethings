@@ -13,9 +13,9 @@ import { forwardRef, useState, useCallback } from "react";
 import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
-import { useMoveProjectMutation } from "../schema/mutations";
+import { useMoveProjectMutation, useMoveSectionMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
-import type { DraggedObject, DraggedProject } from "../utils/drag";
+import type { DraggedProject, DraggedSection } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
 import type { View } from "../utils/navigation";
 import { pushUrl, ViewType } from "../utils/navigation";
@@ -180,7 +180,11 @@ const ProjectItem = ReactMemo(function ProjectItem({
     },
   });
 
-  let canDrop = useCallback((item: DraggedObject): boolean => {
+  let canDrop = useCallback((item: DraggedProject | DraggedSection): boolean => {
+    if (item.type == DragType.Section) {
+      return item.section.taskList !== project;
+    }
+
     let parent: Project | null = project;
     while (parent) {
       if (parent.id == item.project.id) {
@@ -196,21 +200,36 @@ const ProjectItem = ReactMemo(function ProjectItem({
     refetchQueries: [refetchListContextStateQuery()],
   });
 
-  let drop = useCallback((item: DraggedObject, monitor: DropTargetMonitor): void => {
-    if (monitor.didDrop()) {
-      return;
-    }
+  let [moveSection] = useMoveSectionMutation();
 
-    void moveProject({
-      variables: {
-        id: item.project.id,
-        taskList: project.id,
-      },
-    });
-  }, [moveProject, project]);
+  let drop = useCallback(
+    (item: DraggedProject | DraggedSection, monitor: DropTargetMonitor): void => {
+      if (monitor.didDrop()) {
+        return;
+      }
+
+      if (item.type == DragType.Project) {
+        void moveProject({
+          variables: {
+            id: item.project.id,
+            taskList: project.id,
+          },
+        });
+      } else {
+        void moveSection({
+          variables: {
+            id: item.section.id,
+            taskList: project.id,
+            index: null,
+          },
+        });
+      }
+    },
+    [moveProject, moveSection, project],
+  );
 
   let [{ isDropping }, dropRef] = useDrop({
-    accept: DragType.Project,
+    accept: [DragType.Project, DragType.Section],
     canDrop,
     collect: (monitor: DropTargetMonitor) => {
       return {
@@ -284,7 +303,7 @@ export default ReactMemo(function ProjectList({
     refetchQueries: [refetchListContextStateQuery()],
   });
 
-  let drop = useCallback((item: DraggedObject, monitor: DropTargetMonitor): void => {
+  let drop = useCallback((item: DraggedProject, monitor: DropTargetMonitor): void => {
     if (monitor.didDrop()) {
       return;
     }
