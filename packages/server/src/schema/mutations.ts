@@ -115,7 +115,7 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    return ctx.dataSources.sections.create(taskList, index, params);
+    return ctx.dataSources.sections.create(taskList, index ?? null, params);
   }),
 
   editSection: authed(async ({
@@ -149,7 +149,7 @@ const resolvers: MutationResolvers = {
       throw new Error("TaskList not found.");
     }
 
-    await section.move(list, index);
+    await section.move(list, index ?? null);
     return section;
   }),
 

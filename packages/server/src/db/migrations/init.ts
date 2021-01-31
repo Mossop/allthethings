@@ -13,135 +13,138 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("User", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("email").notNullable();
+    table.text("email").notNullable().unique();
     table.text("password").notNullable();
   });
 
   await knex.schema.createTable("Context", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("name").notNullable();
-
-    table.unique(["id", "user"]);
-
-    table.text("user").notNullable();
-    table.foreign("user", "foreign_User")
+    table.text("userId").notNullable()
       .references("User.id")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
+    table.text("name").notNullable();
   });
 
-  await knex.raw(
-    "CREATE UNIQUE INDEX :indexName: ON :table: (:user:, replace(lower(:name:), ' ', '-'))",
-    {
-      indexName: "context_name",
-      table: "Context",
-      user: "user",
-      name: "name",
-    },
-  );
+  await knex.raw(`
+    ALTER TABLE ??
+      ADD COLUMN ?? text GENERATED ALWAYS AS (
+        trim('-' from regexp_replace(lower(??), '[^a-z0-9]+', '-', 'g'))
+      ) STORED
+  `, [
+    "Context",
+    "stub",
+    "name",
+  ]);
+
+  await knex.schema.alterTable("Context", (table: Knex.CreateTableBuilder): void => {
+    table.unique(["userId", "stub"]);
+  });
+
+  await knex.raw(`
+    ALTER TABLE :table: ADD CHECK (
+      (:owner: = :id: AND :name: = '')
+      OR
+      (:owner: <> :id: AND :name: <> '')
+    )`, {
+    table: "Context",
+    id: "id",
+    owner: "userId",
+    name: "name",
+  });
 
   await knex.schema.createTable("Project", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
+    table.text("contextId").notNullable()
+      .references("Context.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+    table.text("parentId").nullable();
     table.text("name").notNullable();
 
-    table.unique(["id", "user", "context"]);
+    table.unique(["contextId", "id"]);
 
-    table.text("user").notNullable();
-    table.foreign("user", "foreign_User")
-      .references("User.id")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-
-    table.text("context").nullable();
-    table.foreign(["user", "context"], "foreign_Context")
-      .references(["user", "id"]).inTable("Context")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-
-    table.text("parent").nullable();
-    table.foreign(["user", "context", "parent"], "foreign_Project")
-      .references(["user", "context", "id"]).inTable("Project")
+    table.foreign(["contextId", "parentId"])
+      .references(["contextId", "id"]).inTable("Project")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
 
-  await knex.raw(
-    `CREATE UNIQUE INDEX :indexName: ON :table: (
-      COALESCE(:parent:, :context:, :user:),
-      replace(lower(:name:), ' ', '-')
-    )`,
-    {
-      indexName: "project_name",
-      table: "Project",
-      parent: "parent",
-      context: "context",
-      user: "user",
-      name: "name",
-    },
-  );
+  await knex.raw(`
+    ALTER TABLE ??
+      ADD COLUMN ?? text GENERATED ALWAYS AS (
+        trim('-' from regexp_replace(lower(??), '[^a-z0-9]+', '-', 'g'))
+      ) STORED
+  `, [
+    "Project",
+    "stub",
+    "name",
+  ]);
+
+  await knex.schema.alterTable("Project", (table: Knex.CreateTableBuilder): void => {
+    table.unique(["parentId", "stub"]);
+  });
+
+  await knex.raw(`
+    ALTER TABLE :table: ADD CHECK (
+      (:name: = '' AND :owner: = :id: AND :parent: IS NULL)
+      OR
+      (:name: <> '' AND :owner: <> :id: AND :parent: IS NOT NULL)
+    )`, {
+    table: "Project",
+    id: "id",
+    owner: "contextId",
+    name: "name",
+    parent: "parentId",
+  });
 
   await knex.schema.createTable("Section", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
+    table.text("projectId").notNullable()
+      .references("Project.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
     table.integer("index").notNullable();
     table.text("name").notNullable();
 
-    table.text("user").notNullable();
-    table.foreign("user", "foreign_User")
-      .references("User.id")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-
-    table.text("context").nullable();
-    table.foreign(["user", "context"], "foreign_Context")
-      .references(["user", "id"]).inTable("Context")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-
-    table.text("project").nullable();
-    table.foreign(["user", "context", "project"], "foreign_Project")
-      .references(["user", "context", "id"]).inTable("Project")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
+    table.unique(["projectId", "index"]);
   });
 
-  await knex.raw(
-    `CREATE UNIQUE INDEX :indexName: ON :table: (
-      COALESCE(:project:, :context:, :user:),
-      lower(:name:)
-    )`,
-    {
-      indexName: "section_name",
-      table: "Section",
-      project: "project",
-      context: "context",
-      user: "user",
-      name: "name",
-    },
-  );
+  await knex.raw(`
+    ALTER TABLE ??
+      ADD COLUMN ?? text GENERATED ALWAYS AS (
+        trim('-' from regexp_replace(lower(??), '[^a-z0-9]+', '-', 'g'))
+      ) STORED
+  `, [
+    "Section",
+    "stub",
+    "name",
+  ]);
 
-  await knex.raw(
-    `CREATE UNIQUE INDEX :indexName: ON :table: (
-      COALESCE(:project:, :context:, :user:),
-      :index:
-    )`,
-    {
-      indexName: "section_index",
-      table: "Section",
-      project: "project",
-      context: "context",
-      user: "user",
-      index: "index",
-    },
-  );
+  await knex.schema.alterTable("Section", (table: Knex.CreateTableBuilder): void => {
+    table.unique(["projectId", "stub"]);
+  });
+
+  await knex.raw(`
+    ALTER TABLE :table: ADD CHECK (
+      (:name: = '' AND :parent: = :id: AND :index: = -1)
+      OR
+      (:name: <> '' AND :parent: <> :id: AND :index: > -1)
+    )`, {
+    table: "Section",
+    id: "id",
+    parent: "projectId",
+    name: "name",
+    index: "index",
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("Section");
   await knex.schema.dropTableIfExists("Project");
   await knex.schema.dropTableIfExists("Context");
-  await knex.schema.dropTableIfExists("NamedContext");
   await knex.schema.dropTableIfExists("User");
 }

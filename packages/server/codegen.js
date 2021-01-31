@@ -1,23 +1,6 @@
 const path = require("path");
 
 module.exports = {
-  [path.join(__dirname, "src", "db", "types.ts")]: {
-    plugins: {
-      "typescript-mongodb": {
-        useTypeImports: true,
-        avoidOptionals: true,
-        immutableTypes: true,
-        idFieldName: "id",
-        objectIdType: "string",
-      },
-      "add": {
-        content: [
-          "/* eslint-disable */",
-          "import type { Maybe } from \"../schema/types\";",
-        ],
-      },
-    },
-  },
   [path.join(__dirname, "src", "schema", "types.ts")]: {
     plugins: {
       typescript: {

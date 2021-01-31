@@ -8,8 +8,13 @@ import type {
   SectionDataSource,
   UserDataSource,
 } from "./datasources";
-import { stub } from "./datasources";
-import type { ContextDbObject, ProjectDbObject, SectionDbObject, UserDbObject } from "./types";
+import type {
+  DbEntity,
+  ContextDbObject,
+  ProjectDbObject,
+  SectionDbObject,
+  UserDbObject,
+} from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
 
@@ -27,9 +32,9 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
   return val;
 }
 
-export function equals<D extends DbObject, T extends BaseImpl<D>>(
-  a: T | string | null | undefined,
-  b: T | string | null | undefined,
+export function equals(
+  a: DbEntity | string | null | undefined,
+  b: DbEntity | string | null | undefined,
 ): boolean {
   if (!a) {
     return !b;
@@ -39,42 +44,10 @@ export function equals<D extends DbObject, T extends BaseImpl<D>>(
     return false;
   }
 
-  a = a instanceof BaseImpl ? a.id : a;
-  b = b instanceof BaseImpl ? b.id : b;
+  a = typeof a == "string" ? a : a.id;
+  b = typeof b == "string" ? b : b.id;
 
   return a == b;
-}
-
-interface DbObject {
-  id: string;
-}
-
-interface TaskListIds {
-  user: string;
-  context: string | null;
-  project: string | null;
-}
-
-export async function getTaskListIds(taskList: User | Context | Project): Promise<TaskListIds> {
-  if (taskList instanceof User) {
-    return {
-      user: taskList.id,
-      context: null,
-      project: null,
-    };
-  } else if (taskList instanceof Context) {
-    return {
-      user: (await taskList.user()).id,
-      context: null,
-      project: null,
-    };
-  } else {
-    return {
-      user: (await taskList.user()).id,
-      context: (await taskList.context())?.id ?? null,
-      project: taskList.id,
-    };
-  }
 }
 
 export type Item = Schema.Item;
@@ -82,7 +55,7 @@ export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 export type ItemGroup = User | Project | Context | Section;
 
-abstract class BaseImpl<D extends DbObject = DbObject> {
+abstract class BaseImpl<D extends DbEntity = DbEntity> {
   public readonly id: string;
   protected _dbObject: Promise<D> | null;
 
@@ -124,7 +97,7 @@ abstract class BaseImpl<D extends DbObject = DbObject> {
     return this.resolverContext.dataSources;
   }
 
-  protected async update(props: Partial<Omit<D, "id">>): Promise<void> {
+  protected async update(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
     let newObject = await this.dataSource.updateOne(this.id, props);
     if (!newObject) {
       throw new Error("Missing item in database.");
@@ -134,7 +107,7 @@ abstract class BaseImpl<D extends DbObject = DbObject> {
 }
 
 abstract class TaskListImpl<
-  T extends DbObject,
+  T extends DbEntity,
 > extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
   public abstract subprojects(): Promise<readonly Project[]>;
   public abstract sections(): Promise<readonly Section[]>;
@@ -144,7 +117,7 @@ abstract class TaskListImpl<
 }
 
 abstract class ProjectRootImpl<
-  T extends DbObject,
+  T extends DbEntity,
 > extends TaskListImpl<T> implements SchemaResolver<Schema.ProjectRoot> {
   public abstract projects(): Promise<readonly Project[]>;
 
@@ -163,26 +136,27 @@ export class User extends ProjectRootImpl<UserDbObject> implements SchemaResolve
     return this.dataSources.users;
   }
 
+  public async contexts(): Promise<readonly Context[]> {
+    return this.dataSources.contexts.find({
+      userId: this.id,
+    });
+  }
+
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      user: this.id,
-      context: null,
-      parent: null,
+      parentId: this.id,
     });
   }
 
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      user: this.id,
-      context: null,
+      contextId: this.id,
     });
   }
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      user: this.id,
-      context: null,
-      project: null,
+      projectId: this.id,
     });
   }
 
@@ -192,12 +166,6 @@ export class User extends ProjectRootImpl<UserDbObject> implements SchemaResolve
 
   public async password(): Promise<string> {
     return (await this.dbObject).password;
-  }
-
-  public async contexts(): Promise<readonly Context[]> {
-    return this.dataSources.contexts.find({
-      user: this.id,
-    });
   }
 }
 
@@ -213,30 +181,28 @@ export class Context
 
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      context: this.id,
-      parent: null,
+      parentId: this.id,
     });
   }
 
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      context: this.id,
+      contextId: this.id,
     });
   }
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      context: this.id,
-      project: null,
+      projectId: this.id,
     });
   }
 
   public async user(): Promise<User> {
-    return new User(this.resolverContext, (await this.dbObject).user);
+    return new User(this.resolverContext, (await this.dbObject).userId);
   }
 
   public async stub(): Promise<string> {
-    return stub(await this.name());
+    return (await this.dbObject).stub;
   }
 
   public async name(): Promise<string> {
@@ -255,29 +221,30 @@ export class Project extends TaskListImpl<ProjectDbObject>
   }
 
   public async user(): Promise<User> {
-    return new User(this.resolverContext, (await this.dbObject).user);
+    return assertValid(await this.dataSources.contexts.getUser((await this.dbObject).contextId));
   }
 
   public async context(): Promise<Context | null> {
-    let { context } = await this.dbObject;
-    if (!context) {
-      return null;
-    }
-    return new Context(this.resolverContext, context);
+    return this.dataSources.contexts.getOne((await this.dbObject).contextId);
   }
 
   public async edit(
-    props: Partial<Omit<ProjectDbObject, "id" | "user" | "context" | "parent">>,
+    props: Partial<Omit<ProjectDbObject, "id" | "stub" | "contextId" | "parentId">>,
   ): Promise<void> {
     return this.update(props);
   }
 
   public async move(taskList: User | Context | Project): Promise<void> {
-    let { user, project: parent, context } = await getTaskListIds(taskList);
-    await this.update({
-      user,
-      parent,
-      context,
+    let contextId: string;
+    if (taskList instanceof Project) {
+      contextId = (await taskList.dbObject).contextId;
+    } else {
+      contextId = taskList.id;
+    }
+
+    await this.dataSource.updateOne(this.id, {
+      contextId,
+      parentId: taskList.id,
     });
   }
 
@@ -287,18 +254,18 @@ export class Project extends TaskListImpl<ProjectDbObject>
 
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
-      parent: this.id,
+      parentId: this.id,
     });
   }
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      project: this.id,
+      projectId: this.id,
     });
   }
 
   public async stub(): Promise<string> {
-    return stub(await this.name());
+    return (await this.dbObject).stub;
   }
 
   public async name(): Promise<string> {
@@ -306,14 +273,18 @@ export class Project extends TaskListImpl<ProjectDbObject>
   }
 
   public async taskList(): Promise<Project | User | Context> {
-    let { parent, context, user } = await this.dbObject;
-    if (parent) {
-      return new Project(this.resolverContext, parent);
+    let { parentId, contextId } = await this.dbObject;
+    if (parentId) {
+      return new Project(this.resolverContext, parentId);
     }
+
+    let context = await this.dataSources.contexts.getOne(contextId);
     if (context) {
-      return new Context(this.resolverContext, context);
+      return context;
     }
-    return new User(this.resolverContext, user);
+
+    let user = await this.dataSources.users.getOne(contextId);
+    return assertValid(user);
   }
 }
 
@@ -331,39 +302,31 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
   }
 
   public async edit(
-    props: Partial<Omit<SectionDbObject, "id" | "user" | "context" | "project">>,
+    props: Partial<Omit<SectionDbObject, "id" | "projectId" | "stub">>,
   ): Promise<void> {
     return this.update(props);
   }
 
   public async move(
     taskList: User | Context | Project,
-    targetIndex: number | null | undefined,
+    targetIndex: number | null,
   ): Promise<void> {
-    let {
-      user: targetUser,
-      context: targetContext,
-      project: targetProject,
-    } = await getTaskListIds(taskList);
-    let existing = await taskList.sections();
+    let existingSections = await taskList.sections();
 
+    let targetProject = taskList.id;
     let dbObject = await this.dbObject;
     let {
-      user: existingUser,
-      context: existingContext,
-      project: existingProject,
+      projectId: existingProject,
       index: existingIndex,
     } = dbObject;
 
     // The initial index we will move to.
     let dbIndex: number;
 
-    if (existingUser == targetUser &&
-      existingContext == targetContext &&
-      existingProject == targetProject) {
+    if (existingProject == targetProject) {
       // With nothing else use the current last index.
-      if (targetIndex === null || targetIndex === undefined || targetIndex > existing.length - 1) {
-        targetIndex = existing.length - 1;
+      if (targetIndex === null || targetIndex > existingSections.length - 1) {
+        targetIndex = existingSections.length - 1;
       }
 
       if (existingIndex == targetIndex) {
@@ -378,19 +341,17 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
       dbIndex = existingIndex < targetIndex ? targetIndex + 1 : targetIndex;
     } else {
       // With nothing else use the new last index.
-      if (targetIndex === null || targetIndex === undefined || targetIndex > existing.length) {
-        targetIndex = existing.length;
+      if (targetIndex === null || targetIndex > existingSections.length) {
+        targetIndex = existingSections.length;
       }
 
       dbIndex = targetIndex;
     }
 
     // Create a gap at the target index.
-    await this.dataSource.table
+    await this.dataSource.records
       .where({
-        user: targetUser,
-        context: targetContext,
-        project: targetProject,
+        projectId: targetProject,
       })
       .andWhere("index", ">=", dbIndex)
       .update("index", this.dataSource.knex.raw(":index: + 1", {
@@ -398,32 +359,26 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
       }));
 
     // Move into the gap.
-    await this.dataSource.table
+    await this.dataSource.records
       .where({
         id: this.id,
       })
       .update({
-        user: targetUser,
-        context: targetContext,
-        project: targetProject,
+        projectId: targetProject,
         index: dbIndex,
       });
 
     // Close the gap that was left.
-    await this.dataSource.table
+    await this.dataSource.records
       .where({
-        user: existingUser,
-        context: existingContext,
-        project: existingProject,
+        projectId: existingProject,
       })
       .andWhere("index", ">", existingIndex)
       .update("index", this.dataSource.knex.raw(":index: - 1", {
         index: "index",
       }));
 
-    dbObject.user = targetUser;
-    dbObject.context = targetContext;
-    dbObject.project = targetProject;
+    dbObject.projectId = targetProject;
     dbObject.index = targetIndex;
   }
 
