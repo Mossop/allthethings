@@ -1,6 +1,9 @@
 module.exports = {
   overrides: [{
     files: ["src/**/*.ts", "src/**/*.tsx"],
+    ignorePatterns: [
+      "src/popup-state/*",
+    ],
 
     parserOptions: {
       ecmaFeatures: {

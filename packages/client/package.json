@@ -17,7 +17,6 @@
     "clsx": "^1.1.1",
     "color-alpha": "^1.1.2",
     "history": "^5.0.0",
-    "material-ui-popup-state": "^1.7.1",
     "md5": "^2.3.0",
     "react": "^17.0.1",
     "react-dnd": "^11.1.3",

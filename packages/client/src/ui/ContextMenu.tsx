@@ -3,7 +3,7 @@ import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
