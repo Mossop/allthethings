@@ -18,7 +18,9 @@ export async function createWebServer(
   db: DatabaseConnection,
   gqlServer: ApolloServer,
 ): Promise<Koa> {
-  let clientRoot = path.normalize(path.join(__dirname, "..", "..", "..", "client", "dist"));
+  let htmlFile = require.resolve("@allthethings/client/dist/index.html");
+
+  let clientRoot = path.dirname(htmlFile);
   let context = await buildContext(config, db);
 
   let app = new koa();
@@ -57,7 +59,7 @@ export async function createWebServer(
   app.use(gqlServer.getMiddleware());
 
   app.use((ctx: Koa.Context) => {
-    let stream = fs.createReadStream(path.join(clientRoot, "index.html"));
+    let stream = fs.createReadStream(htmlFile);
     ctx.status = 200;
     ctx.type = "text/html";
     ctx.body = stream;
