@@ -2,7 +2,6 @@
   "compilerOptions": {
     "target": "es2019",
     "moduleResolution": "node",
-    "declaration": true,
     "sourceMap": true,
     "declarationMap": false,
     "esModuleInterop": true,
@@ -16,6 +15,11 @@
     "strictBindCallApply": true,
 
     "experimentalDecorators": true,
-    "emitDecoratorMetadata": true
+    "emitDecoratorMetadata": true,
+
+    "baseUrl": "./packages",
+    "paths": {
+      "@allthethings/utils": ["utils/src"]
+    }
   }
 }

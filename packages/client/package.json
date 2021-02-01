@@ -5,10 +5,13 @@
   "license": "MIT",
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
   "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build-schema": "graphql-codegen",
     "build": "webpack",
     "watch": "webpack --watch"
   },
   "dependencies": {
+    "@allthethings/utils": "file:../utils",
     "@apollo/client": "^3.3.6",
     "@material-ui/core": "^4.11.2",
     "@material-ui/icons": "^4.11.2",
@@ -24,12 +27,19 @@
     "react-dom": "^17.0.1"
   },
   "devDependencies": {
+    "@graphql-codegen/add": "^2.0.2",
+    "@graphql-codegen/cli": "^1.20.0",
+    "@graphql-codegen/near-operation-file-preset": "^1.17.13",
+    "@graphql-codegen/typescript": "^1.20.0",
+    "@graphql-codegen/typescript-apollo-client-helpers": "^1.1.2",
+    "@graphql-codegen/typescript-operations": "^1.17.13",
+    "@graphql-codegen/typescript-react-apollo": "^2.2.1",
     "@types/react": "^17.0.0",
     "@types/react-dom": "^17.0.0",
-    "fork-ts-checker-webpack-plugin": "^6.1.0",
     "html-webpack-plugin": "^4.5.1",
     "html-webpack-tags-plugin": "^2.0.17",
     "ts-loader": "^8.0.14",
+    "tsconfig-paths-webpack-plugin": "^3.3.0",
     "typescript": "^4.1.0",
     "webpack": "^5.12.3",
     "webpack-cli": "^4.3.1"

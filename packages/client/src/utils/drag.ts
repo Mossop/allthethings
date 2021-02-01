@@ -7,7 +7,7 @@ import type {
 } from "react-dnd";
 import { useDrag as drag, useDrop as drop } from "react-dnd";
 
-import type { Overwrite } from "../../../utils/src";
+import type { Overwrite } from "@allthethings/utils";
 import type { Project, Section } from "./state";
 
 export enum DragType {

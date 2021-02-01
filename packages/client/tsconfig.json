@@ -10,7 +10,12 @@
     ],
     "jsx": "react-jsx"
   },
+  "references": [{
+    "path": "../utils/tsconfig.json"
+  }],
   "include": [
+    "src/**/*.js",
+    "src/**/*.jsx",
     "src/**/*.ts",
     "src/**/*.tsx",
   ]

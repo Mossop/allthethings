@@ -1,11 +1,13 @@
-import * as React from 'react'
-
-const printedWarnings = {}
+/* eslint-disable no-prototype-builtins */
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/prefer-optional-chain */
+/* eslint-disable @typescript-eslint/naming-convention */
+const printedWarnings = {};
 
 function warn(key, message) {
-  if (printedWarnings[key]) return
-  printedWarnings[key] = true
-  console.error('[material-ui-popup-state] WARNING', message) // eslint-disable-line no-console
+  if (printedWarnings[key]) return;
+  printedWarnings[key] = true;
+  console.error("[material-ui-popup-state] WARNING", message); // eslint-disable-line no-console
 }
 
 export const initCoreState = {
@@ -14,7 +16,7 @@ export const initCoreState = {
   anchorEl: null,
   hovered: false,
   _childPopupState: null,
-}
+};
 
 export function createPopupState({
   state,
@@ -24,85 +26,85 @@ export function createPopupState({
   variant,
   disableAutoFocus,
 }) {
-  const { isOpen, setAnchorElUsed, anchorEl, hovered, _childPopupState } = state
+  const { isOpen, setAnchorElUsed, anchorEl, hovered, _childPopupState } = state;
 
   // use lastState to workaround cases where setState is called multiple times
   // in a single render (e.g. because of refs being called multiple times)
-  let lastState = state
-  const setState = (nextState) => {
+  let lastState = state;
+  const setState = nextState => {
     if (hasChanges(lastState, nextState)) {
-      _setState((lastState = { ...lastState, ...nextState }))
+      _setState(lastState = { ...lastState, ...nextState });
     }
-  }
+  };
 
-  const setAnchorEl = (_anchorEl) => {
-    setState({ setAnchorElUsed: true, anchorEl: _anchorEl })
-  }
+  const setAnchorEl = _anchorEl => {
+    setState({ setAnchorElUsed: true, anchorEl: _anchorEl });
+  };
 
-  const toggle = (eventOrAnchorEl) => {
-    if (isOpen) close()
-    else open(eventOrAnchorEl)
-  }
+  const toggle = eventOrAnchorEl => {
+    if (isOpen) close();
+    else open(eventOrAnchorEl);
+  };
 
-  const open = (eventOrAnchorEl) => {
+  const open = eventOrAnchorEl => {
     if (!eventOrAnchorEl && !setAnchorElUsed) {
       warn(
-        'missingEventOrAnchorEl',
-        'eventOrAnchorEl should be defined if setAnchorEl is not used'
-      )
+        "missingEventOrAnchorEl",
+        "eventOrAnchorEl should be defined if setAnchorEl is not used",
+      );
     }
 
     if (parentPopupState) {
-      if (!parentPopupState.isOpen) return
-      parentPopupState._setChildPopupState(popupState)
+      if (!parentPopupState.isOpen) return;
+      parentPopupState._setChildPopupState(popupState);
     }
     if (
       !disableAutoFocus &&
-      typeof document === 'object' &&
+      typeof document === "object" &&
       document.activeElement
     ) {
-      document.activeElement.blur()
+      document.activeElement.blur();
     }
 
     const newState = {
       isOpen: true,
-      hovered: eventOrAnchorEl && eventOrAnchorEl.type === 'mouseover',
-    }
+      hovered: eventOrAnchorEl && eventOrAnchorEl.type === "mouseover",
+    };
 
     if (eventOrAnchorEl && eventOrAnchorEl.currentTarget) {
       if (!setAnchorElUsed) {
-        newState.anchorEl = eventOrAnchorEl.currentTarget
+        newState.anchorEl = eventOrAnchorEl.currentTarget;
       }
     } else if (eventOrAnchorEl) {
-      newState.anchorEl = eventOrAnchorEl
+      newState.anchorEl = eventOrAnchorEl;
     }
 
-    setState(newState)
-  }
+    setState(newState);
+  };
 
   const close = () => {
-    if (_childPopupState) _childPopupState.close()
-    if (parentPopupState) parentPopupState._setChildPopupState(null)
-    setState({ isOpen: false, hovered: false })
-  }
+    if (_childPopupState) _childPopupState.close();
+    if (parentPopupState) parentPopupState._setChildPopupState(null);
+    setState({ isOpen: false, hovered: false });
+  };
 
   const setOpen = (
     nextOpen,
-    eventOrAnchorEl
+    eventOrAnchorEl,
   ) => {
     if (nextOpen) {
-      open(eventOrAnchorEl)
-    } else close()
-  }
+      open(eventOrAnchorEl);
+    } else close();
+  };
 
-  const onMouseLeave = (event) => {
-    const relatedTarget = event.relatedTarget
+  const onMouseLeave = event => {
+    const relatedTarget = event.relatedTarget;
     if (hovered && !isElementInPopup(relatedTarget, popupState)) {
-      close()
+      close();
     }
-  }
+  };
 
-  const _setChildPopupState = _childPopupState => setState({ _childPopupState })
+  const _setChildPopupState = _childPopupState => setState({ _childPopupState });
 
   const popupState = {
     anchorEl,
@@ -119,9 +121,9 @@ export function createPopupState({
     disableAutoFocus: Boolean(disableAutoFocus),
     _childPopupState,
     _setChildPopupState,
-  }
+  };
 
-  return popupState
+  return popupState;
 }
 
 /**
@@ -131,9 +133,9 @@ export function createPopupState({
  * `PopupState`
  */
 export function anchorRef({ setAnchorEl }) {
-  return (el) => {
-    if (el) setAnchorEl(el)
-  }
+  return el => {
+    if (el) setAnchorEl(el);
+  };
 }
 
 /**
@@ -150,12 +152,12 @@ export function bindTrigger({
 }) {
   return {
     // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
+    [variant === "popover" ? "aria-controls" : "aria-describedby"]: isOpen
       ? popupId
       : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onClick: open,
-  }
+    "aria-haspopup": variant === "popover" ? true : undefined,
+    "onClick": open,
+  };
 }
 
 /**
@@ -172,15 +174,15 @@ export function bindContextMenu({
 }) {
   return {
     // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
+    [variant === "popover" ? "aria-controls" : "aria-describedby"]: isOpen
       ? popupId
       : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onContextMenu: (e) => {
-      e.preventDefault()
-      open(e)
+    "aria-haspopup": variant === "popover" ? true : undefined,
+    "onContextMenu": e => {
+      e.preventDefault();
+      open(e);
     },
-  }
+  };
 }
 
 /**
@@ -197,12 +199,12 @@ export function bindToggle({
 }) {
   return {
     // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
+    [variant === "popover" ? "aria-controls" : "aria-describedby"]: isOpen
       ? popupId
       : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onClick: toggle,
-  }
+    "aria-haspopup": variant === "popover" ? true : undefined,
+    "onClick": toggle,
+  };
 }
 
 /**
@@ -220,13 +222,13 @@ export function bindHover({
 }) {
   return {
     // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
+    [variant === "popover" ? "aria-controls" : "aria-describedby"]: isOpen
       ? popupId
       : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onMouseOver: open,
+    "aria-haspopup": variant === "popover" ? true : undefined,
+    "onMouseOver": open,
     onMouseLeave,
-  }
+  };
 }
 
 /**
@@ -244,13 +246,13 @@ export function bindFocus({
 }) {
   return {
     // $FlowFixMe
-    [variant === 'popover' ? 'aria-controls' : 'aria-describedby']: isOpen
+    [variant === "popover" ? "aria-controls" : "aria-describedby"]: isOpen
       ? popupId
       : null,
-    'aria-haspopup': variant === 'popover' ? true : undefined,
-    onFocus: open,
-    onBlur: close,
-  }
+    "aria-haspopup": variant === "popover" ? true : undefined,
+    "onFocus": open,
+    "onBlur": close,
+  };
 }
 
 /**
@@ -276,7 +278,7 @@ export function bindPopover({
     disableAutoFocus,
     disableEnforceFocus: disableAutoFocus,
     disableRestoreFocus: disableAutoFocus,
-  }
+  };
 }
 
 /**
@@ -285,7 +287,7 @@ export function bindPopover({
  * @param {object} popupState the argument passed to the child function of
  * `PopupState`
  */
-export const bindMenu = bindPopover
+export const bindMenu = bindPopover;
 
 /**
  * Creates props for a `Popper` component.
@@ -302,41 +304,41 @@ export function bindPopper({
     id: popupId,
     anchorEl,
     open: isOpen,
-  }
+  };
 }
 
 function getPopup({ popupId }) {
-  return popupId && typeof document !== 'undefined'
+  return popupId && typeof document !== "undefined"
     ? document.getElementById(popupId) // eslint-disable-line no-undef
-    : null
+    : null;
 }
 
 function isElementInPopup(
   element,
-  popupState
+  popupState,
 ) {
-  const { anchorEl, _childPopupState } = popupState
+  const { anchorEl, _childPopupState } = popupState;
   return (
     isAncestor(anchorEl, element) ||
     isAncestor(getPopup(popupState), element) ||
-    (_childPopupState != null && isElementInPopup(element, _childPopupState))
-  )
+    _childPopupState != null && isElementInPopup(element, _childPopupState)
+  );
 }
 
 function isAncestor(parent, child) {
-  if (!parent) return false
+  if (!parent) return false;
   while (child) {
-    if (child === parent) return true
-    child = child.parentElement
+    if (child === parent) return true;
+    child = child.parentElement;
   }
-  return false
+  return false;
 }
 
 function hasChanges(state, nextState) {
   for (let key in nextState) {
     if (state.hasOwnProperty(key) && state[key] !== nextState[key]) {
-      return true
+      return true;
     }
   }
-  return false
+  return false;
 }

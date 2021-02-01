@@ -1,20 +1,31 @@
 module.exports = {
   overrides: [{
-    files: ["src/**/*.ts", "src/**/*.tsx"],
-    ignorePatterns: [
-      "src/popup-state/*",
+    files: [
+      "src/**/*.js",
+      "src/**/*.jsx",
     ],
 
-    parserOptions: {
-      ecmaFeatures: {
-        jsx: true,
-      },
+    rules: {
+      "@typescript-eslint/explicit-module-boundary-types": "off",
     },
+  }, {
+    files: [
+      "src/**/*.js",
+      "src/**/*.jsx",
+      "src/**/*.ts",
+      "src/**/*.tsx",
+    ],
 
     env: {
       node: false,
       es6: true,
       browser: true,
+    },
+
+    parserOptions: {
+      ecmaFeatures: {
+        jsx: true,
+      },
     },
 
     extends: [

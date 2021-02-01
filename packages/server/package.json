@@ -4,14 +4,20 @@
   "repository": "Mossop/allthethings",
   "license": "MIT",
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
+  "main": "dist/index",
+  "types": "dist/index",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build-schema": "graphql-codegen",
+    "build": "tsc -b",
     "start": "node dist/index.js"
   },
   "dependencies": {
+    "@allthethings/client": "file:../client",
+    "@allthethings/utils": "file:../utils",
     "apollo-server-koa": "^2.19.1",
     "bcrypt": "^5.0.0",
-    "graphql": "^15.4.0",
+    "graphql": "^14.7.0",
     "knex": "^0.21.16",
     "koa": "^2.13.1",
     "koa-mount": "^4.0.0",
@@ -23,6 +29,11 @@
     "ts.data.json": "^1.5.0"
   },
   "devDependencies": {
+    "@graphql-codegen/add": "^2.0.2",
+    "@graphql-codegen/cli": "^1.20.0",
+    "@graphql-codegen/schema-ast": "^1.18.1",
+    "@graphql-codegen/typescript": "^1.20.0",
+    "@graphql-codegen/typescript-resolvers": "^1.18.1",
     "@types/bcrypt": "^3.0.0",
     "@types/koa-session": "^5.10.3",
     "@types/koa-static": "^4.0.1",

@@ -1,8 +1,8 @@
 const path = require("path");
 
-const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
+const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
 module.exports = {
   mode: "development",
@@ -11,6 +11,11 @@ module.exports = {
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
+    plugins: [
+      new TsconfigPathsPlugin({
+        logLevel: "info",
+      }),
+    ],
   },
   output: {
     path: path.join(__dirname, "dist", "app"),
@@ -22,23 +27,18 @@ module.exports = {
   devtool: "source-map",
   module: {
     rules: [{
-      test: /\.[jt]sx?$/,
+      test: /\.tsx?$/,
       exclude: /node_modules/,
       use: [{
         loader: "ts-loader",
         options: {
-          transpileOnly: true,
           configFile: path.join(__dirname, "tsconfig.json"),
+          projectReferences: true,
         },
       }],
     }],
   },
   plugins: [
-    new ForkTsCheckerWebpackPlugin({
-      typescript: {
-        configFile: path.join(__dirname, "tsconfig.json"),
-      },
-    }),
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, "dist", "index.html"),
       template: path.join(__dirname, "src", "index.ejs"),

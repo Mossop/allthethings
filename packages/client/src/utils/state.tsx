@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 
-import type { Overwrite } from "../../../utils";
+import type { Overwrite } from "@allthethings/utils";
 import type { ListContextStateQuery } from "../schema/queries";
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";

@@ -1,10 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
-
-if (!useState) {
-  throw new Error(
-    `React.useState (added in 16.8.0) must be defined to use the hooks API`
-  )
-}
+import { useState, useEffect, useMemo } from "react";
 
 import {
   initCoreState,
@@ -18,7 +12,7 @@ import {
   bindMenu,
   bindPopover,
   bindPopper,
-} from './core'
+} from "./core";
 
 export {
   anchorRef,
@@ -30,7 +24,7 @@ export {
   bindMenu,
   bindPopover,
   bindPopper,
-}
+};
 
 export function usePopupState({
   parentPopupState,
@@ -38,13 +32,13 @@ export function usePopupState({
   variant,
   disableAutoFocus,
 }) {
-  const [state, setState] = useState(initCoreState)
+  const [state, setState] = useState(initCoreState);
   useEffect(() => {
-    if (!disableAutoFocus && popupId && typeof document === 'object') {
-      const popup = document.getElementById(popupId)
-      if (popup) popup.focus()
+    if (!disableAutoFocus && popupId && typeof document === "object") {
+      const popup = document.getElementById(popupId);
+      if (popup) popup.focus();
     }
-  }, [popupId, state.anchorEl])
+  }, [disableAutoFocus, popupId, state.anchorEl]);
 
   return useMemo(
     () =>
@@ -56,6 +50,6 @@ export function usePopupState({
         variant,
         disableAutoFocus,
       }),
-    [state, setState, parentPopupState, popupId, variant, disableAutoFocus]
-  )
+    [state, setState, parentPopupState, popupId, variant, disableAutoFocus],
+  );
 }

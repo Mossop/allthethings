@@ -1,5 +1,5 @@
-import * as React from 'react'
-import hoverWorkaround from './hoverWorkaround'
-import Menu from '@material-ui/core/Menu'
+import Menu from "@material-ui/core/Menu";
 
-export default hoverWorkaround(Menu)
+import hoverWorkaround from "./hoverWorkaround";
+
+export default hoverWorkaround(Menu);
