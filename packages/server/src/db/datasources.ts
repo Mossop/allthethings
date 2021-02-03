@@ -7,15 +7,9 @@ import { customAlphabet } from "nanoid/async";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type { DatabaseConnection } from "./connection";
-import type { ImplBuilder } from "./implementations";
-import { Context, User, Project, Section } from "./implementations";
-import type {
-  ContextDbObject,
-  DbEntity,
-  ProjectDbObject,
-  SectionDbObject,
-  UserDbObject,
-} from "./types";
+import type { ImplBuilder, Item } from "./implementations";
+import * as Impl from "./implementations";
+import * as Db from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -24,14 +18,20 @@ const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 const id = customAlphabet(ALPHABET, 28);
 
+function classBuilder<T, D>(
+  cls: new (resolverContext: ResolverContext, dbObject: D) => T,
+): ImplBuilder<T, D> {
+  return (resolverContext: ResolverContext, dbObject: D) => new cls(resolverContext, dbObject);
+}
+
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
 export abstract class DbDataSource<
   T extends { id: string },
-  D extends DbEntity = DbEntity,
+  D extends Db.DbEntity = Db.DbEntity,
 > extends DataSource<ResolverContext> {
   protected readonly abstract tableName: string;
-  protected readonly abstract builder: ImplBuilder<T, D>;
+  protected abstract builder(resolverContext: ResolverContext, dbObject: D): T;
   private _config: DataSourceConfig<ResolverContext> | null = null;
 
   protected get config(): DataSourceConfig<ResolverContext> {
@@ -105,7 +105,7 @@ export abstract class DbDataSource<
     if (!dbObject) {
       return null;
     }
-    return new this.builder(this.context, dbObject);
+    return this.builder(this.context, dbObject);
   }
 
   /**
@@ -198,11 +198,11 @@ export abstract class DbDataSource<
   }
 }
 
-export class UserDataSource extends DbDataSource<User, UserDbObject> {
+export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
   protected tableName = "User";
-  protected builder = User;
+  protected builder = classBuilder<Impl.User, Db.UserDbObject>(Impl.User);
 
-  public async verifyUser(email: string, password: string): Promise<User | null> {
+  public async verifyUser(email: string, password: string): Promise<Impl.User | null> {
     let users = await this.select(this.table.where({
       email,
     }));
@@ -218,7 +218,7 @@ export class UserDataSource extends DbDataSource<User, UserDbObject> {
     return null;
   }
 
-  public async create(email: string, password: string): Promise<User> {
+  public async create(email: string, password: string): Promise<Impl.User> {
     password = await bcryptHash(password, 12);
 
     let user = await this.build(this.insert({
@@ -234,15 +234,15 @@ export class UserDataSource extends DbDataSource<User, UserDbObject> {
   }
 }
 
-export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
+export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbObject> {
   protected tableName = "Context";
-  protected builder = Context;
+  protected builder = classBuilder<Impl.Context, Db.ContextDbObject>(Impl.Context);
 
-  public get records(): Knex.QueryBuilder<ContextDbObject, ContextDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.ContextDbObject, Db.ContextDbObject[]> {
     return this.table.where("name", "<>", "");
   }
 
-  public async getUser(contextId: string): Promise<User | null> {
+  public async getUser(contextId: string): Promise<Impl.User | null> {
     let records = await this.table.where("id", contextId);
     if (records.length != 1) {
       return null;
@@ -252,9 +252,9 @@ export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
   }
 
   public async create(
-    user: User,
+    user: Impl.User,
     { name }: Schema.CreateContextParams,
-  ): Promise<Context> {
+  ): Promise<Impl.Context> {
     let context = await this.build(this.insert({
       id: name == "" ? user.id : await id(),
       name,
@@ -269,18 +269,18 @@ export class ContextDataSource extends DbDataSource<Context, ContextDbObject> {
   }
 }
 
-export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
+export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbObject> {
   protected tableName = "Project";
-  protected builder = Project;
+  protected builder = classBuilder<Impl.Project, Db.ProjectDbObject>(Impl.Project);
 
-  public get records(): Knex.QueryBuilder<ProjectDbObject, ProjectDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.ProjectDbObject, Db.ProjectDbObject[]> {
     return this.table.where("name", "<>", "");
   }
 
   public async create(
-    taskList: User | Context | Project,
-    { name }: Pick<ProjectDbObject, "name">,
-  ): Promise<Project> {
+    taskList: Impl.User | Impl.Context | Impl.Project,
+    { name }: Pick<Db.ProjectDbObject, "name">,
+  ): Promise<Impl.Project> {
     let project = await this.build(this.insert({
       id: name == "" ? taskList.id : await id(),
       contextId: taskList.id,
@@ -296,23 +296,23 @@ export class ProjectDataSource extends DbDataSource<Project, ProjectDbObject> {
   }
 }
 
-export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
+export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbObject> {
   protected tableName = "Section";
-  protected builder = Section;
+  protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
 
-  public get records(): Knex.QueryBuilder<SectionDbObject, SectionDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
     return this.table.where("name", "<>", "");
   }
 
-  public async find(fields: Partial<SectionDbObject>): Promise<Section[]> {
+  public async find(fields: Partial<Db.SectionDbObject>): Promise<Impl.Section[]> {
     return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
   }
 
   public async create(
-    project: User | Context | Project,
+    project: Impl.User | Impl.Context | Impl.Project,
     index: number | null,
-    { name }: Pick<SectionDbObject, "name">,
-  ): Promise<Section> {
+    { name }: Pick<Db.SectionDbObject, "name">,
+  ): Promise<Impl.Section> {
     if (name == "") {
       index = -1;
     } else {
@@ -337,11 +337,80 @@ export class SectionDataSource extends DbDataSource<Section, SectionDbObject> {
   }
 }
 
+export class ItemDataSource extends DbDataSource<Item, Db.ItemDbObject> {
+  protected tableName = "Item";
+  protected builder(resolverContext: ResolverContext, dbObject: Db.ItemDbObject): Item {
+    switch (dbObject.type) {
+      case Db.ItemType.Task:
+        return new Impl.TaskItem(resolverContext, dbObject, null);
+      case Db.ItemType.Note:
+        return new Impl.NoteItem(resolverContext, dbObject, null);
+      case Db.ItemType.File:
+        return new Impl.FileItem(resolverContext, dbObject, null);
+      case Db.ItemType.Link:
+        return new Impl.LinkItem(resolverContext, dbObject, null);
+    }
+  }
+
+  public async listSection(sectionId: string): Promise<Item[]> {
+    return this.buildAll(this.select(
+      this.records.join("SectionItem", "SectionItem.itemId", "Item.id")
+        .where("SectionItem.sectionId", sectionId)
+        .orderBy("SectionItem.index"),
+    ));
+  }
+}
+
+export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemDbObject> {
+  protected tableName = "TaskItem";
+  protected builder(
+    resolverContext: ResolverContext,
+    dbObject: Db.TaskItemDbObject,
+  ): Impl.TaskItem {
+    return new Impl.TaskItem(resolverContext, null, dbObject);
+  }
+}
+
+export class FileItemDataSource extends DbDataSource<Impl.FileItem, Db.FileItemDbObject> {
+  protected tableName = "FileItem";
+  protected builder(
+    resolverContext: ResolverContext,
+    dbObject: Db.FileItemDbObject,
+  ): Impl.FileItem {
+    return new Impl.FileItem(resolverContext, null, dbObject);
+  }
+}
+
+export class NoteItemDataSource extends DbDataSource<Impl.NoteItem, Db.NoteItemDbObject> {
+  protected tableName = "NoteItem";
+  protected builder(
+    resolverContext: ResolverContext,
+    dbObject: Db.NoteItemDbObject,
+  ): Impl.NoteItem {
+    return new Impl.NoteItem(resolverContext, null, dbObject);
+  }
+}
+
+export class LinkItemDataSource extends DbDataSource<Impl.LinkItem, Db.LinkItemDbObject> {
+  protected tableName = "LinkItem";
+  protected builder(
+    resolverContext: ResolverContext,
+    dbObject: Db.LinkItemDbObject,
+  ): Impl.LinkItem {
+    return new Impl.LinkItem(resolverContext, null, dbObject);
+  }
+}
+
 export interface AppDataSources {
   users: UserDataSource,
   contexts: ContextDataSource;
   projects: ProjectDataSource;
   sections: SectionDataSource;
+  items: ItemDataSource;
+  tasks: TaskItemDataSource;
+  files: FileItemDataSource;
+  notes: NoteItemDataSource;
+  links: LinkItemDataSource;
 }
 
 export function dataSources(): AppDataSources {
@@ -350,5 +419,10 @@ export function dataSources(): AppDataSources {
     contexts: new ContextDataSource(),
     projects: new ProjectDataSource(),
     sections: new SectionDataSource(),
+    items: new ItemDataSource(),
+    tasks: new TaskItemDataSource(),
+    files: new FileItemDataSource(),
+    notes: new NoteItemDataSource(),
+    links: new LinkItemDataSource(),
   };
 }

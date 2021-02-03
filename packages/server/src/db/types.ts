@@ -1,6 +1,13 @@
 // This stucture is a little complex to support having items and sections available at multiple
 // levels.
 
+export enum ItemType {
+  Task = "task",
+  Link = "link",
+  File = "file",
+  Note = "note",
+}
+
 export interface DbEntity {
   // unique identifier
   id: string;
@@ -59,10 +66,6 @@ export interface SectionDbObject extends DbEntity {
   stub: string;
 }
 
-// Every item, whatever that is.
-export interface ItemDbObject extends DbEntity {
-}
-
 // Puts items into sections.
 //
 // unique index on sectionId, index.
@@ -71,5 +74,36 @@ export interface SectionItemLink {
   sectionId: string;
   // Foreign key to ItemDbObject.id. Unique within table.
   itemId: string;
+  // The index of the item in the section.
   index: number;
+}
+
+// Every item, abstract.
+export interface ItemDbObject extends DbEntity {
+  // Foreign key to UserDbObject.id
+  userId: string;
+  icon: string | null;
+  summary: string;
+  type: ItemType;
+}
+
+// A special instance of an item. id is a foreign key to ItemDbObject.id.
+export interface TaskItemDbObject extends DbEntity {
+  done: boolean;
+  link: string | null;
+}
+
+// A link artifact.
+export interface LinkItemDbObject extends DbEntity {
+  link: string;
+}
+
+// A note artifact.
+export interface NoteItemDbObject extends DbEntity {
+  note: string;
+}
+
+// A file artifact.
+export interface FileItemDbObject extends DbEntity {
+  path: string;
 }

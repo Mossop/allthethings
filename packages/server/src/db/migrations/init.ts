@@ -1,26 +1,40 @@
 import type { default as Knex } from "knex";
 
 function id(table: Knex.CreateTableBuilder): void {
-  table.text("id").notNullable().unique().primary();
+  table.text("id")
+    .notNullable()
+    .unique()
+    .primary();
+}
+
+function itemId(table: Knex.CreateTableBuilder): void {
+  table.text("id")
+    .notNullable()
+    .unique()
+    .primary()
+    .references("Item.id")
+    .onDelete("CASCADE")
+    .onUpdate("CASCADE");
 }
 
 export async function up(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists("Section");
-  await knex.schema.dropTableIfExists("Project");
-  await knex.schema.dropTableIfExists("Context");
-  await knex.schema.dropTableIfExists("User");
+  await down(knex);
 
   await knex.schema.createTable("User", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("email").notNullable().unique();
-    table.text("password").notNullable();
+    table.text("email")
+      .notNullable()
+      .unique();
+    table.text("password")
+      .notNullable();
   });
 
   await knex.schema.createTable("Context", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("userId").notNullable()
+    table.text("userId")
+      .notNullable()
       .references("User.id")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
@@ -57,17 +71,21 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Project", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("contextId").notNullable()
+    table.text("contextId")
+      .notNullable()
       .references("Context.id")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-    table.text("parentId").nullable();
-    table.text("name").notNullable();
+    table.text("parentId")
+      .nullable();
+    table.text("name")
+      .notNullable();
 
     table.unique(["contextId", "id"]);
 
     table.foreign(["contextId", "parentId"])
-      .references(["contextId", "id"]).inTable("Project")
+      .references(["contextId", "id"])
+      .inTable("Project")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   });
@@ -103,12 +121,15 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Section", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("projectId").notNullable()
+    table.text("projectId")
+      .notNullable()
       .references("Project.id")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-    table.integer("index").notNullable();
-    table.text("name").notNullable();
+    table.integer("index")
+      .notNullable();
+    table.text("name")
+      .notNullable();
 
     table.unique(["projectId", "index"]);
   });
@@ -140,9 +161,87 @@ export async function up(knex: Knex): Promise<void> {
     name: "name",
     index: "index",
   });
+
+  await knex.schema.createTable("Item", (table: Knex.CreateTableBuilder): void => {
+    id(table);
+
+    table.text("userId")
+      .notNullable()
+      .references("User.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+
+    table.text("icon")
+      .nullable();
+    table.text("summary")
+      .notNullable();
+    table.text("type")
+      .notNullable();
+  });
+
+  await knex.schema.createTable("TaskItem", (table: Knex.CreateTableBuilder): void => {
+    itemId(table);
+
+    table.text("link")
+      .nullable();
+    table.boolean("done")
+      .notNullable()
+      .defaultTo(false);
+  });
+
+  await knex.schema.createTable("LinkItem", (table: Knex.CreateTableBuilder): void => {
+    itemId(table);
+
+    table.text("link")
+      .notNullable();
+  });
+
+  await knex.schema.createTable("NoteItem", (table: Knex.CreateTableBuilder): void => {
+    itemId(table);
+
+    table.text("note")
+      .notNullable();
+  });
+
+  await knex.schema.createTable("FileItem", (table: Knex.CreateTableBuilder): void => {
+    itemId(table);
+
+    table.text("path")
+      .notNullable();
+  });
+
+  await knex.schema.createTable("SectionItem", (table: Knex.CreateTableBuilder): void => {
+    table.text("sectionId")
+      .notNullable()
+      .references("Section.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+    table.text("itemId")
+      .notNullable()
+      .unique()
+      .references("Item.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+    table.integer("index")
+      .notNullable();
+
+    table.unique(["sectionId", "index"]);
+  });
+
+  await knex.raw(`
+    ALTER TABLE :table: ADD CHECK (:index: >= 0)`, {
+    table: "SectionItem",
+    index: "index",
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {
+  await knex.schema.dropTableIfExists("SectionItem");
+  await knex.schema.dropTableIfExists("FileItem");
+  await knex.schema.dropTableIfExists("NoteItem");
+  await knex.schema.dropTableIfExists("LinkItem");
+  await knex.schema.dropTableIfExists("TaskItem");
+  await knex.schema.dropTableIfExists("Item");
   await knex.schema.dropTableIfExists("Section");
   await knex.schema.dropTableIfExists("Project");
   await knex.schema.dropTableIfExists("Context");

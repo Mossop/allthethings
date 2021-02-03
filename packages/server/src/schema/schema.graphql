@@ -1,9 +1,35 @@
 interface Item {
   id: ID!
+  icon: String
+  summary: String!
 }
 
 type Task implements Item {
   id: ID!
+  icon: String
+  summary: String!
+  done: Boolean!
+  link: String
+}
+
+type File implements Item {
+  id: ID!
+  icon: String
+  summary: String!
+}
+
+type Note implements Item {
+  id: ID!
+  icon: String
+  summary: String!
+  note: String!
+}
+
+type Link implements Item {
+  id: ID!
+  icon: String
+  summary: String!
+  link: String!
 }
 
 interface TaskList {

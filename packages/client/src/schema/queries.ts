@@ -6,59 +6,155 @@ import * as Apollo from '@apollo/client';
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<{ readonly __typename?: 'User', readonly email: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }>, readonly contexts: ReadonlyArray<{ readonly __typename?: 'Context', readonly stub: string, readonly name: string, readonly id: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> }> }> }> };
+export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<(
+    { readonly __typename?: 'User', readonly id: string, readonly email: string, readonly contexts: ReadonlyArray<(
+      { readonly __typename?: 'Context', readonly id: string, readonly stub: string, readonly name: string }
+      & RootFields_Context_Fragment
+    )> }
+    & RootFields_User_Fragment
+  )> };
+
+export type RootFields_User_Fragment = { readonly __typename?: 'User', readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }> };
+
+export type RootFields_Context_Fragment = { readonly __typename?: 'Context', readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }> };
+
+export type RootFieldsFragment = RootFields_User_Fragment | RootFields_Context_Fragment;
 
 export type ListTaskListQueryVariables = Types.Exact<{
   taskList: Types.Scalars['ID'];
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename?: 'Query', readonly taskList: Types.Maybe<{ readonly __typename?: 'User', readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }> }> } | { readonly __typename?: 'Context', readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }> }> } | { readonly __typename?: 'Project', readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<{ readonly __typename?: 'Task', readonly id: string }> }> }> };
+export type ListTaskListQuery = { readonly __typename?: 'Query', readonly taskList: Types.Maybe<{ readonly __typename?: 'User', readonly items: ReadonlyArray<(
+      { readonly __typename?: 'Task' }
+      & ItemFields_Task_Fragment
+    ) | (
+      { readonly __typename?: 'File' }
+      & ItemFields_File_Fragment
+    ) | (
+      { readonly __typename?: 'Note' }
+      & ItemFields_Note_Fragment
+    ) | (
+      { readonly __typename?: 'Link' }
+      & ItemFields_Link_Fragment
+    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename?: 'Task' }
+        & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename?: 'File' }
+        & ItemFields_File_Fragment
+      ) | (
+        { readonly __typename?: 'Note' }
+        & ItemFields_Note_Fragment
+      ) | (
+        { readonly __typename?: 'Link' }
+        & ItemFields_Link_Fragment
+      )> }> } | { readonly __typename?: 'Context', readonly items: ReadonlyArray<(
+      { readonly __typename?: 'Task' }
+      & ItemFields_Task_Fragment
+    ) | (
+      { readonly __typename?: 'File' }
+      & ItemFields_File_Fragment
+    ) | (
+      { readonly __typename?: 'Note' }
+      & ItemFields_Note_Fragment
+    ) | (
+      { readonly __typename?: 'Link' }
+      & ItemFields_Link_Fragment
+    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename?: 'Task' }
+        & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename?: 'File' }
+        & ItemFields_File_Fragment
+      ) | (
+        { readonly __typename?: 'Note' }
+        & ItemFields_Note_Fragment
+      ) | (
+        { readonly __typename?: 'Link' }
+        & ItemFields_Link_Fragment
+      )> }> } | { readonly __typename?: 'Project', readonly items: ReadonlyArray<(
+      { readonly __typename?: 'Task' }
+      & ItemFields_Task_Fragment
+    ) | (
+      { readonly __typename?: 'File' }
+      & ItemFields_File_Fragment
+    ) | (
+      { readonly __typename?: 'Note' }
+      & ItemFields_Note_Fragment
+    ) | (
+      { readonly __typename?: 'Link' }
+      & ItemFields_Link_Fragment
+    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename?: 'Task' }
+        & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename?: 'File' }
+        & ItemFields_File_Fragment
+      ) | (
+        { readonly __typename?: 'Note' }
+        & ItemFields_Note_Fragment
+      ) | (
+        { readonly __typename?: 'Link' }
+        & ItemFields_Link_Fragment
+      )> }> }> };
 
+export type ItemFields_Task_Fragment = { readonly __typename?: 'Task', readonly done: boolean, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
 
-export const ListContextStateDocument = gql`
-    query ListContextState {
-  user {
-    email
+export type ItemFields_File_Fragment = { readonly __typename?: 'File', readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+
+export type ItemFields_Note_Fragment = { readonly __typename?: 'Note', readonly note: string, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+
+export type ItemFields_Link_Fragment = { readonly __typename?: 'Link', readonly link: string, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+
+export type ItemFieldsFragment = ItemFields_Task_Fragment | ItemFields_File_Fragment | ItemFields_Note_Fragment | ItemFields_Link_Fragment;
+
+export const RootFieldsFragmentDoc = gql`
+    fragment rootFields on ProjectRoot {
+  subprojects {
     id
+  }
+  projects {
+    id
+    stub
+    name
     subprojects {
       id
-    }
-    projects {
-      id
-      stub
-      name
-      subprojects {
-        id
-      }
-      sections {
-        id
-        name
-      }
-    }
-    contexts {
-      stub
-      name
-      id
-      subprojects {
-        id
-      }
-      projects {
-        id
-        stub
-        name
-        subprojects {
-          id
-        }
-        sections {
-          id
-          name
-        }
-      }
     }
   }
 }
     `;
+export const ItemFieldsFragmentDoc = gql`
+    fragment itemFields on Item {
+  id
+  icon
+  summary
+  ... on Task {
+    done
+  }
+  ... on Note {
+    note
+  }
+  ... on Link {
+    link
+  }
+}
+    `;
+export const ListContextStateDocument = gql`
+    query ListContextState {
+  user {
+    id
+    email
+    ...rootFields
+    contexts {
+      id
+      stub
+      name
+      ...rootFields
+    }
+  }
+}
+    ${RootFieldsFragmentDoc}`;
 
 /**
  * __useListContextStateQuery__
@@ -91,18 +187,18 @@ export const ListTaskListDocument = gql`
     query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
     items {
-      id
+      ...itemFields
     }
     sections {
       id
       name
       items {
-        id
+        ...itemFields
       }
     }
   }
 }
-    `;
+    ${ItemFieldsFragmentDoc}`;
 
 /**
  * __useListTaskListQuery__

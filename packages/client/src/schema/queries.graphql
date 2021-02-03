@@ -1,44 +1,30 @@
 query ListContextState {
   user {
+    id
     email
 
-    id
-    subprojects {
-      id
-    }
-    projects {
-      id
-      stub
-      name
-      subprojects {
-        id
-      }
-      sections {
-        id
-        name
-      }
-    }
+    ...rootFields
 
     contexts {
+      id
       stub
       name
 
+      ...rootFields
+    }
+  }
+}
+
+fragment rootFields on ProjectRoot {
+  subprojects {
+    id
+  }
+  projects {
+    id
+    stub
+    name
+    subprojects {
       id
-      subprojects {
-        id
-      }
-      projects {
-        id
-        stub
-        name
-        subprojects {
-          id
-        }
-        sections {
-          id
-          name
-        }
-      }
     }
   }
 }
@@ -46,7 +32,7 @@ query ListContextState {
 query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
     items {
-      id
+      ...itemFields
     }
 
     sections {
@@ -54,8 +40,26 @@ query ListTaskList($taskList: ID!) {
       name
 
       items {
-        id
+        ...itemFields
       }
     }
+  }
+}
+
+fragment itemFields on Item {
+  id
+  icon
+  summary
+
+  ... on Task {
+    done
+  }
+
+  ... on Note {
+    note
+  }
+
+  ... on Link {
+    link
   }
 }

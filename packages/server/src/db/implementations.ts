@@ -1,20 +1,7 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
-import type {
-  AppDataSources,
-  ContextDataSource,
-  DbDataSource,
-  ProjectDataSource,
-  SectionDataSource,
-  UserDataSource,
-} from "./datasources";
-import type {
-  DbEntity,
-  ContextDbObject,
-  ProjectDbObject,
-  SectionDbObject,
-  UserDbObject,
-} from "./types";
+import type * as Src from "./datasources";
+import type * as Db from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
 
@@ -22,7 +9,7 @@ type SchemaResolver<T> = {
   [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
 };
 
-export type ImplBuilder<T, D> = new (resolverContext: ResolverContext, dbObject: D) => T;
+export type ImplBuilder<T, D> = (resolverContext: ResolverContext, dbObject: D) => T;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 function assertValid<T extends {}>(val: T | null | undefined): T {
@@ -33,8 +20,8 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
 }
 
 export function equals(
-  a: DbEntity | string | null | undefined,
-  b: DbEntity | string | null | undefined,
+  a: Db.DbEntity | string | null | undefined,
+  b: Db.DbEntity | string | null | undefined,
 ): boolean {
   if (!a) {
     return !b;
@@ -50,12 +37,12 @@ export function equals(
   return a == b;
 }
 
-export type Item = Schema.Item;
+export type Item = TaskItem | LinkItem | NoteItem | FileItem;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 export type ItemGroup = User | Project | Context | Section;
 
-abstract class BaseImpl<D extends DbEntity = DbEntity> {
+abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
   public readonly id: string;
   protected _dbObject: Promise<D> | null;
 
@@ -76,7 +63,7 @@ abstract class BaseImpl<D extends DbEntity = DbEntity> {
 
   protected abstract getDbObject(): Promise<D>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract readonly dataSource: DbDataSource<any, D>;
+  protected abstract readonly dbObjectDataSource: Src.DbDataSource<any, D>;
 
   protected get dbObject(): Promise<D> {
     if (this._dbObject) {
@@ -93,12 +80,12 @@ abstract class BaseImpl<D extends DbEntity = DbEntity> {
     return equals(this, other);
   }
 
-  public get dataSources(): AppDataSources {
+  public get dataSources(): Src.AppDataSources {
     return this.resolverContext.dataSources;
   }
 
-  protected async update(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
-    let newObject = await this.dataSource.updateOne(this.id, props);
+  protected async updateDbObject(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
+    let newObject = await this.dbObjectDataSource.updateOne(this.id, props);
     if (!newObject) {
       throw new Error("Missing item in database.");
     }
@@ -107,17 +94,17 @@ abstract class BaseImpl<D extends DbEntity = DbEntity> {
 }
 
 abstract class TaskListImpl<
-  T extends DbEntity,
+  T extends Db.DbEntity,
 > extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
   public abstract subprojects(): Promise<readonly Project[]>;
   public abstract sections(): Promise<readonly Section[]>;
   public async items(): Promise<readonly Item[]> {
-    return [];
+    return this.dataSources.items.listSection(this.id);
   }
 }
 
 abstract class ProjectRootImpl<
-  T extends DbEntity,
+  T extends Db.DbEntity,
 > extends TaskListImpl<T> implements SchemaResolver<Schema.ProjectRoot> {
   public abstract projects(): Promise<readonly Project[]>;
 
@@ -127,12 +114,12 @@ abstract class ProjectRootImpl<
   }
 }
 
-export class User extends ProjectRootImpl<UserDbObject> implements SchemaResolver<Schema.User> {
-  protected async getDbObject(): Promise<UserDbObject> {
+export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaResolver<Schema.User> {
+  protected async getDbObject(): Promise<Db.UserDbObject> {
     return assertValid(await this.dataSources.users.get(this.id));
   }
 
-  protected get dataSource(): UserDataSource {
+  protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }
 
@@ -170,12 +157,12 @@ export class User extends ProjectRootImpl<UserDbObject> implements SchemaResolve
 }
 
 export class Context
-  extends ProjectRootImpl<ContextDbObject> implements SchemaResolver<Schema.Context> {
-  protected async getDbObject(): Promise<ContextDbObject> {
+  extends ProjectRootImpl<Db.ContextDbObject> implements SchemaResolver<Schema.Context> {
+  protected async getDbObject(): Promise<Db.ContextDbObject> {
     return assertValid(await this.dataSources.contexts.get(this.id));
   }
 
-  protected get dataSource(): ContextDataSource {
+  protected get dbObjectDataSource(): Src.ContextDataSource {
     return this.dataSources.contexts;
   }
 
@@ -210,13 +197,13 @@ export class Context
   }
 }
 
-export class Project extends TaskListImpl<ProjectDbObject>
+export class Project extends TaskListImpl<Db.ProjectDbObject>
   implements SchemaResolver<Schema.Project> {
-  protected async getDbObject(): Promise<ProjectDbObject> {
+  protected async getDbObject(): Promise<Db.ProjectDbObject> {
     return assertValid(await this.dataSources.projects.get(this.id));
   }
 
-  protected get dataSource(): ProjectDataSource {
+  protected get dbObjectDataSource(): Src.ProjectDataSource {
     return this.dataSources.projects;
   }
 
@@ -229,9 +216,9 @@ export class Project extends TaskListImpl<ProjectDbObject>
   }
 
   public async edit(
-    props: Partial<Omit<ProjectDbObject, "id" | "stub" | "contextId" | "parentId">>,
+    props: Partial<Omit<Db.ProjectDbObject, "id" | "stub" | "contextId" | "parentId">>,
   ): Promise<void> {
-    return this.update(props);
+    return this.updateDbObject(props);
   }
 
   public async move(taskList: User | Context | Project): Promise<void> {
@@ -242,7 +229,7 @@ export class Project extends TaskListImpl<ProjectDbObject>
       contextId = taskList.id;
     }
 
-    await this.dataSource.updateOne(this.id, {
+    await this.dbObjectDataSource.updateOne(this.id, {
       contextId,
       parentId: taskList.id,
     });
@@ -288,12 +275,13 @@ export class Project extends TaskListImpl<ProjectDbObject>
   }
 }
 
-export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver<Schema.Section> {
-  protected getDbObject(): Promise<SectionDbObject> {
+export class Section extends BaseImpl<Db.SectionDbObject>
+  implements SchemaResolver<Schema.Section> {
+  protected getDbObject(): Promise<Db.SectionDbObject> {
     throw new Error("Method not implemented.");
   }
 
-  protected get dataSource(): SectionDataSource {
+  protected get dbObjectDataSource(): Src.SectionDataSource {
     return this.dataSources.sections;
   }
 
@@ -302,9 +290,9 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
   }
 
   public async edit(
-    props: Partial<Omit<SectionDbObject, "id" | "projectId" | "stub">>,
+    props: Partial<Omit<Db.SectionDbObject, "id" | "projectId" | "stub">>,
   ): Promise<void> {
-    return this.update(props);
+    return this.updateDbObject(props);
   }
 
   public async move(
@@ -349,17 +337,17 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
     }
 
     // Create a gap at the target index.
-    await this.dataSource.records
+    await this.dbObjectDataSource.records
       .where({
         projectId: targetProject,
       })
       .andWhere("index", ">=", dbIndex)
-      .update("index", this.dataSource.knex.raw(":index: + 1", {
+      .update("index", this.dbObjectDataSource.knex.raw(":index: + 1", {
         index: "index",
       }));
 
     // Move into the gap.
-    await this.dataSource.records
+    await this.dbObjectDataSource.records
       .where({
         id: this.id,
       })
@@ -369,12 +357,12 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
       });
 
     // Close the gap that was left.
-    await this.dataSource.records
+    await this.dbObjectDataSource.records
       .where({
         projectId: existingProject,
       })
       .andWhere("index", ">", existingIndex)
-      .update("index", this.dataSource.knex.raw(":index: - 1", {
+      .update("index", this.dbObjectDataSource.knex.raw(":index: - 1", {
         index: "index",
       }));
 
@@ -388,5 +376,113 @@ export class Section extends BaseImpl<SectionDbObject> implements SchemaResolver
 
   public async name(): Promise<string> {
     return (await this.dbObject).name;
+  }
+}
+
+abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db.ItemDbObject>
+  implements SchemaResolver<Schema.Item> {
+  protected _instanceDbObject: Promise<D> | null;
+
+  public constructor(
+    resolverContext: ResolverContext,
+    dbObject: Db.ItemDbObject,
+    instanceDbObject:D | null,
+  );
+  public constructor(resolverContext: ResolverContext, dbObject: null, instanceDbObject: D);
+  public constructor(resolverContext: ResolverContext, id: string);
+  public constructor(
+    resolverContext: ResolverContext,
+    ...args: [Db.ItemDbObject, D | null] | [null, D] | [string]
+  ) {
+    if (args.length == 1) {
+      let [id] = args;
+      super(resolverContext, id);
+      this._instanceDbObject = null;
+    } else if (args[0]) {
+      let [dbObject, instanceDbObject] = args;
+
+      super(resolverContext, dbObject);
+
+      if (instanceDbObject) {
+        if (dbObject.id != instanceDbObject.id) {
+          throw new Error("ID mismatch.");
+        }
+        this._instanceDbObject = Promise.resolve(instanceDbObject);
+      } else {
+        this._instanceDbObject = null;
+      }
+    } else {
+      let [, instanceDbObject] = args;
+      super(resolverContext, instanceDbObject.id);
+      this._instanceDbObject = Promise.resolve(instanceDbObject);
+    }
+  }
+
+  protected get dbObjectDataSource(): Src.ItemDataSource {
+    return this.dataSources.items;
+  }
+
+  protected async getDbObject(): Promise<Db.ItemDbObject> {
+    return assertValid(await this.dataSources.items.get(this.id));
+  }
+
+  protected abstract getInstanceDbObject(): Promise<D>;
+
+  protected get instanceDbObject(): Promise<D> {
+    if (this._instanceDbObject) {
+      return this._instanceDbObject;
+    }
+
+    this._instanceDbObject = this.getInstanceDbObject();
+
+    return this._instanceDbObject;
+  }
+
+  public async summary(): Promise<string> {
+    return (await this.dbObject).summary;
+  }
+
+  public async icon(): Promise<string | null> {
+    return (await this.dbObject).icon;
+  }
+}
+
+export class TaskItem extends ItemImpl<Db.TaskItemDbObject> implements SchemaResolver<Schema.Task> {
+  protected async getInstanceDbObject(): Promise<Db.TaskItemDbObject> {
+    return assertValid(await this.dataSources.tasks.get(this.id));
+  }
+
+  public async done(): Promise<boolean> {
+    return (await this.instanceDbObject).done;
+  }
+}
+
+export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaResolver<Schema.File> {
+  protected async getInstanceDbObject(): Promise<Db.FileItemDbObject> {
+    return assertValid(await this.dataSources.files.get(this.id));
+  }
+
+  public async path(): Promise<string> {
+    return (await this.instanceDbObject).path;
+  }
+}
+
+export class NoteItem extends ItemImpl<Db.NoteItemDbObject> implements SchemaResolver<Schema.Note> {
+  protected async getInstanceDbObject(): Promise<Db.NoteItemDbObject> {
+    return assertValid(await this.dataSources.notes.get(this.id));
+  }
+
+  public async note(): Promise<string> {
+    return (await this.instanceDbObject).note;
+  }
+}
+
+export class LinkItem extends ItemImpl<Db.LinkItemDbObject> implements SchemaResolver<Schema.Link> {
+  protected async getInstanceDbObject(): Promise<Db.LinkItemDbObject> {
+    return assertValid(await this.dataSources.links.get(this.id));
+  }
+
+  public async link(): Promise<string> {
+    return (await this.instanceDbObject).link;
   }
 }

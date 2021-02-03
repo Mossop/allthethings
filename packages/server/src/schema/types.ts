@@ -14,11 +14,40 @@ export type Scalars = {
 
 export type Item = {
   readonly id: Scalars['ID'];
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly summary: Scalars['String'];
 };
 
 export type Task = Item & {
   readonly __typename?: 'Task';
   readonly id: Scalars['ID'];
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly summary: Scalars['String'];
+  readonly done: Scalars['Boolean'];
+  readonly link?: Maybe<Scalars['String']>;
+};
+
+export type File = Item & {
+  readonly __typename?: 'File';
+  readonly id: Scalars['ID'];
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly summary: Scalars['String'];
+};
+
+export type Note = Item & {
+  readonly __typename?: 'Note';
+  readonly id: Scalars['ID'];
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly summary: Scalars['String'];
+  readonly note: Scalars['String'];
+};
+
+export type Link = Item & {
+  readonly __typename?: 'Link';
+  readonly id: Scalars['ID'];
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly summary: Scalars['String'];
+  readonly link: Scalars['String'];
 };
 
 export type TaskList = {
