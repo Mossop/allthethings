@@ -3,10 +3,10 @@ import IconButton from "@material-ui/core/IconButton";
 import Menu from "@material-ui/core/Menu";
 import MenuItem from "@material-ui/core/MenuItem";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import md5 from "md5";
 import { useCallback } from "react";
 
+import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { useLogoutMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import type { User } from "../utils/state";

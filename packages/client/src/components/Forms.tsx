@@ -4,6 +4,7 @@ import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
 
 import type { Overwrite } from "@allthethings/utils";
+
 import { ReactMemo } from "../utils/types";
 
 export function useScopedState<T, K extends keyof T>(

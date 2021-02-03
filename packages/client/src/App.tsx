@@ -31,7 +31,7 @@ function PageContent({
     case ViewType.TaskList:
       return <TaskList view={view}/>;
     case ViewType.NotFound:
-      return <NotFound view={view}/>;
+      return <NotFound/>;
   }
 }
 

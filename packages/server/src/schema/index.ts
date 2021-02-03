@@ -2,8 +2,9 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import type { Overwrite } from "@allthethings/utils";
 import { ApolloServer } from "apollo-server-koa";
+
+import type { Overwrite } from "@allthethings/utils";
 
 import type { ProjectRoot, TaskList } from "../db";
 import { Context, User, dataSources } from "../db";
