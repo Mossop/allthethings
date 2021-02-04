@@ -23,6 +23,13 @@ export type CreateContextMutationVariables = Types.Exact<{
 
 export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
+export type DeleteContextMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+}>;
+
+
+export type DeleteContextMutation = { readonly __typename?: 'Mutation', readonly deleteContext: boolean };
+
 export type CreateSectionMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
   params: Types.CreateSectionParams;
@@ -48,6 +55,13 @@ export type MoveSectionMutationVariables = Types.Exact<{
 
 export type MoveSectionMutation = { readonly __typename?: 'Mutation', readonly moveSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
 
+export type DeleteSectionMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+}>;
+
+
+export type DeleteSectionMutation = { readonly __typename?: 'Mutation', readonly deleteSection: boolean };
+
 export type CreateProjectMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
   params: Types.CreateProjectParams;
@@ -71,6 +85,13 @@ export type MoveProjectMutationVariables = Types.Exact<{
 
 
 export type MoveProjectMutation = { readonly __typename?: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+
+export type DeleteProjectMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+}>;
+
+
+export type DeleteProjectMutation = { readonly __typename?: 'Mutation', readonly deleteProject: boolean };
 
 
 export const LoginDocument = gql`
@@ -169,6 +190,36 @@ export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
 export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
+export const DeleteContextDocument = gql`
+    mutation DeleteContext($id: ID!) {
+  deleteContext(id: $id)
+}
+    `;
+export type DeleteContextMutationFn = Apollo.MutationFunction<DeleteContextMutation, DeleteContextMutationVariables>;
+
+/**
+ * __useDeleteContextMutation__
+ *
+ * To run a mutation, you first call `useDeleteContextMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteContextMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteContextMutation, { data, loading, error }] = useDeleteContextMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteContextMutation(baseOptions?: Apollo.MutationHookOptions<DeleteContextMutation, DeleteContextMutationVariables>) {
+        return Apollo.useMutation<DeleteContextMutation, DeleteContextMutationVariables>(DeleteContextDocument, baseOptions);
+      }
+export type DeleteContextMutationHookResult = ReturnType<typeof useDeleteContextMutation>;
+export type DeleteContextMutationResult = Apollo.MutationResult<DeleteContextMutation>;
+export type DeleteContextMutationOptions = Apollo.BaseMutationOptions<DeleteContextMutation, DeleteContextMutationVariables>;
 export const CreateSectionDocument = gql`
     mutation CreateSection($taskList: ID, $params: CreateSectionParams!) {
   createSection(taskList: $taskList, params: $params) {
@@ -272,6 +323,36 @@ export function useMoveSectionMutation(baseOptions?: Apollo.MutationHookOptions<
 export type MoveSectionMutationHookResult = ReturnType<typeof useMoveSectionMutation>;
 export type MoveSectionMutationResult = Apollo.MutationResult<MoveSectionMutation>;
 export type MoveSectionMutationOptions = Apollo.BaseMutationOptions<MoveSectionMutation, MoveSectionMutationVariables>;
+export const DeleteSectionDocument = gql`
+    mutation DeleteSection($id: ID!) {
+  deleteSection(id: $id)
+}
+    `;
+export type DeleteSectionMutationFn = Apollo.MutationFunction<DeleteSectionMutation, DeleteSectionMutationVariables>;
+
+/**
+ * __useDeleteSectionMutation__
+ *
+ * To run a mutation, you first call `useDeleteSectionMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteSectionMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteSectionMutation, { data, loading, error }] = useDeleteSectionMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteSectionMutation(baseOptions?: Apollo.MutationHookOptions<DeleteSectionMutation, DeleteSectionMutationVariables>) {
+        return Apollo.useMutation<DeleteSectionMutation, DeleteSectionMutationVariables>(DeleteSectionDocument, baseOptions);
+      }
+export type DeleteSectionMutationHookResult = ReturnType<typeof useDeleteSectionMutation>;
+export type DeleteSectionMutationResult = Apollo.MutationResult<DeleteSectionMutation>;
+export type DeleteSectionMutationOptions = Apollo.BaseMutationOptions<DeleteSectionMutation, DeleteSectionMutationVariables>;
 export const CreateProjectDocument = gql`
     mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
   createProject(taskList: $taskList, params: $params) {
@@ -377,3 +458,33 @@ export function useMoveProjectMutation(baseOptions?: Apollo.MutationHookOptions<
 export type MoveProjectMutationHookResult = ReturnType<typeof useMoveProjectMutation>;
 export type MoveProjectMutationResult = Apollo.MutationResult<MoveProjectMutation>;
 export type MoveProjectMutationOptions = Apollo.BaseMutationOptions<MoveProjectMutation, MoveProjectMutationVariables>;
+export const DeleteProjectDocument = gql`
+    mutation DeleteProject($id: ID!) {
+  deleteProject(id: $id)
+}
+    `;
+export type DeleteProjectMutationFn = Apollo.MutationFunction<DeleteProjectMutation, DeleteProjectMutationVariables>;
+
+/**
+ * __useDeleteProjectMutation__
+ *
+ * To run a mutation, you first call `useDeleteProjectMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteProjectMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteProjectMutation, { data, loading, error }] = useDeleteProjectMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteProjectMutation(baseOptions?: Apollo.MutationHookOptions<DeleteProjectMutation, DeleteProjectMutationVariables>) {
+        return Apollo.useMutation<DeleteProjectMutation, DeleteProjectMutationVariables>(DeleteProjectDocument, baseOptions);
+      }
+export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProjectMutation>;
+export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
+export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;

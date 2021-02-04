@@ -54,16 +54,20 @@ export type Item = Task | Note | File | Link;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 
-export function isContext(taskList: TaskList): taskList is Context {
-  return "stub" in taskList && !isProject(taskList);
+export function isSection(list: TaskList | Section): list is Section {
+  return "items" in list;
 }
 
-export function isProject(taskList: TaskList): taskList is Project {
-  return "parent" in taskList;
+export function isContext(list: TaskList | Section): list is Context {
+  return "stub" in list && !isProject(list);
 }
 
-export function isUser(taskList: TaskList): taskList is User {
-  return "email" in taskList;
+export function isProject(list: TaskList | Section): list is Project {
+  return "parent" in list;
+}
+
+export function isUser(list: TaskList | Section): list is User {
+  return "email" in list;
 }
 
 const StateContext = createContext<View | null | undefined>(undefined);
