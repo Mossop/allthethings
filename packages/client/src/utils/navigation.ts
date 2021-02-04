@@ -204,8 +204,8 @@ function urlForLocation(location: Location): URL {
 }
 
 export class NavigationHandler {
-  private user: User | null = null;
-  private view: View | null = null;
+  private user: User | null | undefined = undefined;
+  private view: View | null | undefined = undefined;
 
   public constructor(private callback: (view: View | null) => void) {
     this.update(history.location);
@@ -226,10 +226,12 @@ export class NavigationHandler {
     );
   }
 
-  public watch(user: User | null): void | (() => void) {
+  public watch(user: User | null | undefined): void | (() => void) {
     this.user = user;
     if (!user) {
-      this.setView(null);
+      if (user === null) {
+        this.setView(null);
+      }
       return;
     }
 

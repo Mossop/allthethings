@@ -66,7 +66,7 @@ export function isUser(taskList: TaskList): taskList is User {
   return "email" in taskList;
 }
 
-const StateContext = createContext<View | null | undefined>(null);
+const StateContext = createContext<View | null | undefined>(undefined);
 
 export type NavigableView = {
   context?: Context | null;
@@ -179,8 +179,12 @@ export function StateListener({ children }: ReactChildren): ReactResult {
 
   let navHandler = useMemo(() => new NavigationHandler(setView), []);
 
-  let user = useMemo((): User | null => {
-    if (!data?.user) {
+  let user = useMemo((): User | null | undefined => {
+    if (!data) {
+      return undefined;
+    }
+
+    if (!data.user) {
       return null;
     }
 
