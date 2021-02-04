@@ -29,6 +29,7 @@ import type { TaskListView } from "../utils/navigation";
 import { ViewType, replaceView } from "../utils/navigation";
 import type { Context, Project, Section, TaskList, User } from "../utils/state";
 import {
+  useUser,
   useView,
   useProjectRoot,
   isContext,
@@ -104,6 +105,7 @@ const TaskListActions = ReactMemo(function TaskListActions({
   let classes = useStyles();
   let root = useProjectRoot();
   let view = useView();
+  let user = useUser();
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -135,6 +137,12 @@ const TaskListActions = ReactMemo(function TaskListActions({
           },
         });
       } else if (isContext(list)) {
+        replaceView({
+          type: ViewType.TaskList,
+          taskList: user,
+          context: null,
+        }, view);
+
         void deleteContext({
           variables: {
             id: list.id,
@@ -153,7 +161,7 @@ const TaskListActions = ReactMemo(function TaskListActions({
         });
       }
     };
-  }, [deleteContext, deleteProject, deleteSection, list, root, view]);
+  }, [deleteContext, deleteProject, deleteSection, list, root, view, user]);
 
   return <div className={classes.headingActions}>
     {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
