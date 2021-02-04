@@ -406,7 +406,7 @@ export default ReactMemo(function ProjectList({
     {
       showCreateProjectDialog && <CreateProjectDialog
         onClose={closeCreateProjectDialog}
-        taskList={root}
+        taskList={taskList ?? root}
       />
     }
   </Paper>;

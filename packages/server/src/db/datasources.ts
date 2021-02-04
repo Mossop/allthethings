@@ -281,9 +281,13 @@ export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbOb
     taskList: Impl.User | Impl.Context | Impl.Project,
     { name }: Pick<Db.ProjectDbObject, "name">,
   ): Promise<Impl.Project> {
+    let context = taskList instanceof Impl.Project
+      ? await taskList.context() ?? await taskList.user()
+      : taskList;
+
     let project = await this.build(this.insert({
       id: name == "" ? taskList.id : await id(),
-      contextId: taskList.id,
+      contextId: context.id,
       name,
       parentId: name == "" ? null : taskList.id,
     }));
