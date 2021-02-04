@@ -13,6 +13,8 @@ module.exports = {
         "typescript-apollo-client-helpers": {
           useTypeImports: true,
         },
+        "fragment-matcher": {
+        },
         "add": {
           content: [
             "/* eslint-disable */",

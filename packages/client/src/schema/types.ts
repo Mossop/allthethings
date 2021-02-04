@@ -404,3 +404,30 @@ export type TypedTypePolicies = TypePolicies & {
 		fields?: MutationFieldPolicy,
 	}
 };
+
+      export interface PossibleTypesResultData {
+        possibleTypes: {
+          [key: string]: string[]
+        }
+      }
+      const result: PossibleTypesResultData = {
+  "possibleTypes": {
+    "Item": [
+      "Task",
+      "File",
+      "Note",
+      "Link"
+    ],
+    "TaskList": [
+      "User",
+      "Context",
+      "Project"
+    ],
+    "ProjectRoot": [
+      "User",
+      "Context"
+    ]
+  }
+};
+      export default result;
+    

@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
 
+import introspection from "./types";
 import type { TypedTypePolicies } from "./types";
 
 const merge = (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming;
@@ -53,6 +54,7 @@ export const client = new ApolloClient({
     credentials: "same-origin",
   }),
   cache: new InMemoryCache({
+    ...introspection,
     typePolicies,
   }),
 });
