@@ -29,8 +29,11 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
     MuiCssBaseline: {
       "@global": {
         "*": {
+          fontFamily: "inherit",
           fontWeight: "inherit",
           fontSize: "inherit",
+          letterSpacing: "inherit",
+          lineHeight: "inherit",
           padding: 0,
           margin: 0,
           color: "inherit",

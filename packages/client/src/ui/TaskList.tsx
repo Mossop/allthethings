@@ -10,13 +10,13 @@ import { useDrag } from "react-dnd";
 
 import HiddenInput from "../components/HiddenInput";
 import { ProjectIcon, SectionIcon } from "../components/Icons";
-import { TextStyles } from "../components/Text";
+import { Heading, TextStyles } from "../components/Text";
 import { useEditProjectMutation, useEditSectionMutation } from "../schema/mutations";
 import { useListTaskListQuery } from "../schema/queries";
 import { DragType } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
 import type { Project, Section } from "../utils/state";
-import { buildItems, buildSections, isProject } from "../utils/state";
+import { buildSections, isProject } from "../utils/state";
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -24,7 +24,7 @@ import AddDial from "./AddDial";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    dragContainer: {
+    icon: {
       ...flexCentered,
     },
     dragHandle: {
@@ -44,6 +44,9 @@ const useStyles = makeStyles((theme: Theme) =>
       ...flexRow,
       alignItems: "center",
       paddingBottom: theme.spacing(2),
+    },
+    tasksHeading: {
+      padding: theme.spacing(1) + 2,
     },
     headingInput: TextStyles.heading,
     sectionHeading: {
@@ -99,7 +102,7 @@ const SectionList = ReactMemo(function SectionList({
       className={clsx(classes.sectionHeading, isDragging && classes.dragging)}
     >
       <div
-        className={classes.dragContainer}
+        className={classes.icon}
         ref={dragRef}
       >
         <SectionIcon className={classes.dragHandle}/>
@@ -116,6 +119,17 @@ const SectionList = ReactMemo(function SectionList({
 interface ProjectHeaderProps {
   project: Project;
 }
+
+const TasksHeader = ReactMemo(function TasksHeader(): ReactResult {
+  let classes = useStyles();
+
+  return <div className={classes.heading}>
+    <div className={classes.icon}>
+      <ProjectIcon/>
+    </div>
+    <Heading className={classes.tasksHeading}>Tasks</Heading>
+  </div>;
+});
 
 const ProjectHeader = ReactMemo(function ProjectHeader({
   project,
@@ -151,7 +165,7 @@ const ProjectHeader = ReactMemo(function ProjectHeader({
     className={clsx(classes.heading, isDragging && classes.dragging)}
   >
     <div
-      className={classes.dragContainer}
+      className={classes.icon}
       ref={dragRef}
     >
       <ProjectIcon className={classes.dragHandle}/>
@@ -178,42 +192,24 @@ export default ReactMemo(function TaskList({
     },
   });
 
-  let items = useMemo(
-    () => data?.taskList ? buildItems(data.taskList.items) : [],
-    [data],
-  );
   let sections = useMemo(
     () => data?.taskList ? buildSections(view.taskList, data.taskList.sections) : [],
     [data, view],
   );
 
-  let shouldShowDivider = useCallback((index: number): boolean => {
-    if (index > 0) {
-      return true;
-    }
-
-    if (isProject(view.taskList)) {
-      return true;
-    }
-
-    if (items.length > 0) {
-      return true;
-    }
-
-    return false;
-  }, [view, items]);
-
   return <div className={classes.outer}>
     <div className={classes.content}>
       {
-        isProject(view.taskList) && <ProjectHeader project={view.taskList}/>
+        isProject(view.taskList)
+          ? <ProjectHeader project={view.taskList}/>
+          : <TasksHeader/>
       }
       <List>
         {
-          sections.map((section: Section, index: number) => <Fragment
+          sections.map((section: Section) => <Fragment
             key={section.id}
           >
-            {shouldShowDivider(index) && <Divider/>}
+            <Divider/>
             <SectionList
               key={section.id}
               section={section}
