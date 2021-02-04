@@ -38,6 +38,22 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.contexts.create(user, params);
   }),
 
+  editContext: authed(async ({
+    args: { id, params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditContextArgs>): Promise<Context | null> => {
+    let context = await ctx.dataSources.contexts.getOne(id);
+    if (!context) {
+      return null;
+    }
+
+    await context.edit({
+      name: params.name ?? undefined,
+    });
+
+    return context;
+  }),
+
   deleteContext: authed(async ({
     args: { id },
     ctx,

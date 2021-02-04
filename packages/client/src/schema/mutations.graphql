@@ -16,6 +16,14 @@ mutation CreateContext($params: CreateContextParams!) {
   }
 }
 
+mutation EditContext($id: ID!, $params: EditContextParams!) {
+  editContext(id: $id, params: $params) {
+    id
+    name
+    stub
+  }
+}
+
 mutation DeleteContext($id: ID!) {
   deleteContext(id: $id)
 }

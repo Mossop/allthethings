@@ -16,6 +16,7 @@ import {
   useDeleteContextMutation,
   useDeleteProjectMutation,
   useDeleteSectionMutation,
+  useEditContextMutation,
   useEditProjectMutation,
   useEditSectionMutation,
 } from "../schema/mutations";
@@ -224,13 +225,13 @@ const SectionList = ReactMemo(function SectionList({
   </List>;
 });
 
-interface TasksHeaderProps {
-  root: User | Context;
+interface UserHeaderProps {
+  user: User;
 }
 
-const TasksHeader = ReactMemo(function TasksHeader({
-  root,
-}: TasksHeaderProps): ReactResult {
+const UserHeader = ReactMemo(function TasksHeader({
+  user,
+}: UserHeaderProps): ReactResult {
   let classes = useStyles();
 
   return <div className={classes.heading}>
@@ -238,7 +239,42 @@ const TasksHeader = ReactMemo(function TasksHeader({
       <ProjectIcon/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <TaskListActions list={root}/>
+    <TaskListActions list={user}/>
+  </div>;
+});
+
+interface ContextHeaderProps {
+  context: Context;
+}
+
+const ContextHeader = ReactMemo(function TasksHeader({
+  context,
+}: ContextHeaderProps): ReactResult {
+  let classes = useStyles();
+
+  let [editContext] = useEditContextMutation();
+
+  let changeContextName = useCallback((name: string) => {
+    void editContext({
+      variables: {
+        id: context.id,
+        params: {
+          name,
+        },
+      },
+    });
+  }, [context.id, editContext]);
+
+  return <div className={classes.heading}>
+    <div className={classes.icon}>
+      <ProjectIcon/>
+    </div>
+    <HiddenInput
+      className={classes.headingInput}
+      initialValue={context.name}
+      onSubmit={changeContextName}
+    />
+    <TaskListActions list={context}/>
   </div>;
 });
 
@@ -313,13 +349,18 @@ export default ReactMemo(function TaskList({
     [data, view],
   );
 
+  let header;
+  if (isUser(view.taskList)) {
+    header = <UserHeader user={view.taskList}/>;
+  } else if (isProject(view.taskList)) {
+    header = <ProjectHeader project={view.taskList}/>;
+  } else {
+    header = <ContextHeader context={view.taskList}/>;
+  }
+
   return <div className={classes.outer}>
     <div className={classes.content}>
-      {
-        isProject(view.taskList)
-          ? <ProjectHeader project={view.taskList}/>
-          : <TasksHeader root={view.taskList}/>
-      }
+      {header}
       <List>
         {
           sections.map((section: Section) => <Fragment

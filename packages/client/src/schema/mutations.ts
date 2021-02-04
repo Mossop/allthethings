@@ -23,6 +23,14 @@ export type CreateContextMutationVariables = Types.Exact<{
 
 export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
+export type EditContextMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  params: Types.EditContextParams;
+}>;
+
+
+export type EditContextMutation = { readonly __typename?: 'Mutation', readonly editContext: Types.Maybe<{ readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string }> };
+
 export type DeleteContextMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
 }>;
@@ -190,6 +198,41 @@ export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOption
 export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
 export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
+export const EditContextDocument = gql`
+    mutation EditContext($id: ID!, $params: EditContextParams!) {
+  editContext(id: $id, params: $params) {
+    id
+    name
+    stub
+  }
+}
+    `;
+export type EditContextMutationFn = Apollo.MutationFunction<EditContextMutation, EditContextMutationVariables>;
+
+/**
+ * __useEditContextMutation__
+ *
+ * To run a mutation, you first call `useEditContextMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditContextMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editContextMutation, { data, loading, error }] = useEditContextMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditContextMutation(baseOptions?: Apollo.MutationHookOptions<EditContextMutation, EditContextMutationVariables>) {
+        return Apollo.useMutation<EditContextMutation, EditContextMutationVariables>(EditContextDocument, baseOptions);
+      }
+export type EditContextMutationHookResult = ReturnType<typeof useEditContextMutation>;
+export type EditContextMutationResult = Apollo.MutationResult<EditContextMutation>;
+export type EditContextMutationOptions = Apollo.BaseMutationOptions<EditContextMutation, EditContextMutationVariables>;
 export const DeleteContextDocument = gql`
     mutation DeleteContext($id: ID!) {
   deleteContext(id: $id)

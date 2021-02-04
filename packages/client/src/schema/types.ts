@@ -145,6 +145,10 @@ export type CreateContextParams = {
   readonly name: Scalars['String'];
 };
 
+export type EditContextParams = {
+  readonly name?: Maybe<Scalars['String']>;
+};
+
 export type CreateProjectParams = {
   readonly name: Scalars['String'];
 };
@@ -166,6 +170,7 @@ export type Mutation = {
   readonly login?: Maybe<User>;
   readonly logout?: Maybe<Scalars['Boolean']>;
   readonly createContext: Context;
+  readonly editContext?: Maybe<Context>;
   readonly deleteContext: Scalars['Boolean'];
   readonly createProject: Project;
   readonly moveProject?: Maybe<Project>;
@@ -186,6 +191,12 @@ export type MutationLoginArgs = {
 
 export type MutationCreateContextArgs = {
   params: CreateContextParams;
+};
+
+
+export type MutationEditContextArgs = {
+  id: Scalars['ID'];
+  params: EditContextParams;
 };
 
 
@@ -335,11 +346,12 @@ export type QueryFieldPolicy = {
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	root?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
 	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	editContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
 	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveProject?: FieldPolicy<any> | FieldReadFunction<any>,

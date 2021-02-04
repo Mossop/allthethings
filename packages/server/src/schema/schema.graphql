@@ -96,6 +96,10 @@ input CreateContextParams {
   name: String!
 }
 
+input EditContextParams {
+  name: String
+}
+
 input CreateProjectParams {
   name: String!
 }
@@ -116,6 +120,7 @@ type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
   createContext(params: CreateContextParams!): Context!
+  editContext(id: ID!, params: EditContextParams!): Context
   deleteContext(id: ID!): Boolean!
   createProject(taskList: ID, params: CreateProjectParams!): Project!
   moveProject(id: ID!, taskList: ID): Project

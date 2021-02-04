@@ -166,6 +166,12 @@ export class Context
     return this.dataSources.contexts;
   }
 
+  public async edit(
+    props: Partial<Omit<Db.ContextDbObject, "id" | "stub" | "userId">>,
+  ): Promise<void> {
+    return this.updateDbObject(props);
+  }
+
   public async subprojects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
       parentId: this.id,

@@ -144,6 +144,10 @@ export type CreateContextParams = {
   readonly name: Scalars['String'];
 };
 
+export type EditContextParams = {
+  readonly name?: Maybe<Scalars['String']>;
+};
+
 export type CreateProjectParams = {
   readonly name: Scalars['String'];
 };
@@ -165,6 +169,7 @@ export type Mutation = {
   readonly login?: Maybe<User>;
   readonly logout?: Maybe<Scalars['Boolean']>;
   readonly createContext: Context;
+  readonly editContext?: Maybe<Context>;
   readonly deleteContext: Scalars['Boolean'];
   readonly createProject: Project;
   readonly moveProject?: Maybe<Project>;
@@ -185,6 +190,12 @@ export type MutationLoginArgs = {
 
 export type MutationCreateContextArgs = {
   params: CreateContextParams;
+};
+
+
+export type MutationEditContextArgs = {
+  id: Scalars['ID'];
+  params: EditContextParams;
 };
 
 

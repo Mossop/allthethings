@@ -21,7 +21,7 @@ import type { View } from "../utils/navigation";
 import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { Project, TaskList } from "../utils/state";
-import { useUrl, useProjectRoot } from "../utils/state";
+import { useCurrentContext, useUrl, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
@@ -289,6 +289,7 @@ export default ReactMemo(function ProjectList({
   let classes = useStyles({ depth: 0 });
 
   let root = useProjectRoot();
+  let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
 
   let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
@@ -383,7 +384,7 @@ export default ReactMemo(function ProjectList({
         url={tasksUrl}
         icon={<ProjectIcon/>}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
-        label="Tasks"
+        label={context?.name ?? "Tasks"}
         depth={0}
       />
       <Divider className={classes.divider}/>
