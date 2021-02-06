@@ -1,13 +1,11 @@
 interface Item {
   id: ID!
-  icon: String
   summary: String!
 }
 
 type Task implements Item {
   # Item
   id: ID!
-  icon: String
   summary: String!
 
   done: Boolean!
@@ -17,14 +15,16 @@ type Task implements Item {
 type File implements Item {
   # Item
   id: ID!
-  icon: String
   summary: String!
+
+  filename: String!
+  mimetype: String!
+  size: Int!
 }
 
 type Note implements Item {
   # Item
   id: ID!
-  icon: String
   summary: String!
 
   note: String!
@@ -33,9 +33,9 @@ type Note implements Item {
 type Link implements Item {
   # Item
   id: ID!
-  icon: String
   summary: String!
 
+  icon: String
   link: String!
 }
 
@@ -159,8 +159,8 @@ type Mutation {
   editProject(id: ID!, params: EditProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 
-  createSection(taskList: ID, index: Int, params: CreateSectionParams!): Section!
-  moveSection(id: ID!, taskList: ID, index: Int): Section
+  createSection(taskList: ID, before: ID, params: CreateSectionParams!): Section!
+  moveSection(id: ID!, taskList: ID, before: ID): Section
   editSection(id: ID!, params: EditSectionParams!): Section
   deleteSection(id: ID!): Boolean!
 }

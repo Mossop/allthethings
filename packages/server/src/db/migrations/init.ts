@@ -151,9 +151,9 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.raw(`
     ALTER TABLE :table: ADD CHECK (
-      (:name: = '' AND :parent: = :id: AND :index: = -1)
+      (:name: = '' AND :parent: = :id: AND :index: < 0)
       OR
-      (:name: <> '' AND :parent: <> :id: AND :index: > -1)
+      (:name: <> '' AND :parent: <> :id: AND :index: >= 0)
     )`, {
     table: "Section",
     id: "id",
@@ -165,18 +165,26 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Item", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("userId")
+    table.text("sectionId")
       .notNullable()
-      .references("User.id")
+      .references("Section.id")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
 
-    table.text("icon")
-      .nullable();
+    table.integer("index")
+      .notNullable();
     table.text("summary")
       .notNullable();
     table.text("type")
       .notNullable();
+
+    table.unique(["sectionId", "index"]);
+  });
+
+  await knex.raw(`
+    ALTER TABLE :table: ADD CHECK (:index: >= 0)`, {
+    table: "Item",
+    index: "index",
   });
 
   await knex.schema.createTable("TaskItem", (table: Knex.CreateTableBuilder): void => {
@@ -194,6 +202,8 @@ export async function up(knex: Knex): Promise<void> {
 
     table.text("link")
       .notNullable();
+    table.text("icon")
+      .nullable();
   });
 
   await knex.schema.createTable("NoteItem", (table: Knex.CreateTableBuilder): void => {
@@ -206,32 +216,14 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("FileItem", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
+    table.text("filename")
+      .notNullable();
     table.text("path")
       .notNullable();
-  });
-
-  await knex.schema.createTable("SectionItem", (table: Knex.CreateTableBuilder): void => {
-    table.text("sectionId")
-      .notNullable()
-      .references("Section.id")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-    table.text("itemId")
-      .notNullable()
-      .unique()
-      .references("Item.id")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-    table.integer("index")
+    table.text("mimetype")
       .notNullable();
-
-    table.unique(["sectionId", "index"]);
-  });
-
-  await knex.raw(`
-    ALTER TABLE :table: ADD CHECK (:index: >= 0)`, {
-    table: "SectionItem",
-    index: "index",
+    table.integer("size")
+      .notNullable();
   });
 }
 

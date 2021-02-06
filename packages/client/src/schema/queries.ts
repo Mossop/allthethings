@@ -99,13 +99,13 @@ export type ListTaskListQuery = { readonly __typename?: 'Query', readonly taskLi
         & ItemFields_Link_Fragment
       )> }> }> };
 
-export type ItemFields_Task_Fragment = { readonly __typename?: 'Task', readonly done: boolean, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+export type ItemFields_Task_Fragment = { readonly __typename?: 'Task', readonly done: boolean, readonly id: string, readonly summary: string };
 
-export type ItemFields_File_Fragment = { readonly __typename?: 'File', readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+export type ItemFields_File_Fragment = { readonly __typename?: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string };
 
-export type ItemFields_Note_Fragment = { readonly __typename?: 'Note', readonly note: string, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+export type ItemFields_Note_Fragment = { readonly __typename?: 'Note', readonly note: string, readonly id: string, readonly summary: string };
 
-export type ItemFields_Link_Fragment = { readonly __typename?: 'Link', readonly link: string, readonly id: string, readonly icon: Types.Maybe<string>, readonly summary: string };
+export type ItemFields_Link_Fragment = { readonly __typename?: 'Link', readonly icon: Types.Maybe<string>, readonly link: string, readonly id: string, readonly summary: string };
 
 export type ItemFieldsFragment = ItemFields_Task_Fragment | ItemFields_File_Fragment | ItemFields_Note_Fragment | ItemFields_Link_Fragment;
 
@@ -127,15 +127,20 @@ export const RootFieldsFragmentDoc = gql`
 export const ItemFieldsFragmentDoc = gql`
     fragment itemFields on Item {
   id
-  icon
   summary
   ... on Task {
     done
+  }
+  ... on File {
+    size
+    filename
+    mimetype
   }
   ... on Note {
     note
   }
   ... on Link {
+    icon
     link
   }
 }

@@ -57,7 +57,7 @@ export type EditSectionMutation = { readonly __typename?: 'Mutation', readonly e
 export type MoveSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
   taskList: Types.Maybe<Types.Scalars['ID']>;
-  index: Types.Maybe<Types.Scalars['Int']>;
+  before: Types.Maybe<Types.Scalars['ID']>;
 }>;
 
 
@@ -332,8 +332,8 @@ export type EditSectionMutationHookResult = ReturnType<typeof useEditSectionMuta
 export type EditSectionMutationResult = Apollo.MutationResult<EditSectionMutation>;
 export type EditSectionMutationOptions = Apollo.BaseMutationOptions<EditSectionMutation, EditSectionMutationVariables>;
 export const MoveSectionDocument = gql`
-    mutation MoveSection($id: ID!, $taskList: ID, $index: Int) {
-  moveSection(id: $id, taskList: $taskList, index: $index) {
+    mutation MoveSection($id: ID!, $taskList: ID, $before: ID) {
+  moveSection(id: $id, taskList: $taskList, before: $before) {
     id
     name
   }
@@ -356,7 +356,7 @@ export type MoveSectionMutationFn = Apollo.MutationFunction<MoveSectionMutation,
  *   variables: {
  *      id: // value for 'id'
  *      taskList: // value for 'taskList'
- *      index: // value for 'index'
+ *      before: // value for 'before'
  *   },
  * });
  */

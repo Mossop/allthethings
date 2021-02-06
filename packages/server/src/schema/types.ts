@@ -14,14 +14,12 @@ export type Scalars = {
 
 export type Item = {
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
 };
 
 export type Task = Item & {
   readonly __typename?: 'Task';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
   readonly done: Scalars['Boolean'];
   readonly link?: Maybe<Scalars['String']>;
@@ -30,14 +28,15 @@ export type Task = Item & {
 export type File = Item & {
   readonly __typename?: 'File';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
+  readonly filename: Scalars['String'];
+  readonly mimetype: Scalars['String'];
+  readonly size: Scalars['Int'];
 };
 
 export type Note = Item & {
   readonly __typename?: 'Note';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
   readonly note: Scalars['String'];
 };
@@ -45,8 +44,8 @@ export type Note = Item & {
 export type Link = Item & {
   readonly __typename?: 'Link';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
+  readonly icon?: Maybe<Scalars['String']>;
   readonly link: Scalars['String'];
 };
 
@@ -229,7 +228,7 @@ export type MutationDeleteProjectArgs = {
 
 export type MutationCreateSectionArgs = {
   taskList?: Maybe<Scalars['ID']>;
-  index?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['ID']>;
   params: CreateSectionParams;
 };
 
@@ -237,7 +236,7 @@ export type MutationCreateSectionArgs = {
 export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
   taskList?: Maybe<Scalars['ID']>;
-  index?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['ID']>;
 };
 
 

@@ -48,11 +48,16 @@ query ListTaskList($taskList: ID!) {
 
 fragment itemFields on Item {
   id
-  icon
   summary
 
   ... on Task {
     done
+  }
+
+  ... on File {
+    size
+    filename
+    mimetype
   }
 
   ... on Note {
@@ -60,6 +65,7 @@ fragment itemFields on Item {
   }
 
   ... on Link {
+    icon
     link
   }
 }

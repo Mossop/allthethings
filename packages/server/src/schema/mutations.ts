@@ -123,7 +123,7 @@ const resolvers: MutationResolvers = {
   }),
 
   createSection: authed(async ({
-    args: { taskList: taskListId, index, params },
+    args: { taskList: taskListId, before, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateSectionArgs>): Promise<Section> => {
     let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
@@ -131,7 +131,7 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    return ctx.dataSources.sections.create(taskList, index ?? null, params);
+    return ctx.dataSources.sections.create(taskList, before ?? null, params);
   }),
 
   editSection: authed(async ({
@@ -152,7 +152,7 @@ const resolvers: MutationResolvers = {
   }),
 
   moveSection: authed(async ({
-    args: { id, index, taskList },
+    args: { id, before, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
     let section = await ctx.dataSources.sections.getOne(id);
@@ -165,7 +165,7 @@ const resolvers: MutationResolvers = {
       throw new Error("TaskList not found.");
     }
 
-    await section.move(list, index ?? null);
+    await section.move(list, before ?? null);
     return section;
   }),
 

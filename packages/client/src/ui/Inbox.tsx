@@ -23,9 +23,14 @@ const useStyles = makeStyles((theme: Theme) =>
     heading: {
       ...flexRow,
       alignItems: "center",
+      paddingBottom: theme.spacing(1),
+      marginBottom: theme.spacing(1),
+      borderBottomWidth: 1,
+      borderBottomColor: theme.palette.divider,
+      borderBottomStyle: "solid",
     },
     headingText: {
-      padding: theme.spacing(1),
+      padding: theme.spacing(1) + 2,
     },
     floatingAction: {
       position: "absolute",

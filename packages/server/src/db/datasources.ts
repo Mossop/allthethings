@@ -18,6 +18,11 @@ const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 const id = customAlphabet(ALPHABET, 28);
 
+enum SectionIndex {
+  Anonymous = -1,
+  Input = -2,
+}
+
 function classBuilder<T, D>(
   cls: new (resolverContext: ResolverContext, dbObject: D) => T,
 ): ImplBuilder<T, D> {
@@ -305,7 +310,7 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
   protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
 
   public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
-    return this.table.where("name", "<>", "");
+    return this.table.where("index", ">=", 0);
   }
 
   public async find(fields: Partial<Db.SectionDbObject>): Promise<Impl.Section[]> {
@@ -314,16 +319,20 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
 
   public async create(
     project: Impl.User | Impl.Context | Impl.Project,
-    index: number | null,
+    before: string | null,
     { name }: Pick<Db.SectionDbObject, "name">,
   ): Promise<Impl.Section> {
+    let index: number;
+
     if (name == "") {
-      index = -1;
+      index = SectionIndex.Anonymous;
     } else {
       let existing = await project.sections();
-      if (index === null || index >= existing.length) {
-        index = existing.length;
-      } else {
+      index = existing.length;
+
+      let target = existing.find((section: Impl.Section): boolean => section.id == before);
+      if (target) {
+        index = await target.index();
         await this.table.where({
           projectId: project.id,
         }).andWhere("index", ">=", index).update("index", this.knex.raw(":index: + 1", {

@@ -15,14 +15,12 @@ export type Scalars = {
 
 export type Item = {
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
 };
 
 export type Task = Item & {
   readonly __typename?: 'Task';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
   readonly done: Scalars['Boolean'];
   readonly link?: Maybe<Scalars['String']>;
@@ -31,14 +29,15 @@ export type Task = Item & {
 export type File = Item & {
   readonly __typename?: 'File';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
+  readonly filename: Scalars['String'];
+  readonly mimetype: Scalars['String'];
+  readonly size: Scalars['Int'];
 };
 
 export type Note = Item & {
   readonly __typename?: 'Note';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
   readonly note: Scalars['String'];
 };
@@ -46,8 +45,8 @@ export type Note = Item & {
 export type Link = Item & {
   readonly __typename?: 'Link';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
   readonly summary: Scalars['String'];
+  readonly icon?: Maybe<Scalars['String']>;
   readonly link: Scalars['String'];
 };
 
@@ -230,7 +229,7 @@ export type MutationDeleteProjectArgs = {
 
 export type MutationCreateSectionArgs = {
   taskList?: Maybe<Scalars['ID']>;
-  index?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['ID']>;
   params: CreateSectionParams;
 };
 
@@ -238,7 +237,7 @@ export type MutationCreateSectionArgs = {
 export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
   taskList?: Maybe<Scalars['ID']>;
-  index?: Maybe<Scalars['Int']>;
+  before?: Maybe<Scalars['ID']>;
 };
 
 
@@ -252,38 +251,37 @@ export type MutationDeleteSectionArgs = {
   id: Scalars['ID'];
 };
 
-export type ItemKeySpecifier = ('id' | 'icon' | 'summary' | ItemKeySpecifier)[];
+export type ItemKeySpecifier = ('id' | 'summary' | ItemKeySpecifier)[];
 export type ItemFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type TaskKeySpecifier = ('id' | 'icon' | 'summary' | 'done' | 'link' | TaskKeySpecifier)[];
+export type TaskKeySpecifier = ('id' | 'summary' | 'done' | 'link' | TaskKeySpecifier)[];
 export type TaskFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
 	done?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type FileKeySpecifier = ('id' | 'icon' | 'summary' | FileKeySpecifier)[];
+export type FileKeySpecifier = ('id' | 'summary' | 'filename' | 'mimetype' | 'size' | FileKeySpecifier)[];
 export type FileFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	icon?: FieldPolicy<any> | FieldReadFunction<any>,
-	summary?: FieldPolicy<any> | FieldReadFunction<any>
+	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	filename?: FieldPolicy<any> | FieldReadFunction<any>,
+	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
+	size?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type NoteKeySpecifier = ('id' | 'icon' | 'summary' | 'note' | NoteKeySpecifier)[];
+export type NoteKeySpecifier = ('id' | 'summary' | 'note' | NoteKeySpecifier)[];
 export type NoteFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
 	note?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type LinkKeySpecifier = ('id' | 'icon' | 'summary' | 'link' | LinkKeySpecifier)[];
+export type LinkKeySpecifier = ('id' | 'summary' | 'icon' | 'link' | LinkKeySpecifier)[];
 export type LinkFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TaskListKeySpecifier = ('subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];

@@ -220,7 +220,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
           variables: {
             id: item.section.id,
             taskList: project.id,
-            index: null,
+            before: null,
           },
           refetchQueries: [
             refetchListTaskListQuery({
@@ -331,7 +331,7 @@ export default ReactMemo(function ProjectList({
           variables: {
             id: item.section.id,
             taskList: root.id,
-            index: null,
+            before: null,
           },
           refetchQueries: [
             refetchListTaskListQuery({

@@ -20,9 +20,9 @@ type Writable<T> = {
 type SchemaItem = Schema.Task | Schema.Note | Schema.File | Schema.Link;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-type StateO<T, O extends string, A = {}> = Omit<T, "__typename" | O | keyof A> & A;
+type StateO<T, O extends string, A = {}> = Omit<T, O | keyof A> & A;
 // eslint-disable-next-line @typescript-eslint/ban-types
-type State<T, A = {}> = Omit<T, "__typename" | keyof A> & A;
+type State<T, A = {}> = Omit<T, keyof A> & A;
 
 export type Project = StateO<Schema.Project, "taskList" | "items" | "sections", {
   readonly parent: Project | null;
@@ -55,19 +55,19 @@ export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 
 export function isSection(list: TaskList | Section): list is Section {
-  return "items" in list;
+  return list.__typename == "Section";
 }
 
 export function isContext(list: TaskList | Section): list is Context {
-  return "stub" in list && !isProject(list);
+  return list.__typename == "Context";
 }
 
 export function isProject(list: TaskList | Section): list is Project {
-  return "parent" in list;
+  return list.__typename == "Project";
 }
 
 export function isUser(list: TaskList | Section): list is User {
-  return "email" in list;
+  return list.__typename == "User";
 }
 
 const StateContext = createContext<View | null | undefined>(undefined);

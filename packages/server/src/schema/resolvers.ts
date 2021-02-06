@@ -89,6 +89,7 @@ export type ResolversTypes = ResolversObject<{
   Task: ResolverTypeWrapper<Item>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   File: ResolverTypeWrapper<Schema.File>;
+  Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
   Note: ResolverTypeWrapper<Schema.Note>;
   Link: ResolverTypeWrapper<Schema.Link>;
   TaskList: ResolverTypeWrapper<TaskList>;
@@ -105,7 +106,6 @@ export type ResolversTypes = ResolversObject<{
   CreateSectionParams: Schema.CreateSectionParams;
   EditSectionParams: Schema.EditSectionParams;
   Mutation: ResolverTypeWrapper<{}>;
-  Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -116,6 +116,7 @@ export type ResolversParentTypes = ResolversObject<{
   Task: Item;
   Boolean: Schema.Scalars['Boolean'];
   File: Schema.File;
+  Int: Schema.Scalars['Int'];
   Note: Schema.Note;
   Link: Schema.Link;
   TaskList: TaskList;
@@ -132,19 +133,16 @@ export type ResolversParentTypes = ResolversObject<{
   CreateSectionParams: Schema.CreateSectionParams;
   EditSectionParams: Schema.EditSectionParams;
   Mutation: {};
-  Int: Schema.Scalars['Int'];
 }>;
 
 export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Task' | 'File' | 'Note' | 'Link', ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
 }>;
 
 export type TaskResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   done: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   link: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -153,14 +151,15 @@ export type TaskResolvers<ContextType = ResolverContext, ParentType extends Reso
 
 export type FileResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  filename: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  mimetype: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  size: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type NoteResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   note: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -168,8 +167,8 @@ export type NoteResolvers<ContextType = ResolverContext, ParentType extends Reso
 
 export type LinkResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Link'] = ResolversParentTypes['Link']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
-  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   link: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;

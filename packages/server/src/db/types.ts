@@ -51,7 +51,8 @@ export interface ProjectDbObject extends DbEntity {
 }
 
 // Every project has at least one anonymous section. Its id will match the project's, its name will
-// be an empty string and its index will be -1.
+// be an empty string and its index will be -1. Every user has an additional anonymous section, its
+// name will be an empty string and its index wll be -2.
 //
 // unique index on projectId, index.
 // unique index on projectId, stub.
@@ -66,25 +67,14 @@ export interface SectionDbObject extends DbEntity {
   stub: string;
 }
 
-// Puts items into sections.
-//
-// unique index on sectionId, index.
-export interface SectionItemLink {
-  // Foreign key to SectionDbObject.id.
-  sectionId: string;
-  // Foreign key to ItemDbObject.id. Unique within table.
-  itemId: string;
-  // The index of the item in the section.
-  index: number;
-}
-
 // Every item, abstract.
 export interface ItemDbObject extends DbEntity {
-  // Foreign key to UserDbObject.id
-  userId: string;
-  icon: string | null;
+  // Foreign key to SectionDbObject.id.
+  sectionId: string;
   summary: string;
   type: ItemType;
+  // The index of the item in the section.
+  index: number;
 }
 
 // A special instance of an item. id is a foreign key to ItemDbObject.id.
@@ -95,6 +85,7 @@ export interface TaskItemDbObject extends DbEntity {
 
 // A link artifact.
 export interface LinkItemDbObject extends DbEntity {
+  icon: string | null;
   link: string;
 }
 
@@ -105,5 +96,8 @@ export interface NoteItemDbObject extends DbEntity {
 
 // A file artifact.
 export interface FileItemDbObject extends DbEntity {
+  filename: string;
   path: string;
+  size: number;
+  mimetype: string;
 }

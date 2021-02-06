@@ -303,9 +303,11 @@ export class Section extends BaseImpl<Db.SectionDbObject>
 
   public async move(
     taskList: User | Context | Project,
-    targetIndex: number | null,
+    before: string | null,
   ): Promise<void> {
     let existingSections = await taskList.sections();
+    let targetSection = existingSections.find((section: Section): boolean => section.id == before);
+    let targetIndex = targetSection ? await targetSection.index() : null;
 
     let targetProject = taskList.id;
     let dbObject = await this.dbObject;
@@ -380,6 +382,10 @@ export class Section extends BaseImpl<Db.SectionDbObject>
     return this.dataSources.sections.delete(this.id);
   }
 
+  public async index(): Promise<number> {
+    return (await this.dbObject).index;
+  }
+
   public async name(): Promise<string> {
     return (await this.dbObject).name;
   }
@@ -447,10 +453,6 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
   public async summary(): Promise<string> {
     return (await this.dbObject).summary;
   }
-
-  public async icon(): Promise<string | null> {
-    return (await this.dbObject).icon;
-  }
 }
 
 export class TaskItem extends ItemImpl<Db.TaskItemDbObject> implements SchemaResolver<Schema.Task> {
@@ -470,6 +472,18 @@ export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaRes
 
   public async path(): Promise<string> {
     return (await this.instanceDbObject).path;
+  }
+
+  public async filename(): Promise<string> {
+    return (await this.instanceDbObject).filename;
+  }
+
+  public async mimetype(): Promise<string> {
+    return (await this.instanceDbObject).mimetype;
+  }
+
+  public async size(): Promise<number> {
+    return (await this.instanceDbObject).size;
   }
 }
 
