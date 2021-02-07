@@ -18,7 +18,7 @@ const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 const id = customAlphabet(ALPHABET, 28);
 
-enum SectionIndex {
+export enum SectionIndex {
   Anonymous = -1,
   Input = -2,
 }
@@ -102,14 +102,14 @@ export abstract class DbDataSource<
    * Given a query returns all the matching records.
    */
   public select(query: Knex.QueryBuilder<D, D[]>): Promise<D[]> {
-    return query.select("*") as Promise<D[]>;
+    return query.select(this.ref("*")) as Promise<D[]>;
   }
 
   /**
    * Given a query returns the first matching record.
    */
   public first(query: Knex.QueryBuilder<D, D[]>): Promise<D | null> {
-    return query.first("*") as Promise<D | null>;
+    return query.first(this.ref("*")) as Promise<D | null>;
   }
 
   /**
@@ -173,7 +173,7 @@ export abstract class DbDataSource<
     let results: D[] = await this.table.insert({
       ...item,
       id: item.id ?? await id(),
-    }).returning("*");
+    }).returning(this.ref("*"));
 
     if (!results.length) {
       throw new Error("Unexpectedly failed to create a record.");
@@ -189,7 +189,11 @@ export abstract class DbDataSource<
    */
   public async updateOne(id: string, item: Partial<Omit<D, "id" | "stub">>): Promise<D | null> {
     // @ts-ignore
-    let results: D[] = await this.records.where(this.ref("id"), id).update(item).returning("*");
+    let results: D[] = await this.records
+      .where(this.ref("id"), id)
+      // @ts-ignore
+      .update(item)
+      .returning(this.ref("*"));
     if (!results.length) {
       return null;
     } else if (results.length > 1) {
@@ -204,6 +208,90 @@ export abstract class DbDataSource<
    */
   public delete(id: string): Promise<void> {
     return this.table.where(this.ref("id"), id).delete();
+  }
+}
+
+export abstract class IndexedDbDataSource<
+  T extends { id: string },
+  D extends Db.IndexedDbEntity = Db.IndexedDbEntity,
+> extends DbDataSource<T, D> {
+  protected async nextIndex(owner: string): Promise<number> {
+    let index = await max(this.records.where("ownerId", owner), "index");
+    return index !== null ? index + 1 : 0;
+  }
+
+  public async find(fields: Partial<D>): Promise<T[]> {
+    return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
+  }
+
+  public async move(
+    itemId: string,
+    targetOwner: string,
+    beforeId: string | null,
+  ): Promise<void> {
+    let current = await this.get(itemId);
+    if (!current) {
+      return;
+    }
+
+    let currentIndex = current.index;
+    let currentOwner = current.ownerId;
+
+    let targetIndex: number;
+    let before = beforeId ? await this.get(beforeId) : null;
+    if (before && before.ownerId == targetOwner) {
+      targetIndex = before.index;
+
+      let query = this.records
+        .where("ownerId", targetOwner)
+        .andWhere("index", ">=", targetIndex)
+        .orderBy("index", "DESC");
+
+      await this.knex.raw(`
+        UPDATE :table: AS :t1:
+          SET :index: = :index2: + 1
+          FROM :query AS :t2:
+          WHERE :id1: = :id2:`, {
+        table: this.tableName,
+        t1: "t1",
+        t2: "t2",
+        id1: "t1.id",
+        id2: "t2.id",
+        index2: "t2.index",
+        index: "index",
+        query,
+      });
+    } else {
+      targetIndex = await this.nextIndex(targetOwner);
+    }
+
+    await this.records
+      .where("id", itemId)
+      // @ts-ignore
+      .update({
+        ownerId: targetOwner,
+        index: targetIndex,
+      });
+
+    let query = this.records
+      .where("ownerId", currentOwner)
+      .andWhere("index", ">", currentIndex)
+      .orderBy("index", "ASC");
+
+    await this.knex.raw(`
+      UPDATE :table: AS :t1:
+        SET :index: = :index2: - 1
+        FROM :query AS :t2:
+        WHERE :id1: = :id2:`, {
+      table: this.tableName,
+      t1: "t1",
+      t2: "t2",
+      id1: "t1.id",
+      id2: "t2.id",
+      index2: "t2.index",
+      index: "index",
+      query,
+    });
   }
 }
 
@@ -309,21 +397,12 @@ export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbOb
   }
 }
 
-export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbObject> {
+export class SectionDataSource extends IndexedDbDataSource<Impl.Section, Db.SectionDbObject> {
   public tableName = "Section";
   protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
 
   public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
     return this.table.where("index", ">=", 0);
-  }
-
-  public async find(fields: Partial<Db.SectionDbObject>): Promise<Impl.Section[]> {
-    return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
-  }
-
-  public async nextIndex(project: string): Promise<number> {
-    let index = await max(this.records.where("projectId", project), "index");
-    return index !== null ? index + 1 : 0;
   }
 
   public async create(
@@ -338,14 +417,14 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
     } else if (before) {
       let value = await this.records
         .where({
-          projectId: project.id,
+          ownerId: project.id,
           id: before,
         })
         .pluck("index")
         .first();
       if (value !== undefined) {
         await this.table.where({
-          projectId: project.id,
+          ownerId: project.id,
         }).andWhere("index", ">=", value).update("index", this.knex.raw(":index: + 1", {
           index: "index",
         }));
@@ -359,13 +438,13 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
     return this.build(this.insert({
       id: name == "" ? project.id : await id(),
       name,
-      projectId: project.id,
+      ownerId: project.id,
       index,
     }));
   }
 }
 
-export class ItemDataSource extends DbDataSource<Item, Db.ItemDbObject> {
+export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
   public tableName = "Item";
   protected builder(resolverContext: ResolverContext, dbObject: Db.ItemDbObject): Item {
     switch (dbObject.type) {
@@ -380,12 +459,15 @@ export class ItemDataSource extends DbDataSource<Item, Db.ItemDbObject> {
     }
   }
 
-  public async listSection(sectionId: string): Promise<Item[]> {
-    return this.buildAll(this.select(
-      this.records.join("SectionItem", "SectionItem.itemId", "Item.id")
-        .where("SectionItem.sectionId", sectionId)
-        .orderBy("SectionItem.index"),
-    ));
+  public listSpecialSection(
+    owner: string,
+    type: SectionIndex,
+  ): Promise<Item[]> {
+    return this.buildAll(this.select(this.records
+      .join("Section", "Section.id", "Item.ownerId")
+      .where("Section.ownerId", owner)
+      .andWhere("Section.index", type)
+      .orderBy("Item.index")));
   }
 }
 

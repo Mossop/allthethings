@@ -121,7 +121,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Section", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("projectId")
+    table.text("ownerId")
       .notNullable()
       .references("Project.id")
       .onDelete("CASCADE")
@@ -131,7 +131,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text("name")
       .notNullable();
 
-    table.unique(["projectId", "index"]);
+    table.unique(["ownerId", "index"]);
   });
 
   await knex.raw(`
@@ -146,18 +146,18 @@ export async function up(knex: Knex): Promise<void> {
   ]);
 
   await knex.schema.alterTable("Section", (table: Knex.CreateTableBuilder): void => {
-    table.unique(["projectId", "stub"]);
+    table.unique(["ownerId", "stub"]);
   });
 
   await knex.raw(`
     ALTER TABLE :table: ADD CHECK (
-      (:name: = '' AND :parent: = :id: AND :index: < 0)
+      (:name: = '' AND :owner: = :id: AND :index: < 0)
       OR
-      (:name: <> '' AND :parent: <> :id: AND :index: >= 0)
+      (:name: <> '' AND :owner: <> :id: AND :index: >= 0)
     )`, {
     table: "Section",
     id: "id",
-    parent: "projectId",
+    owner: "ownerId",
     name: "name",
     index: "index",
   });
@@ -165,7 +165,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("Item", (table: Knex.CreateTableBuilder): void => {
     id(table);
 
-    table.text("sectionId")
+    table.text("ownerId")
       .notNullable()
       .references("Section.id")
       .onDelete("CASCADE")
@@ -178,7 +178,7 @@ export async function up(knex: Knex): Promise<void> {
     table.text("type")
       .notNullable();
 
-    table.unique(["sectionId", "index"]);
+    table.unique(["ownerId", "index"]);
   });
 
   await knex.raw(`

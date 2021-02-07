@@ -65,9 +65,9 @@ type User implements ProjectRoot & TaskList @entity {
   projects: [Project!]!
   projectById(id: ID!): Project
 
-  id: ID! @id
-  email: String! @column
-  password: String! @column
+  id: ID!
+  email: String!
+  password: String!
   contexts: [Context!]!
 }
 
@@ -81,38 +81,29 @@ type Context implements ProjectRoot & TaskList @entity {
   projects: [Project!]!
   projectById(id: ID!): Project
 
-  id: ID! @id
-  user: User! @link
+  id: ID!
+  user: User!
   stub: String!
-  name: String! @column
+  name: String!
 }
 
-type Project implements TaskList @entity(additionalFields: [
-  { path: "user", type: "UserDbObject['id']" },
-  { path: "context", type: "ContextDbObject['id'] | null" },
-  { path: "parent", type: "ProjectDbObject['id'] | null" },
-]) {
+type Project implements TaskList {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
 
-  id: ID! @id
+  id: ID!
   stub: String!
-  name: String! @column
+  name: String!
   taskList: TaskList!
 }
 
-type Section @entity(additionalFields: [
-  { path: "user", type: "UserDbObject['id']" },
-  { path: "context", type: "ContextDbObject['id'] | null" },
-  { path: "project", type: "ProjectDbObject['id'] | null" },
-  { path: "index", type: "number" },
-]) {
+type Section {
   items: [Item!]!
 
-  id: ID! @id
-  name: String! @column
+  id: ID!
+  name: String!
 }
 
 type Query {

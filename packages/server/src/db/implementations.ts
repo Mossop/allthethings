@@ -1,6 +1,6 @@
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
-import type * as Src from "./datasources";
+import * as Src from "./datasources";
 import type * as Db from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
@@ -35,82 +35,6 @@ export function equals(
   b = typeof b == "string" ? b : b.id;
 
   return a == b;
-}
-
-async function move(
-  datasource: Src.SectionDataSource,
-  itemId: string,
-  foreignKey: "projectId",
-  targetOwner: string,
-  beforeId: string | null,
-): Promise<void> {
-  let foreign = (item: Db.SectionDbObject): string => {
-    return item[foreignKey];
-  };
-
-  let current = await datasource.get(itemId);
-  if (!current) {
-    return;
-  }
-
-  let currentIndex = current.index;
-  let currentOwner = foreign(current);
-
-  let targetIndex: number;
-  let before = beforeId ? await datasource.get(beforeId) : null;
-  if (before && foreign(before) == targetOwner) {
-    targetIndex = before.index;
-
-    let query = datasource.records
-      .where(foreignKey, targetOwner)
-      .andWhere("index", ">=", targetIndex)
-      .orderBy("index", "DESC");
-
-    await datasource.knex.raw(`
-      UPDATE :table: AS :t1:
-        SET :index: = :index2: + 1
-        FROM :query AS :t2:
-        WHERE :id1: = :id2:`, {
-      table: datasource.tableName,
-      t1: "t1",
-      t2: "t2",
-      id1: "t1.id",
-      id2: "t2.id",
-      index2: "t2.index",
-      index: "index",
-      query,
-    });
-  } else {
-    targetIndex = await datasource.nextIndex(targetOwner);
-  }
-
-  await datasource.records
-    .where("id", itemId)
-    // @ts-ignore
-    .update({
-      [foreignKey]: targetOwner,
-      index: targetIndex,
-    });
-
-  let query = datasource.records
-    .where(foreignKey, currentOwner)
-    .andWhere("index", ">", currentIndex)
-    .orderBy("index", "ASC");
-
-  await datasource.knex.raw(`
-      UPDATE :table: AS :t1:
-        SET :index: = :index2: - 1
-        FROM :query AS :t2:
-        WHERE :id1: = :id2:`, {
-    table: datasource.tableName,
-    t1: "t1",
-    t2: "t2",
-    id1: "t1.id",
-    id2: "t2.id",
-    index2: "t2.index",
-    index: "index",
-    query,
-  });
 }
 
 export type Item = TaskItem | LinkItem | NoteItem | FileItem;
@@ -175,7 +99,7 @@ abstract class TaskListImpl<
   public abstract subprojects(): Promise<readonly Project[]>;
   public abstract sections(): Promise<readonly Section[]>;
   public async items(): Promise<readonly Item[]> {
-    return this.dataSources.items.listSection(this.id);
+    return this.dataSources.items.listSpecialSection(this.id, Src.SectionIndex.Anonymous);
   }
 }
 
@@ -219,7 +143,7 @@ export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaReso
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      projectId: this.id,
+      ownerId: this.id,
     });
   }
 
@@ -262,7 +186,7 @@ export class Context
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      projectId: this.id,
+      ownerId: this.id,
     });
   }
 
@@ -329,7 +253,7 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      projectId: this.id,
+      ownerId: this.id,
     });
   }
 
@@ -368,11 +292,13 @@ export class Section extends BaseImpl<Db.SectionDbObject>
   }
 
   public async items(): Promise<readonly Item[]> {
-    return [];
+    return this.dataSources.items.find({
+      ownerId: this.id,
+    });
   }
 
   public async edit(
-    props: Partial<Omit<Db.SectionDbObject, "id" | "projectId" | "stub">>,
+    props: Partial<Omit<Db.SectionDbObject, "id" | "ownerId" | "stub">>,
   ): Promise<void> {
     return this.updateDbObject(props);
   }
@@ -381,7 +307,7 @@ export class Section extends BaseImpl<Db.SectionDbObject>
     taskList: User | Context | Project,
     before: string | null,
   ): Promise<void> {
-    await move(this.dbObjectDataSource, this.id, "projectId", taskList.id, before);
+    await this.dbObjectDataSource.move(this.id, taskList.id, before);
 
     this._dbObject = null;
   }

@@ -13,6 +13,11 @@ export interface DbEntity {
   id: string;
 }
 
+export interface IndexedDbEntity extends DbEntity {
+  ownerId: string;
+  index: number;
+}
+
 // Represents the user, one per user obviously.
 export interface UserDbObject extends DbEntity {
   // unique
@@ -54,13 +59,10 @@ export interface ProjectDbObject extends DbEntity {
 // be an empty string and its index will be -1. Every user has an additional anonymous section, its
 // name will be an empty string and its index wll be -2.
 //
-// unique index on projectId, index.
-// unique index on projectId, stub.
-export interface SectionDbObject extends DbEntity {
-  // Foreign key to ProjectDbObject.id.
-  projectId: string;
-  index: number;
-  // This will be empty for the anonymous section for the project. In this case projectId == id and
+// unique index on ownerId, index.
+// unique index on ownerId, stub.
+export interface SectionDbObject extends IndexedDbEntity {
+  // This will be empty for the anonymous section for the project. In this case ownerId == id and
   // index = -1.
   name: string;
   // auto-generated from the name.
@@ -68,13 +70,9 @@ export interface SectionDbObject extends DbEntity {
 }
 
 // Every item, abstract.
-export interface ItemDbObject extends DbEntity {
-  // Foreign key to SectionDbObject.id.
-  sectionId: string;
+export interface ItemDbObject extends IndexedDbEntity {
   summary: string;
   type: ItemType;
-  // The index of the item in the section.
-  index: number;
 }
 
 // A special instance of an item. id is a foreign key to ItemDbObject.id.
