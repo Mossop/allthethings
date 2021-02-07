@@ -71,6 +71,10 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
     },
+    headingDragPreview: {
+      ...flexRow,
+      alignItems: "center",
+    },
     tasksHeading: {
       padding: theme.spacing(1) + 2,
     },
@@ -341,21 +345,20 @@ const ProjectHeader = ReactMemo(function ProjectHeader({
     },
   });
 
-  return <div
-    ref={previewRef}
-    className={clsx(classes.heading, isDragging && classes.dragging)}
-  >
-    <div
-      className={classes.icon}
-      ref={dragRef}
-    >
-      <ProjectIcon className={classes.dragHandle}/>
+  return <div className={clsx(classes.heading, isDragging && classes.dragging)}>
+    <div className={classes.headingDragPreview} ref={previewRef}>
+      <div
+        className={classes.icon}
+        ref={dragRef}
+      >
+        <ProjectIcon className={classes.dragHandle}/>
+      </div>
+      <HiddenInput
+        className={classes.headingInput}
+        initialValue={project.name}
+        onSubmit={changeTaskListName}
+      />
     </div>
-    <HiddenInput
-      className={classes.headingInput}
-      initialValue={project.name}
-      onSubmit={changeTaskListName}
-    />
     <TaskListActions list={project}/>
   </div>;
 });
