@@ -32,6 +32,7 @@ import type { TaskListView } from "../utils/navigation";
 import { ViewType, replaceView } from "../utils/navigation";
 import type { Context, Project, Section, TaskList, User } from "../utils/state";
 import {
+  isSection,
   useUser,
   useView,
   useProjectRoot,
@@ -43,7 +44,7 @@ import {
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
-import AddDial from "./AddDial";
+import CreateSectionDialog from "./CreateSectionDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -94,11 +95,6 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       justifyContent: "end",
     },
-    floatingAction: {
-      position: "absolute",
-      bottom: theme.spacing(4),
-      right: theme.spacing(4),
-    },
   }));
 
 interface TaskListActionsProps {
@@ -112,6 +108,14 @@ const TaskListActions = ReactMemo(function TaskListActions({
   let root = useProjectRoot();
   let view = useView();
   let user = useUser();
+
+  let [sectionAddDialogOpen, setSectionAddDialogOpen] = useState(false);
+  let openAddSection = useCallback(() => {
+    setSectionAddDialogOpen(true);
+  }, []);
+  let closeAddSection = useCallback(() => {
+    setSectionAddDialogOpen(false);
+  }, []);
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -169,9 +173,16 @@ const TaskListActions = ReactMemo(function TaskListActions({
     };
   }, [deleteContext, deleteProject, deleteSection, list, root, view, user]);
 
-  return <div className={classes.headingActions}>
-    {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
-  </div>;
+  return <>
+    <div className={classes.headingActions}>
+      {!isSection(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
+      {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
+    </div>
+    {
+      sectionAddDialogOpen && !isSection(list) &&
+      <CreateSectionDialog taskList={list} onClose={closeAddSection}/>
+    }
+  </>;
 });
 
 interface SectionListProps {
@@ -500,9 +511,6 @@ export default ReactMemo(function TaskList({
           </Fragment>)
         }
       </List>
-    </div>
-    <div className={classes.floatingAction}>
-      <AddDial viewType={view.type} taskList={view.taskList}/>
     </div>
   </div>;
 });

@@ -32,6 +32,9 @@ export default ReactMemo(function CreateProjectDialog({
   let root = useProjectRoot();
   let view = useView();
 
+  let [open, setOpen] = useState(true);
+  let close = useCallback(() => setOpen(false), []);
+
   let [createProject, { data, error }] = useCreateProjectMutation({
     variables: {
       taskList: taskList.id,
@@ -62,15 +65,15 @@ export default ReactMemo(function CreateProjectDialog({
       taskList: newProject,
     }, view);
 
-    onClose();
-  }, [newProject, onClose, view]);
+    close();
+  }, [newProject, close, view]);
 
   let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
     event.preventDefault();
     void createProject();
   }, [createProject]);
 
-  return <Dialog open={true} onClose={onClose}>
+  return <Dialog open={open} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Project</DialogTitle>
       <DialogContent>

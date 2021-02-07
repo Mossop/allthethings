@@ -171,7 +171,7 @@ export function buildItems(items: readonly SchemaItem[]): Item[] {
 }
 
 export function buildSections(taskList: TaskList, sections: readonly Schema.Section[]): Section[] {
-  return sections.map(({ __typename, ...section }: Schema.Section): Section => ({
+  return sections.map((section: Schema.Section): Section => ({
     ...section,
     taskList,
   }));

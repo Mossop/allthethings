@@ -29,6 +29,9 @@ export default ReactMemo(function CreateContextDialog({
   let view = useView();
   let user = view.user;
 
+  let [open, setOpen] = useState(true);
+  let close = useCallback(() => setOpen(false), []);
+
   let [createContext, { data, error }] = useCreateContextMutation({
     variables: {
       params: state,
@@ -57,15 +60,15 @@ export default ReactMemo(function CreateContextDialog({
       context: newContext,
       taskList: newContext,
     }, view);
-    onClose();
-  }, [newContext, view, onClose]);
+    close();
+  }, [newContext, view, close]);
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     void createContext();
   }, [createContext]);
 
-  return <Dialog open={true} onClose={onClose}>
+  return <Dialog open={open} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Context</DialogTitle>
       <DialogContent>

@@ -28,6 +28,9 @@ export default ReactMemo(function CreateSectionDialog({
     name: "",
   });
 
+  let [open, setOpen] = useState(true);
+  let close = useCallback(() => setOpen(false), []);
+
   let [createSection, { error }] = useCreateSectionMutation({
     variables: {
       taskList: taskList.id,
@@ -45,10 +48,10 @@ export default ReactMemo(function CreateSectionDialog({
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
     await createSection();
-    onClose();
-  }, [createSection, onClose]);
+    close();
+  }, [createSection, close]);
 
-  return <Dialog open={true} onClose={onClose}>
+  return <Dialog open={open} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Section</DialogTitle>
       <DialogContent>

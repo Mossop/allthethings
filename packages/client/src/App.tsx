@@ -27,7 +27,7 @@ function PageContent({
 }: PageContentProps): ReactResult {
   switch (view.type) {
     case ViewType.Inbox:
-      return <Inbox view={view}/>;
+      return <Inbox/>;
     case ViewType.TaskList:
       return <TaskList view={view}/>;
     case ViewType.NotFound:
