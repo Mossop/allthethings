@@ -5,8 +5,8 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { useCallback, Fragment, useMemo } from "react";
-import type { DragSourceMonitor } from "react-dnd";
+import { useCallback, Fragment, useMemo, useState } from "react";
+import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 import { useDrag } from "react-dnd";
 
 import HiddenInput from "../components/HiddenInput";
@@ -19,13 +19,15 @@ import {
   useEditContextMutation,
   useEditProjectMutation,
   useEditSectionMutation,
+  useMoveSectionMutation,
 } from "../schema/mutations";
 import {
   refetchListContextStateQuery,
   refetchListTaskListQuery,
   useListTaskListQuery,
 } from "../schema/queries";
-import { DragType } from "../utils/drag";
+import type { DraggedSection } from "../utils/drag";
+import { DragType, useDrop } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
 import { ViewType, replaceView } from "../utils/navigation";
 import type { Context, Project, Section, TaskList, User } from "../utils/state";
@@ -65,7 +67,6 @@ const useStyles = makeStyles((theme: Theme) =>
       ...flexRow,
       alignItems: "center",
       paddingBottom: theme.spacing(1),
-      marginBottom: theme.spacing(1),
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
@@ -171,18 +172,42 @@ const TaskListActions = ReactMemo(function TaskListActions({
 
 interface SectionListProps {
   section: Section;
+  onDragOver: (section: Section, over: Section | null) => void;
 }
 
 const SectionList = ReactMemo(function SectionList({
   section,
+  onDragOver,
 }: SectionListProps): ReactResult {
   let classes = useStyles();
+
+  let hover = useCallback((item: DraggedSection): void => {
+    onDragOver(item.section, section);
+  }, [onDragOver, section]);
+
+  let [, dropRef] = useDrop({
+    accept: DragType.Section,
+    canDrop: () => false,
+    hover,
+  });
+
+  let begin = useCallback((): void => {
+    onDragOver(section, null);
+  }, [section, onDragOver]);
+
+  let end = useCallback((item: DraggedSection | undefined, monitor: DragSourceMonitor): void => {
+    if (!monitor.didDrop()) {
+      onDragOver(section, null);
+    }
+  }, [section, onDragOver]);
 
   let [{ isDragging }, dragRef, previewRef] = useDrag({
     item: {
       type: DragType.Section,
       section,
     },
+    begin,
+    end,
     collect: (monitor: DragSourceMonitor) => {
       return {
         isDragging: monitor.isDragging(),
@@ -203,23 +228,28 @@ const SectionList = ReactMemo(function SectionList({
     });
   }, [section, editSection]);
 
-  return <List className={classes.section}>
+  return <List
+    disablePadding={true}
+    className={clsx(classes.section)}
+    ref={dropRef}
+  >
     <ListSubheader
-      ref={previewRef}
       disableGutters={true}
       className={clsx(classes.sectionHeading, isDragging && classes.dragging)}
     >
-      <div
-        className={classes.icon}
-        ref={dragRef}
-      >
-        <SectionIcon className={classes.dragHandle}/>
+      <div ref={previewRef} className={classes.sectionHeading}>
+        <div
+          className={classes.icon}
+          ref={dragRef}
+        >
+          <SectionIcon className={classes.dragHandle}/>
+        </div>
+        <HiddenInput
+          className={classes.sectionHeadingInput}
+          initialValue={section.name}
+          onSubmit={changeSectionName}
+        />
       </div>
-      <HiddenInput
-        className={classes.sectionHeadingInput}
-        initialValue={section.name}
-        onSubmit={changeSectionName}
-      />
       <TaskListActions list={section}/>
     </ListSubheader>
   </List>;
@@ -334,6 +364,11 @@ interface TaskListProps {
   view: TaskListView;
 }
 
+interface DraggedSectionState {
+  id: string;
+  index: number;
+}
+
 export default ReactMemo(function TaskList({
   view,
 }: TaskListProps): ReactResult {
@@ -349,6 +384,93 @@ export default ReactMemo(function TaskList({
     [data, view],
   );
 
+  let [draggedSectionState, setDraggedSectionState] = useState<DraggedSectionState | null>(null);
+
+  let orderedSections = useMemo(() => {
+    if (!draggedSectionState) {
+      return sections;
+    }
+
+    let { id: sectionId } = draggedSectionState;
+
+    let index = sections.findIndex((section: Section): boolean => section.id == sectionId);
+    if (index < 0) {
+      return sections;
+    }
+
+    let ordered = [...sections];
+    ordered.splice(index, 1);
+    ordered.splice(draggedSectionState.index, 0, sections[index]);
+    return ordered;
+  }, [draggedSectionState, sections]);
+
+  let draggedOver = useCallback((section: Section, over: Section | null): void => {
+    if (!over) {
+      setDraggedSectionState(null);
+      return;
+    }
+
+    let index = orderedSections.findIndex((section: Section): boolean => section.id == over.id);
+    if (index >= 0) {
+      setDraggedSectionState({
+        id: section.id,
+        index,
+      });
+    } else {
+      setDraggedSectionState(null);
+    }
+  }, [orderedSections]);
+
+  let canDrop = useCallback((): boolean => {
+    if (!draggedSectionState || draggedSectionState.index >= sections.length) {
+      return false;
+    }
+
+    return true;
+  }, [sections, draggedSectionState]);
+
+  let [moveSection] = useMoveSectionMutation();
+
+  let drop = useCallback(
+    async (item: DraggedSection, monitor: DropTargetMonitor): Promise<void> => {
+      if (monitor.didDrop()) {
+        return;
+      }
+
+      let index = orderedSections.findIndex(
+        (section: Section): boolean => section.id == item.section.id,
+      );
+
+      if (index < 0) {
+        return;
+      }
+
+      let beforeSection = index < orderedSections.length - 1
+        ? orderedSections[index + 1].id
+        : null;
+
+      await moveSection({
+        variables: {
+          id: item.section.id,
+          taskList: view.taskList.id,
+          before: beforeSection,
+        },
+        refetchQueries: [
+          refetchListTaskListQuery({
+            taskList: view.taskList.id,
+          }),
+        ],
+      });
+    },
+    [moveSection, view, orderedSections],
+  );
+
+  let [, dropRef] = useDrop({
+    accept: DragType.Section,
+    canDrop,
+    drop,
+  });
+
   let header;
   if (isUser(view.taskList)) {
     header = <UserHeader user={view.taskList}/>;
@@ -361,15 +483,16 @@ export default ReactMemo(function TaskList({
   return <div className={classes.outer}>
     <div className={classes.content}>
       {header}
-      <List>
+      <List disablePadding={true} ref={dropRef}>
         {
-          sections.map((section: Section) => <Fragment
+          orderedSections.map((section: Section, index: number) => <Fragment
             key={section.id}
           >
-            <Divider/>
+            {index > 0 && <Divider/>}
             <SectionList
               key={section.id}
               section={section}
+              onDragOver={draggedOver}
             />
           </Fragment>)
         }

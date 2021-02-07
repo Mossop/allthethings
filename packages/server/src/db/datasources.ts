@@ -35,7 +35,7 @@ export abstract class DbDataSource<
   T extends { id: string },
   D extends Db.DbEntity = Db.DbEntity,
 > extends DataSource<ResolverContext> {
-  protected readonly abstract tableName: string;
+  public readonly abstract tableName: string;
   protected abstract builder(resolverContext: ResolverContext, dbObject: D): T;
   private _config: DataSourceConfig<ResolverContext> | null = null;
 
@@ -82,22 +82,29 @@ export abstract class DbDataSource<
   /**
    * Typed access to the table for this datasource.
    */
-  protected get table(): Knex.QueryBuilder<D, D[]> {
+  public get table(): Knex.QueryBuilder<D, D[]> {
     return this.knex.table(this.tableName);
   }
 
   /**
    * A filtered view of the table for this datasource which ignores anonymous records.
    */
-  protected get records(): Knex.QueryBuilder<D, D[]> {
+  public get records(): Knex.QueryBuilder<D, D[]> {
     return this.table;
   }
 
   /**
    * Given a query returns all the matching records.
    */
-  protected select(query: Knex.QueryBuilder<D, D[]>): Promise<D[]> {
+  public select(query: Knex.QueryBuilder<D, D[]>): Promise<D[]> {
     return query.select("*") as Promise<D[]>;
+  }
+
+  /**
+   * Given a query returns the first matching record.
+   */
+  public first(query: Knex.QueryBuilder<D, D[]>): Promise<D | null> {
+    return query.first("*") as Promise<D | null>;
   }
 
   /**
@@ -127,15 +134,7 @@ export abstract class DbDataSource<
    * Gets the DB record with the given ID.
    */
   public async get(id: string): Promise<D | null> {
-    let results = await this.select(this.records.whereIn(this.ref("id"), [id]));
-
-    if (!results.length) {
-      return null;
-    } else if (results.length == 1) {
-      return results[0];
-    } else {
-      throw new Error("Unexpected multiple records with the same ID.");
-    }
+    return this.first(this.records.whereIn(this.ref("id"), [id]));
   }
 
   /**
@@ -204,20 +203,20 @@ export abstract class DbDataSource<
 }
 
 export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
-  protected tableName = "User";
+  public tableName = "User";
   protected builder = classBuilder<Impl.User, Db.UserDbObject>(Impl.User);
 
   public async verifyUser(email: string, password: string): Promise<Impl.User | null> {
-    let users = await this.select(this.table.where({
+    let user = await this.first(this.table.where({
       email,
     }));
 
-    if (users.length != 1) {
+    if (!user) {
       return null;
     }
 
-    if (await bcryptCompare(password, users[0].password)) {
-      return this.build(users[0]);
+    if (await bcryptCompare(password, user.password)) {
+      return this.build(user);
     }
 
     return null;
@@ -240,7 +239,7 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
 }
 
 export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbObject> {
-  protected tableName = "Context";
+  public tableName = "Context";
   protected builder = classBuilder<Impl.Context, Db.ContextDbObject>(Impl.Context);
 
   public get records(): Knex.QueryBuilder<Db.ContextDbObject, Db.ContextDbObject[]> {
@@ -248,12 +247,12 @@ export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbOb
   }
 
   public async getUser(contextId: string): Promise<Impl.User | null> {
-    let records = await this.table.where("id", contextId);
-    if (records.length != 1) {
+    let record = await this.first(this.table.where("id", contextId));
+    if (!record) {
       return null;
     }
 
-    return this.context.dataSources.users.getOne(records[0].userId);
+    return this.context.dataSources.users.getOne(record.userId);
   }
 
   public async create(
@@ -275,7 +274,7 @@ export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbOb
 }
 
 export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbObject> {
-  protected tableName = "Project";
+  public tableName = "Project";
   protected builder = classBuilder<Impl.Project, Db.ProjectDbObject>(Impl.Project);
 
   public get records(): Knex.QueryBuilder<Db.ProjectDbObject, Db.ProjectDbObject[]> {
@@ -306,7 +305,7 @@ export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbOb
 }
 
 export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbObject> {
-  protected tableName = "Section";
+  public tableName = "Section";
   protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
 
   public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
@@ -351,7 +350,7 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
 }
 
 export class ItemDataSource extends DbDataSource<Item, Db.ItemDbObject> {
-  protected tableName = "Item";
+  public tableName = "Item";
   protected builder(resolverContext: ResolverContext, dbObject: Db.ItemDbObject): Item {
     switch (dbObject.type) {
       case Db.ItemType.Task:
@@ -375,7 +374,7 @@ export class ItemDataSource extends DbDataSource<Item, Db.ItemDbObject> {
 }
 
 export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemDbObject> {
-  protected tableName = "TaskItem";
+  public tableName = "TaskItem";
   protected builder(
     resolverContext: ResolverContext,
     dbObject: Db.TaskItemDbObject,
@@ -385,7 +384,7 @@ export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemD
 }
 
 export class FileItemDataSource extends DbDataSource<Impl.FileItem, Db.FileItemDbObject> {
-  protected tableName = "FileItem";
+  public tableName = "FileItem";
   protected builder(
     resolverContext: ResolverContext,
     dbObject: Db.FileItemDbObject,
@@ -395,7 +394,7 @@ export class FileItemDataSource extends DbDataSource<Impl.FileItem, Db.FileItemD
 }
 
 export class NoteItemDataSource extends DbDataSource<Impl.NoteItem, Db.NoteItemDbObject> {
-  protected tableName = "NoteItem";
+  public tableName = "NoteItem";
   protected builder(
     resolverContext: ResolverContext,
     dbObject: Db.NoteItemDbObject,
@@ -405,7 +404,7 @@ export class NoteItemDataSource extends DbDataSource<Impl.NoteItem, Db.NoteItemD
 }
 
 export class LinkItemDataSource extends DbDataSource<Impl.LinkItem, Db.LinkItemDbObject> {
-  protected tableName = "LinkItem";
+  public tableName = "LinkItem";
   protected builder(
     resolverContext: ResolverContext,
     dbObject: Db.LinkItemDbObject,

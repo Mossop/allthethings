@@ -1,3 +1,5 @@
+import type Knex from "knex";
+
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type * as Src from "./datasources";
@@ -35,6 +37,96 @@ export function equals(
   b = typeof b == "string" ? b : b.id;
 
   return a == b;
+}
+
+async function move<D extends Db.SectionDbObject = Db.SectionDbObject>(
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  datasource: Src.DbDataSource<any, D>,
+  itemId: string,
+  foreignKey: "projectId",
+  targetOwner: string,
+  beforeId: string | null,
+): Promise<void> {
+  let foreign = (item: D): string => {
+    return item[foreignKey];
+  };
+
+  let nextIndex = async (query: Knex.QueryBuilder<D, D[]>): Promise<number> => {
+    let max: { max: number | null }[] = await query.max("index");
+    if (!max.length) {
+      return 0;
+    }
+
+    if (max[0].max === null) {
+      return 0;
+    }
+
+    return max[0].max + 1;
+  };
+
+  let current = await datasource.get(itemId);
+  if (!current) {
+    return;
+  }
+
+  let currentIndex = current.index;
+  let currentOwner = foreign(current);
+
+  let targetIndex: number;
+  let before = beforeId ? await datasource.get(beforeId) : null;
+  if (before && foreign(before) == targetOwner) {
+    targetIndex = before.index;
+
+    let query = datasource.records
+      .where(foreignKey, targetOwner)
+      .andWhere("index", ">=", targetIndex)
+      .orderBy("index", "DESC");
+
+    await datasource.knex.raw(`
+      UPDATE :table: AS :t1:
+        SET :index: = :index2: + 1
+        FROM :query AS :t2:
+        WHERE :id1: = :id2:`, {
+      table: datasource.tableName,
+      t1: "t1",
+      t2: "t2",
+      id1: "t1.id",
+      id2: "t2.id",
+      index2: "t2.index",
+      index: "index",
+      query,
+    });
+  } else {
+    targetIndex = await nextIndex(datasource.records.where(foreignKey, targetOwner));
+  }
+
+  await datasource.records
+    .where("id", itemId)
+    // @ts-ignore
+    .update({
+      [foreignKey]: targetOwner,
+      index: targetIndex,
+    });
+
+  let query = datasource.records
+    .where(foreignKey, currentOwner)
+    .andWhere("index", ">", currentIndex)
+    .orderBy("index", "ASC");
+
+  await datasource.knex.raw(`
+      UPDATE :table: AS :t1:
+        SET :index: = :index2: - 1
+        FROM :query AS :t2:
+        WHERE :id1: = :id2:`, {
+    table: datasource.tableName,
+    t1: "t1",
+    t2: "t2",
+    id1: "t1.id",
+    id2: "t2.id",
+    index2: "t2.index",
+    index: "index",
+    query,
+  });
 }
 
 export type Item = TaskItem | LinkItem | NoteItem | FileItem;
@@ -283,8 +375,8 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
 
 export class Section extends BaseImpl<Db.SectionDbObject>
   implements SchemaResolver<Schema.Section> {
-  protected getDbObject(): Promise<Db.SectionDbObject> {
-    throw new Error("Method not implemented.");
+  protected async getDbObject(): Promise<Db.SectionDbObject> {
+    return assertValid(await this.dataSources.sections.get(this.id));
   }
 
   protected get dbObjectDataSource(): Src.SectionDataSource {
@@ -305,77 +397,9 @@ export class Section extends BaseImpl<Db.SectionDbObject>
     taskList: User | Context | Project,
     before: string | null,
   ): Promise<void> {
-    let existingSections = await taskList.sections();
-    let targetSection = existingSections.find((section: Section): boolean => section.id == before);
-    let targetIndex = targetSection ? await targetSection.index() : null;
+    await move(this.dbObjectDataSource, this.id, "projectId", taskList.id, before);
 
-    let targetProject = taskList.id;
-    let dbObject = await this.dbObject;
-    let {
-      projectId: existingProject,
-      index: existingIndex,
-    } = dbObject;
-
-    // The initial index we will move to.
-    let dbIndex: number;
-
-    if (existingProject == targetProject) {
-      // With nothing else use the current last index.
-      if (targetIndex === null || targetIndex > existingSections.length - 1) {
-        targetIndex = existingSections.length - 1;
-      }
-
-      if (existingIndex == targetIndex) {
-        // Same tasklist, same index. Nothing to do.
-        return;
-      }
-
-      // Have to re-order the list.
-
-      // If we're moving to a higher position then initially move to one index above as we will be
-      // decrementing all the indexes above the existing position.
-      dbIndex = existingIndex < targetIndex ? targetIndex + 1 : targetIndex;
-    } else {
-      // With nothing else use the new last index.
-      if (targetIndex === null || targetIndex > existingSections.length) {
-        targetIndex = existingSections.length;
-      }
-
-      dbIndex = targetIndex;
-    }
-
-    // Create a gap at the target index.
-    await this.dbObjectDataSource.records
-      .where({
-        projectId: targetProject,
-      })
-      .andWhere("index", ">=", dbIndex)
-      .update("index", this.dbObjectDataSource.knex.raw(":index: + 1", {
-        index: "index",
-      }));
-
-    // Move into the gap.
-    await this.dbObjectDataSource.records
-      .where({
-        id: this.id,
-      })
-      .update({
-        projectId: targetProject,
-        index: dbIndex,
-      });
-
-    // Close the gap that was left.
-    await this.dbObjectDataSource.records
-      .where({
-        projectId: existingProject,
-      })
-      .andWhere("index", ">", existingIndex)
-      .update("index", this.dbObjectDataSource.knex.raw(":index: - 1", {
-        index: "index",
-      }));
-
-    dbObject.projectId = targetProject;
-    dbObject.index = targetIndex;
+    this._dbObject = null;
   }
 
   public async delete(): Promise<void> {
