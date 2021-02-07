@@ -1,5 +1,4 @@
 import Divider from "@material-ui/core/Divider";
-import IconButton from "@material-ui/core/IconButton";
 import List from "@material-ui/core/List";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
@@ -10,41 +9,24 @@ import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 import { useDrag } from "react-dnd";
 
 import HiddenInput from "../components/HiddenInput";
-import { ProjectIcon, SectionIcon, DeleteIcon } from "../components/Icons";
+import { ProjectIcon, SectionIcon } from "../components/Icons";
+import TaskListActions from "../components/TaskListActions";
 import { Heading, TextStyles } from "../components/Text";
 import {
-  useDeleteContextMutation,
-  useDeleteProjectMutation,
-  useDeleteSectionMutation,
   useEditContextMutation,
   useEditProjectMutation,
   useEditSectionMutation,
   useMoveSectionMutation,
 } from "../schema/mutations";
-import {
-  refetchListContextStateQuery,
-  refetchListTaskListQuery,
-  useListTaskListQuery,
-} from "../schema/queries";
+import { refetchListTaskListQuery, useListTaskListQuery } from "../schema/queries";
 import type { DraggedSection } from "../utils/drag";
 import { DragType, useDrop } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
-import { ViewType, replaceView } from "../utils/navigation";
-import type { Context, Project, Section, TaskList, User } from "../utils/state";
-import {
-  isSection,
-  useUser,
-  useView,
-  useProjectRoot,
-  isContext,
-  isUser,
-  buildSections,
-  isProject,
-} from "../utils/state";
+import type { Context, Project, Section, User } from "../utils/state";
+import { isUser, buildSections, isProject } from "../utils/state";
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
-import CreateSectionDialog from "./CreateSectionDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -89,101 +71,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.text.primary,
     },
     sectionHeadingInput: TextStyles.subheading,
-    headingActions: {
-      flex: 1,
-      ...flexRow,
-      alignItems: "center",
-      justifyContent: "end",
-    },
   }));
-
-interface TaskListActionsProps {
-  list: TaskList | Section;
-}
-
-const TaskListActions = ReactMemo(function TaskListActions({
-  list,
-}: TaskListActionsProps): ReactResult {
-  let classes = useStyles();
-  let root = useProjectRoot();
-  let view = useView();
-  let user = useUser();
-
-  let [sectionAddDialogOpen, setSectionAddDialogOpen] = useState(false);
-  let openAddSection = useCallback(() => {
-    setSectionAddDialogOpen(true);
-  }, []);
-  let closeAddSection = useCallback(() => {
-    setSectionAddDialogOpen(false);
-  }, []);
-
-  let [deleteSection] = useDeleteSectionMutation();
-  let [deleteProject] = useDeleteProjectMutation({
-    refetchQueries: [
-      refetchListContextStateQuery(),
-    ],
-  });
-  let [deleteContext] = useDeleteContextMutation({
-    refetchQueries: [
-      refetchListContextStateQuery(),
-    ],
-  });
-
-  let deleteList = useMemo(() => {
-    if (isUser(list)) {
-      return null;
-    }
-
-    return () => {
-      if (isProject(list)) {
-        replaceView({
-          type: ViewType.TaskList,
-          taskList: list.parent ?? root,
-        }, view);
-
-        void deleteProject({
-          variables: {
-            id: list.id,
-          },
-        });
-      } else if (isContext(list)) {
-        replaceView({
-          type: ViewType.TaskList,
-          taskList: user,
-          context: null,
-        }, view);
-
-        void deleteContext({
-          variables: {
-            id: list.id,
-          },
-        });
-      } else {
-        void deleteSection({
-          variables: {
-            id: list.id,
-          },
-          refetchQueries: [
-            refetchListTaskListQuery({
-              taskList: list.taskList.id,
-            }),
-          ],
-        });
-      }
-    };
-  }, [deleteContext, deleteProject, deleteSection, list, root, view, user]);
-
-  return <>
-    <div className={classes.headingActions}>
-      {!isSection(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
-      {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
-    </div>
-    {
-      sectionAddDialogOpen && !isSection(list) &&
-      <CreateSectionDialog taskList={list} onClose={closeAddSection}/>
-    }
-  </>;
-});
 
 interface SectionListProps {
   section: Section;
