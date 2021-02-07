@@ -29,6 +29,11 @@ function classBuilder<T, D>(
   return (resolverContext: ResolverContext, dbObject: D) => new cls(resolverContext, dbObject);
 }
 
+async function max<D>(query: Knex.QueryBuilder<D, D[]>, col: keyof D): Promise<number | null> {
+  let result: { max: number | null } | undefined = await query.max(col).first();
+  return result ? result.max : null;
+}
+
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
 export abstract class DbDataSource<
@@ -316,6 +321,11 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
     return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
   }
 
+  public async nextIndex(project: string): Promise<number> {
+    let index = await max(this.records.where("projectId", project), "index");
+    return index !== null ? index + 1 : 0;
+  }
+
   public async create(
     project: Impl.User | Impl.Context | Impl.Project,
     before: string | null,
@@ -325,19 +335,25 @@ export class SectionDataSource extends DbDataSource<Impl.Section, Db.SectionDbOb
 
     if (name == "") {
       index = SectionIndex.Anonymous;
-    } else {
-      let existing = await project.sections();
-      index = existing.length;
-
-      let target = existing.find((section: Impl.Section): boolean => section.id == before);
-      if (target) {
-        index = await target.index();
+    } else if (before) {
+      let value = await this.records
+        .where({
+          projectId: project.id,
+          id: before,
+        })
+        .pluck("index")
+        .first();
+      if (value !== undefined) {
         await this.table.where({
           projectId: project.id,
-        }).andWhere("index", ">=", index).update("index", this.knex.raw(":index: + 1", {
+        }).andWhere("index", ">=", value).update("index", this.knex.raw(":index: + 1", {
           index: "index",
         }));
       }
+
+      index = value ?? await this.nextIndex(project.id);
+    } else {
+      index = await this.nextIndex(project.id);
     }
 
     return this.build(this.insert({

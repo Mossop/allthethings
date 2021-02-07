@@ -1,5 +1,3 @@
-import type Knex from "knex";
-
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import type * as Src from "./datasources";
@@ -39,29 +37,15 @@ export function equals(
   return a == b;
 }
 
-async function move<D extends Db.SectionDbObject = Db.SectionDbObject>(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  datasource: Src.DbDataSource<any, D>,
+async function move(
+  datasource: Src.SectionDataSource,
   itemId: string,
   foreignKey: "projectId",
   targetOwner: string,
   beforeId: string | null,
 ): Promise<void> {
-  let foreign = (item: D): string => {
+  let foreign = (item: Db.SectionDbObject): string => {
     return item[foreignKey];
-  };
-
-  let nextIndex = async (query: Knex.QueryBuilder<D, D[]>): Promise<number> => {
-    let max: { max: number | null }[] = await query.max("index");
-    if (!max.length) {
-      return 0;
-    }
-
-    if (max[0].max === null) {
-      return 0;
-    }
-
-    return max[0].max + 1;
   };
 
   let current = await datasource.get(itemId);
@@ -97,7 +81,7 @@ async function move<D extends Db.SectionDbObject = Db.SectionDbObject>(
       query,
     });
   } else {
-    targetIndex = await nextIndex(datasource.records.where(foreignKey, targetOwner));
+    targetIndex = await datasource.nextIndex(targetOwner);
   }
 
   await datasource.records
