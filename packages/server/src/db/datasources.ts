@@ -293,6 +293,35 @@ export abstract class IndexedDbDataSource<
       query,
     });
   }
+
+  public async delete(id: string): Promise<void> {
+    let item = await this.get(id);
+    if (!item) {
+      return;
+    }
+
+    await this.table.where(this.ref("id"), id).delete();
+
+    let query = this.records
+      .where("ownerId", item.ownerId)
+      .andWhere("index", ">", item.index)
+      .orderBy("index", "ASC");
+
+    await this.knex.raw(`
+      UPDATE :table: AS :t1:
+        SET :index: = :index2: - 1
+        FROM :query AS :t2:
+        WHERE :id1: = :id2:`, {
+      table: this.tableName,
+      t1: "t1",
+      t2: "t2",
+      id1: "t1.id",
+      id2: "t2.id",
+      index2: "t2.index",
+      index: "index",
+      query,
+    });
+  }
 }
 
 export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
@@ -505,7 +534,20 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
   }
 }
 
-export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemDbObject> {
+abstract class ExtendedItemDataSource<
+  T extends { id: string },
+  D extends Db.DbEntity = Db.DbEntity,
+> extends DbDataSource<T, D> {
+  public get items(): ItemDataSource {
+    return this.context.dataSources.items;
+  }
+
+  public delete(id: string): Promise<void> {
+    return this.items.delete(id);
+  }
+}
+
+export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db.TaskItemDbObject> {
   public tableName = "TaskItem";
   protected builder(
     resolverContext: ResolverContext,
@@ -518,7 +560,7 @@ export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemD
     owner: Impl.TaskList | Impl.Section,
     { summary, link }: Schema.CreateTaskParams,
   ): Promise<Impl.TaskItem> {
-    let base = await this.context.dataSources.items.create(owner, Db.ItemType.Task, summary);
+    let base = await this.items.create(owner, Db.ItemType.Task, summary);
     let task = await this.insert({
       id: base.id,
       done: false,
@@ -529,7 +571,7 @@ export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemD
   }
 }
 
-export class FileItemDataSource extends DbDataSource<Impl.FileItem, Db.FileItemDbObject> {
+export class FileItemDataSource extends ExtendedItemDataSource<Impl.FileItem, Db.FileItemDbObject> {
   public tableName = "FileItem";
   protected builder(
     resolverContext: ResolverContext,
@@ -539,7 +581,7 @@ export class FileItemDataSource extends DbDataSource<Impl.FileItem, Db.FileItemD
   }
 }
 
-export class NoteItemDataSource extends DbDataSource<Impl.NoteItem, Db.NoteItemDbObject> {
+export class NoteItemDataSource extends ExtendedItemDataSource<Impl.NoteItem, Db.NoteItemDbObject> {
   public tableName = "NoteItem";
   protected builder(
     resolverContext: ResolverContext,
@@ -549,7 +591,7 @@ export class NoteItemDataSource extends DbDataSource<Impl.NoteItem, Db.NoteItemD
   }
 }
 
-export class LinkItemDataSource extends DbDataSource<Impl.LinkItem, Db.LinkItemDbObject> {
+export class LinkItemDataSource extends ExtendedItemDataSource<Impl.LinkItem, Db.LinkItemDbObject> {
   public tableName = "LinkItem";
   protected builder(
     resolverContext: ResolverContext,

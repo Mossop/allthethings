@@ -109,6 +109,13 @@ export type CreateTaskMutationVariables = Types.Exact<{
 
 export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: { readonly __typename: 'Task', readonly id: string, readonly summary: string } };
 
+export type DeleteItemMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+}>;
+
+
+export type DeleteItemMutation = { readonly __typename: 'Mutation', readonly deleteItem: boolean };
+
 
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
@@ -573,3 +580,33 @@ export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
+export const DeleteItemDocument = gql`
+    mutation DeleteItem($id: ID!) {
+  deleteItem(id: $id)
+}
+    `;
+export type DeleteItemMutationFn = Apollo.MutationFunction<DeleteItemMutation, DeleteItemMutationVariables>;
+
+/**
+ * __useDeleteItemMutation__
+ *
+ * To run a mutation, you first call `useDeleteItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteItemMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteItemMutation, { data, loading, error }] = useDeleteItemMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteItemMutation(baseOptions?: Apollo.MutationHookOptions<DeleteItemMutation, DeleteItemMutationVariables>) {
+        return Apollo.useMutation<DeleteItemMutation, DeleteItemMutationVariables>(DeleteItemDocument, baseOptions);
+      }
+export type DeleteItemMutationHookResult = ReturnType<typeof useDeleteItemMutation>;
+export type DeleteItemMutationResult = Apollo.MutationResult<DeleteItemMutation>;
+export type DeleteItemMutationOptions = Apollo.BaseMutationOptions<DeleteItemMutation, DeleteItemMutationVariables>;

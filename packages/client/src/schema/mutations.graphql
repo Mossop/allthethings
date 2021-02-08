@@ -87,3 +87,7 @@ mutation CreateTask($list: ID, $params: CreateTaskParams!) {
     summary
   }
 }
+
+mutation DeleteItem($id: ID!) {
+  deleteItem(id: $id)
+}

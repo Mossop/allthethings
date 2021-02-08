@@ -184,6 +184,7 @@ export type Mutation = {
   readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
   readonly createTask: Task;
+  readonly deleteItem: Scalars['Boolean'];
 };
 
 
@@ -260,4 +261,9 @@ export type MutationDeleteSectionArgs = {
 export type MutationCreateTaskArgs = {
   list?: Maybe<Scalars['ID']>;
   params: CreateTaskParams;
+};
+
+
+export type MutationDeleteItemArgs = {
+  id: Scalars['ID'];
 };

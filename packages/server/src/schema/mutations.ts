@@ -197,6 +197,19 @@ const resolvers: MutationResolvers = {
 
     return ctx.dataSources.tasks.create(list, params);
   }),
+
+  deleteItem: authed(async ({
+    args: { id },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationDeleteItemArgs>): Promise<boolean> => {
+    let item = await ctx.dataSources.items.getOne(id);
+    if (!item) {
+      return false;
+    }
+
+    await item.delete();
+    return true;
+  }),
 };
 
 export default {

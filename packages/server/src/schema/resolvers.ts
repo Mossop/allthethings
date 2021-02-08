@@ -256,6 +256,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   editSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationEditSectionArgs, 'id' | 'params'>>;
   deleteSection: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteSectionArgs, 'id'>>;
   createTask: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'params'>>;
+  deleteItem: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteItemArgs, 'id'>>;
 }>;
 
 export type Resolvers<ContextType = ResolverContext> = ResolversObject<{

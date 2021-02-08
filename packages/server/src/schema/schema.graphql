@@ -135,4 +135,5 @@ type Mutation {
   editSection(id: ID!, params: EditSectionParams!): Section
   deleteSection(id: ID!): Boolean!
   createTask(list: ID, params: CreateTaskParams!): Task!
+  deleteItem(id: ID!): Boolean!
 }

@@ -91,6 +91,10 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
     }
     this._dbObject = Promise.resolve(newObject);
   }
+
+  public async delete(): Promise<void> {
+    return this.dbObjectDataSource.delete(this.id);
+  }
 }
 
 abstract class TaskListImpl<
@@ -241,10 +245,6 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
     });
   }
 
-  public async delete(): Promise<void> {
-    return this.dataSources.projects.delete(this.id);
-  }
-
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
       parentId: this.id,
@@ -310,10 +310,6 @@ export class Section extends BaseImpl<Db.SectionDbObject>
     await this.dbObjectDataSource.move(this.id, taskList.id, before);
 
     this._dbObject = null;
-  }
-
-  public async delete(): Promise<void> {
-    return this.dataSources.sections.delete(this.id);
   }
 
   public async index(): Promise<number> {
