@@ -9,6 +9,7 @@ module.exports = {
       plugins: {
         "typescript": {
           immutableTypes: true,
+          nonOptionalTypename: true,
         },
         "typescript-apollo-client-helpers": {
           useTypeImports: true,
@@ -36,6 +37,7 @@ module.exports = {
           preResolveTypes: true,
           useTypeImports: true,
           onlyOperationTypes: true,
+          nonOptionalTypename: true,
         },
         "typescript-react-apollo": {
           withRefetchFn: true,

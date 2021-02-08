@@ -1,4 +1,4 @@
-import type { User, Context, Project, Section } from "../db";
+import type { User, Context, Project, Section, TaskList, TaskItem } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
@@ -180,6 +180,22 @@ const resolvers: MutationResolvers = {
 
     await section.delete();
     return true;
+  }),
+
+  createTask: authed(async ({
+    args: { list: listId, params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationCreateTaskArgs>): Promise<TaskItem> => {
+    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    if (!list && listId) {
+      list = await ctx.dataSources.sections.getOne(listId);
+    }
+
+    if (!list) {
+      throw new Error("Unknown task list.");
+    }
+
+    return ctx.dataSources.tasks.create(list, params);
   }),
 };
 

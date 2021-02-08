@@ -12,6 +12,7 @@ import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
+import { useBoolState } from "../utils/hooks";
 import { pushView, ViewType } from "../utils/navigation";
 import { useView } from "../utils/state";
 import { ReactMemo } from "../utils/types";
@@ -29,8 +30,7 @@ export default ReactMemo(function CreateContextDialog({
   let view = useView();
   let user = view.user;
 
-  let [open, setOpen] = useState(true);
-  let close = useCallback(() => setOpen(false), []);
+  let [isOpen,, close] = useBoolState(true);
 
   let [createContext, { data, error }] = useCreateContextMutation({
     variables: {
@@ -68,7 +68,7 @@ export default ReactMemo(function CreateContextDialog({
     void createContext();
   }, [createContext]);
 
-  return <Dialog open={open} onClose={close} onExited={onClose}>
+  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Context</DialogTitle>
       <DialogContent>
@@ -87,7 +87,7 @@ export default ReactMemo(function CreateContextDialog({
       </DialogContent>
       <DialogActions>
         <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={onClose} variant="contained">Cancel</Button>
+        <Button onClick={close} variant="contained">Cancel</Button>
       </DialogActions>
     </form>
   </Dialog>;

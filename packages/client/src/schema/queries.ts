@@ -6,17 +6,17 @@ import * as Apollo from '@apollo/client';
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename?: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename?: 'User', readonly id: string, readonly email: string, readonly contexts: ReadonlyArray<(
-      { readonly __typename?: 'Context', readonly id: string, readonly stub: string, readonly name: string }
+export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
+    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly contexts: ReadonlyArray<(
+      { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & RootFields_Context_Fragment
     )> }
     & RootFields_User_Fragment
   )> };
 
-export type RootFields_User_Fragment = { readonly __typename?: 'User', readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }> };
+export type RootFields_User_Fragment = { readonly __typename: 'User', readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
-export type RootFields_Context_Fragment = { readonly __typename?: 'Context', readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename?: 'Project', readonly id: string }> }> };
+export type RootFields_Context_Fragment = { readonly __typename: 'Context', readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
 export type RootFieldsFragment = RootFields_User_Fragment | RootFields_Context_Fragment;
 
@@ -25,87 +25,87 @@ export type ListTaskListQueryVariables = Types.Exact<{
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename?: 'Query', readonly taskList: Types.Maybe<{ readonly __typename?: 'User', readonly items: ReadonlyArray<(
-      { readonly __typename?: 'Task' }
+export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'User', readonly items: ReadonlyArray<(
+      { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
-      { readonly __typename?: 'File' }
+      { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
-      { readonly __typename?: 'Note' }
+      { readonly __typename: 'Note' }
       & ItemFields_Note_Fragment
     ) | (
-      { readonly __typename?: 'Link' }
+      { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
-        { readonly __typename?: 'Task' }
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
-        { readonly __typename?: 'File' }
+        { readonly __typename: 'File' }
         & ItemFields_File_Fragment
       ) | (
-        { readonly __typename?: 'Note' }
+        { readonly __typename: 'Note' }
         & ItemFields_Note_Fragment
       ) | (
-        { readonly __typename?: 'Link' }
+        { readonly __typename: 'Link' }
         & ItemFields_Link_Fragment
-      )> }> } | { readonly __typename?: 'Context', readonly items: ReadonlyArray<(
-      { readonly __typename?: 'Task' }
+      )> }> } | { readonly __typename: 'Context', readonly items: ReadonlyArray<(
+      { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
-      { readonly __typename?: 'File' }
+      { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
-      { readonly __typename?: 'Note' }
+      { readonly __typename: 'Note' }
       & ItemFields_Note_Fragment
     ) | (
-      { readonly __typename?: 'Link' }
+      { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
-        { readonly __typename?: 'Task' }
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
-        { readonly __typename?: 'File' }
+        { readonly __typename: 'File' }
         & ItemFields_File_Fragment
       ) | (
-        { readonly __typename?: 'Note' }
+        { readonly __typename: 'Note' }
         & ItemFields_Note_Fragment
       ) | (
-        { readonly __typename?: 'Link' }
+        { readonly __typename: 'Link' }
         & ItemFields_Link_Fragment
-      )> }> } | { readonly __typename?: 'Project', readonly items: ReadonlyArray<(
-      { readonly __typename?: 'Task' }
+      )> }> } | { readonly __typename: 'Project', readonly items: ReadonlyArray<(
+      { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
-      { readonly __typename?: 'File' }
+      { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
-      { readonly __typename?: 'Note' }
+      { readonly __typename: 'Note' }
       & ItemFields_Note_Fragment
     ) | (
-      { readonly __typename?: 'Link' }
+      { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename?: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
-        { readonly __typename?: 'Task' }
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+        { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
-        { readonly __typename?: 'File' }
+        { readonly __typename: 'File' }
         & ItemFields_File_Fragment
       ) | (
-        { readonly __typename?: 'Note' }
+        { readonly __typename: 'Note' }
         & ItemFields_Note_Fragment
       ) | (
-        { readonly __typename?: 'Link' }
+        { readonly __typename: 'Link' }
         & ItemFields_Link_Fragment
       )> }> }> };
 
-export type ItemFields_Task_Fragment = { readonly __typename?: 'Task', readonly done: boolean, readonly id: string, readonly summary: string };
+export type ItemFields_Task_Fragment = { readonly __typename: 'Task', readonly done: boolean, readonly id: string, readonly summary: string };
 
-export type ItemFields_File_Fragment = { readonly __typename?: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string };
+export type ItemFields_File_Fragment = { readonly __typename: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string };
 
-export type ItemFields_Note_Fragment = { readonly __typename?: 'Note', readonly note: string, readonly id: string, readonly summary: string };
+export type ItemFields_Note_Fragment = { readonly __typename: 'Note', readonly note: string, readonly id: string, readonly summary: string };
 
-export type ItemFields_Link_Fragment = { readonly __typename?: 'Link', readonly icon: Types.Maybe<string>, readonly link: string, readonly id: string, readonly summary: string };
+export type ItemFields_Link_Fragment = { readonly __typename: 'Link', readonly icon: Types.Maybe<string>, readonly link: string, readonly id: string, readonly summary: string };
 
 export type ItemFieldsFragment = ItemFields_Task_Fragment | ItemFields_File_Fragment | ItemFields_Note_Fragment | ItemFields_Link_Fragment;
 

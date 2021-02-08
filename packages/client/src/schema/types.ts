@@ -19,7 +19,7 @@ export type Item = {
 };
 
 export type Task = Item & {
-  readonly __typename?: 'Task';
+  readonly __typename: 'Task';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
   readonly done: Scalars['Boolean'];
@@ -27,7 +27,7 @@ export type Task = Item & {
 };
 
 export type File = Item & {
-  readonly __typename?: 'File';
+  readonly __typename: 'File';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
   readonly filename: Scalars['String'];
@@ -36,14 +36,14 @@ export type File = Item & {
 };
 
 export type Note = Item & {
-  readonly __typename?: 'Note';
+  readonly __typename: 'Note';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
   readonly note: Scalars['String'];
 };
 
 export type Link = Item & {
-  readonly __typename?: 'Link';
+  readonly __typename: 'Link';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
   readonly icon?: Maybe<Scalars['String']>;
@@ -70,7 +70,7 @@ export type ProjectRootProjectByIdArgs = {
 };
 
 export type User = ProjectRoot & TaskList & {
-  readonly __typename?: 'User';
+  readonly __typename: 'User';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -88,7 +88,7 @@ export type UserProjectByIdArgs = {
 };
 
 export type Context = ProjectRoot & TaskList & {
-  readonly __typename?: 'Context';
+  readonly __typename: 'Context';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -106,7 +106,7 @@ export type ContextProjectByIdArgs = {
 };
 
 export type Project = TaskList & {
-  readonly __typename?: 'Project';
+  readonly __typename: 'Project';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -117,14 +117,14 @@ export type Project = TaskList & {
 };
 
 export type Section = {
-  readonly __typename?: 'Section';
+  readonly __typename: 'Section';
   readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
 };
 
 export type Query = {
-  readonly __typename?: 'Query';
+  readonly __typename: 'Query';
   readonly user?: Maybe<User>;
   readonly taskList?: Maybe<TaskList>;
   readonly root?: Maybe<ProjectRoot>;
@@ -164,8 +164,13 @@ export type EditSectionParams = {
   readonly name?: Maybe<Scalars['String']>;
 };
 
+export type CreateTaskParams = {
+  readonly summary: Scalars['String'];
+  readonly link?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
-  readonly __typename?: 'Mutation';
+  readonly __typename: 'Mutation';
   readonly login?: Maybe<User>;
   readonly logout?: Maybe<Scalars['Boolean']>;
   readonly createContext: Context;
@@ -179,6 +184,7 @@ export type Mutation = {
   readonly moveSection?: Maybe<Section>;
   readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
+  readonly createTask: Task;
 };
 
 
@@ -249,6 +255,12 @@ export type MutationEditSectionArgs = {
 
 export type MutationDeleteSectionArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationCreateTaskArgs = {
+  list?: Maybe<Scalars['ID']>;
+  params: CreateTaskParams;
 };
 
 export type ItemKeySpecifier = ('id' | 'summary' | ItemKeySpecifier)[];
@@ -344,7 +356,7 @@ export type QueryFieldPolicy = {
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	root?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -358,7 +370,8 @@ export type MutationFieldPolicy = {
 	createSection?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveSection?: FieldPolicy<any> | FieldReadFunction<any>,
 	editSection?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteSection?: FieldPolicy<any> | FieldReadFunction<any>
+	deleteSection?: FieldPolicy<any> | FieldReadFunction<any>,
+	createTask?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
 	Item?: Omit<TypePolicy, "fields" | "keyFields"> & {

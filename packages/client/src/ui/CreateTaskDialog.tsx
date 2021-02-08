@@ -8,60 +8,59 @@ import InputLabel from "@material-ui/core/InputLabel";
 import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
-import { useCreateSectionMutation } from "../schema/mutations";
+import { useCreateTaskMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
-import type { TaskList } from "../utils/state";
+import type { Section, TaskList } from "../utils/state";
+import { isSection } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
-interface CreateSectionProps {
+interface CreateTaskProps {
   onClose: () => void;
-  taskList: TaskList;
+  list: TaskList | Section;
 }
 
-export default ReactMemo(function CreateSectionDialog({
+export default ReactMemo(function CreateTaskDialog({
   onClose,
-  taskList,
-}: CreateSectionProps): ReactElement {
+  list,
+}: CreateTaskProps): ReactElement {
   let [state, setState] = useState({
-    name: "",
+    summary: "",
   });
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createSection, { error }] = useCreateSectionMutation({
+  let [createTask] = useCreateTaskMutation({
     variables: {
-      taskList: taskList.id,
+      list: list.id,
       params: state,
     },
     refetchQueries: [
       refetchListTaskListQuery({
-        taskList: taskList.id,
+        taskList: isSection(list) ? list.taskList.id : list.id,
       }),
     ],
   });
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    await createSection();
+    await createTask();
     close();
-  }, [createSection, close]);
+  }, [close, createTask]);
 
   return <Dialog open={isOpen} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
-      <DialogTitle>Create Section</DialogTitle>
+      <DialogTitle>Create Task</DialogTitle>
       <DialogContent>
-        {error && <Error error={error}/>}
         <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="name">Name:</InputLabel>
+          <InputLabel htmlFor="summary">Summary:</InputLabel>
           <TextFieldInput
-            id="name"
-            label="Name:"
+            id="summary"
+            label="Summary:"
             state={state}
             setState={setState}
-            stateKey="name"
+            stateKey="summary"
             autoFocus={true}
           />
         </FormControl>

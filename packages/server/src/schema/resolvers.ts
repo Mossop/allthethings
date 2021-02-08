@@ -105,6 +105,7 @@ export type ResolversTypes = ResolversObject<{
   EditProjectParams: Schema.EditProjectParams;
   CreateSectionParams: Schema.CreateSectionParams;
   EditSectionParams: Schema.EditSectionParams;
+  CreateTaskParams: Schema.CreateTaskParams;
   Mutation: ResolverTypeWrapper<{}>;
 }>;
 
@@ -132,6 +133,7 @@ export type ResolversParentTypes = ResolversObject<{
   EditProjectParams: Schema.EditProjectParams;
   CreateSectionParams: Schema.CreateSectionParams;
   EditSectionParams: Schema.EditSectionParams;
+  CreateTaskParams: Schema.CreateTaskParams;
   Mutation: {};
 }>;
 
@@ -253,6 +255,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   moveSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationMoveSectionArgs, 'id'>>;
   editSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationEditSectionArgs, 'id' | 'params'>>;
   deleteSection: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteSectionArgs, 'id'>>;
+  createTask: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'params'>>;
 }>;
 
 export type Resolvers<ContextType = ResolverContext> = ResolversObject<{

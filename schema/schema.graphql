@@ -137,6 +137,11 @@ input EditSectionParams {
   name: String
 }
 
+input CreateTaskParams {
+  summary: String!
+  link: String
+}
+
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
@@ -154,4 +159,6 @@ type Mutation {
   moveSection(id: ID!, taskList: ID, before: ID): Section
   editSection(id: ID!, params: EditSectionParams!): Section
   deleteSection(id: ID!): Boolean!
+
+  createTask(list: ID, params: CreateTaskParams!): Task!
 }

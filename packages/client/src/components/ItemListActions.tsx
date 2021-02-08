@@ -1,6 +1,6 @@
 import IconButton from "@material-ui/core/IconButton";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 
 import {
   useDeleteContextMutation,
@@ -12,6 +12,8 @@ import {
   refetchListTaskListQuery,
 } from "../schema/queries";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
+import CreateTaskDialog from "../ui/CreateTaskDialog";
+import { useBoolState } from "../utils/hooks";
 import { ViewType, replaceView } from "../utils/navigation";
 import type { Section, TaskList } from "../utils/state";
 import {
@@ -26,7 +28,7 @@ import {
 import { flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
-import { SectionIcon, DeleteIcon } from "./Icons";
+import { SectionIcon, DeleteIcon, CheckedIcon } from "./Icons";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -38,25 +40,20 @@ const useStyles = makeStyles(() =>
     },
   }));
 
-interface TaskListActionsProps {
+interface ItemListActionsProps {
   list: TaskList | Section;
 }
 
-export default ReactMemo(function TaskListActions({
+export default ReactMemo(function ItemListActions({
   list,
-}: TaskListActionsProps): ReactResult {
+}: ItemListActionsProps): ReactResult {
   let classes = useStyles();
   let root = useProjectRoot();
   let view = useView();
   let user = useUser();
 
-  let [sectionAddDialogOpen, setSectionAddDialogOpen] = useState(false);
-  let openAddSection = useCallback(() => {
-    setSectionAddDialogOpen(true);
-  }, []);
-  let closeAddSection = useCallback(() => {
-    setSectionAddDialogOpen(false);
-  }, []);
+  let [sectionAddDialogOpen, openAddSection, closeAddSection] = useBoolState();
+  let [taskAddDialogOpen, openAddTask, closeAddTask] = useBoolState();
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -116,9 +113,11 @@ export default ReactMemo(function TaskListActions({
 
   return <>
     <div className={classes.actions}>
+      <IconButton onClick={openAddTask}><CheckedIcon/></IconButton>
       {!isSection(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
       {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
     </div>
+    {taskAddDialogOpen && <CreateTaskDialog list={list} onClose={closeAddTask}/>}
     {
       sectionAddDialogOpen && !isSection(list) &&
       <CreateSectionDialog taskList={list} onClose={closeAddSection}/>

@@ -9,11 +9,12 @@ import { useDrag as drag, useDrop as drop } from "react-dnd";
 
 import type { Overwrite } from "@allthethings/utils";
 
-import type { Project, Section } from "./state";
+import type { Item, Project, Section } from "./state";
 
 export enum DragType {
   Project = "project",
   Section = "section",
+  Item = "item",
 }
 
 export interface DraggedProject {
@@ -26,7 +27,12 @@ export interface DraggedSection {
   section: Section;
 }
 
-export type DraggedObject = DraggedProject | DraggedSection;
+export interface DraggedItem {
+  type: DragType.Item;
+  item: Item;
+}
+
+export type DraggedObject = DraggedProject | DraggedSection | DraggedItem;
 
 export function useDrag<CollectedProps>(
   spec: DragSourceHookSpec<DraggedObject, unknown, CollectedProps>,

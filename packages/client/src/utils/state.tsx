@@ -6,7 +6,7 @@ import {
   useState,
 } from "react";
 
-import type { ListContextStateQuery } from "../schema/queries";
+import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
 import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import type { BaseView, InboxView, TaskListView, View } from "./navigation";
@@ -41,7 +41,8 @@ export type Context = StateO<Schema.Context, "user" | "items" | "sections", {
 }>;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-export type Section = StateO<Schema.Section, "items", {
+export type Section = State<Schema.Section, {
+  items: Item[];
   taskList: TaskList;
 }>;
 
@@ -170,11 +171,31 @@ export function buildItems(items: readonly SchemaItem[]): Item[] {
   return [...items];
 }
 
-export function buildSections(taskList: TaskList, sections: readonly Schema.Section[]): Section[] {
-  return sections.map((section: Schema.Section): Section => ({
-    ...section,
-    taskList,
-  }));
+interface ProjectEntries {
+  items: Item[];
+  sections: Section[];
+}
+
+export function buildEntries(
+  taskList: TaskList,
+  data: ListTaskListQuery | undefined,
+): ProjectEntries {
+  if (!data?.taskList) {
+    return {
+      items: [],
+      sections: [],
+    };
+  }
+
+  return {
+    items: buildItems(data.taskList.items),
+    sections: data.taskList.sections.map((section: Schema.Section): Section => ({
+      ...section,
+      // @ts-ignore
+      items: buildItems(section.items),
+      taskList,
+    })),
+  };
 }
 
 export function StateListener({ children }: ReactChildren): ReactResult {

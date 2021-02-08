@@ -80,3 +80,10 @@ mutation MoveProject($id: ID!, $taskList: ID) {
 mutation DeleteProject($id: ID!) {
   deleteProject(id: $id)
 }
+
+mutation CreateTask($list: ID, $params: CreateTaskParams!) {
+  createTask(list: $list, params: $params) {
+    id
+    summary
+  }
+}

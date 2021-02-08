@@ -173,7 +173,7 @@ export abstract class DbDataSource<
     let results: D[] = await this.table.insert({
       ...item,
       id: item.id ?? await id(),
-    }).returning(this.ref("*"));
+    }).returning("*");
 
     if (!results.length) {
       throw new Error("Unexpectedly failed to create a record.");
@@ -331,7 +331,10 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
   }
 }
 
-export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbObject> {
+export class ContextDataSource extends DbDataSource<
+  Impl.Context,
+  Db.ContextDbObject
+> {
   public tableName = "Context";
   protected builder = classBuilder<Impl.Context, Db.ContextDbObject>(Impl.Context);
 
@@ -366,7 +369,10 @@ export class ContextDataSource extends DbDataSource<Impl.Context, Db.ContextDbOb
   }
 }
 
-export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbObject> {
+export class ProjectDataSource extends DbDataSource<
+  Impl.Project,
+  Db.ProjectDbObject
+> {
   public tableName = "Project";
   protected builder = classBuilder<Impl.Project, Db.ProjectDbObject>(Impl.Project);
 
@@ -397,12 +403,27 @@ export class ProjectDataSource extends DbDataSource<Impl.Project, Db.ProjectDbOb
   }
 }
 
-export class SectionDataSource extends IndexedDbDataSource<Impl.Section, Db.SectionDbObject> {
+export class SectionDataSource extends IndexedDbDataSource<
+  Impl.Section,
+  Db.SectionDbObject
+> {
   public tableName = "Section";
   protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
 
   public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
     return this.table.where("index", ">=", 0);
+  }
+
+  public async getSpecialSectionId(
+    ownerId: string,
+    type: SectionIndex,
+  ): Promise<string | null> {
+    let id = await this.table.where({
+      ownerId,
+      index: type,
+    }).pluck("id").first();
+
+    return id ?? null;
   }
 
   public async create(
@@ -459,6 +480,19 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
     }
   }
 
+  public async create(
+    owner: Impl.TaskList | Impl.Section,
+    type: Db.ItemType,
+    summary: string,
+  ): Promise<Db.ItemDbObject> {
+    return this.insert({
+      ownerId: owner.id,
+      index: await this.nextIndex(owner.id),
+      summary,
+      type,
+    });
+  }
+
   public listSpecialSection(
     owner: string,
     type: SectionIndex,
@@ -478,6 +512,20 @@ export class TaskItemDataSource extends DbDataSource<Impl.TaskItem, Db.TaskItemD
     dbObject: Db.TaskItemDbObject,
   ): Impl.TaskItem {
     return new Impl.TaskItem(resolverContext, null, dbObject);
+  }
+
+  public async create(
+    owner: Impl.TaskList | Impl.Section,
+    { summary, link }: Schema.CreateTaskParams,
+  ): Promise<Impl.TaskItem> {
+    let base = await this.context.dataSources.items.create(owner, Db.ItemType.Task, summary);
+    let task = await this.insert({
+      id: base.id,
+      done: false,
+      link: link ?? null,
+    });
+
+    return new Impl.TaskItem(this.context, base, task);
   }
 }
 

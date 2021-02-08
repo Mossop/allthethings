@@ -1,16 +1,16 @@
-import Divider from "@material-ui/core/Divider";
 import List from "@material-ui/core/List";
 import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { useCallback, Fragment, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 import { useDrag } from "react-dnd";
 
 import HiddenInput from "../components/HiddenInput";
 import { ProjectIcon, SectionIcon } from "../components/Icons";
-import TaskListActions from "../components/TaskListActions";
+import ItemListActions from "../components/ItemListActions";
+import Items from "../components/Items";
 import { Heading, TextStyles } from "../components/Text";
 import {
   useEditContextMutation,
@@ -23,7 +23,7 @@ import type { DraggedSection } from "../utils/drag";
 import { DragType, useDrop } from "../utils/drag";
 import type { TaskListView } from "../utils/navigation";
 import type { Context, Project, Section, User } from "../utils/state";
-import { isUser, buildSections, isProject } from "../utils/state";
+import { isUser, buildEntries, isProject } from "../utils/state";
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
+      marginBottom: theme.spacing(1),
     },
     headingDragPreview: {
       ...flexRow,
@@ -69,6 +70,20 @@ const useStyles = makeStyles((theme: Theme) =>
       ...flexRow,
       alignItems: "center",
       color: theme.palette.text.primary,
+      paddingBottom: theme.spacing(1),
+      borderBottomWidth: 1,
+      borderBottomColor: theme.palette.divider,
+      borderBottomStyle: "solid",
+      paddingTop: theme.spacing(1),
+      borderTopWidth: 1,
+      borderTopColor: theme.palette.divider,
+      borderTopStyle: "solid",
+      marginBottom: theme.spacing(1),
+      marginTop: theme.spacing(1),
+    },
+    sectionDragPreview: {
+      ...flexRow,
+      alignItems: "center",
     },
     sectionHeadingInput: TextStyles.subheading,
   }));
@@ -140,7 +155,7 @@ const SectionList = ReactMemo(function SectionList({
       disableGutters={true}
       className={clsx(classes.sectionHeading, isDragging && classes.dragging)}
     >
-      <div ref={previewRef} className={classes.sectionHeading}>
+      <div ref={previewRef} className={classes.sectionDragPreview}>
         <div
           className={classes.icon}
           ref={dragRef}
@@ -153,8 +168,9 @@ const SectionList = ReactMemo(function SectionList({
           onSubmit={changeSectionName}
         />
       </div>
-      <TaskListActions list={section}/>
+      <ItemListActions list={section}/>
     </ListSubheader>
+    <Items items={section.items}/>
   </List>;
 });
 
@@ -172,7 +188,7 @@ const UserHeader = ReactMemo(function TasksHeader({
       <ProjectIcon/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <TaskListActions list={user}/>
+    <ItemListActions list={user}/>
   </div>;
 });
 
@@ -207,7 +223,7 @@ const ContextHeader = ReactMemo(function TasksHeader({
       initialValue={context.name}
       onSubmit={changeContextName}
     />
-    <TaskListActions list={context}/>
+    <ItemListActions list={context}/>
   </div>;
 });
 
@@ -258,7 +274,7 @@ const ProjectHeader = ReactMemo(function ProjectHeader({
         onSubmit={changeTaskListName}
       />
     </div>
-    <TaskListActions list={project}/>
+    <ItemListActions list={project}/>
   </div>;
 });
 
@@ -281,8 +297,8 @@ export default ReactMemo(function TaskList({
     },
   });
 
-  let sections = useMemo(
-    () => data?.taskList ? buildSections(view.taskList, data.taskList.sections) : [],
+  let entries = useMemo(
+    () => buildEntries(view.taskList, data),
     [data, view],
   );
 
@@ -290,21 +306,21 @@ export default ReactMemo(function TaskList({
 
   let orderedSections = useMemo(() => {
     if (!draggedSectionState) {
-      return sections;
+      return entries.sections;
     }
 
     let { id: sectionId } = draggedSectionState;
 
-    let index = sections.findIndex((section: Section): boolean => section.id == sectionId);
+    let index = entries.sections.findIndex((section: Section): boolean => section.id == sectionId);
     if (index < 0) {
-      return sections;
+      return entries.sections;
     }
 
-    let ordered = [...sections];
+    let ordered = [...entries.sections];
     ordered.splice(index, 1);
-    ordered.splice(draggedSectionState.index, 0, sections[index]);
+    ordered.splice(draggedSectionState.index, 0, entries.sections[index]);
     return ordered;
-  }, [draggedSectionState, sections]);
+  }, [draggedSectionState, entries]);
 
   let draggedOver = useCallback((section: Section, over: Section | null): void => {
     if (!over) {
@@ -324,12 +340,12 @@ export default ReactMemo(function TaskList({
   }, [orderedSections]);
 
   let canDrop = useCallback((): boolean => {
-    if (!draggedSectionState || draggedSectionState.index >= sections.length) {
+    if (!draggedSectionState || draggedSectionState.index >= orderedSections.length) {
       return false;
     }
 
     return true;
-  }, [sections, draggedSectionState]);
+  }, [orderedSections, draggedSectionState]);
 
   let [moveSection] = useMoveSectionMutation();
 
@@ -386,17 +402,13 @@ export default ReactMemo(function TaskList({
     <div className={classes.content}>
       {header}
       <List disablePadding={true} ref={dropRef}>
+        <Items items={entries.items}/>
         {
-          orderedSections.map((section: Section, index: number) => <Fragment
+          orderedSections.map((section: Section) => <SectionList
             key={section.id}
-          >
-            {index > 0 && <Divider/>}
-            <SectionList
-              key={section.id}
-              section={section}
-              onDragOver={draggedOver}
-            />
-          </Fragment>)
+            section={section}
+            onDragOver={draggedOver}
+          />)
         }
       </List>
     </div>

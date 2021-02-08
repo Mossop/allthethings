@@ -12,6 +12,7 @@ import Error from "../components/Error";
 import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
+import { useBoolState } from "../utils/hooks";
 import { pushView, ViewType } from "../utils/navigation";
 import type { TaskList } from "../utils/state";
 import { useView, useProjectRoot } from "../utils/state";
@@ -32,15 +33,12 @@ export default ReactMemo(function CreateProjectDialog({
   let root = useProjectRoot();
   let view = useView();
 
-  let [open, setOpen] = useState(true);
-  let close = useCallback(() => setOpen(false), []);
+  let [isOpen,, close] = useBoolState(true);
 
   let [createProject, { data, error }] = useCreateProjectMutation({
     variables: {
       taskList: taskList.id,
-      params: {
-        name: state.name,
-      },
+      params: state,
     },
     refetchQueries: [
       refetchListContextStateQuery(),
@@ -73,7 +71,7 @@ export default ReactMemo(function CreateProjectDialog({
     void createProject();
   }, [createProject]);
 
-  return <Dialog open={open} onClose={close} onExited={onClose}>
+  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
       <DialogTitle>Create Project</DialogTitle>
       <DialogContent>
@@ -92,7 +90,7 @@ export default ReactMemo(function CreateProjectDialog({
       </DialogContent>
       <DialogActions>
         <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={onClose} variant="contained">Cancel</Button>
+        <Button onClick={close} variant="contained">Cancel</Button>
       </DialogActions>
     </form>
   </Dialog>;

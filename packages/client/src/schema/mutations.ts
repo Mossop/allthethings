@@ -9,19 +9,19 @@ export type LoginMutationVariables = Types.Exact<{
 }>;
 
 
-export type LoginMutation = { readonly __typename?: 'Mutation', readonly login: Types.Maybe<{ readonly __typename?: 'User', readonly email: string }> };
+export type LoginMutation = { readonly __typename: 'Mutation', readonly login: Types.Maybe<{ readonly __typename: 'User', readonly email: string }> };
 
 export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { readonly __typename?: 'Mutation', readonly logout: Types.Maybe<boolean> };
+export type LogoutMutation = { readonly __typename: 'Mutation', readonly logout: Types.Maybe<boolean> };
 
 export type CreateContextMutationVariables = Types.Exact<{
   params: Types.CreateContextParams;
 }>;
 
 
-export type CreateContextMutation = { readonly __typename?: 'Mutation', readonly createContext: { readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
+export type CreateContextMutation = { readonly __typename: 'Mutation', readonly createContext: { readonly __typename: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
 export type EditContextMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -29,14 +29,14 @@ export type EditContextMutationVariables = Types.Exact<{
 }>;
 
 
-export type EditContextMutation = { readonly __typename?: 'Mutation', readonly editContext: Types.Maybe<{ readonly __typename?: 'Context', readonly id: string, readonly name: string, readonly stub: string }> };
+export type EditContextMutation = { readonly __typename: 'Mutation', readonly editContext: Types.Maybe<{ readonly __typename: 'Context', readonly id: string, readonly name: string, readonly stub: string }> };
 
 export type DeleteContextMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
 }>;
 
 
-export type DeleteContextMutation = { readonly __typename?: 'Mutation', readonly deleteContext: boolean };
+export type DeleteContextMutation = { readonly __typename: 'Mutation', readonly deleteContext: boolean };
 
 export type CreateSectionMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
@@ -44,7 +44,7 @@ export type CreateSectionMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateSectionMutation = { readonly __typename?: 'Mutation', readonly createSection: { readonly __typename?: 'Section', readonly id: string, readonly name: string } };
+export type CreateSectionMutation = { readonly __typename: 'Mutation', readonly createSection: { readonly __typename: 'Section', readonly id: string, readonly name: string } };
 
 export type EditSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -52,7 +52,7 @@ export type EditSectionMutationVariables = Types.Exact<{
 }>;
 
 
-export type EditSectionMutation = { readonly __typename?: 'Mutation', readonly editSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
+export type EditSectionMutation = { readonly __typename: 'Mutation', readonly editSection: Types.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
 
 export type MoveSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -61,14 +61,14 @@ export type MoveSectionMutationVariables = Types.Exact<{
 }>;
 
 
-export type MoveSectionMutation = { readonly __typename?: 'Mutation', readonly moveSection: Types.Maybe<{ readonly __typename?: 'Section', readonly id: string, readonly name: string }> };
+export type MoveSectionMutation = { readonly __typename: 'Mutation', readonly moveSection: Types.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
 
 export type DeleteSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
 }>;
 
 
-export type DeleteSectionMutation = { readonly __typename?: 'Mutation', readonly deleteSection: boolean };
+export type DeleteSectionMutation = { readonly __typename: 'Mutation', readonly deleteSection: boolean };
 
 export type CreateProjectMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
@@ -76,7 +76,7 @@ export type CreateProjectMutationVariables = Types.Exact<{
 }>;
 
 
-export type CreateProjectMutation = { readonly __typename?: 'Mutation', readonly createProject: { readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string } };
+export type CreateProjectMutation = { readonly __typename: 'Mutation', readonly createProject: { readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string } };
 
 export type EditProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -84,7 +84,7 @@ export type EditProjectMutationVariables = Types.Exact<{
 }>;
 
 
-export type EditProjectMutation = { readonly __typename?: 'Mutation', readonly editProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+export type EditProjectMutation = { readonly __typename: 'Mutation', readonly editProject: Types.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
 
 export type MoveProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -92,14 +92,22 @@ export type MoveProjectMutationVariables = Types.Exact<{
 }>;
 
 
-export type MoveProjectMutation = { readonly __typename?: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename?: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+export type MoveProjectMutation = { readonly __typename: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
 
 export type DeleteProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
 }>;
 
 
-export type DeleteProjectMutation = { readonly __typename?: 'Mutation', readonly deleteProject: boolean };
+export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly deleteProject: boolean };
+
+export type CreateTaskMutationVariables = Types.Exact<{
+  list: Types.Maybe<Types.Scalars['ID']>;
+  params: Types.CreateTaskParams;
+}>;
+
+
+export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: { readonly __typename: 'Task', readonly id: string, readonly summary: string } };
 
 
 export const LoginDocument = gql`
@@ -531,3 +539,37 @@ export function useDeleteProjectMutation(baseOptions?: Apollo.MutationHookOption
 export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProjectMutation>;
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
+export const CreateTaskDocument = gql`
+    mutation CreateTask($list: ID, $params: CreateTaskParams!) {
+  createTask(list: $list, params: $params) {
+    id
+    summary
+  }
+}
+    `;
+export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, CreateTaskMutationVariables>;
+
+/**
+ * __useCreateTaskMutation__
+ *
+ * To run a mutation, you first call `useCreateTaskMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateTaskMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createTaskMutation, { data, loading, error }] = useCreateTaskMutation({
+ *   variables: {
+ *      list: // value for 'list'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<CreateTaskMutation, CreateTaskMutationVariables>) {
+        return Apollo.useMutation<CreateTaskMutation, CreateTaskMutationVariables>(CreateTaskDocument, baseOptions);
+      }
+export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
+export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
+export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;

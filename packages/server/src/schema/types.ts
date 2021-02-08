@@ -163,6 +163,11 @@ export type EditSectionParams = {
   readonly name?: Maybe<Scalars['String']>;
 };
 
+export type CreateTaskParams = {
+  readonly summary: Scalars['String'];
+  readonly link?: Maybe<Scalars['String']>;
+};
+
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly login?: Maybe<User>;
@@ -178,6 +183,7 @@ export type Mutation = {
   readonly moveSection?: Maybe<Section>;
   readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
+  readonly createTask: Task;
 };
 
 
@@ -248,4 +254,10 @@ export type MutationEditSectionArgs = {
 
 export type MutationDeleteSectionArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationCreateTaskArgs = {
+  list?: Maybe<Scalars['ID']>;
+  params: CreateTaskParams;
 };
