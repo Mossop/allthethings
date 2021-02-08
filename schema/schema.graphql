@@ -40,6 +40,7 @@ type Link implements Item {
 }
 
 interface TaskList {
+  remainingTasks: Int!
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
@@ -47,6 +48,7 @@ interface TaskList {
 
 interface ProjectRoot implements TaskList {
   # TaskList
+  remainingTasks: Int!
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
@@ -57,6 +59,7 @@ interface ProjectRoot implements TaskList {
 
 type User implements ProjectRoot & TaskList @entity {
   # TaskList
+  remainingTasks: Int!
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
@@ -73,6 +76,7 @@ type User implements ProjectRoot & TaskList @entity {
 
 type Context implements ProjectRoot & TaskList @entity {
   # TaskList
+  remainingTasks: Int!
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
@@ -89,6 +93,7 @@ type Context implements ProjectRoot & TaskList @entity {
 
 type Project implements TaskList {
   # TaskList
+  remainingTasks: Int!
   subprojects: [Project!]!
   sections: [Section!]!
   items: [Item!]!
@@ -100,6 +105,7 @@ type Project implements TaskList {
 }
 
 type Section {
+  remainingTasks: Int!
   items: [Item!]!
 
   id: ID!

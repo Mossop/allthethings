@@ -16,6 +16,7 @@ query ListContextState {
 }
 
 fragment rootFields on ProjectRoot {
+  remainingTasks
   subprojects {
     id
   }
@@ -23,6 +24,7 @@ fragment rootFields on ProjectRoot {
     id
     stub
     name
+    remainingTasks
     subprojects {
       id
     }
@@ -31,6 +33,8 @@ fragment rootFields on ProjectRoot {
 
 query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
+    remainingTasks
+
     items {
       ...itemFields
     }
@@ -38,6 +42,7 @@ query ListTaskList($taskList: ID!) {
     sections {
       id
       name
+      remainingTasks
 
       items {
         ...itemFields

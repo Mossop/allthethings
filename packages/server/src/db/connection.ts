@@ -1,7 +1,10 @@
 import Knex from "knex";
+import { types } from "pg";
 
 import type { DatabaseConfig } from "../config";
 import DbMigrations from "./migrations";
+
+types.setTypeParser(types.builtins.INT8, BigInt);
 
 export class DatabaseConnection {
   private _transaction: Knex.Transaction | null = null;

@@ -14,9 +14,9 @@ export type ListContextStateQuery = { readonly __typename: 'Query', readonly use
     & RootFields_User_Fragment
   )> };
 
-export type RootFields_User_Fragment = { readonly __typename: 'User', readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
+export type RootFields_User_Fragment = { readonly __typename: 'User', readonly remainingTasks: number, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: number, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
-export type RootFields_Context_Fragment = { readonly __typename: 'Context', readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
+export type RootFields_Context_Fragment = { readonly __typename: 'Context', readonly remainingTasks: number, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: number, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
 export type RootFieldsFragment = RootFields_User_Fragment | RootFields_Context_Fragment;
 
@@ -25,7 +25,7 @@ export type ListTaskListQueryVariables = Types.Exact<{
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'User', readonly items: ReadonlyArray<(
+export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
@@ -37,7 +37,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     ) | (
       { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
@@ -49,7 +49,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       ) | (
         { readonly __typename: 'Link' }
         & ItemFields_Link_Fragment
-      )> }> } | { readonly __typename: 'Context', readonly items: ReadonlyArray<(
+      )> }> } | { readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
@@ -61,7 +61,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     ) | (
       { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
@@ -73,7 +73,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       ) | (
         { readonly __typename: 'Link' }
         & ItemFields_Link_Fragment
-      )> }> } | { readonly __typename: 'Project', readonly items: ReadonlyArray<(
+      )> }> } | { readonly __typename: 'Project', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
@@ -85,7 +85,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     ) | (
       { readonly __typename: 'Link' }
       & ItemFields_Link_Fragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: ReadonlyArray<(
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
       ) | (
@@ -111,6 +111,7 @@ export type ItemFieldsFragment = ItemFields_Task_Fragment | ItemFields_File_Frag
 
 export const RootFieldsFragmentDoc = gql`
     fragment rootFields on ProjectRoot {
+  remainingTasks
   subprojects {
     id
   }
@@ -118,6 +119,7 @@ export const RootFieldsFragmentDoc = gql`
     id
     stub
     name
+    remainingTasks
     subprojects {
       id
     }
@@ -191,12 +193,14 @@ export function refetchListContextStateQuery(variables?: ListContextStateQueryVa
 export const ListTaskListDocument = gql`
     query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
+    remainingTasks
     items {
       ...itemFields
     }
     sections {
       id
       name
+      remainingTasks
       items {
         ...itemFields
       }

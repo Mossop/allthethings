@@ -80,6 +80,7 @@ type ItemProps = {
   icon: ReactElement;
   depth: number;
   className?: string;
+  taskCount?: number;
 } & ({
   url: URL;
   onClick?: undefined;
@@ -96,6 +97,7 @@ const Item = ReactMemo(forwardRef(function Item({
   icon,
   depth,
   className: providedClass,
+  taskCount,
 }: ItemProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles({ depth });
 
@@ -104,6 +106,10 @@ const Item = ReactMemo(forwardRef(function Item({
     selected ? classes.selectedItem : classes.selectableItem,
     providedClass,
   );
+
+  if (taskCount) {
+    label += ` (${taskCount})`;
+  }
 
   let click = useCallback((event: React.MouseEvent) => {
     if (event.button != 0 || !url) {
@@ -261,6 +267,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
       label={project.name}
       selected={selected && !isDragging}
       depth={depth}
+      taskCount={project.remainingTasks}
       icon={<ProjectIcon className={classes.grabHandle}/>}
       className={clsx(isDragging && classes.dragging, isDropping && classes.dropping)}
     />
@@ -384,6 +391,7 @@ export default ReactMemo(function ProjectList({
         url={tasksUrl}
         icon={<ProjectIcon/>}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
+        taskCount={root.remainingTasks}
         label={context?.name ?? "Tasks"}
         depth={0}
       />

@@ -177,6 +177,7 @@ export type LinkResolvers<ContextType = ResolverContext, ParentType extends Reso
 
 export type TaskListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskList'] = ResolversParentTypes['TaskList']> = ResolversObject<{
   __resolveType: TypeResolveFn<'User' | 'Context' | 'Project', ParentType, ContextType>;
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
@@ -184,6 +185,7 @@ export type TaskListResolvers<ContextType = ResolverContext, ParentType extends 
 
 export type ProjectRootResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ProjectRoot'] = ResolversParentTypes['ProjectRoot']> = ResolversObject<{
   __resolveType: TypeResolveFn<'User' | 'Context', ParentType, ContextType>;
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
@@ -192,6 +194,7 @@ export type ProjectRootResolvers<ContextType = ResolverContext, ParentType exten
 }>;
 
 export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
@@ -205,6 +208,7 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
 }>;
 
 export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
@@ -218,6 +222,7 @@ export type ContextResolvers<ContextType = ResolverContext, ParentType extends R
 }>;
 
 export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = ResolversObject<{
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
@@ -229,6 +234,7 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 }>;
 
 export type SectionResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Section'] = ResolversParentTypes['Section']> = ResolversObject<{
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;

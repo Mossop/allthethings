@@ -10,7 +10,7 @@ import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
 import { useCreateTaskMutation } from "../schema/mutations";
-import { refetchListTaskListQuery } from "../schema/queries";
+import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
 import type { Section, TaskList } from "../utils/state";
 import { isSection } from "../utils/state";
@@ -40,6 +40,7 @@ export default ReactMemo(function CreateTaskDialog({
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
       }),
+      refetchListContextStateQuery(),
     ],
   });
 

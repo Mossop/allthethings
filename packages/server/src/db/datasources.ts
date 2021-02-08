@@ -34,6 +34,11 @@ async function max<D>(query: Knex.QueryBuilder<D, D[]>, col: keyof D): Promise<n
   return result ? result.max : null;
 }
 
+async function count(query: Knex.QueryBuilder): Promise<number | null> {
+  let result: { count: BigInt | null } | undefined = await query.count("*").first();
+  return result ? Number(result.count) : null;
+}
+
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
 export abstract class DbDataSource<
@@ -554,6 +559,31 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
     dbObject: Db.TaskItemDbObject,
   ): Impl.TaskItem {
     return new Impl.TaskItem(resolverContext, null, dbObject);
+  }
+
+  public async taskListTaskCount(taskList: string): Promise<number> {
+    let value = await count(
+      this.records
+        .join("Item", "Item.id", this.ref("id"))
+        .join("Section", "Section.id", "Item.ownerId")
+        .where({
+          [this.ref("done")]: false,
+          ["Section.ownerId"]: taskList,
+        }),
+    );
+    return value ?? 0;
+  }
+
+  public async sectionTaskCount(section: string): Promise<number> {
+    let value = await count(
+      this.records
+        .join("Item", "Item.id", this.ref("id"))
+        .where({
+          [this.ref("done")]: false,
+          ["Item.ownerId"]: section,
+        }),
+    );
+    return value ?? 0;
   }
 
   public async create(

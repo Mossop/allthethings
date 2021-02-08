@@ -100,8 +100,22 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
 abstract class TaskListImpl<
   T extends Db.DbEntity,
 > extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
-  public abstract subprojects(): Promise<readonly Project[]>;
-  public abstract sections(): Promise<readonly Section[]>;
+  public async remainingTasks(): Promise<number> {
+    return this.dataSources.tasks.taskListTaskCount(this.id);
+  }
+
+  public async subprojects(): Promise<Project[]> {
+    return this.dataSources.projects.find({
+      parentId: this.id,
+    });
+  }
+
+  public async sections(): Promise<readonly Section[]> {
+    return this.dataSources.sections.find({
+      ownerId: this.id,
+    });
+  }
+
   public async items(): Promise<readonly Item[]> {
     return this.dataSources.items.listSpecialSection(this.id, Src.SectionIndex.Anonymous);
   }
@@ -110,11 +124,19 @@ abstract class TaskListImpl<
 abstract class ProjectRootImpl<
   T extends Db.DbEntity,
 > extends TaskListImpl<T> implements SchemaResolver<Schema.ProjectRoot> {
-  public abstract projects(): Promise<readonly Project[]>;
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      contextId: this.id,
+    });
+  }
 
   public async projectById(id: string): Promise<Project | null> {
-    let projects = await this.projects();
-    return projects.find((project: Project): boolean => project.id == id) ?? null;
+    let results = await this.dataSources.projects.find({
+      contextId: this.id,
+      id,
+    });
+
+    return results.length ? results[0] : null;
   }
 }
 
@@ -130,24 +152,6 @@ export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaReso
   public async contexts(): Promise<readonly Context[]> {
     return this.dataSources.contexts.find({
       userId: this.id,
-    });
-  }
-
-  public async subprojects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      parentId: this.id,
-    });
-  }
-
-  public async projects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      contextId: this.id,
-    });
-  }
-
-  public async sections(): Promise<readonly Section[]> {
-    return this.dataSources.sections.find({
-      ownerId: this.id,
     });
   }
 
@@ -174,24 +178,6 @@ export class Context
     props: Partial<Omit<Db.ContextDbObject, "id" | "stub" | "userId">>,
   ): Promise<void> {
     return this.updateDbObject(props);
-  }
-
-  public async subprojects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      parentId: this.id,
-    });
-  }
-
-  public async projects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      contextId: this.id,
-    });
-  }
-
-  public async sections(): Promise<readonly Section[]> {
-    return this.dataSources.sections.find({
-      ownerId: this.id,
-    });
   }
 
   public async user(): Promise<User> {
@@ -245,18 +231,6 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
     });
   }
 
-  public async subprojects(): Promise<Project[]> {
-    return this.dataSources.projects.find({
-      parentId: this.id,
-    });
-  }
-
-  public async sections(): Promise<readonly Section[]> {
-    return this.dataSources.sections.find({
-      ownerId: this.id,
-    });
-  }
-
   public async stub(): Promise<string> {
     return (await this.dbObject).stub;
   }
@@ -289,6 +263,10 @@ export class Section extends BaseImpl<Db.SectionDbObject>
 
   protected get dbObjectDataSource(): Src.SectionDataSource {
     return this.dataSources.sections;
+  }
+
+  public async remainingTasks(): Promise<number> {
+    return this.dataSources.tasks.sectionTaskCount(this.id);
   }
 
   public async items(): Promise<readonly Item[]> {

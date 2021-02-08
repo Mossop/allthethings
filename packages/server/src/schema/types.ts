@@ -50,12 +50,14 @@ export type Link = Item & {
 };
 
 export type TaskList = {
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
 };
 
 export type ProjectRoot = {
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -70,6 +72,7 @@ export type ProjectRootProjectByIdArgs = {
 
 export type User = ProjectRoot & TaskList & {
   readonly __typename?: 'User';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -88,6 +91,7 @@ export type UserProjectByIdArgs = {
 
 export type Context = ProjectRoot & TaskList & {
   readonly __typename?: 'Context';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -106,6 +110,7 @@ export type ContextProjectByIdArgs = {
 
 export type Project = TaskList & {
   readonly __typename?: 'Project';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -117,6 +122,7 @@ export type Project = TaskList & {
 
 export type Section = {
   readonly __typename?: 'Section';
+  readonly remainingTasks: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];

@@ -51,12 +51,14 @@ export type Link = Item & {
 };
 
 export type TaskList = {
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
 };
 
 export type ProjectRoot = {
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -71,6 +73,7 @@ export type ProjectRootProjectByIdArgs = {
 
 export type User = ProjectRoot & TaskList & {
   readonly __typename: 'User';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -89,6 +92,7 @@ export type UserProjectByIdArgs = {
 
 export type Context = ProjectRoot & TaskList & {
   readonly __typename: 'Context';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -107,6 +111,7 @@ export type ContextProjectByIdArgs = {
 
 export type Project = TaskList & {
   readonly __typename: 'Project';
+  readonly remainingTasks: Scalars['Int'];
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ReadonlyArray<Item>;
@@ -118,6 +123,7 @@ export type Project = TaskList & {
 
 export type Section = {
   readonly __typename: 'Section';
+  readonly remainingTasks: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
@@ -302,22 +308,25 @@ export type LinkFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type TaskListKeySpecifier = ('subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];
+export type TaskListKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];
 export type TaskListFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectRootKeySpecifier = ('subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | ProjectRootKeySpecifier)[];
+export type ProjectRootKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | ProjectRootKeySpecifier)[];
 export type ProjectRootFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'email' | 'password' | 'contexts' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'email' | 'password' | 'contexts' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -328,8 +337,9 @@ export type UserFieldPolicy = {
 	password?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ContextKeySpecifier = ('subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -340,8 +350,9 @@ export type ContextFieldPolicy = {
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -350,8 +361,9 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type SectionKeySpecifier = ('items' | 'id' | 'name' | SectionKeySpecifier)[];
+export type SectionKeySpecifier = ('remainingTasks' | 'items' | 'id' | 'name' | SectionKeySpecifier)[];
 export type SectionFieldPolicy = {
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
