@@ -10,7 +10,6 @@ import koaStatic from "koa-static";
 
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";
-import type { AppContext } from "./context";
 import { buildContext } from "./context";
 
 export async function createWebServer(
@@ -45,10 +44,6 @@ export async function createWebServer(
       immutable: true,
     }),
   ));
-
-  app.use((ctx: Koa.Context & AppContext, next: Koa.Next) => {
-    return ctx.inTransaction(next);
-  });
 
   app.use(koaSession({
     renew: true,

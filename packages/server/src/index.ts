@@ -20,7 +20,7 @@ async function init(): Promise<void> {
   }
   await db.migrate();
 
-  let gqlServer = await createGqlServer(db);
+  let gqlServer = await createGqlServer();
   await createWebServer(config, db, gqlServer);
 }
 

@@ -3,39 +3,16 @@ import Knex from "knex";
 import type { DatabaseConfig } from "../config";
 import DbMigrations from "./migrations";
 
-export type TxnFn<C, R> = (dbConnection: C) => Promise<R>;
-export type Named<F> = [name: string, transactionFn: F] | [transactionFn: F];
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function named<F extends (...args: any[]) => any>(args: Named<F>): [string, F] {
-  if (args.length == 2) {
-    return args;
-  }
-
-  let fn = args[0];
-  let name = fn.name;
-  if (!name) {
-    throw new Error("Must provide a transaction name.");
-  }
-
-  return [name, fn];
-}
-
 export class DatabaseConnection {
-  public readonly knex: Knex;
-  private inInnerTransaction = false;
+  private _transaction: Knex.Transaction | null = null;
 
   private constructor(
     private readonly _baseKnex: Knex,
-    private _transaction?: Knex.Transaction,
   ) {
-    if (_transaction) {
-      this.knex = _transaction;
-    } else {
-      this.knex = _baseKnex.withUserParams({
-        ..._baseKnex.userParams,
-      });
-    }
+  }
+
+  public get knex(): Knex {
+    return this._transaction ?? this._baseKnex;
   }
 
   public clone(): DatabaseConnection {
@@ -74,38 +51,38 @@ export class DatabaseConnection {
     return !!this._transaction;
   }
 
-  public ensureTransaction<R>(...args: Named<TxnFn<DatabaseConnection, R>>): Promise<R> {
-    let [name, transactionFn] = named(args);
-
+  public async startTransaction(): Promise<void> {
     if (this.isInTransaction) {
-      return transactionFn(this);
+      throw new Error("Already in a transaction.");
     }
 
-    return this.inTransaction(name, transactionFn);
+    this._transaction = await this._baseKnex.transaction();
   }
 
-  public inTransaction<R>(...args: Named<TxnFn<DatabaseConnection, R>>): Promise<R> {
-    let [,transactionFn] = named(args);
+  public async commitTransaction(): Promise<void> {
+    if (!this._transaction) {
+      throw new Error("There is no current transaction.");
+    }
 
     try {
-      let base = this._transaction ?? this._baseKnex;
-      return base.transaction(async (trx: Knex.Transaction): Promise<R> => {
-        if (this.isInTransaction) {
-          this.inInnerTransaction = true;
-        }
-        try {
-          let result = await transactionFn(new DatabaseConnection(this._baseKnex, trx));
-
-          this.inInnerTransaction = false;
-          return result;
-        } catch (e) {
-          this.inInnerTransaction = false;
-          throw e;
-        }
-      });
-    } finally {
-      this.inInnerTransaction = false;
+      await this._transaction.commit();
+    } catch (e) {
+      console.error(e);
     }
+    this._transaction = null;
+  }
+
+  public async rollbackTransaction(): Promise<void> {
+    if (!this._transaction) {
+      throw new Error("There is no current transaction.");
+    }
+
+    try {
+      await this._transaction.rollback();
+    } catch (e) {
+      // This expected to throw.
+    }
+    this._transaction = null;
   }
 
   public get ref(): Knex.RefBuilder {

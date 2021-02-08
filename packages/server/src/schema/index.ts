@@ -8,10 +8,10 @@ import type { Overwrite } from "@allthethings/utils";
 
 import type { ProjectRoot, TaskList } from "../db";
 import { Context, User, dataSources } from "../db";
-import type { DatabaseConnection } from "../db/connection";
 import type { ResolverContext } from "./context";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
+import ServerPlugin from "./plugin";
 import QueryResolvers from "./queries";
 import type * as Resolvers from "./resolvers";
 
@@ -65,12 +65,13 @@ export const resolvers: RootResolvers = {
   ...MutationResolvers,
 };
 
-export async function createGqlServer(db: DatabaseConnection): Promise<ApolloServer> {
+export async function createGqlServer(): Promise<ApolloServer> {
   return new ApolloServer({
     typeDefs: await loadSchema(),
     resolvers,
     context: buildContext,
     // @ts-ignore
-    dataSources: () => dataSources(db),
+    dataSources: () => dataSources(),
+    plugins: [ServerPlugin],
   });
 }

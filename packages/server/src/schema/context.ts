@@ -69,8 +69,14 @@ export function resolver<TResult, TParent, TArgs>(
   };
 }
 
-export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseContext {
+export async function buildContext({
+  ctx,
+}: { ctx: AppContext & Koa.Context }): Promise<BaseContext> {
   let user = ctx.session?.userId ?? null;
+
+  if (!ctx.db.isInTransaction) {
+    await ctx.db.startTransaction();
+  }
 
   return {
     userId: user,
@@ -122,5 +128,5 @@ export function buildContext({ ctx }: { ctx: AppContext & Koa.Context }): BaseCo
       ctx.session.userId = null;
       ctx.session.save();
     },
-  };
+  } as BaseContext;
 }
