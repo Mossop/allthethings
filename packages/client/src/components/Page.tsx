@@ -8,10 +8,11 @@ import { Suspense } from "react";
 import ContextMenu from "../ui/ContextMenu";
 import ProjectList from "../ui/ProjectList";
 import UserMenu from "../ui/UserMenu";
-import { useUser, useMaybeView } from "../utils/state";
+import { useUser } from "../utils/state";
 import { flexColumn, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
+import { useMaybeView } from "../utils/view";
 import Loading from "./Loading";
 
 const useStyles = makeStyles((theme: Theme) =>

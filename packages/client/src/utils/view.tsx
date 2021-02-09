@@ -1,8 +1,13 @@
 import type { Location, To, Update } from "history";
 import { createBrowserHistory } from "history";
+import { useState, useMemo, useEffect, createContext, useContext } from "react";
 
-import type { Context, NavigableView, Project, ProjectRoot, TaskList, User } from "./state";
-import { isContext, isUser, isProject } from "./state";
+import { useListContextStateQuery } from "../schema/queries";
+import type { Context, Project, ProjectRoot, TaskList, User } from "./state";
+import { buildProjects, isContext, isUser, isProject } from "./state";
+import type { ReactChildren, ReactResult } from "./types";
+
+const ViewContext = createContext<View | null | undefined>(undefined);
 
 export const history = createBrowserHistory();
 
@@ -37,6 +42,37 @@ export type View =
 export type LinkableView =
   InboxView |
   TaskListView;
+
+export type NavigableView = {
+  context?: Context | null;
+} & (
+  Omit<InboxView, keyof BaseView | "context"> |
+  Omit<TaskListView, keyof BaseView | "context">
+);
+
+export function useUrl(view: NavigableView): URL {
+  let currentView = useView();
+
+  let newView = {
+    user: currentView.user,
+    context: currentView.context,
+    ...view,
+  };
+
+  return viewToUrl(newView);
+}
+
+export function useMaybeView(): View | undefined | null {
+  return useContext(ViewContext);
+}
+
+export function useView(): View {
+  let view = useMaybeView();
+  if (!view) {
+    throw new Error("App not initialized.");
+  }
+  return view;
+}
 
 function updateView(view: View, user: User): View {
   let base: BaseView = {
@@ -297,4 +333,42 @@ export function replaceUrl({ pathname, search }: URL): void {
   };
 
   history.replace(to);
+}
+
+export function ViewListener({ children }: ReactChildren): ReactResult {
+  let { data } = useListContextStateQuery();
+  let [view, setView] = useState<View | null | undefined>(undefined);
+
+  let navHandler = useMemo(() => new NavigationHandler(setView), []);
+
+  let user = useMemo((): User | null | undefined => {
+    if (!data) {
+      return undefined;
+    }
+
+    if (!data.user) {
+      return null;
+    }
+
+    return {
+      ...data.user,
+
+      // eslint-disable-next-line @typescript-eslint/typedef
+      contexts: new Map(data.user.contexts.map((context): [string, Context] => {
+        return [context.id, {
+          ...context,
+
+          ...buildProjects(context),
+        }];
+      })),
+
+      ...buildProjects(data.user),
+    };
+  }, [data]);
+
+  useEffect(() => {
+    return navHandler.watch(user);
+  }, [navHandler, user]);
+
+  return <ViewContext.Provider value={view}>{children}</ViewContext.Provider>;
 }

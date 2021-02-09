@@ -13,10 +13,10 @@ import { TextFieldInput } from "../components/Forms";
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
-import { pushView, ViewType } from "../utils/navigation";
 import type { TaskList } from "../utils/state";
-import { useView, useProjectRoot } from "../utils/state";
+import { useProjectRoot } from "../utils/state";
 import { ReactMemo } from "../utils/types";
+import { useView, pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
   onClose: () => void;

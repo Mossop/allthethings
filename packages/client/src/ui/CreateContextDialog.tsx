@@ -13,9 +13,8 @@ import { TextFieldInput } from "../components/Forms";
 import { useCreateContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
-import { pushView, ViewType } from "../utils/navigation";
-import { useView } from "../utils/state";
 import { ReactMemo } from "../utils/types";
+import { useView, pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
   onClose: () => void;

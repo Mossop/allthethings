@@ -6,10 +6,9 @@ import Inbox from "./ui/Inbox";
 import LoginDialog from "./ui/LoginDialog";
 import NotFound from "./ui/NotFound";
 import TaskList from "./ui/TaskList";
-import type { View } from "./utils/navigation";
-import { ViewType } from "./utils/navigation";
-import { useMaybeView } from "./utils/state";
 import type { ReactResult } from "./utils/types";
+import { useMaybeView, ViewType } from "./utils/view";
+import type { View } from "./utils/view";
 
 const useStyles = makeStyles(() =>
   createStyles({

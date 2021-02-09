@@ -17,14 +17,14 @@ import { useMoveProjectMutation, useMoveSectionMutation } from "../schema/mutati
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { DraggedProject, DraggedSection } from "../utils/drag";
 import { useDrag, DragType, useDrop } from "../utils/drag";
-import type { View } from "../utils/navigation";
-import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
 import type { Project, TaskList } from "../utils/state";
-import { useCurrentContext, useUrl, useProjectRoot } from "../utils/state";
+import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
+import { pushUrl, useUrl, ViewType } from "../utils/view";
+import type { View } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {

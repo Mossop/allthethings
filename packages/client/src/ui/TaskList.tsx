@@ -21,12 +21,12 @@ import {
 import { refetchListTaskListQuery, useListTaskListQuery } from "../schema/queries";
 import type { DraggedSection } from "../utils/drag";
 import { DragType, useDrop } from "../utils/drag";
-import type { TaskListView } from "../utils/navigation";
 import type { Context, Project, Section, User } from "../utils/state";
 import { isUser, buildEntries, isProject } from "../utils/state";
 import { flexRow, pageStyles, dragging, flexCentered } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
+import type { TaskListView } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

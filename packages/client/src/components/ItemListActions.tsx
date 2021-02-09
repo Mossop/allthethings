@@ -14,12 +14,10 @@ import {
 import CreateSectionDialog from "../ui/CreateSectionDialog";
 import CreateTaskDialog from "../ui/CreateTaskDialog";
 import { useBoolState } from "../utils/hooks";
-import { ViewType, replaceView } from "../utils/navigation";
 import type { Section, TaskList } from "../utils/state";
 import {
   isSection,
   useUser,
-  useView,
   useProjectRoot,
   isContext,
   isUser,
@@ -28,6 +26,7 @@ import {
 import { flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
+import { ViewType, replaceView, useView } from "../utils/view";
 import { SectionIcon, DeleteIcon, CheckedIcon } from "./Icons";
 
 const useStyles = makeStyles(() =>

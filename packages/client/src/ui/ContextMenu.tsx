@@ -7,20 +7,19 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
 import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
-import { pushUrl, ViewType } from "../utils/navigation";
 import { nameSorted } from "../utils/sort";
-import type { NavigableView, Context, ProjectRoot } from "../utils/state";
+import type { Context, ProjectRoot } from "../utils/state";
 import {
-  useView,
   isContext,
   useUser,
-  useUrl,
   useCurrentContext,
   useContexts,
 } from "../utils/state";
 import { flexRow } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
+import type { NavigableView } from "../utils/view";
+import { pushUrl, ViewType, useView, useUrl } from "../utils/view";
 import CreateContextDialog from "./CreateContextDialog";
 
 const useStyles = makeStyles((theme: Theme) =>

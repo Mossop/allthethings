@@ -1,17 +1,6 @@
-import {
-  createContext,
-  useContext as useReactContext,
-  useEffect,
-  useMemo,
-  useState,
-} from "react";
-
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
-import { useListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
-import type { BaseView, InboxView, TaskListView, View } from "./navigation";
-import { viewToUrl, NavigationHandler } from "./navigation";
-import type { ReactChildren, ReactResult } from "./types";
+import { useView } from "./view";
 
 type Writable<T> = {
   -readonly [K in keyof T]: T[K];
@@ -71,39 +60,6 @@ export function isUser(list: TaskList | Section): list is User {
   return list.__typename == "User";
 }
 
-const StateContext = createContext<View | null | undefined>(undefined);
-
-export type NavigableView = {
-  context?: Context | null;
-} & (
-  Omit<InboxView, keyof BaseView | "context"> |
-  Omit<TaskListView, keyof BaseView | "context">
-);
-
-export function useUrl(view: NavigableView): URL {
-  let currentView = useView();
-
-  let newView = {
-    user: currentView.user,
-    context: currentView.context,
-    ...view,
-  };
-
-  return viewToUrl(newView);
-}
-
-export function useMaybeView(): View | undefined | null {
-  return useReactContext(StateContext);
-}
-
-export function useView(): View {
-  let view = useMaybeView();
-  if (!view) {
-    throw new Error("App not initialized.");
-  }
-  return view;
-}
-
 export function useUser(): User {
   return useView().user;
 }
@@ -127,7 +83,7 @@ type UserState = NonNullable<ListContextStateQuery["user"]>;
 type ContextState = ArrayContents<UserState["contexts"]>;
 type ProjectData = ArrayContents<UserState["projects"]>;
 
-function buildProjects(
+export function buildProjects(
   root: UserState | ContextState,
 ): Pick<User, "projects" | "subprojects"> {
   let projectMap = new Map(
@@ -196,42 +152,4 @@ export function buildEntries(
       taskList,
     })),
   };
-}
-
-export function StateListener({ children }: ReactChildren): ReactResult {
-  let { data } = useListContextStateQuery();
-  let [view, setView] = useState<View | null | undefined>(undefined);
-
-  let navHandler = useMemo(() => new NavigationHandler(setView), []);
-
-  let user = useMemo((): User | null | undefined => {
-    if (!data) {
-      return undefined;
-    }
-
-    if (!data.user) {
-      return null;
-    }
-
-    return {
-      ...data.user,
-
-      // eslint-disable-next-line @typescript-eslint/typedef
-      contexts: new Map(data.user.contexts.map((context): [string, Context] => {
-        return [context.id, {
-          ...context,
-
-          ...buildProjects(context),
-        }];
-      })),
-
-      ...buildProjects(data.user),
-    };
-  }, [data]);
-
-  useEffect(() => {
-    return navHandler.watch(user);
-  }, [navHandler, user]);
-
-  return <StateContext.Provider value={view}>{children}</StateContext.Provider>;
 }
