@@ -178,7 +178,8 @@ export async function up(knex: Knex): Promise<void> {
     table.text("type")
       .notNullable();
     table.timestamp("created", { useTz: true })
-      .notNullable();
+      .notNullable()
+      .defaultTo("now");
 
     table.unique(["ownerId", "index"]);
   });

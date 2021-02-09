@@ -1,3 +1,4 @@
+import type Knex from "knex";
 import type { DateTime } from "luxon";
 
 // This stucture is a little complex to support having items and sections available at multiple
@@ -10,52 +11,65 @@ export enum ItemType {
   Note = "note",
 }
 
+// eslint-disable-next-line @typescript-eslint/ban-types
+export type DbTable<T = {}, A = {}> = Knex.CompositeTableType<
+  Required<T> & A & DbEntity,
+  T & DbEntity,
+  Partial<T>
+>;
+
+export type DbObject<T> = Knex.ResolveTableType<T, "base">;
+export type DbInsertObject<T> = Knex.ResolveTableType<T, "insert">;
+export type DbUpdateObject<T> = Knex.ResolveTableType<T, "update">;
+
 export interface DbEntity {
   // unique identifier
   id: string;
 }
 
-export interface IndexedDbEntity extends DbEntity {
+export interface IndexedDbEntity {
   ownerId: string;
   index: number;
 }
 
 // Represents the user, one per user obviously.
-export interface UserDbObject extends DbEntity {
+export type UserDbTable = DbTable<{
   // unique
   email: string;
   // This is the hashed password.
   password: string;
-}
+}>;
 
 // Every user has at least one anonymous context. Its id will match the user's and its name will
 // be an empty string.
 //
 // unique index on userId, stub.
-export interface ContextDbObject extends DbEntity {
-  // Foreign key to UserDbObject.id.
+export type ContextDbTable = DbTable<{
+  // Foreign key to UserDbTable.id.
   userId: string;
   // This will be empty for the anonymous context for the user. In this case userId == id.
   name: string;
+}, {
   // auto-generated from the name.
   stub: string;
-}
+}>;
 
 // Every context has at least one anonymous project. Its id will match the context's, its name will
 // be an empty string and its parentId will be null.
 //
 // unique index on contextId, parentId, stub.
-// foreign key on contextId, parentId to ProjectDbObject contextId, id.
-export interface ProjectDbObject extends DbEntity {
-  // Foreign key to ContextDbObject.id.
+// foreign key on contextId, parentId to ProjectDbTable contextId, id.
+export type ProjectDbTable = DbTable<{
+  // Foreign key to ContextDbTable.id.
   contextId: string;
   parentId: string | null;
   // This will be empty for the anonymous project for the context. In this case contextId == id and
   // parentId == null.
   name: string;
+}, {
   // auto-generated from the name.
   stub: string;
-}
+}>;
 
 // Every project has at least one anonymous section. Its id will match the project's, its name will
 // be an empty string and its index will be -1. Every user has an additional anonymous section, its
@@ -63,43 +77,45 @@ export interface ProjectDbObject extends DbEntity {
 //
 // unique index on ownerId, index.
 // unique index on ownerId, stub.
-export interface SectionDbObject extends IndexedDbEntity {
+export type SectionDbTable = DbTable<IndexedDbEntity & {
   // This will be empty for the anonymous section for the project. In this case ownerId == id and
   // index = -1.
   name: string;
+}, {
   // auto-generated from the name.
   stub: string;
-}
+}>;
 
 // Every item, abstract.
-export interface ItemDbObject extends IndexedDbEntity {
+export type ItemDbTable = DbTable<IndexedDbEntity & {
   summary: string;
   type: ItemType;
+}, {
   created: DateTime;
-}
+}>;
 
-// A special instance of an item. id is a foreign key to ItemDbObject.id.
-export interface TaskItemDbObject extends DbEntity {
+// A special instance of an item. id is a foreign key to ItemDbTable.id.
+export type TaskItemDbTable = DbTable<{
   due: DateTime | null;
   done: DateTime | null;
   link: string | null;
-}
+}>;
 
 // A link artifact.
-export interface LinkItemDbObject extends DbEntity {
+export type LinkItemDbTable = DbTable<{
   icon: string | null;
   link: string;
-}
+}>;
 
 // A note artifact.
-export interface NoteItemDbObject extends DbEntity {
+export type NoteItemDbTable = DbTable<{
   note: string;
-}
+}>;
 
 // A file artifact.
-export interface FileItemDbObject extends DbEntity {
+export type FileItemDbTable = DbTable<{
   filename: string;
   path: string;
   size: number;
   mimetype: string;
-}
+}>;

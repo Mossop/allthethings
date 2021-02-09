@@ -12,7 +12,10 @@ const resolvers: MutationResolvers = {
     let user = await ctx.dataSources.users.verifyUser(email, password);
 
     if (!user) {
-      user = await ctx.dataSources.users.create(email, password);
+      user = await ctx.dataSources.users.create({
+        email,
+        password,
+      });
     }
 
     ctx.login(user);
@@ -189,7 +192,12 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    return ctx.dataSources.tasks.create(list, params);
+    return ctx.dataSources.tasks.create(list, {
+      ...params,
+      due: params.due ?? null,
+      done: params.done ?? null,
+      link: params.link ?? null,
+    });
   }),
 
   editTask: authed(async ({

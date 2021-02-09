@@ -11,7 +11,7 @@ type SchemaResolver<T> = {
   [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
 };
 
-export type ImplBuilder<T, D> = (resolverContext: ResolverContext, dbObject: D) => T;
+export type ImplBuilder<I, T> = (resolverContext: ResolverContext, dbObject: Db.DbObject<T>) => I;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 function assertValid<T extends {}>(val: T | null | undefined): T {
@@ -44,15 +44,15 @@ export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 export type ItemGroup = User | Project | Context | Section;
 
-abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
+abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
   public readonly id: string;
-  protected _dbObject: Promise<D> | null;
+  protected _dbObject: Promise<Db.DbObject<T>> | null;
 
-  public constructor(resolverContext: ResolverContext, dbObject: D);
+  public constructor(resolverContext: ResolverContext, dbObject: Db.DbObject<T>);
   public constructor(resolverContext: ResolverContext, id: string);
   public constructor(
     protected readonly resolverContext: ResolverContext,
-    arg: D | string,
+    arg: Db.DbObject<T> | string,
   ) {
     if (typeof arg == "string") {
       this.id = arg;
@@ -63,14 +63,14 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
     }
   }
 
-  protected async getDbObject(): Promise<D> {
+  protected async getDbObject(): Promise<Db.DbObject<T>> {
     return assertValid(await this.dbObjectDataSource.get(this.id));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract readonly dbObjectDataSource: Src.DbDataSource<any, D>;
+  protected abstract readonly dbObjectDataSource: Src.DbDataSource<any, T>;
 
-  protected get dbObject(): Promise<D> {
+  protected get dbObject(): Promise<Db.DbObject<T>> {
     if (this._dbObject) {
       return this._dbObject;
     }
@@ -80,21 +80,20 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
     return this._dbObject;
   }
 
-  public equals(other: BaseImpl<D> | string | undefined | null): boolean {
-    // @ts-ignore
-    return equals(this, other);
-  }
-
   public get dataSources(): Src.AppDataSources {
     return this.resolverContext.dataSources;
   }
 
-  protected async updateDbObject(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
+  protected async updateDbObject(props: Db.DbUpdateObject<T>): Promise<void> {
     let newObject = await this.dbObjectDataSource.updateOne(this.id, props);
     if (!newObject) {
       throw new Error("Missing item in database.");
     }
     this._dbObject = Promise.resolve(newObject);
+  }
+
+  public edit(props: Db.DbUpdateObject<T>): Promise<void> {
+    return this.updateDbObject(props);
   }
 
   public async delete(): Promise<void> {
@@ -103,7 +102,7 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
 }
 
 abstract class TaskListImpl<
-  T extends Db.DbEntity,
+  T extends Db.DbTable,
 > extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
   public async remainingTasks(): Promise<number> {
     return this.dataSources.tasks.taskListTaskCount(this.id);
@@ -127,7 +126,7 @@ abstract class TaskListImpl<
 }
 
 abstract class ProjectRootImpl<
-  T extends Db.DbEntity,
+  T extends Db.DbTable,
 > extends TaskListImpl<T> implements SchemaResolver<Schema.ProjectRoot> {
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
@@ -145,7 +144,7 @@ abstract class ProjectRootImpl<
   }
 }
 
-export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaResolver<Schema.User> {
+export class User extends ProjectRootImpl<Db.UserDbTable> implements SchemaResolver<Schema.User> {
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }
@@ -166,13 +165,13 @@ export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaReso
 }
 
 export class Context
-  extends ProjectRootImpl<Db.ContextDbObject> implements SchemaResolver<Schema.Context> {
+  extends ProjectRootImpl<Db.ContextDbTable> implements SchemaResolver<Schema.Context> {
   protected get dbObjectDataSource(): Src.ContextDataSource {
     return this.dataSources.contexts;
   }
 
   public async edit(
-    props: Partial<Omit<Db.ContextDbObject, "id" | "stub" | "userId">>,
+    props: Omit<Db.DbUpdateObject<Db.ContextDbTable>, "userId">,
   ): Promise<void> {
     return this.updateDbObject(props);
   }
@@ -190,7 +189,7 @@ export class Context
   }
 }
 
-export class Project extends TaskListImpl<Db.ProjectDbObject>
+export class Project extends TaskListImpl<Db.ProjectDbTable>
   implements SchemaResolver<Schema.Project> {
   protected get dbObjectDataSource(): Src.ProjectDataSource {
     return this.dataSources.projects;
@@ -205,7 +204,7 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
   }
 
   public async edit(
-    props: Partial<Omit<Db.ProjectDbObject, "id" | "stub" | "contextId" | "parentId">>,
+    props: Omit<Db.DbUpdateObject<Db.ProjectDbTable>, "contextId" | "parentId">,
   ): Promise<void> {
     return this.updateDbObject(props);
   }
@@ -248,7 +247,7 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
   }
 }
 
-export class Section extends BaseImpl<Db.SectionDbObject>
+export class Section extends BaseImpl<Db.SectionDbTable>
   implements SchemaResolver<Schema.Section> {
   protected get dbObjectDataSource(): Src.SectionDataSource {
     return this.dataSources.sections;
@@ -265,7 +264,7 @@ export class Section extends BaseImpl<Db.SectionDbObject>
   }
 
   public async edit(
-    props: Partial<Omit<Db.SectionDbObject, "id" | "ownerId" | "stub">>,
+    props: Omit<Db.DbUpdateObject<Db.SectionDbTable>, "ownerId">,
   ): Promise<void> {
     return this.updateDbObject(props);
   }
@@ -288,22 +287,28 @@ export class Section extends BaseImpl<Db.SectionDbObject>
   }
 }
 
-abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db.ItemDbObject>
+type ProvideEither<A, B> = [A, B | null] | [A | null, B];
+
+abstract class ItemImpl<T extends Db.DbTable = Db.DbTable> extends BaseImpl<Db.ItemDbTable>
   implements SchemaResolver<Schema.Item> {
-  protected _instanceDbObject: Promise<D> | null;
+  protected _instanceDbObject: Promise<Db.DbObject<T>> | null;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract readonly instanceDbObjectDataSource: Src.DbDataSource<any, D>;
+  protected abstract readonly instanceDbObjectDataSource: Src.DbDataSource<any, T>;
 
   public constructor(
     resolverContext: ResolverContext,
-    dbObject: Db.ItemDbObject,
-    instanceDbObject:D | null,
+    dbObject: Db.DbObject<Db.ItemDbTable>,
+    instanceDbObject: Db.DbObject<T> | null,
   );
-  public constructor(resolverContext: ResolverContext, dbObject: null, instanceDbObject: D);
+  public constructor(
+    resolverContext: ResolverContext,
+    dbObject: Db.DbObject<Db.ItemDbTable> | null,
+    instanceDbObject: Db.DbObject<T>,
+  );
   public constructor(resolverContext: ResolverContext, id: string);
   public constructor(
     resolverContext: ResolverContext,
-    ...args: [Db.ItemDbObject, D | null] | [null, D] | [string]
+    ...args: ProvideEither<Db.DbObject<Db.ItemDbTable>, Db.DbObject<T>> | [string]
   ) {
     if (args.length == 1) {
       let [id] = args;
@@ -324,8 +329,10 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
       }
     } else {
       let [, instanceDbObject] = args;
-      super(resolverContext, instanceDbObject.id);
-      this._instanceDbObject = Promise.resolve(instanceDbObject);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      super(resolverContext, instanceDbObject!.id);
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      this._instanceDbObject = Promise.resolve(instanceDbObject!);
     }
   }
 
@@ -333,11 +340,11 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
     return this.dataSources.items;
   }
 
-  protected async getInstanceDbObject(): Promise<D> {
+  protected async getInstanceDbObject(): Promise<Db.DbObject<T>> {
     return assertValid(await this.instanceDbObjectDataSource.get(this.id));
   }
 
-  protected get instanceDbObject(): Promise<D> {
+  protected get instanceDbObject(): Promise<Db.DbObject<T>> {
     if (this._instanceDbObject) {
       return this._instanceDbObject;
     }
@@ -347,7 +354,7 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
     return this._instanceDbObject;
   }
 
-  protected async updateInstanceDbObject(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
+  protected async updateInstanceDbObject(props: Db.DbUpdateObject<T>): Promise<void> {
     let newObject = await this.instanceDbObjectDataSource.updateOne(this.id, props);
     if (!newObject) {
       throw new Error("Missing item in database.");
@@ -359,7 +366,7 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
     {
       summary,
       ...props
-    }: Partial<Omit<Db.ItemDbObject, "id" | "type"> & Omit<D, "id">>,
+    }: Db.DbUpdateObject<Db.ItemDbTable> & Db.DbUpdateObject<T>,
   ): Promise<void> {
     await this.updateDbObject({ summary });
     // @ts-ignore
@@ -371,7 +378,7 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
   }
 }
 
-export class TaskItem extends ItemImpl<Db.TaskItemDbObject> implements SchemaResolver<Schema.Task> {
+export class TaskItem extends ItemImpl<Db.TaskItemDbTable> implements SchemaResolver<Schema.Task> {
   protected get instanceDbObjectDataSource(): Src.TaskItemDataSource {
     return this.dataSources.tasks;
   }
@@ -385,7 +392,7 @@ export class TaskItem extends ItemImpl<Db.TaskItemDbObject> implements SchemaRes
   }
 }
 
-export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaResolver<Schema.File> {
+export class FileItem extends ItemImpl<Db.FileItemDbTable> implements SchemaResolver<Schema.File> {
   protected get instanceDbObjectDataSource(): Src.FileItemDataSource {
     return this.dataSources.files;
   }
@@ -407,7 +414,7 @@ export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaRes
   }
 }
 
-export class NoteItem extends ItemImpl<Db.NoteItemDbObject> implements SchemaResolver<Schema.Note> {
+export class NoteItem extends ItemImpl<Db.NoteItemDbTable> implements SchemaResolver<Schema.Note> {
   protected get instanceDbObjectDataSource(): Src.NoteItemDataSource {
     return this.dataSources.notes;
   }
@@ -417,13 +424,9 @@ export class NoteItem extends ItemImpl<Db.NoteItemDbObject> implements SchemaRes
   }
 }
 
-export class LinkItem extends ItemImpl<Db.LinkItemDbObject> implements SchemaResolver<Schema.Link> {
+export class LinkItem extends ItemImpl<Db.LinkItemDbTable> implements SchemaResolver<Schema.Link> {
   protected get instanceDbObjectDataSource(): Src.LinkItemDataSource {
     return this.dataSources.links;
-  }
-
-  protected async getInstanceDbObject(): Promise<Db.LinkItemDbObject> {
-    return assertValid(await this.dataSources.links.get(this.id));
   }
 
   public async link(): Promise<string> {

@@ -2,15 +2,14 @@ import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type Knex from "knex";
-import { DateTime } from "luxon";
 import { customAlphabet } from "nanoid/async";
 
 import type { ResolverContext } from "../schema/context";
-import type * as Schema from "../schema/types";
 import type { DatabaseConnection } from "./connection";
 import type { ImplBuilder, Item } from "./implementations";
 import * as Impl from "./implementations";
 import * as Db from "./types";
+import type { DbInsertObject, DbObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -24,13 +23,19 @@ export enum SectionIndex {
   Input = -2,
 }
 
-function classBuilder<T, D>(
-  cls: new (resolverContext: ResolverContext, dbObject: D) => T,
-): ImplBuilder<T, D> {
-  return (resolverContext: ResolverContext, dbObject: D) => new cls(resolverContext, dbObject);
+function classBuilder<I, T>(
+  cls: new (resolverContext: ResolverContext, dbObject: DbObject<T>) => I,
+): ImplBuilder<I, T> {
+  return (
+    resolverContext: ResolverContext,
+    dbObject: DbObject<T>,
+  ) => new cls(resolverContext, dbObject);
 }
 
-async function max<D>(query: Knex.QueryBuilder<D, D[]>, col: keyof D): Promise<number | null> {
+async function max<D>(
+  query: Knex.QueryBuilder<D, D[]>,
+  col: keyof DbObject<D>,
+): Promise<number | null> {
   let result: { max: number | null } | undefined = await query.max(col).first();
   return result ? result.max : null;
 }
@@ -43,11 +48,11 @@ async function count(query: Knex.QueryBuilder): Promise<number | null> {
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
 export abstract class DbDataSource<
-  T extends { id: string },
-  D extends Db.DbEntity = Db.DbEntity,
+  I extends { id: string },
+  T extends Db.DbTable = Db.DbTable,
 > extends DataSource<ResolverContext> {
   public readonly abstract tableName: string;
-  protected abstract builder(resolverContext: ResolverContext, dbObject: D): T;
+  protected abstract builder(resolverContext: ResolverContext, dbObject: DbObject<T>): I;
   private _config: DataSourceConfig<ResolverContext> | null = null;
 
   protected get config(): DataSourceConfig<ResolverContext> {
@@ -75,8 +80,8 @@ export abstract class DbDataSource<
   /**
    * Raw access to the knex instance. This may be in a transaction.
    */
-  public get knex(): Knex<D, D[]> {
-    return this.connection.knex as Knex<D, D[]>;
+  public get knex(): Knex {
+    return this.connection.knex;
   }
 
   public initialize(config: DataSourceConfig<ResolverContext>): void {
@@ -86,44 +91,44 @@ export abstract class DbDataSource<
   /**
    * Generates a column reference.
    */
-  public ref(field: keyof D | "*"): string {
+  public ref(field: keyof DbObject<T> | "*"): string {
     return `${this.tableName}.${field}`;
   }
 
   /**
    * Typed access to the table for this datasource.
    */
-  public get table(): Knex.QueryBuilder<D, D[]> {
+  public get table(): Knex.QueryBuilder<T, T[]> {
     return this.knex.table(this.tableName);
   }
 
   /**
    * A filtered view of the table for this datasource which ignores anonymous records.
    */
-  public get records(): Knex.QueryBuilder<D, D[]> {
+  public get records(): Knex.QueryBuilder<T, T[]> {
     return this.table;
   }
 
   /**
    * Given a query returns all the matching records.
    */
-  public select(query: Knex.QueryBuilder<D, D[]>): Promise<D[]> {
-    return query.select(this.ref("*")) as Promise<D[]>;
+  public select(query: Knex.QueryBuilder<T, T[]>): Promise<DbObject<T>[]> {
+    return query.select(this.ref("*")) as Promise<DbObject<T>[]>;
   }
 
   /**
    * Given a query returns the first matching record.
    */
-  public first(query: Knex.QueryBuilder<D, D[]>): Promise<D | null> {
-    return query.first(this.ref("*")) as Promise<D | null>;
+  public first(query: Knex.QueryBuilder<T, T[]>): Promise<DbObject<T> | null> {
+    return query.first(this.ref("*")) as Promise<DbObject<T> | null>;
   }
 
   /**
    * Converts the DB record into the high-level implementation instance.
    */
-  protected build(dbObject: PromiseLike<D>): Promise<T>;
-  protected build(dbObject: PromiseLike<Maybe<D>>): Promise<T | null>;
-  protected async build(dbObject: PromiseLike<Maybe<D>>): Promise<T | null> {
+  protected build(dbObject: PromiseLike<DbObject<T>>): Promise<I>;
+  protected build(dbObject: PromiseLike<Maybe<DbObject<T>>>): Promise<I | null>;
+  protected async build(dbObject: PromiseLike<Maybe<DbObject<T>>>): Promise<I | null> {
     dbObject = await dbObject;
     if (!dbObject) {
       return null;
@@ -134,57 +139,47 @@ export abstract class DbDataSource<
   /**
    * Converts the DB records into the high-level implementation instances.
    */
-  protected buildAll(dbObjects: PromiseLike<D[]>): Promise<T[]>;
-  protected buildAll(dbObjects: PromiseLike<Maybe<D>[]>): Promise<(T | null)[]>;
-  protected async buildAll(dbObjects: PromiseLike<Maybe<D>[]>): Promise<(T | null)[]> {
+  protected buildAll(dbObjects: PromiseLike<DbObject<T>[]>): Promise<I[]>;
+  protected buildAll(dbObjects: PromiseLike<Maybe<DbObject<T>>[]>): Promise<(I | null)[]>;
+  protected async buildAll(dbObjects: PromiseLike<Maybe<DbObject<T>>[]>): Promise<(I | null)[]> {
     dbObjects = await dbObjects;
-    return await Promise.all(dbObjects.map((obj: Maybe<D>): Promise<T | null> => this.build(obj)));
+    return await Promise.all(
+      dbObjects.map((obj: Maybe<DbObject<T>>): Promise<I | null> => this.build(obj)),
+    );
   }
 
   /**
    * Gets the DB record with the given ID.
    */
-  public async get(id: string): Promise<D | null> {
+  public async get(id: string): Promise<DbObject<T> | null> {
     return this.first(this.records.whereIn(this.ref("id"), [id]));
   }
 
   /**
    * Gets the high-level implementation with the given ID.
    */
-  public async getOne(id: string): Promise<T | null> {
+  public async getOne(id: string): Promise<I | null> {
     return this.build(await this.get(id));
   }
 
   /**
    * Finds an instance that matches the given fields.
    */
-  public async find(fields: Partial<D>): Promise<T[]> {
+  public async find(fields: Partial<DbObject<T>>): Promise<I[]> {
     return this.buildAll(this.select(this.records.where(fields)));
-  }
-
-  /**
-   * Performs a more complex query to find the matching instances.
-   */
-  public async query(fn: (knex: Knex.QueryBuilder<D, D[]>) => void | Promise<void>): Promise<T[]> {
-    let query = this.records;
-    await fn(query);
-    return this.buildAll(this.select(query));
   }
 
   /**
    * Inserts a DB record into the database.
    */
-  public async insert(item: PartialId<Omit<D, "stub">>): Promise<D> {
+  public async insert(item: DbInsertObject<T>): Promise<DbObject<T>> {
     // @ts-ignore
-    let results = await this.table.insert({
-      ...item,
-      id: item.id ?? await id(),
-    }).returning("*");
+    let results = await this.table.insert(item).returning("*");
 
     if (!results.length) {
       throw new Error("Unexpectedly failed to create a record.");
     } else if (results.length == 1) {
-      return results[0] as D;
+      return results[0] as DbObject<T>;
     } else {
       throw new Error("Unexpectedly created multiple records.");
     }
@@ -193,9 +188,9 @@ export abstract class DbDataSource<
   /**
    * Updates a DB record in the database.
    */
-  public async updateOne(id: string, item: Partial<Omit<D, "id" | "stub">>): Promise<D | null> {
+  public async updateOne(id: string, item: Db.DbUpdateObject<T>): Promise<DbObject<T> | null> {
     // @ts-ignore
-    let results: D[] = await this.table
+    let results: DbObject<T>[] = await this.table
       .where(this.ref("id"), id)
       // @ts-ignore
       .update(item)
@@ -218,15 +213,15 @@ export abstract class DbDataSource<
 }
 
 export abstract class IndexedDbDataSource<
-  T extends { id: string },
-  D extends Db.IndexedDbEntity = Db.IndexedDbEntity,
-> extends DbDataSource<T, D> {
+  I extends { id: string },
+  T extends Db.DbTable<Db.IndexedDbEntity> = Db.DbTable<Db.IndexedDbEntity>,
+> extends DbDataSource<I, T> {
   protected async nextIndex(owner: string): Promise<number> {
     let index = await max(this.records.where("ownerId", owner), "index");
     return index !== null ? index + 1 : 0;
   }
 
-  public async find(fields: Partial<D>): Promise<T[]> {
+  public async find(fields: Partial<DbObject<T>>): Promise<I[]> {
     return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
   }
 
@@ -330,9 +325,9 @@ export abstract class IndexedDbDataSource<
   }
 }
 
-export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
+export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
   public tableName = "User";
-  protected builder = classBuilder<Impl.User, Db.UserDbObject>(Impl.User);
+  protected builder = classBuilder<Impl.User, Db.UserDbTable>(Impl.User);
 
   public async verifyUser(email: string, password: string): Promise<Impl.User | null> {
     let user = await this.first(this.table.where({
@@ -350,12 +345,11 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
     return null;
   }
 
-  public async create(email: string, password: string): Promise<Impl.User> {
-    password = await bcryptHash(password, 12);
-
+  public async create(params: Omit<Db.DbInsertObject<Db.UserDbTable>, "id">): Promise<Impl.User> {
     let user = await this.build(this.insert({
-      email,
-      password,
+      id: await id(),
+      ...params,
+      password: await bcryptHash(params.password, 12),
     }));
 
     await this.context.dataSources.contexts.create(user, {
@@ -368,12 +362,12 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbObject> {
 
 export class ContextDataSource extends DbDataSource<
   Impl.Context,
-  Db.ContextDbObject
+  Db.ContextDbTable
 > {
   public tableName = "Context";
-  protected builder = classBuilder<Impl.Context, Db.ContextDbObject>(Impl.Context);
+  protected builder = classBuilder<Impl.Context, Db.ContextDbTable>(Impl.Context);
 
-  public get records(): Knex.QueryBuilder<Db.ContextDbObject, Db.ContextDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.ContextDbTable, Db.ContextDbTable[]> {
     return this.table.where("name", "<>", "");
   }
 
@@ -388,11 +382,11 @@ export class ContextDataSource extends DbDataSource<
 
   public async create(
     user: Impl.User,
-    { name }: Schema.ContextParams,
+    params: Omit<DbInsertObject<Db.ContextDbTable>, "id" | "userId">,
   ): Promise<Impl.Context> {
     let context = await this.build(this.insert({
-      id: name == "" ? user.id : await id(),
-      name,
+      id: params.name == "" ? user.id : await id(),
+      ...params,
       userId: user.id,
     }));
 
@@ -406,28 +400,28 @@ export class ContextDataSource extends DbDataSource<
 
 export class ProjectDataSource extends DbDataSource<
   Impl.Project,
-  Db.ProjectDbObject
+  Db.ProjectDbTable
 > {
   public tableName = "Project";
-  protected builder = classBuilder<Impl.Project, Db.ProjectDbObject>(Impl.Project);
+  protected builder = classBuilder<Impl.Project, Db.ProjectDbTable>(Impl.Project);
 
-  public get records(): Knex.QueryBuilder<Db.ProjectDbObject, Db.ProjectDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.ProjectDbTable, Db.ProjectDbTable[]> {
     return this.table.where("name", "<>", "");
   }
 
   public async create(
     taskList: Impl.User | Impl.Context | Impl.Project,
-    { name }: Pick<Db.ProjectDbObject, "name">,
+    params: Omit<DbInsertObject<Db.ProjectDbTable>, "id" | "contextId" | "parentId">,
   ): Promise<Impl.Project> {
     let context = taskList instanceof Impl.Project
       ? await taskList.context() ?? await taskList.user()
       : taskList;
 
     let project = await this.build(this.insert({
-      id: name == "" ? taskList.id : await id(),
+      id: params.name == "" ? taskList.id : await id(),
       contextId: context.id,
-      name,
-      parentId: name == "" ? null : taskList.id,
+      ...params,
+      parentId: params.name == "" ? null : taskList.id,
     }));
 
     await this.context.dataSources.sections.create(project, null, {
@@ -440,12 +434,12 @@ export class ProjectDataSource extends DbDataSource<
 
 export class SectionDataSource extends IndexedDbDataSource<
   Impl.Section,
-  Db.SectionDbObject
+  Db.SectionDbTable
 > {
   public tableName = "Section";
-  protected builder = classBuilder<Impl.Section, Db.SectionDbObject>(Impl.Section);
+  protected builder = classBuilder<Impl.Section, Db.SectionDbTable>(Impl.Section);
 
-  public get records(): Knex.QueryBuilder<Db.SectionDbObject, Db.SectionDbObject[]> {
+  public get records(): Knex.QueryBuilder<Db.SectionDbTable, Db.SectionDbTable[]> {
     return this.table.where("index", ">=", 0);
   }
 
@@ -453,56 +447,55 @@ export class SectionDataSource extends IndexedDbDataSource<
     ownerId: string,
     type: SectionIndex,
   ): Promise<string | null> {
-    let id = await this.table.where({
+    let record = await this.table.where({
       ownerId,
       index: type,
-    }).pluck("id").first();
+    }).first();
 
-    return id ?? null;
+    return record?.id ?? null;
   }
 
   public async create(
     project: Impl.User | Impl.Context | Impl.Project,
     before: string | null,
-    { name }: Pick<Db.SectionDbObject, "name">,
+    params: Omit<DbInsertObject<Db.SectionDbTable>, "id" | "ownerId" | "index">,
   ): Promise<Impl.Section> {
     let index: number;
 
-    if (name == "") {
+    if (params.name == "") {
       index = SectionIndex.Anonymous;
     } else if (before) {
-      let value = await this.records
+      let record = await this.records
         .where({
           ownerId: project.id,
           id: before,
         })
-        .pluck("index")
         .first();
-      if (value !== undefined) {
+      if (record !== undefined) {
         await this.table.where({
           ownerId: project.id,
-        }).andWhere("index", ">=", value).update("index", this.knex.raw(":index: + 1", {
+        }).andWhere("index", ">=", record.index).update("index", this.knex.raw(":index: + 1", {
           index: "index",
         }));
       }
 
-      index = value ?? await this.nextIndex(project.id);
+      index = record?.index ?? await this.nextIndex(project.id);
     } else {
       index = await this.nextIndex(project.id);
     }
 
     return this.build(this.insert({
-      id: name == "" ? project.id : await id(),
-      name,
+      id: params.name == "" ? project.id : await id(),
+      ...params,
       ownerId: project.id,
       index,
     }));
   }
 }
 
-export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
+export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbTable> {
   public tableName = "Item";
-  protected builder(resolverContext: ResolverContext, dbObject: Db.ItemDbObject): Item {
+  protected builder(resolverContext: ResolverContext, dbObject: DbObject<Db.ItemDbTable>): Item {
     switch (dbObject.type) {
       case Db.ItemType.Task:
         return new Impl.TaskItem(resolverContext, dbObject, null);
@@ -517,15 +510,13 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
 
   public async create(
     owner: Impl.TaskList | Impl.Section,
-    type: Db.ItemType,
-    summary: string,
-  ): Promise<Db.ItemDbObject> {
+    params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index">,
+  ): Promise<DbObject<Db.ItemDbTable>> {
     return this.insert({
-      created: DateTime.utc(),
+      id: await id(),
       ownerId: owner.id,
       index: await this.nextIndex(owner.id),
-      summary,
-      type,
+      ...params,
     });
   }
 
@@ -541,12 +532,41 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
   }
 }
 
+type ExtendedItemInsert<T> =
+  Omit<DbInsertObject<T>, "id"> &
+  Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index" | "type">;
+
 abstract class ExtendedItemDataSource<
-  T extends { id: string },
-  D extends Db.DbEntity = Db.DbEntity,
-> extends DbDataSource<T, D> {
+  I extends { id: string },
+  T extends Db.DbTable = Db.DbTable,
+> extends DbDataSource<I, T> {
+  protected abstract readonly itemType: Db.ItemType;
+  protected abstract builder(
+    resolverContext: ResolverContext,
+    instanceObject: DbObject<T>,
+    dbObject?: DbObject<Db.ItemDbTable>,
+  ): I;
+
   public get items(): ItemDataSource {
     return this.context.dataSources.items;
+  }
+
+  public async create(
+    owner: Impl.TaskList | Impl.Section,
+    {
+      summary,
+      ...params
+    }: ExtendedItemInsert<T>,
+  ): Promise<I> {
+    let base = await this.items.create(owner, {
+      type: this.itemType,
+      summary,
+    });
+
+    // @ts-ignore
+    let task = await this.insert(params);
+
+    return this.builder(this.context, task, base);
   }
 
   public delete(id: string): Promise<void> {
@@ -554,13 +574,16 @@ abstract class ExtendedItemDataSource<
   }
 }
 
-export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db.TaskItemDbObject> {
+export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db.TaskItemDbTable> {
   public tableName = "TaskItem";
+  protected itemType = Db.ItemType.Task;
+
   protected builder(
     resolverContext: ResolverContext,
-    dbObject: Db.TaskItemDbObject,
+    instanceObject: DbObject<Db.TaskItemDbTable>,
+    dbObject?: DbObject<Db.ItemDbTable>,
   ): Impl.TaskItem {
-    return new Impl.TaskItem(resolverContext, null, dbObject);
+    return new Impl.TaskItem(resolverContext, dbObject ?? null, instanceObject);
   }
 
   public async taskListTaskCount(taskList: string): Promise<number> {
@@ -587,50 +610,44 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
     );
     return value ?? 0;
   }
-
-  public async create(
-    owner: Impl.TaskList | Impl.Section,
-    { summary, link, done, due }: Schema.TaskParams,
-  ): Promise<Impl.TaskItem> {
-    let base = await this.items.create(owner, Db.ItemType.Task, summary);
-    let task = await this.insert({
-      id: base.id,
-      done: done ? DateTime.utc() : null,
-      due: due ?? null,
-      link: link ?? null,
-    });
-
-    return new Impl.TaskItem(this.context, base, task);
-  }
 }
 
-export class FileItemDataSource extends ExtendedItemDataSource<Impl.FileItem, Db.FileItemDbObject> {
+export class FileItemDataSource extends ExtendedItemDataSource<Impl.FileItem, Db.FileItemDbTable> {
   public tableName = "FileItem";
+  protected itemType = Db.ItemType.File;
+
   protected builder(
     resolverContext: ResolverContext,
-    dbObject: Db.FileItemDbObject,
+    instanceObject: DbObject<Db.FileItemDbTable>,
+    dbObject?: DbObject<Db.ItemDbTable>,
   ): Impl.FileItem {
-    return new Impl.FileItem(resolverContext, null, dbObject);
+    return new Impl.FileItem(resolverContext, dbObject ?? null, instanceObject);
   }
 }
 
-export class NoteItemDataSource extends ExtendedItemDataSource<Impl.NoteItem, Db.NoteItemDbObject> {
+export class NoteItemDataSource extends ExtendedItemDataSource<Impl.NoteItem, Db.NoteItemDbTable> {
   public tableName = "NoteItem";
+  protected itemType = Db.ItemType.Note;
+
   protected builder(
     resolverContext: ResolverContext,
-    dbObject: Db.NoteItemDbObject,
+    instanceObject: DbObject<Db.NoteItemDbTable>,
+    dbObject?: DbObject<Db.ItemDbTable>,
   ): Impl.NoteItem {
-    return new Impl.NoteItem(resolverContext, null, dbObject);
+    return new Impl.NoteItem(resolverContext, dbObject ?? null, instanceObject);
   }
 }
 
-export class LinkItemDataSource extends ExtendedItemDataSource<Impl.LinkItem, Db.LinkItemDbObject> {
+export class LinkItemDataSource extends ExtendedItemDataSource<Impl.LinkItem, Db.LinkItemDbTable> {
   public tableName = "LinkItem";
+  protected itemType = Db.ItemType.Link;
+
   protected builder(
     resolverContext: ResolverContext,
-    dbObject: Db.LinkItemDbObject,
+    instanceObject: DbObject<Db.LinkItemDbTable>,
+    dbObject?: DbObject<Db.ItemDbTable>,
   ): Impl.LinkItem {
-    return new Impl.LinkItem(resolverContext, null, dbObject);
+    return new Impl.LinkItem(resolverContext, dbObject ?? null, instanceObject);
   }
 }
 
