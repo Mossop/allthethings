@@ -3,6 +3,9 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import { ApolloServer } from "apollo-server-koa";
+import type { ValueNode } from "graphql";
+import { GraphQLScalarType, Kind } from "graphql";
+import { DateTime } from "luxon";
 
 import type { Overwrite } from "@allthethings/utils";
 
@@ -31,6 +34,23 @@ type RootResolvers<ContextType = ResolverContext> = Overwrite<
 >;
 
 export const resolvers: RootResolvers = {
+  DateTime: new GraphQLScalarType({
+    name: "DateTime",
+    description: "DateTime",
+    serialize(value: DateTime): string {
+      return value.toISO();
+    },
+    parseValue(value: unknown): DateTime | null {
+      return typeof value == "string" ? DateTime.fromISO(value) : null;
+    },
+    parseLiteral(ast: ValueNode): DateTime | null {
+      if (ast.kind === Kind.STRING) {
+        return DateTime.fromISO(ast.value);
+      }
+      return null;
+    },
+  }),
+
   Item: {
     __resolveType(): "Task" {
       return "Task";

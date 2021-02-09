@@ -1,5 +1,5 @@
 /* eslint-disable */
-import type { GraphQLResolveInfo } from 'graphql';
+import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
 import type { User, Context, Project, Section, TaskList, ProjectRoot, Item } from '../db/implementations';
 import type { ResolverContext } from './context';
 import * as Schema from './types';
@@ -83,11 +83,11 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  DateTime: ResolverTypeWrapper<Schema.Scalars['DateTime']>;
   Item: ResolverTypeWrapper<Item>;
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
   Task: ResolverTypeWrapper<Item>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   File: ResolverTypeWrapper<Schema.File>;
   Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
   Note: ResolverTypeWrapper<Schema.Note>;
@@ -99,23 +99,21 @@ export type ResolversTypes = ResolversObject<{
   Project: ResolverTypeWrapper<Project>;
   Section: ResolverTypeWrapper<Section>;
   Query: ResolverTypeWrapper<{}>;
-  CreateContextParams: Schema.CreateContextParams;
-  EditContextParams: Schema.EditContextParams;
-  CreateProjectParams: Schema.CreateProjectParams;
-  EditProjectParams: Schema.EditProjectParams;
-  CreateSectionParams: Schema.CreateSectionParams;
-  EditSectionParams: Schema.EditSectionParams;
-  CreateTaskParams: Schema.CreateTaskParams;
+  ContextParams: Schema.ContextParams;
+  ProjectParams: Schema.ProjectParams;
+  SectionParams: Schema.SectionParams;
+  TaskParams: Schema.TaskParams;
   Mutation: ResolverTypeWrapper<{}>;
+  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  DateTime: Schema.Scalars['DateTime'];
   Item: Item;
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
   Task: Item;
-  Boolean: Schema.Scalars['Boolean'];
   File: Schema.File;
   Int: Schema.Scalars['Int'];
   Note: Schema.Note;
@@ -127,15 +125,17 @@ export type ResolversParentTypes = ResolversObject<{
   Project: Project;
   Section: Section;
   Query: {};
-  CreateContextParams: Schema.CreateContextParams;
-  EditContextParams: Schema.EditContextParams;
-  CreateProjectParams: Schema.CreateProjectParams;
-  EditProjectParams: Schema.EditProjectParams;
-  CreateSectionParams: Schema.CreateSectionParams;
-  EditSectionParams: Schema.EditSectionParams;
-  CreateTaskParams: Schema.CreateTaskParams;
+  ContextParams: Schema.ContextParams;
+  ProjectParams: Schema.ProjectParams;
+  SectionParams: Schema.SectionParams;
+  TaskParams: Schema.TaskParams;
   Mutation: {};
+  Boolean: Schema.Scalars['Boolean'];
 }>;
+
+export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
+  name: 'DateTime';
+}
 
 export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = ResolversObject<{
   __resolveType: TypeResolveFn<'Task' | 'File' | 'Note' | 'Link', ParentType, ContextType>;
@@ -146,7 +146,8 @@ export type ItemResolvers<ContextType = ResolverContext, ParentType extends Reso
 export type TaskResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  done: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   link: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -262,10 +263,12 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   editSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationEditSectionArgs, 'id' | 'params'>>;
   deleteSection: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteSectionArgs, 'id'>>;
   createTask: Resolver<ResolversTypes['Task'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'params'>>;
+  editTask: Resolver<Schema.Maybe<ResolversTypes['Task']>, ParentType, ContextType, RequireFields<Schema.MutationEditTaskArgs, 'id' | 'params'>>;
   deleteItem: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteItemArgs, 'id'>>;
 }>;
 
 export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
+  DateTime: GraphQLScalarType;
   Item: ItemResolvers<ContextType>;
   Task: TaskResolvers<ContextType>;
   File: FileResolvers<ContextType>;

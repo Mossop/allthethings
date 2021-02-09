@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 const path = require("path");
 
 module.exports = {
@@ -10,6 +11,11 @@ module.exports = {
         "typescript": {
           immutableTypes: true,
           nonOptionalTypename: true,
+          preResolveTypes: true,
+          useTypeImports: true,
+          scalars: {
+            DateTime: "luxon#DateTime",
+          },
         },
         "typescript-apollo-client-helpers": {
           useTypeImports: true,

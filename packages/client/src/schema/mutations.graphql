@@ -8,7 +8,7 @@ mutation Logout {
   logout
 }
 
-mutation CreateContext($params: CreateContextParams!) {
+mutation CreateContext($params: ContextParams!) {
   createContext(params: $params) {
     id
     name
@@ -16,7 +16,7 @@ mutation CreateContext($params: CreateContextParams!) {
   }
 }
 
-mutation EditContext($id: ID!, $params: EditContextParams!) {
+mutation EditContext($id: ID!, $params: ContextParams!) {
   editContext(id: $id, params: $params) {
     id
     name
@@ -28,14 +28,14 @@ mutation DeleteContext($id: ID!) {
   deleteContext(id: $id)
 }
 
-mutation CreateSection($taskList: ID, $params: CreateSectionParams!) {
+mutation CreateSection($taskList: ID, $params: SectionParams!) {
   createSection(taskList: $taskList, params: $params) {
     id
     name
   }
 }
 
-mutation EditSection($id: ID!, $params: EditSectionParams!) {
+mutation EditSection($id: ID!, $params: SectionParams!) {
   editSection(id: $id, params: $params) {
     id
     name
@@ -53,7 +53,7 @@ mutation DeleteSection($id: ID!) {
   deleteSection(id: $id)
 }
 
-mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
+mutation CreateProject($taskList: ID, $params: ProjectParams!) {
   createProject(taskList: $taskList, params: $params) {
     id
     name
@@ -61,7 +61,7 @@ mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
   }
 }
 
-mutation EditProject($id: ID!, $params: EditProjectParams!) {
+mutation EditProject($id: ID!, $params: ProjectParams!) {
   editProject(id: $id, params: $params) {
     id
     name
@@ -81,10 +81,15 @@ mutation DeleteProject($id: ID!) {
   deleteProject(id: $id)
 }
 
-mutation CreateTask($list: ID, $params: CreateTaskParams!) {
+mutation CreateTask($list: ID, $params: TaskParams!) {
   createTask(list: $list, params: $params) {
-    id
-    summary
+    ...itemFields
+  }
+}
+
+mutation EditTask($id: ID!, $params: TaskParams!) {
+  editTask(id: $id, params: $params) {
+    ...itemFields
   }
 }
 

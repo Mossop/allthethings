@@ -47,9 +47,7 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    await context.edit({
-      name: params.name ?? undefined,
-    });
+    await context.edit(params);
 
     return context;
   }),
@@ -84,9 +82,7 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    await project.edit({
-      name: params.name ?? undefined,
-    });
+    await project.edit(params);
 
     return project;
   }),
@@ -144,9 +140,7 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    await section.edit({
-      name: params.name ?? undefined,
-    });
+    await section.edit(params);
 
     return section;
   }),
@@ -196,6 +190,24 @@ const resolvers: MutationResolvers = {
     }
 
     return ctx.dataSources.tasks.create(list, params);
+  }),
+
+  editTask: authed(async ({
+    args: { id, params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditTaskArgs>): Promise<TaskItem | null> => {
+    let item = await ctx.dataSources.tasks.getOne(id);
+
+    if (!item) {
+      return null;
+    }
+
+    await item.edit({
+      ...params,
+      done: params.done ?? null,
+    });
+
+    return item;
   }),
 
   deleteItem: authed(async ({

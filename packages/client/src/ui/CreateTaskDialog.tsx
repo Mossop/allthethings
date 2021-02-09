@@ -34,7 +34,10 @@ export default ReactMemo(function CreateTaskDialog({
   let [createTask] = useCreateTaskMutation({
     variables: {
       list: list.id,
-      params: state,
+      params: {
+        ...state,
+        done: null,
+      },
     },
     refetchQueries: [
       refetchListTaskListQuery({

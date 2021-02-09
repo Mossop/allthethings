@@ -1,3 +1,5 @@
+import type { DateTime } from "luxon";
+
 // This stucture is a little complex to support having items and sections available at multiple
 // levels.
 
@@ -73,11 +75,13 @@ export interface SectionDbObject extends IndexedDbEntity {
 export interface ItemDbObject extends IndexedDbEntity {
   summary: string;
   type: ItemType;
+  created: DateTime;
 }
 
 // A special instance of an item. id is a foreign key to ItemDbObject.id.
 export interface TaskItemDbObject extends DbEntity {
-  done: boolean;
+  due: DateTime | null;
+  done: DateTime | null;
   link: string | null;
 }
 

@@ -177,6 +177,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
     table.text("type")
       .notNullable();
+    table.timestamp("created", { useTz: true })
+      .notNullable();
 
     table.unique(["ownerId", "index"]);
   });
@@ -192,9 +194,10 @@ export async function up(knex: Knex): Promise<void> {
 
     table.text("link")
       .nullable();
-    table.boolean("done")
-      .notNullable()
-      .defaultTo(false);
+    table.timestamp("due", { useTz: true })
+      .nullable();
+    table.timestamp("done", { useTz: true })
+      .nullable();
   });
 
   await knex.schema.createTable("LinkItem", (table: Knex.CreateTableBuilder): void => {

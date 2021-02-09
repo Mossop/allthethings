@@ -2,6 +2,7 @@ import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type Knex from "knex";
+import { DateTime } from "luxon";
 import { customAlphabet } from "nanoid/async";
 
 import type { ResolverContext } from "../schema/context";
@@ -175,7 +176,7 @@ export abstract class DbDataSource<
    */
   public async insert(item: PartialId<Omit<D, "stub">>): Promise<D> {
     // @ts-ignore
-    let results: D[] = await this.table.insert({
+    let results = await this.table.insert({
       ...item,
       id: item.id ?? await id(),
     }).returning("*");
@@ -183,7 +184,7 @@ export abstract class DbDataSource<
     if (!results.length) {
       throw new Error("Unexpectedly failed to create a record.");
     } else if (results.length == 1) {
-      return results[0];
+      return results[0] as D;
     } else {
       throw new Error("Unexpectedly created multiple records.");
     }
@@ -194,11 +195,11 @@ export abstract class DbDataSource<
    */
   public async updateOne(id: string, item: Partial<Omit<D, "id" | "stub">>): Promise<D | null> {
     // @ts-ignore
-    let results: D[] = await this.records
+    let results: D[] = await this.table
       .where(this.ref("id"), id)
       // @ts-ignore
       .update(item)
-      .returning(this.ref("*"));
+      .returning("*");
     if (!results.length) {
       return null;
     } else if (results.length > 1) {
@@ -387,7 +388,7 @@ export class ContextDataSource extends DbDataSource<
 
   public async create(
     user: Impl.User,
-    { name }: Schema.CreateContextParams,
+    { name }: Schema.ContextParams,
   ): Promise<Impl.Context> {
     let context = await this.build(this.insert({
       id: name == "" ? user.id : await id(),
@@ -520,6 +521,7 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbObject> {
     summary: string,
   ): Promise<Db.ItemDbObject> {
     return this.insert({
+      created: DateTime.utc(),
       ownerId: owner.id,
       index: await this.nextIndex(owner.id),
       summary,
@@ -567,7 +569,7 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
         .join("Item", "Item.id", this.ref("id"))
         .join("Section", "Section.id", "Item.ownerId")
         .where({
-          [this.ref("done")]: false,
+          [this.ref("done")]: null,
           ["Section.ownerId"]: taskList,
         }),
     );
@@ -588,12 +590,13 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
 
   public async create(
     owner: Impl.TaskList | Impl.Section,
-    { summary, link }: Schema.CreateTaskParams,
+    { summary, link, done, due }: Schema.TaskParams,
   ): Promise<Impl.TaskItem> {
     let base = await this.items.create(owner, Db.ItemType.Task, summary);
     let task = await this.insert({
       id: base.id,
-      done: false,
+      done: done ? DateTime.utc() : null,
+      due: due ?? null,
       link: link ?? null,
     });
 

@@ -99,7 +99,7 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
         & ItemFields_Link_Fragment
       )> }> }> };
 
-export type ItemFields_Task_Fragment = { readonly __typename: 'Task', readonly done: boolean, readonly id: string, readonly summary: string };
+export type ItemFields_Task_Fragment = { readonly __typename: 'Task', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any>, readonly id: string, readonly summary: string };
 
 export type ItemFields_File_Fragment = { readonly __typename: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string };
 
@@ -131,6 +131,7 @@ export const ItemFieldsFragmentDoc = gql`
   id
   summary
   ... on Task {
+    due
     done
   }
   ... on File {

@@ -1,3 +1,5 @@
+import type { DateTime } from "luxon";
+
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";
@@ -61,7 +63,10 @@ abstract class BaseImpl<D extends Db.DbEntity = Db.DbEntity> {
     }
   }
 
-  protected abstract getDbObject(): Promise<D>;
+  protected async getDbObject(): Promise<D> {
+    return assertValid(await this.dbObjectDataSource.get(this.id));
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract readonly dbObjectDataSource: Src.DbDataSource<any, D>;
 
@@ -141,10 +146,6 @@ abstract class ProjectRootImpl<
 }
 
 export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaResolver<Schema.User> {
-  protected async getDbObject(): Promise<Db.UserDbObject> {
-    return assertValid(await this.dataSources.users.get(this.id));
-  }
-
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }
@@ -166,10 +167,6 @@ export class User extends ProjectRootImpl<Db.UserDbObject> implements SchemaReso
 
 export class Context
   extends ProjectRootImpl<Db.ContextDbObject> implements SchemaResolver<Schema.Context> {
-  protected async getDbObject(): Promise<Db.ContextDbObject> {
-    return assertValid(await this.dataSources.contexts.get(this.id));
-  }
-
   protected get dbObjectDataSource(): Src.ContextDataSource {
     return this.dataSources.contexts;
   }
@@ -195,10 +192,6 @@ export class Context
 
 export class Project extends TaskListImpl<Db.ProjectDbObject>
   implements SchemaResolver<Schema.Project> {
-  protected async getDbObject(): Promise<Db.ProjectDbObject> {
-    return assertValid(await this.dataSources.projects.get(this.id));
-  }
-
   protected get dbObjectDataSource(): Src.ProjectDataSource {
     return this.dataSources.projects;
   }
@@ -257,10 +250,6 @@ export class Project extends TaskListImpl<Db.ProjectDbObject>
 
 export class Section extends BaseImpl<Db.SectionDbObject>
   implements SchemaResolver<Schema.Section> {
-  protected async getDbObject(): Promise<Db.SectionDbObject> {
-    return assertValid(await this.dataSources.sections.get(this.id));
-  }
-
   protected get dbObjectDataSource(): Src.SectionDataSource {
     return this.dataSources.sections;
   }
@@ -302,6 +291,8 @@ export class Section extends BaseImpl<Db.SectionDbObject>
 abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db.ItemDbObject>
   implements SchemaResolver<Schema.Item> {
   protected _instanceDbObject: Promise<D> | null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  protected abstract readonly instanceDbObjectDataSource: Src.DbDataSource<any, D>;
 
   public constructor(
     resolverContext: ResolverContext,
@@ -342,11 +333,9 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
     return this.dataSources.items;
   }
 
-  protected async getDbObject(): Promise<Db.ItemDbObject> {
-    return assertValid(await this.dataSources.items.get(this.id));
+  protected async getInstanceDbObject(): Promise<D> {
+    return assertValid(await this.instanceDbObjectDataSource.get(this.id));
   }
-
-  protected abstract getInstanceDbObject(): Promise<D>;
 
   protected get instanceDbObject(): Promise<D> {
     if (this._instanceDbObject) {
@@ -358,24 +347,47 @@ abstract class ItemImpl<D extends Db.DbEntity = Db.DbEntity> extends BaseImpl<Db
     return this._instanceDbObject;
   }
 
+  protected async updateInstanceDbObject(props: Partial<Omit<D, "id" | "stub">>): Promise<void> {
+    let newObject = await this.instanceDbObjectDataSource.updateOne(this.id, props);
+    if (!newObject) {
+      throw new Error("Missing item in database.");
+    }
+    this._instanceDbObject = Promise.resolve(newObject);
+  }
+
+  public async edit(
+    {
+      summary,
+      ...props
+    }: Partial<Omit<Db.ItemDbObject, "id" | "type"> & Omit<D, "id">>,
+  ): Promise<void> {
+    await this.updateDbObject({ summary });
+    // @ts-ignore
+    await this.updateInstanceDbObject(props);
+  }
+
   public async summary(): Promise<string> {
     return (await this.dbObject).summary;
   }
 }
 
 export class TaskItem extends ItemImpl<Db.TaskItemDbObject> implements SchemaResolver<Schema.Task> {
-  protected async getInstanceDbObject(): Promise<Db.TaskItemDbObject> {
-    return assertValid(await this.dataSources.tasks.get(this.id));
+  protected get instanceDbObjectDataSource(): Src.TaskItemDataSource {
+    return this.dataSources.tasks;
   }
 
-  public async done(): Promise<boolean> {
+  public async due(): Promise<DateTime | null> {
+    return (await this.instanceDbObject).due;
+  }
+
+  public async done(): Promise<DateTime | null> {
     return (await this.instanceDbObject).done;
   }
 }
 
 export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaResolver<Schema.File> {
-  protected async getInstanceDbObject(): Promise<Db.FileItemDbObject> {
-    return assertValid(await this.dataSources.files.get(this.id));
+  protected get instanceDbObjectDataSource(): Src.FileItemDataSource {
+    return this.dataSources.files;
   }
 
   public async path(): Promise<string> {
@@ -396,8 +408,8 @@ export class FileItem extends ItemImpl<Db.FileItemDbObject> implements SchemaRes
 }
 
 export class NoteItem extends ItemImpl<Db.NoteItemDbObject> implements SchemaResolver<Schema.Note> {
-  protected async getInstanceDbObject(): Promise<Db.NoteItemDbObject> {
-    return assertValid(await this.dataSources.notes.get(this.id));
+  protected get instanceDbObjectDataSource(): Src.NoteItemDataSource {
+    return this.dataSources.notes;
   }
 
   public async note(): Promise<string> {
@@ -406,6 +418,10 @@ export class NoteItem extends ItemImpl<Db.NoteItemDbObject> implements SchemaRes
 }
 
 export class LinkItem extends ItemImpl<Db.LinkItemDbObject> implements SchemaResolver<Schema.Link> {
+  protected get instanceDbObjectDataSource(): Src.LinkItemDataSource {
+    return this.dataSources.links;
+  }
+
   protected async getInstanceDbObject(): Promise<Db.LinkItemDbObject> {
     return assertValid(await this.dataSources.links.get(this.id));
   }

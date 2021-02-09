@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ApolloClient, createHttpLink, InMemoryCache } from "@apollo/client";
+import { ApolloClient, createHttpLink, InMemoryCache, ApolloLink } from "@apollo/client";
 
+import link from "./link";
 import introspection from "./types";
 import type { TypedTypePolicies } from "./types";
 
@@ -49,10 +50,13 @@ let typePolicies: TypedTypePolicies = {
 };
 
 export const client = new ApolloClient({
-  link: createHttpLink({
-    uri: "/graphql",
-    credentials: "same-origin",
-  }),
+  link: ApolloLink.from([
+    link,
+    createHttpLink({
+      uri: "/graphql",
+      credentials: "same-origin",
+    }),
+  ]),
   cache: new InMemoryCache({
     ...introspection,
     typePolicies,

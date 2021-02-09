@@ -1,10 +1,16 @@
 import Knex from "knex";
+import { DateTime } from "luxon";
 import { types } from "pg";
 
 import type { DatabaseConfig } from "../config";
 import DbMigrations from "./migrations";
 
+export function parseDate(val: string): DateTime {
+  return DateTime.fromSQL(val).toUTC();
+}
+
 types.setTypeParser(types.builtins.INT8, BigInt);
+types.setTypeParser(types.builtins.TIMESTAMPTZ, parseDate);
 
 export class DatabaseConnection {
   private _transaction: Knex.Transaction | null = null;

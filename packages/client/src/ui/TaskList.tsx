@@ -170,7 +170,7 @@ const SectionList = ReactMemo(function SectionList({
       </div>
       <ItemListActions list={section}/>
     </ListSubheader>
-    <Items items={section.items} taskList={section.taskList}/>
+    <Items items={section.items} section={section} taskList={section.taskList}/>
   </List>;
 });
 
@@ -402,7 +402,7 @@ export default ReactMemo(function TaskList({
     <div className={classes.content}>
       {header}
       <List disablePadding={true} ref={dropRef}>
-        <Items items={entries.items} taskList={view.taskList}/>
+        <Items items={entries.items} section={null} taskList={view.taskList}/>
         {
           orderedSections.map((section: Section) => <SectionList
             key={section.id}

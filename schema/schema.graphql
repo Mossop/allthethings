@@ -1,3 +1,5 @@
+scalar DateTime
+
 interface Item {
   id: ID!
   summary: String!
@@ -8,7 +10,8 @@ type Task implements Item {
   id: ID!
   summary: String!
 
-  done: Boolean!
+  due: DateTime
+  done: DateTime
   link: String
 }
 
@@ -119,53 +122,45 @@ type Query {
   root(id: ID!): ProjectRoot
 }
 
-input CreateContextParams {
+input ContextParams {
   name: String!
 }
 
-input EditContextParams {
-  name: String
-}
-
-input CreateProjectParams {
+input ProjectParams {
   name: String!
 }
 
-input EditProjectParams {
-  name: String
-}
-
-input CreateSectionParams {
+input SectionParams {
   name: String!
 }
 
-input EditSectionParams {
-  name: String
-}
-
-input CreateTaskParams {
+input TaskParams {
   summary: String!
+  done: DateTime
   link: String
+  due: DateTime
 }
 
 type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
 
-  createContext(params: CreateContextParams!): Context!
-  editContext(id: ID!, params: EditContextParams!): Context
+  createContext(params: ContextParams!): Context!
+  editContext(id: ID!, params: ContextParams!): Context
   deleteContext(id: ID!): Boolean!
 
-  createProject(taskList: ID, params: CreateProjectParams!): Project!
+  createProject(taskList: ID, params: ProjectParams!): Project!
   moveProject(id: ID!, taskList: ID): Project
-  editProject(id: ID!, params: EditProjectParams!): Project
+  editProject(id: ID!, params: ProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 
-  createSection(taskList: ID, before: ID, params: CreateSectionParams!): Section!
+  createSection(taskList: ID, before: ID, params: SectionParams!): Section!
   moveSection(id: ID!, taskList: ID, before: ID): Section
-  editSection(id: ID!, params: EditSectionParams!): Section
+  editSection(id: ID!, params: SectionParams!): Section
   deleteSection(id: ID!): Boolean!
 
-  createTask(list: ID, params: CreateTaskParams!): Task!
+  createTask(list: ID, params: TaskParams!): Task!
+  editTask(id: ID!, params: TaskParams!): Task
+
   deleteItem(id: ID!): Boolean!
 }

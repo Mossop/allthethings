@@ -7,7 +7,7 @@ import { useCallback } from "react";
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
 import { DragType, useDrag } from "../utils/drag";
-import type { Item as ItemState, TaskList } from "../utils/state";
+import type { Item as ItemState, Section, TaskList } from "../utils/state";
 import { flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
@@ -48,17 +48,19 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ItemProps {
   taskList: TaskList;
+  section: Section | null;
   item: ItemState;
 }
 
 const Item = ReactMemo(function Item({
   item,
+  section,
   taskList,
 }: ItemProps): ReactResult {
   let inner: ReactResult;
   switch (item.__typename) {
     case "Task":
-      inner = <TaskItem item={item}/>;
+      inner = <TaskItem item={item} section={section} taskList={taskList}/>;
       break;
     case "Note":
       inner = <NoteItem item={item}/>;
@@ -113,14 +115,23 @@ const Item = ReactMemo(function Item({
 
 interface ItemsProps {
   items: readonly ItemState[];
+  section: Section | null;
   taskList: TaskList;
 }
 
 export default ReactMemo(function Items({
   items,
+  section,
   taskList,
 }: ItemsProps): ReactResult {
   return <>
-    {items.map((item: ItemState) => <Item key={item.id} taskList={taskList} item={item}/>)}
+    {
+      items.map((item: ItemState) => <Item
+        key={item.id}
+        taskList={taskList}
+        section={section}
+        item={item}
+      />)
+    }
   </>;
 });

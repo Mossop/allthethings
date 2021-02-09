@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 const path = require("path");
 
 module.exports = {
@@ -11,6 +12,9 @@ module.exports = {
           useIndexSignature: true,
           useTypeImports: true,
           immutableTypes: true,
+          scalars: {
+            DateTime: "luxon#DateTime",
+          },
         },
         add: {
           content: "/* eslint-disable */",

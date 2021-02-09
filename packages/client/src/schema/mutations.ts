@@ -1,7 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
+import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment } from './queries';
 import { gql } from '@apollo/client';
+import { ItemFieldsFragmentDoc } from './queries';
 import * as Apollo from '@apollo/client';
 export type LoginMutationVariables = Types.Exact<{
   email: Types.Scalars['String'];
@@ -17,7 +19,7 @@ export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
 export type LogoutMutation = { readonly __typename: 'Mutation', readonly logout: Types.Maybe<boolean> };
 
 export type CreateContextMutationVariables = Types.Exact<{
-  params: Types.CreateContextParams;
+  params: Types.ContextParams;
 }>;
 
 
@@ -25,7 +27,7 @@ export type CreateContextMutation = { readonly __typename: 'Mutation', readonly 
 
 export type EditContextMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  params: Types.EditContextParams;
+  params: Types.ContextParams;
 }>;
 
 
@@ -40,7 +42,7 @@ export type DeleteContextMutation = { readonly __typename: 'Mutation', readonly 
 
 export type CreateSectionMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
-  params: Types.CreateSectionParams;
+  params: Types.SectionParams;
 }>;
 
 
@@ -48,7 +50,7 @@ export type CreateSectionMutation = { readonly __typename: 'Mutation', readonly 
 
 export type EditSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  params: Types.EditSectionParams;
+  params: Types.SectionParams;
 }>;
 
 
@@ -72,7 +74,7 @@ export type DeleteSectionMutation = { readonly __typename: 'Mutation', readonly 
 
 export type CreateProjectMutationVariables = Types.Exact<{
   taskList: Types.Maybe<Types.Scalars['ID']>;
-  params: Types.CreateProjectParams;
+  params: Types.ProjectParams;
 }>;
 
 
@@ -80,7 +82,7 @@ export type CreateProjectMutation = { readonly __typename: 'Mutation', readonly 
 
 export type EditProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  params: Types.EditProjectParams;
+  params: Types.ProjectParams;
 }>;
 
 
@@ -103,11 +105,25 @@ export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly 
 
 export type CreateTaskMutationVariables = Types.Exact<{
   list: Types.Maybe<Types.Scalars['ID']>;
-  params: Types.CreateTaskParams;
+  params: Types.TaskParams;
 }>;
 
 
-export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: { readonly __typename: 'Task', readonly id: string, readonly summary: string } };
+export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: (
+    { readonly __typename: 'Task' }
+    & ItemFields_Task_Fragment
+  ) };
+
+export type EditTaskMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  params: Types.TaskParams;
+}>;
+
+
+export type EditTaskMutation = { readonly __typename: 'Mutation', readonly editTask: Types.Maybe<(
+    { readonly __typename: 'Task' }
+    & ItemFields_Task_Fragment
+  )> };
 
 export type DeleteItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
@@ -180,7 +196,7 @@ export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
 export type LogoutMutationOptions = Apollo.BaseMutationOptions<LogoutMutation, LogoutMutationVariables>;
 export const CreateContextDocument = gql`
-    mutation CreateContext($params: CreateContextParams!) {
+    mutation CreateContext($params: ContextParams!) {
   createContext(params: $params) {
     id
     name
@@ -214,7 +230,7 @@ export type CreateContextMutationHookResult = ReturnType<typeof useCreateContext
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
 export type CreateContextMutationOptions = Apollo.BaseMutationOptions<CreateContextMutation, CreateContextMutationVariables>;
 export const EditContextDocument = gql`
-    mutation EditContext($id: ID!, $params: EditContextParams!) {
+    mutation EditContext($id: ID!, $params: ContextParams!) {
   editContext(id: $id, params: $params) {
     id
     name
@@ -279,7 +295,7 @@ export type DeleteContextMutationHookResult = ReturnType<typeof useDeleteContext
 export type DeleteContextMutationResult = Apollo.MutationResult<DeleteContextMutation>;
 export type DeleteContextMutationOptions = Apollo.BaseMutationOptions<DeleteContextMutation, DeleteContextMutationVariables>;
 export const CreateSectionDocument = gql`
-    mutation CreateSection($taskList: ID, $params: CreateSectionParams!) {
+    mutation CreateSection($taskList: ID, $params: SectionParams!) {
   createSection(taskList: $taskList, params: $params) {
     id
     name
@@ -313,7 +329,7 @@ export type CreateSectionMutationHookResult = ReturnType<typeof useCreateSection
 export type CreateSectionMutationResult = Apollo.MutationResult<CreateSectionMutation>;
 export type CreateSectionMutationOptions = Apollo.BaseMutationOptions<CreateSectionMutation, CreateSectionMutationVariables>;
 export const EditSectionDocument = gql`
-    mutation EditSection($id: ID!, $params: EditSectionParams!) {
+    mutation EditSection($id: ID!, $params: SectionParams!) {
   editSection(id: $id, params: $params) {
     id
     name
@@ -412,7 +428,7 @@ export type DeleteSectionMutationHookResult = ReturnType<typeof useDeleteSection
 export type DeleteSectionMutationResult = Apollo.MutationResult<DeleteSectionMutation>;
 export type DeleteSectionMutationOptions = Apollo.BaseMutationOptions<DeleteSectionMutation, DeleteSectionMutationVariables>;
 export const CreateProjectDocument = gql`
-    mutation CreateProject($taskList: ID, $params: CreateProjectParams!) {
+    mutation CreateProject($taskList: ID, $params: ProjectParams!) {
   createProject(taskList: $taskList, params: $params) {
     id
     name
@@ -447,7 +463,7 @@ export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProject
 export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
 export type CreateProjectMutationOptions = Apollo.BaseMutationOptions<CreateProjectMutation, CreateProjectMutationVariables>;
 export const EditProjectDocument = gql`
-    mutation EditProject($id: ID!, $params: EditProjectParams!) {
+    mutation EditProject($id: ID!, $params: ProjectParams!) {
   editProject(id: $id, params: $params) {
     id
     name
@@ -547,13 +563,12 @@ export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProject
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const CreateTaskDocument = gql`
-    mutation CreateTask($list: ID, $params: CreateTaskParams!) {
+    mutation CreateTask($list: ID, $params: TaskParams!) {
   createTask(list: $list, params: $params) {
-    id
-    summary
+    ...itemFields
   }
 }
-    `;
+    ${ItemFieldsFragmentDoc}`;
 export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, CreateTaskMutationVariables>;
 
 /**
@@ -580,6 +595,39 @@ export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
+export const EditTaskDocument = gql`
+    mutation EditTask($id: ID!, $params: TaskParams!) {
+  editTask(id: $id, params: $params) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type EditTaskMutationFn = Apollo.MutationFunction<EditTaskMutation, EditTaskMutationVariables>;
+
+/**
+ * __useEditTaskMutation__
+ *
+ * To run a mutation, you first call `useEditTaskMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditTaskMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editTaskMutation, { data, loading, error }] = useEditTaskMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditTaskMutation(baseOptions?: Apollo.MutationHookOptions<EditTaskMutation, EditTaskMutationVariables>) {
+        return Apollo.useMutation<EditTaskMutation, EditTaskMutationVariables>(EditTaskDocument, baseOptions);
+      }
+export type EditTaskMutationHookResult = ReturnType<typeof useEditTaskMutation>;
+export type EditTaskMutationResult = Apollo.MutationResult<EditTaskMutation>;
+export type EditTaskMutationOptions = Apollo.BaseMutationOptions<EditTaskMutation, EditTaskMutationVariables>;
 export const DeleteItemDocument = gql`
     mutation DeleteItem($id: ID!) {
   deleteItem(id: $id)

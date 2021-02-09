@@ -1,4 +1,5 @@
 /* eslint-disable */
+import type { DateTime } from 'luxon';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -10,7 +11,9 @@ export type Scalars = {
   Boolean: boolean;
   Int: number;
   Float: number;
+  DateTime: DateTime;
 };
+
 
 export type Item = {
   readonly id: Scalars['ID'];
@@ -21,7 +24,8 @@ export type Task = Item & {
   readonly __typename?: 'Task';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
-  readonly done: Scalars['Boolean'];
+  readonly due?: Maybe<Scalars['DateTime']>;
+  readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;
 };
 
@@ -145,33 +149,23 @@ export type QueryRootArgs = {
   id: Scalars['ID'];
 };
 
-export type CreateContextParams = {
+export type ContextParams = {
   readonly name: Scalars['String'];
 };
 
-export type EditContextParams = {
-  readonly name?: Maybe<Scalars['String']>;
-};
-
-export type CreateProjectParams = {
+export type ProjectParams = {
   readonly name: Scalars['String'];
 };
 
-export type EditProjectParams = {
-  readonly name?: Maybe<Scalars['String']>;
-};
-
-export type CreateSectionParams = {
+export type SectionParams = {
   readonly name: Scalars['String'];
 };
 
-export type EditSectionParams = {
-  readonly name?: Maybe<Scalars['String']>;
-};
-
-export type CreateTaskParams = {
+export type TaskParams = {
   readonly summary: Scalars['String'];
+  readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;
+  readonly due?: Maybe<Scalars['DateTime']>;
 };
 
 export type Mutation = {
@@ -190,6 +184,7 @@ export type Mutation = {
   readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
   readonly createTask: Task;
+  readonly editTask?: Maybe<Task>;
   readonly deleteItem: Scalars['Boolean'];
 };
 
@@ -201,13 +196,13 @@ export type MutationLoginArgs = {
 
 
 export type MutationCreateContextArgs = {
-  params: CreateContextParams;
+  params: ContextParams;
 };
 
 
 export type MutationEditContextArgs = {
   id: Scalars['ID'];
-  params: EditContextParams;
+  params: ContextParams;
 };
 
 
@@ -218,7 +213,7 @@ export type MutationDeleteContextArgs = {
 
 export type MutationCreateProjectArgs = {
   taskList?: Maybe<Scalars['ID']>;
-  params: CreateProjectParams;
+  params: ProjectParams;
 };
 
 
@@ -230,7 +225,7 @@ export type MutationMoveProjectArgs = {
 
 export type MutationEditProjectArgs = {
   id: Scalars['ID'];
-  params: EditProjectParams;
+  params: ProjectParams;
 };
 
 
@@ -242,7 +237,7 @@ export type MutationDeleteProjectArgs = {
 export type MutationCreateSectionArgs = {
   taskList?: Maybe<Scalars['ID']>;
   before?: Maybe<Scalars['ID']>;
-  params: CreateSectionParams;
+  params: SectionParams;
 };
 
 
@@ -255,7 +250,7 @@ export type MutationMoveSectionArgs = {
 
 export type MutationEditSectionArgs = {
   id: Scalars['ID'];
-  params: EditSectionParams;
+  params: SectionParams;
 };
 
 
@@ -266,7 +261,13 @@ export type MutationDeleteSectionArgs = {
 
 export type MutationCreateTaskArgs = {
   list?: Maybe<Scalars['ID']>;
-  params: CreateTaskParams;
+  params: TaskParams;
+};
+
+
+export type MutationEditTaskArgs = {
+  id: Scalars['ID'];
+  params: TaskParams;
 };
 
 
