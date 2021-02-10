@@ -19,12 +19,16 @@ export type Scalars = {
 export type Item = {
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
 };
 
 export type Task = Item & {
   readonly __typename: 'Task';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;
@@ -34,6 +38,8 @@ export type File = Item & {
   readonly __typename: 'File';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
@@ -43,6 +49,8 @@ export type Note = Item & {
   readonly __typename: 'Note';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly note: Scalars['String'];
 };
 
@@ -50,6 +58,8 @@ export type Link = Item & {
   readonly __typename: 'Link';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly icon?: Maybe<Scalars['String']>;
   readonly link: Scalars['String'];
 };
@@ -163,6 +173,7 @@ export type SectionParams = {
 };
 
 export type TaskParams = {
+  readonly archived: Scalars['Boolean'];
   readonly summary: Scalars['String'];
   readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;
@@ -276,37 +287,47 @@ export type MutationDeleteItemArgs = {
   id: Scalars['ID'];
 };
 
-export type ItemKeySpecifier = ('id' | 'summary' | ItemKeySpecifier)[];
+export type ItemKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | ItemKeySpecifier)[];
 export type ItemFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	summary?: FieldPolicy<any> | FieldReadFunction<any>
+	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type TaskKeySpecifier = ('id' | 'summary' | 'due' | 'done' | 'link' | TaskKeySpecifier)[];
+export type TaskKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'due' | 'done' | 'link' | TaskKeySpecifier)[];
 export type TaskFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>,
 	due?: FieldPolicy<any> | FieldReadFunction<any>,
 	done?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type FileKeySpecifier = ('id' | 'summary' | 'filename' | 'mimetype' | 'size' | FileKeySpecifier)[];
+export type FileKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'filename' | 'mimetype' | 'size' | FileKeySpecifier)[];
 export type FileFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>,
 	filename?: FieldPolicy<any> | FieldReadFunction<any>,
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type NoteKeySpecifier = ('id' | 'summary' | 'note' | NoteKeySpecifier)[];
+export type NoteKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'note' | NoteKeySpecifier)[];
 export type NoteFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>,
 	note?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type LinkKeySpecifier = ('id' | 'summary' | 'icon' | 'link' | LinkKeySpecifier)[];
+export type LinkKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'icon' | 'link' | LinkKeySpecifier)[];
 export type LinkFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>,
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };

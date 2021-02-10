@@ -37,6 +37,7 @@ export default ReactMemo(function CreateTaskDialog({
       params: {
         ...state,
         done: null,
+        archived: false,
       },
     },
     refetchQueries: [

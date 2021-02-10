@@ -32,12 +32,14 @@ export default ReactMemo(function TaskItem({
     variables: {
       id: item.id,
       params: {
-        summary: item.summary,
         link: item.link,
+        archived: item.archived,
+        summary: item.summary,
+        due: item.due,
         done: item.done ? null : DateTime.utc(),
       },
     },
-  }), [item.done, item.id, item.link, item.summary, toggleDone]);
+  }), [item, toggleDone]);
 
   return <>
     <IconButton onClick={toggle}>

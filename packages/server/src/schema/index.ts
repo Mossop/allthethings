@@ -41,7 +41,7 @@ export const resolvers: RootResolvers = {
       return value.toISO();
     },
     parseValue(value: unknown): DateTime | null {
-      return typeof value == "string" ? DateTime.fromISO(value) : null;
+      return typeof value == "string" ? DateTime.fromISO(value).toUTC() : null;
     },
     parseLiteral(ast: ValueNode): DateTime | null {
       if (ast.kind === Kind.STRING) {

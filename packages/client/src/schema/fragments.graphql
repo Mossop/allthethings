@@ -1,0 +1,42 @@
+fragment rootFields on ProjectRoot {
+  remainingTasks
+  subprojects {
+    id
+  }
+  projects {
+    id
+    stub
+    name
+    remainingTasks
+    subprojects {
+      id
+    }
+  }
+}
+
+fragment itemFields on Item {
+  id
+  summary
+  archived
+  created
+
+  ... on Task {
+    due
+    done
+  }
+
+  ... on File {
+    size
+    filename
+    mimetype
+  }
+
+  ... on Note {
+    note
+  }
+
+  ... on Link {
+    icon
+    link
+  }
+}

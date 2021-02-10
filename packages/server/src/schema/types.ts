@@ -18,12 +18,16 @@ export type Scalars = {
 export type Item = {
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
 };
 
 export type Task = Item & {
   readonly __typename?: 'Task';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;
@@ -33,6 +37,8 @@ export type File = Item & {
   readonly __typename?: 'File';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
@@ -42,6 +48,8 @@ export type Note = Item & {
   readonly __typename?: 'Note';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly note: Scalars['String'];
 };
 
@@ -49,6 +57,8 @@ export type Link = Item & {
   readonly __typename?: 'Link';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
   readonly icon?: Maybe<Scalars['String']>;
   readonly link: Scalars['String'];
 };
@@ -162,6 +172,7 @@ export type SectionParams = {
 };
 
 export type TaskParams = {
+  readonly archived: Scalars['Boolean'];
   readonly summary: Scalars['String'];
   readonly done?: Maybe<Scalars['DateTime']>;
   readonly link?: Maybe<Scalars['String']>;

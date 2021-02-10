@@ -1,9 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment } from './queries';
+import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ItemFieldsFragmentDoc } from './queries';
+import { ItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 export type LoginMutationVariables = Types.Exact<{
   email: Types.Scalars['String'];

@@ -180,6 +180,9 @@ export async function up(knex: Knex): Promise<void> {
     table.timestamp("created", { useTz: true })
       .notNullable()
       .defaultTo("now");
+    table.boolean("archived")
+      .notNullable()
+      .defaultTo(false);
 
     table.unique(["ownerId", "index"]);
   });

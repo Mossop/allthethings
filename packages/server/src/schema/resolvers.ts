@@ -87,6 +87,7 @@ export type ResolversTypes = ResolversObject<{
   Item: ResolverTypeWrapper<Item>;
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
+  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   Task: ResolverTypeWrapper<Item>;
   File: ResolverTypeWrapper<Schema.File>;
   Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
@@ -104,7 +105,6 @@ export type ResolversTypes = ResolversObject<{
   SectionParams: Schema.SectionParams;
   TaskParams: Schema.TaskParams;
   Mutation: ResolverTypeWrapper<{}>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -113,6 +113,7 @@ export type ResolversParentTypes = ResolversObject<{
   Item: Item;
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
+  Boolean: Schema.Scalars['Boolean'];
   Task: Item;
   File: Schema.File;
   Int: Schema.Scalars['Int'];
@@ -130,7 +131,6 @@ export type ResolversParentTypes = ResolversObject<{
   SectionParams: Schema.SectionParams;
   TaskParams: Schema.TaskParams;
   Mutation: {};
-  Boolean: Schema.Scalars['Boolean'];
 }>;
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
@@ -141,11 +141,15 @@ export type ItemResolvers<ContextType = ResolverContext, ParentType extends Reso
   __resolveType: TypeResolveFn<'Task' | 'File' | 'Note' | 'Link', ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
 }>;
 
 export type TaskResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Task'] = ResolversParentTypes['Task']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   link: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -155,6 +159,8 @@ export type TaskResolvers<ContextType = ResolverContext, ParentType extends Reso
 export type FileResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['File'] = ResolversParentTypes['File']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   filename: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mimetype: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   size: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
@@ -164,6 +170,8 @@ export type FileResolvers<ContextType = ResolverContext, ParentType extends Reso
 export type NoteResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Note'] = ResolversParentTypes['Note']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   note: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -171,6 +179,8 @@ export type NoteResolvers<ContextType = ResolverContext, ParentType extends Reso
 export type LinkResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Link'] = ResolversParentTypes['Link']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
   icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   link: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

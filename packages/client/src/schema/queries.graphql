@@ -15,22 +15,6 @@ query ListContextState {
   }
 }
 
-fragment rootFields on ProjectRoot {
-  remainingTasks
-  subprojects {
-    id
-  }
-  projects {
-    id
-    stub
-    name
-    remainingTasks
-    subprojects {
-      id
-    }
-  }
-}
-
 query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
     remainingTasks
@@ -48,30 +32,5 @@ query ListTaskList($taskList: ID!) {
         ...itemFields
       }
     }
-  }
-}
-
-fragment itemFields on Item {
-  id
-  summary
-
-  ... on Task {
-    due
-    done
-  }
-
-  ... on File {
-    size
-    filename
-    mimetype
-  }
-
-  ... on Note {
-    note
-  }
-
-  ... on Link {
-    icon
-    link
   }
 }

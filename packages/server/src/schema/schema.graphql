@@ -3,11 +3,15 @@ scalar DateTime
 interface Item {
   id: ID!
   summary: String!
+  archived: Boolean!
+  created: DateTime!
 }
 
 type Task implements Item {
   id: ID!
   summary: String!
+  archived: Boolean!
+  created: DateTime!
   due: DateTime
   done: DateTime
   link: String
@@ -16,6 +20,8 @@ type Task implements Item {
 type File implements Item {
   id: ID!
   summary: String!
+  archived: Boolean!
+  created: DateTime!
   filename: String!
   mimetype: String!
   size: Int!
@@ -24,12 +30,16 @@ type File implements Item {
 type Note implements Item {
   id: ID!
   summary: String!
+  archived: Boolean!
+  created: DateTime!
   note: String!
 }
 
 type Link implements Item {
   id: ID!
   summary: String!
+  archived: Boolean!
+  created: DateTime!
   icon: String
   link: String!
 }
@@ -113,6 +123,7 @@ input SectionParams {
 }
 
 input TaskParams {
+  archived: Boolean!
   summary: String!
   done: DateTime
   link: String

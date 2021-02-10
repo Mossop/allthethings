@@ -89,6 +89,7 @@ export type SectionDbTable = DbTable<IndexedDbEntity & {
 // Every item, abstract.
 export type ItemDbTable = DbTable<IndexedDbEntity & {
   summary: string;
+  archived: boolean;
   type: ItemType;
 }, {
   created: DateTime;

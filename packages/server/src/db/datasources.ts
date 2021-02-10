@@ -555,16 +555,21 @@ abstract class ExtendedItemDataSource<
     owner: Impl.TaskList | Impl.Section,
     {
       summary,
+      archived,
       ...params
     }: ExtendedItemInsert<T>,
   ): Promise<I> {
     let base = await this.items.create(owner, {
       type: this.itemType,
+      archived,
       summary,
     });
 
     // @ts-ignore
-    let task = await this.insert(params);
+    let task = await this.insert({
+      id: base.id,
+      ...params,
+    });
 
     return this.builder(this.context, task, base);
   }

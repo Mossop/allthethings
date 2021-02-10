@@ -7,9 +7,12 @@ import type * as Db from "./types";
 
 type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
 
-type SchemaResolver<T> = {
-  [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
-};
+type SchemaResolver<T> =
+  T extends DateTime
+    ? DateTime
+    : {
+      [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
+    };
 
 export type ImplBuilder<I, T> = (resolverContext: ResolverContext, dbObject: Db.DbObject<T>) => I;
 
@@ -37,6 +40,22 @@ export function equals(
   b = typeof b == "string" ? b : b.id;
 
   return a == b;
+}
+
+type FieldGetter<T> = <K extends keyof Db.DbObject<T>>(key: K) => () => Promise<Db.DbObject<T>[K]>;
+function fields<T extends Db.DbTable>(): FieldGetter<T> {
+  return <K extends keyof Db.DbObject<T>>(key: K): () => Promise<Db.DbObject<T>[K]> => {
+    return async function(this: BaseImpl<T>): Promise<Db.DbObject<T>[K]> {
+      return (await this.dbObject)[key];
+    };
+  };
+}
+function instanceFields<T extends Db.DbTable>(): FieldGetter<T> {
+  return <K extends keyof Db.DbObject<T>>(key: K): () => Promise<Db.DbObject<T>[K]> => {
+    return async function(this: ItemImpl<T>): Promise<Db.DbObject<T>[K]> {
+      return (await this.instanceDbObject)[key];
+    };
+  };
 }
 
 export type Item = TaskItem | LinkItem | NoteItem | FileItem;
@@ -155,13 +174,8 @@ export class User extends ProjectRootImpl<Db.UserDbTable> implements SchemaResol
     });
   }
 
-  public async email(): Promise<string> {
-    return (await this.dbObject).email;
-  }
-
-  public async password(): Promise<string> {
-    return (await this.dbObject).password;
-  }
+  public readonly email = fields<Db.UserDbTable>()("email");
+  public readonly password = fields<Db.UserDbTable>()("password");
 }
 
 export class Context
@@ -176,16 +190,11 @@ export class Context
     return this.updateDbObject(props);
   }
 
+  public readonly stub = fields<Db.ContextDbTable>()("stub");
+  public readonly name = fields<Db.ContextDbTable>()("name");
+
   public async user(): Promise<User> {
     return new User(this.resolverContext, (await this.dbObject).userId);
-  }
-
-  public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
-  }
-
-  public async name(): Promise<string> {
-    return (await this.dbObject).name;
   }
 }
 
@@ -223,13 +232,8 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
     });
   }
 
-  public async stub(): Promise<string> {
-    return (await this.dbObject).stub;
-  }
-
-  public async name(): Promise<string> {
-    return (await this.dbObject).name;
-  }
+  public readonly stub = fields<Db.ProjectDbTable>()("stub");
+  public readonly name = fields<Db.ProjectDbTable>()("name");
 
   public async taskList(): Promise<Project | User | Context> {
     let { parentId, contextId } = await this.dbObject;
@@ -278,13 +282,8 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     this._dbObject = null;
   }
 
-  public async index(): Promise<number> {
-    return (await this.dbObject).index;
-  }
-
-  public async name(): Promise<string> {
-    return (await this.dbObject).name;
-  }
+  public readonly index = fields<Db.SectionDbTable>()("index");
+  public readonly name = fields<Db.SectionDbTable>()("name");
 }
 
 type ProvideEither<A, B> = [A, B | null] | [A | null, B];
@@ -310,29 +309,21 @@ abstract class ItemImpl<T extends Db.DbTable = Db.DbTable> extends BaseImpl<Db.I
     resolverContext: ResolverContext,
     ...args: ProvideEither<Db.DbObject<Db.ItemDbTable>, Db.DbObject<T>> | [string]
   ) {
+    // @ts-ignore
+    super(resolverContext, args[0] ?? args[1].id);
+
     if (args.length == 1) {
-      let [id] = args;
-      super(resolverContext, id);
       this._instanceDbObject = null;
-    } else if (args[0]) {
-      let [dbObject, instanceDbObject] = args;
-
-      super(resolverContext, dbObject);
-
+    } else {
+      let [, instanceDbObject] = args;
       if (instanceDbObject) {
-        if (dbObject.id != instanceDbObject.id) {
+        if (this.id != instanceDbObject.id) {
           throw new Error("ID mismatch.");
         }
         this._instanceDbObject = Promise.resolve(instanceDbObject);
       } else {
         this._instanceDbObject = null;
       }
-    } else {
-      let [, instanceDbObject] = args;
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      super(resolverContext, instanceDbObject!.id);
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      this._instanceDbObject = Promise.resolve(instanceDbObject!);
     }
   }
 
@@ -365,17 +356,21 @@ abstract class ItemImpl<T extends Db.DbTable = Db.DbTable> extends BaseImpl<Db.I
   public async edit(
     {
       summary,
+      archived,
       ...props
     }: Db.DbUpdateObject<Db.ItemDbTable> & Db.DbUpdateObject<T>,
   ): Promise<void> {
-    await this.updateDbObject({ summary });
+    await this.updateDbObject({
+      summary,
+      archived,
+    });
     // @ts-ignore
     await this.updateInstanceDbObject(props);
   }
 
-  public async summary(): Promise<string> {
-    return (await this.dbObject).summary;
-  }
+  public readonly created = fields<Db.ItemDbTable>()("created");
+  public readonly archived = fields<Db.ItemDbTable>()("archived");
+  public readonly summary = fields<Db.ItemDbTable>()("summary");
 }
 
 export class TaskItem extends ItemImpl<Db.TaskItemDbTable> implements SchemaResolver<Schema.Task> {
@@ -383,13 +378,8 @@ export class TaskItem extends ItemImpl<Db.TaskItemDbTable> implements SchemaReso
     return this.dataSources.tasks;
   }
 
-  public async due(): Promise<DateTime | null> {
-    return (await this.instanceDbObject).due;
-  }
-
-  public async done(): Promise<DateTime | null> {
-    return (await this.instanceDbObject).done;
-  }
+  public readonly due = instanceFields<Db.TaskItemDbTable>()("due");
+  public readonly done = instanceFields<Db.TaskItemDbTable>()("done");
 }
 
 export class FileItem extends ItemImpl<Db.FileItemDbTable> implements SchemaResolver<Schema.File> {
@@ -397,21 +387,10 @@ export class FileItem extends ItemImpl<Db.FileItemDbTable> implements SchemaReso
     return this.dataSources.files;
   }
 
-  public async path(): Promise<string> {
-    return (await this.instanceDbObject).path;
-  }
-
-  public async filename(): Promise<string> {
-    return (await this.instanceDbObject).filename;
-  }
-
-  public async mimetype(): Promise<string> {
-    return (await this.instanceDbObject).mimetype;
-  }
-
-  public async size(): Promise<number> {
-    return (await this.instanceDbObject).size;
-  }
+  public readonly path = instanceFields<Db.FileItemDbTable>()("path");
+  public readonly filename = instanceFields<Db.FileItemDbTable>()("filename");
+  public readonly mimetype = instanceFields<Db.FileItemDbTable>()("mimetype");
+  public readonly size = instanceFields<Db.FileItemDbTable>()("size");
 }
 
 export class NoteItem extends ItemImpl<Db.NoteItemDbTable> implements SchemaResolver<Schema.Note> {
@@ -419,9 +398,7 @@ export class NoteItem extends ItemImpl<Db.NoteItemDbTable> implements SchemaReso
     return this.dataSources.notes;
   }
 
-  public async note(): Promise<string> {
-    return (await this.instanceDbObject).note;
-  }
+  public readonly note = instanceFields<Db.NoteItemDbTable>()("note");
 }
 
 export class LinkItem extends ItemImpl<Db.LinkItemDbTable> implements SchemaResolver<Schema.Link> {
@@ -429,7 +406,5 @@ export class LinkItem extends ItemImpl<Db.LinkItemDbTable> implements SchemaReso
     return this.dataSources.links;
   }
 
-  public async link(): Promise<string> {
-    return (await this.instanceDbObject).link;
-  }
+  public readonly link = instanceFields<Db.LinkItemDbTable>()("link");
 }
