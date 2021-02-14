@@ -130,9 +130,14 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
     table.text("name")
       .notNullable();
-
-    table.unique(["ownerId", "index"]);
   });
+
+  await knex.raw(`
+    ALTER TABLE ?? ADD UNIQUE (??, ??) DEFERRABLE INITIALLY IMMEDIATE`, [
+    "Section",
+    "ownerId",
+    "index",
+  ]);
 
   await knex.raw(`
     ALTER TABLE ??
@@ -183,9 +188,14 @@ export async function up(knex: Knex): Promise<void> {
     table.boolean("archived")
       .notNullable()
       .defaultTo(false);
-
-    table.unique(["ownerId", "index"]);
   });
+
+  await knex.raw(`
+    ALTER TABLE ?? ADD UNIQUE (??, ??) DEFERRABLE INITIALLY IMMEDIATE`, [
+    "Item",
+    "ownerId",
+    "index",
+  ]);
 
   await knex.raw(`
     ALTER TABLE :table: ADD CHECK (:index: >= 0)`, {

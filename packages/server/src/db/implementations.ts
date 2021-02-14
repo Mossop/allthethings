@@ -368,6 +368,12 @@ abstract class ItemImpl<T extends Db.DbTable = Db.DbTable> extends BaseImpl<Db.I
     await this.updateInstanceDbObject(props);
   }
 
+  public async move(parent: TaskList | Section, before: string | null): Promise<void> {
+    await this.dbObjectDataSource.move(this.id, parent.id, before);
+
+    this._dbObject = null;
+  }
+
   public readonly created = fields<Db.ItemDbTable>()("created");
   public readonly archived = fields<Db.ItemDbTable>()("archived");
   public readonly summary = fields<Db.ItemDbTable>()("summary");

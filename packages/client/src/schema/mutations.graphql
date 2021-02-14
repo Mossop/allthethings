@@ -93,6 +93,12 @@ mutation EditTask($id: ID!, $params: TaskParams!) {
   }
 }
 
+mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
+  moveItem(id: $id, parent: $parent, before: $before) {
+    ...itemFields
+  }
+}
+
 mutation DeleteItem($id: ID!) {
   deleteItem(id: $id)
 }

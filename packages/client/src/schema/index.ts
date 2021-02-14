@@ -8,6 +8,13 @@ import type { TypedTypePolicies } from "./types";
 const merge = (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming;
 
 let typePolicies: TypedTypePolicies = {
+  Section: {
+    fields: {
+      items: {
+        merge,
+      },
+    },
+  },
   Project: {
     fields: {
       subprojects: {

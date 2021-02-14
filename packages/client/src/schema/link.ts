@@ -61,7 +61,6 @@ function parseItem(item: unknown): void {
 
 export default new ApolloLink(
   (operation: Operation, forward: NextLink): Observable<FetchResult> | null => {
-    console.log("Operation", operation);
     return forward(operation).map((result: FetchResult): FetchResult => {
       if (result.data) {
         for (let response of Object.values(result.data)) {
@@ -69,7 +68,6 @@ export default new ApolloLink(
         }
       }
 
-      console.log(result);
       return result;
     });
   },

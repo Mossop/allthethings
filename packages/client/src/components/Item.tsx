@@ -2,13 +2,15 @@ import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
+import clsx from "clsx";
 import { useCallback } from "react";
 
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
-import { DragType, useDrag } from "../utils/drag";
+import type { DragOverCallback, DragState } from "../utils/drag";
+import { DisplayState, useItemDragState } from "../utils/drag";
 import type { Item as ItemState, Section, TaskList } from "../utils/state";
-import { flexCentered, flexRow } from "../utils/styles";
+import { dragging, flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import FileItem from "./FileItem";
@@ -27,6 +29,12 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: theme.palette.text.secondary,
         color: theme.palette.getContrastText(theme.palette.text.secondary),
       },
+    },
+    hidden: {
+      display: "none",
+    },
+    dragging: {
+      ...dragging,
     },
     dragHandleContainer: {
       ...flexCentered,
@@ -50,12 +58,16 @@ interface ItemProps {
   taskList: TaskList;
   section: Section | null;
   item: ItemState;
+  dragState: DragState;
+  onDragOver: DragOverCallback;
 }
 
-const Item = ReactMemo(function Item({
+export default ReactMemo(function Item({
   item,
   section,
   taskList,
+  dragState,
+  onDragOver,
 }: ItemProps): ReactResult {
   let inner: ReactResult;
   switch (item.__typename) {
@@ -75,13 +87,6 @@ const Item = ReactMemo(function Item({
 
   let classes = useStyles();
 
-  let [, dragRef, previewRef] = useDrag({
-    item: {
-      type: DragType.Item,
-      item,
-    },
-  });
-
   let [deleteItemMutation] = useDeleteItemMutation({
     variables: {
       id: item.id,
@@ -95,9 +100,23 @@ const Item = ReactMemo(function Item({
 
   let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
 
+  let {
+    displayState,
+    dragRef,
+    previewRef,
+    dropRef,
+  } = useItemDragState(item, dragState, onDragOver);
+
   return <ListItem
-    className={classes.item}
+    className={
+      clsx(
+        classes.item,
+        displayState == DisplayState.Dragging && classes.dragging,
+        displayState == DisplayState.Hidden && classes.hidden,
+      )
+    }
     disableGutters={true}
+    ref={dropRef}
   >
     <div ref={dragRef} className={classes.dragHandleContainer}>
       <DragIcon className={classes.dragHandle}/>
@@ -111,27 +130,4 @@ const Item = ReactMemo(function Item({
       </IconButton>
     </div>
   </ListItem>;
-});
-
-interface ItemsProps {
-  items: readonly ItemState[];
-  section: Section | null;
-  taskList: TaskList;
-}
-
-export default ReactMemo(function Items({
-  items,
-  section,
-  taskList,
-}: ItemsProps): ReactResult {
-  return <>
-    {
-      items.map((item: ItemState) => <Item
-        key={item.id}
-        taskList={taskList}
-        section={section}
-        item={item}
-      />)
-    }
-  </>;
 });

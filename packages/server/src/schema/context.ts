@@ -96,7 +96,7 @@ export async function buildContext({
         return user;
       }
 
-      throw new Error("Context does not exist.");
+      return null;
     },
 
     async getTaskList(this: ResolverContext, id: string): Promise<TaskList | null> {

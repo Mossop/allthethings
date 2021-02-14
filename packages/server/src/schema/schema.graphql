@@ -146,5 +146,6 @@ type Mutation {
   deleteSection(id: ID!): Boolean!
   createTask(list: ID, params: TaskParams!): Task!
   editTask(id: ID!, params: TaskParams!): Task
+  moveItem(id: ID!, parent: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!
 }

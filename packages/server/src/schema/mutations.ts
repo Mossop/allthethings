@@ -1,4 +1,4 @@
-import type { User, Context, Project, Section, TaskList, TaskItem } from "../db";
+import type { User, Context, Project, Section, TaskList, TaskItem, Item } from "../db";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
@@ -215,6 +215,32 @@ const resolvers: MutationResolvers = {
       done: params.done ?? null,
     });
 
+    return item;
+  }),
+
+  moveItem: authed(async ({
+    args: { id, parent, before },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationMoveItemArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getOne(id);
+
+    if (!item) {
+      return null;
+    }
+
+    if (!parent) {
+      parent = ctx.userId;
+    }
+
+    let owner: TaskList | Section | null = await ctx.getTaskList(parent);
+    if (!owner) {
+      owner = await ctx.dataSources.sections.getOne(parent);
+    }
+    if (!owner) {
+      throw new Error("Owner not found.");
+    }
+
+    await item.move(owner, before ?? null);
     return item;
   }),
 

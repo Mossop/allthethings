@@ -9,14 +9,26 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { forwardRef, useState, useCallback } from "react";
+import { useMemo, forwardRef, useState, useCallback } from "react";
 import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
-import { useMoveProjectMutation, useMoveSectionMutation } from "../schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { DraggedProject, DraggedSection } from "../utils/drag";
-import { useDrag, DragType, useDrop } from "../utils/drag";
+import { useMoveProjectMutation } from "../schema/mutations";
+import { refetchListContextStateQuery } from "../schema/queries";
+import type {
+  DraggedItem,
+  DraggedProject,
+  DraggedSection,
+  ItemDragTarget,
+  ProjectDragTarget,
+  SectionDragTarget,
+} from "../utils/drag";
+import {
+  isProjectDragTarget,
+  useDrag,
+  DragType,
+  useDrop,
+} from "../utils/drag";
 import { nameSorted } from "../utils/sort";
 import type { Project, TaskList } from "../utils/state";
 import { useCurrentContext, useProjectRoot } from "../utils/state";
@@ -174,83 +186,113 @@ const ProjectItem = ReactMemo(function ProjectItem({
     taskList: project,
   });
 
-  let [{ isDragging }, dragRef] = useDrag({
-    item: {
-      type: DragType.Project,
-      project,
-    },
-    collect: (monitor: DragSourceMonitor) => {
-      return {
-        isDragging: monitor.isDragging(),
-      };
-    },
-  });
-
-  let canDrop = useCallback((item: DraggedProject | DraggedSection): boolean => {
-    if (item.type == DragType.Section) {
-      return item.section.taskList !== project;
-    }
-
-    let parent: Project | null = project;
-    while (parent) {
-      if (parent.id == item.project.id) {
-        return false;
-      }
-
-      parent = parent.parent;
-    }
-    return true;
-  }, [project]);
-
   let [moveProject] = useMoveProjectMutation({
-    refetchQueries: [refetchListContextStateQuery()],
+    refetchQueries: [
+      refetchListContextStateQuery(),
+    ],
   });
 
-  let [moveSection] = useMoveSectionMutation();
+  let [{ isDragging }, dragRef] = useDrag({
+    item: useMemo<DraggedProject>(() => ({
+      type: DragType.Project,
+      item: project,
+    }), [project]),
 
-  let drop = useCallback(
-    (item: DraggedProject | DraggedSection, monitor: DropTargetMonitor): void => {
-      if (monitor.didDrop()) {
-        return;
-      }
+    end: useCallback(
+      async (item: unknown, monitor: DragSourceMonitor): Promise<void> => {
+        if (monitor.didDrop()) {
+          let target = monitor.getDropResult();
+          if (isProjectDragTarget(target)) {
+            await moveProject({
+              variables: {
+                id: project.id,
+                taskList: target.taskList.id,
+              },
+            });
+          } else {
+            console.warn("Unknown drop target", target);
+          }
+        }
+      },
+      [moveProject, project.id],
+    ),
 
-      if (item.type == DragType.Project) {
-        void moveProject({
-          variables: {
-            id: item.project.id,
-            taskList: project.id,
-          },
-        });
-      } else {
-        void moveSection({
-          variables: {
-            id: item.section.id,
-            taskList: project.id,
-            before: null,
-          },
-          refetchQueries: [
-            refetchListTaskListQuery({
-              taskList: project.id,
-            }),
-            refetchListTaskListQuery({
-              taskList: item.section.taskList.id,
-            }),
-          ],
-        });
-      }
-    },
-    [moveProject, moveSection, project],
-  );
+    collect: useCallback(
+      (monitor: DragSourceMonitor) => {
+        return {
+          isDragging: monitor.isDragging(),
+        };
+      },
+      [],
+    ),
+  });
 
   let [{ isDropping }, dropRef] = useDrop({
-    accept: [DragType.Project, DragType.Section],
-    canDrop,
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isDropping: monitor.isOver() && monitor.canDrop(),
-      };
-    },
-    drop,
+    accept: [DragType.Project, DragType.Section, DragType.Item],
+    canDrop: useCallback(
+      (item: DraggedProject | DraggedSection | DraggedItem): boolean => {
+        if (item.type == DragType.Item) {
+          return item.item.parent !== project;
+        }
+
+        if (item.type == DragType.Section) {
+          return item.item.taskList !== project;
+        }
+
+        let parent: Project | null = project;
+        while (parent) {
+          if (parent.id == item.item.id) {
+            return false;
+          }
+
+          parent = parent.parent;
+        }
+        return true;
+      },
+      [project],
+    ),
+
+    drop: useCallback(
+      (
+        item: DraggedProject | DraggedSection | DraggedItem,
+        monitor: DropTargetMonitor,
+      ): ProjectDragTarget | SectionDragTarget | ItemDragTarget | void => {
+        if (monitor.didDrop()) {
+          return;
+        }
+
+        if (item.type == DragType.Project) {
+          return {
+            type: DragType.Project,
+            taskList: project,
+          };
+        }
+
+        if (item.type == DragType.Section) {
+          return {
+            type: DragType.Section,
+            taskList: project,
+            before: null,
+          };
+        }
+
+        return {
+          type: DragType.Item,
+          target: project,
+          before: null,
+        };
+      },
+      [project],
+    ),
+
+    collect: useCallback(
+      (monitor: DropTargetMonitor) => {
+        return {
+          isDropping: monitor.isOver() && monitor.canDrop(),
+        };
+      },
+      [],
+    ),
   });
 
   let ref = useCallback((element: ReactElement | Element | null) => {
@@ -315,61 +357,62 @@ export default ReactMemo(function ProjectList({
     taskList: root,
   });
 
-  let [moveProject] = useMoveProjectMutation({
-    refetchQueries: [refetchListContextStateQuery()],
-  });
-  let [moveSection] = useMoveSectionMutation();
-
-  let drop = useCallback(
-    (item: DraggedProject | DraggedSection, monitor: DropTargetMonitor): void => {
-      if (monitor.didDrop() || !("taskList" in view)) {
-        return;
-      }
-
-      if (item.type == DragType.Project) {
-        void moveProject({
-          variables: {
-            id: item.project.id,
-            taskList: root.id,
-          },
-        });
-      } else {
-        void moveSection({
-          variables: {
-            id: item.section.id,
-            taskList: root.id,
-            before: null,
-          },
-          refetchQueries: [
-            refetchListTaskListQuery({
-              taskList: root.id,
-            }),
-            refetchListTaskListQuery({
-              taskList: item.section.taskList.id,
-            }),
-          ],
-        });
-      }
-    },
-    [moveProject, moveSection, view, root],
-  );
-
   let [{ isDragging, isOver }, dropRef] = useDrop({
-    accept: [DragType.Project, DragType.Section],
-    canDrop(item: DraggedProject | DraggedSection): boolean {
+    accept: [DragType.Project, DragType.Section, DragType.Item],
+    canDrop(item: DraggedProject | DraggedSection | DraggedItem): boolean {
       if (item.type == DragType.Section) {
-        return item.section.taskList !== root;
+        return item.item.taskList !== root;
       }
 
-      return !!item.project.parent;
+      if (item.type == DragType.Item) {
+        return item.item.parent !== root;
+      }
+
+      return !!item.item.parent;
     },
-    collect: (monitor: DropTargetMonitor) => {
-      return {
-        isDragging: monitor.isOver(),
-        isOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
-      };
-    },
-    drop,
+
+    collect: useCallback(
+      (monitor: DropTargetMonitor) => {
+        return {
+          isDragging: monitor.isOver(),
+          isOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
+        };
+      },
+      [],
+    ),
+
+    drop: useCallback(
+      (
+        item: DraggedProject | DraggedSection | DraggedItem,
+        monitor: DropTargetMonitor,
+      ): ProjectDragTarget | SectionDragTarget | ItemDragTarget | void => {
+        if (monitor.didDrop() || !("taskList" in view)) {
+          return;
+        }
+
+        if (item.type == DragType.Project) {
+          return {
+            type: DragType.Project,
+            taskList: root,
+          };
+        }
+
+        if (item.type == DragType.Section) {
+          return {
+            type: DragType.Section,
+            taskList: root,
+            before: null,
+          };
+        }
+
+        return {
+          type: DragType.Item,
+          target: root,
+          before: null,
+        };
+      },
+      [view, root],
+    ),
   });
 
   return <Paper

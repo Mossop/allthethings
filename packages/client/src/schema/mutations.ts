@@ -125,6 +125,27 @@ export type EditTaskMutation = { readonly __typename: 'Mutation', readonly editT
     & ItemFields_Task_Fragment
   )> };
 
+export type MoveItemMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  parent: Types.Maybe<Types.Scalars['ID']>;
+  before: Types.Maybe<Types.Scalars['ID']>;
+}>;
+
+
+export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Types.Maybe<(
+    { readonly __typename: 'Task' }
+    & ItemFields_Task_Fragment
+  ) | (
+    { readonly __typename: 'File' }
+    & ItemFields_File_Fragment
+  ) | (
+    { readonly __typename: 'Note' }
+    & ItemFields_Note_Fragment
+  ) | (
+    { readonly __typename: 'Link' }
+    & ItemFields_Link_Fragment
+  )> };
+
 export type DeleteItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
 }>;
@@ -628,6 +649,40 @@ export function useEditTaskMutation(baseOptions?: Apollo.MutationHookOptions<Edi
 export type EditTaskMutationHookResult = ReturnType<typeof useEditTaskMutation>;
 export type EditTaskMutationResult = Apollo.MutationResult<EditTaskMutation>;
 export type EditTaskMutationOptions = Apollo.BaseMutationOptions<EditTaskMutation, EditTaskMutationVariables>;
+export const MoveItemDocument = gql`
+    mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
+  moveItem(id: $id, parent: $parent, before: $before) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type MoveItemMutationFn = Apollo.MutationFunction<MoveItemMutation, MoveItemMutationVariables>;
+
+/**
+ * __useMoveItemMutation__
+ *
+ * To run a mutation, you first call `useMoveItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMoveItemMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [moveItemMutation, { data, loading, error }] = useMoveItemMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      parent: // value for 'parent'
+ *      before: // value for 'before'
+ *   },
+ * });
+ */
+export function useMoveItemMutation(baseOptions?: Apollo.MutationHookOptions<MoveItemMutation, MoveItemMutationVariables>) {
+        return Apollo.useMutation<MoveItemMutation, MoveItemMutationVariables>(MoveItemDocument, baseOptions);
+      }
+export type MoveItemMutationHookResult = ReturnType<typeof useMoveItemMutation>;
+export type MoveItemMutationResult = Apollo.MutationResult<MoveItemMutation>;
+export type MoveItemMutationOptions = Apollo.BaseMutationOptions<MoveItemMutation, MoveItemMutationVariables>;
 export const DeleteItemDocument = gql`
     mutation DeleteItem($id: ID!) {
   deleteItem(id: $id)

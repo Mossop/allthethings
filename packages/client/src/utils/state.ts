@@ -35,29 +35,62 @@ export type Section = State<Schema.Section, {
   taskList: TaskList;
 }>;
 
-export type Link = State<Schema.Link>;
-export type Note = State<Schema.Note>;
-export type File = State<Schema.File>;
-export type Task = State<Schema.Task>;
+interface BaseItem {
+  parent: TaskList | Section;
+}
+
+export type Link = State<Schema.Link, BaseItem>;
+export type Note = State<Schema.Note, BaseItem>;
+export type File = State<Schema.File, BaseItem>;
+export type Task = State<Schema.Task, BaseItem>;
 
 export type Item = Task | Note | File | Link;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 
-export function isSection(list: TaskList | Section): list is Section {
-  return list.__typename == "Section";
+interface GraphQLType {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  __typename: string;
 }
 
-export function isContext(list: TaskList | Section): list is Context {
-  return list.__typename == "Context";
+export function isSection(val: GraphQLType): val is Section {
+  return val.__typename == "Section";
 }
 
-export function isProject(list: TaskList | Section): list is Project {
-  return list.__typename == "Project";
+export function isContext(val: GraphQLType): val is Context {
+  return val.__typename == "Context";
 }
 
-export function isUser(list: TaskList | Section): list is User {
-  return list.__typename == "User";
+export function isProject(val: GraphQLType): val is Project {
+  return val.__typename == "Project";
+}
+
+export function isUser(val: GraphQLType): val is User {
+  return val.__typename == "User";
+}
+
+export function isTaskList(val: GraphQLType): val is TaskList {
+  return isUser(val) || isProject(val) || isContext(val);
+}
+
+export function isLink(val: GraphQLType): val is Link {
+  return val.__typename == "Link";
+}
+
+export function isNote(val: GraphQLType): val is Note {
+  return val.__typename == "Note";
+}
+
+export function isFile(val: GraphQLType): val is File {
+  return val.__typename == "File";
+}
+
+export function isTask(val: GraphQLType): val is Task {
+  return val.__typename == "Task";
+}
+
+export function isItem(val: GraphQLType): val is Task {
+  return isFile(val) || isNote(val) || isTask(val) || isLink(val);
 }
 
 export function useUser(): User {
@@ -123,11 +156,17 @@ export function buildProjects(
   };
 }
 
-export function buildItems(items: readonly SchemaItem[]): Item[] {
-  return [...items];
+export function buildItems(
+  parent: TaskList | Section,
+  items: readonly SchemaItem[],
+): Item[] {
+  return items.map((item: SchemaItem): Item => ({
+    ...item,
+    parent,
+  }));
 }
 
-interface ProjectEntries {
+export interface ProjectEntries {
   items: Item[];
   sections: Section[];
 }
@@ -144,12 +183,17 @@ export function buildEntries(
   }
 
   return {
-    items: buildItems(data.taskList.items),
-    sections: data.taskList.sections.map((section: Schema.Section): Section => ({
-      ...section,
+    items: buildItems(taskList, data.taskList.items),
+    sections: data.taskList.sections.map((schema: Schema.Section): Section => {
+      let section: Section = {
+        ...schema,
+        items: [],
+        taskList,
+      };
+
       // @ts-ignore
-      items: buildItems(section.items),
-      taskList,
-    })),
+      section.items = buildItems(section, schema.items);
+      return section;
+    }),
   };
 }

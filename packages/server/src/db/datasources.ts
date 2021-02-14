@@ -240,28 +240,17 @@ export abstract class IndexedDbDataSource<
 
     let targetIndex: number;
     let before = beforeId ? await this.get(beforeId) : null;
+    console.log("Move from", currentOwner, currentIndex, targetOwner, before ? before.index : null);
     if (before && before.ownerId == targetOwner) {
       targetIndex = before.index;
 
-      let query = this.records
+      await this.records
         .where("ownerId", targetOwner)
         .andWhere("index", ">=", targetIndex)
-        .orderBy("index", "DESC");
-
-      await this.knex.raw(`
-        UPDATE :table: AS :t1:
-          SET :index: = :index2: + 1
-          FROM :query AS :t2:
-          WHERE :id1: = :id2:`, {
-        table: this.tableName,
-        t1: "t1",
-        t2: "t2",
-        id1: "t1.id",
-        id2: "t2.id",
-        index2: "t2.index",
-        index: "index",
-        query,
-      });
+        // @ts-ignore
+        .update({
+          index: this.knex.raw("?? + 1", ["index"]),
+        });
     } else {
       targetIndex = await this.nextIndex(targetOwner);
     }
@@ -274,25 +263,13 @@ export abstract class IndexedDbDataSource<
         index: targetIndex,
       });
 
-    let query = this.records
+    await this.records
       .where("ownerId", currentOwner)
       .andWhere("index", ">", currentIndex)
-      .orderBy("index", "ASC");
-
-    await this.knex.raw(`
-      UPDATE :table: AS :t1:
-        SET :index: = :index2: - 1
-        FROM :query AS :t2:
-        WHERE :id1: = :id2:`, {
-      table: this.tableName,
-      t1: "t1",
-      t2: "t2",
-      id1: "t1.id",
-      id2: "t2.id",
-      index2: "t2.index",
-      index: "index",
-      query,
-    });
+      // @ts-ignore
+      .update({
+        index: this.knex.raw("?? - 1", ["index"]),
+      });
   }
 
   public async delete(id: string): Promise<void> {
@@ -609,7 +586,7 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
       this.records
         .join("Item", "Item.id", this.ref("id"))
         .where({
-          [this.ref("done")]: false,
+          [this.ref("done")]: null,
           ["Item.ownerId"]: section,
         }),
     );

@@ -197,6 +197,7 @@ export type Mutation = {
   readonly deleteSection: Scalars['Boolean'];
   readonly createTask: Task;
   readonly editTask?: Maybe<Task>;
+  readonly moveItem?: Maybe<Item>;
   readonly deleteItem: Scalars['Boolean'];
 };
 
@@ -280,6 +281,13 @@ export type MutationCreateTaskArgs = {
 export type MutationEditTaskArgs = {
   id: Scalars['ID'];
   params: TaskParams;
+};
+
+
+export type MutationMoveItemArgs = {
+  id: Scalars['ID'];
+  parent?: Maybe<Scalars['ID']>;
+  before?: Maybe<Scalars['ID']>;
 };
 
 
@@ -397,7 +405,7 @@ export type QueryFieldPolicy = {
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	root?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'editTask' | 'deleteItem' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'editTask' | 'moveItem' | 'deleteItem' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -414,6 +422,7 @@ export type MutationFieldPolicy = {
 	deleteSection?: FieldPolicy<any> | FieldReadFunction<any>,
 	createTask?: FieldPolicy<any> | FieldReadFunction<any>,
 	editTask?: FieldPolicy<any> | FieldReadFunction<any>,
+	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
