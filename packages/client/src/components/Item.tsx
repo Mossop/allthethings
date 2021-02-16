@@ -7,8 +7,6 @@ import { useCallback } from "react";
 
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
-import type { DragOverCallback, DragState } from "../utils/drag";
-import { DisplayState, useItemDragState } from "../utils/drag";
 import type { Item as ItemState, Section, TaskList } from "../utils/state";
 import { dragging, flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
@@ -58,16 +56,12 @@ interface ItemProps {
   taskList: TaskList;
   section: Section | null;
   item: ItemState;
-  dragState: DragState;
-  onDragOver: DragOverCallback;
 }
 
 export default ReactMemo(function Item({
   item,
   section,
   taskList,
-  dragState,
-  onDragOver,
 }: ItemProps): ReactResult {
   let inner: ReactResult;
   switch (item.__typename) {
@@ -100,28 +94,14 @@ export default ReactMemo(function Item({
 
   let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
 
-  let {
-    displayState,
-    dragRef,
-    previewRef,
-    dropRef,
-  } = useItemDragState(item, dragState, onDragOver);
-
   return <ListItem
-    className={
-      clsx(
-        classes.item,
-        displayState == DisplayState.Dragging && classes.dragging,
-        displayState == DisplayState.Hidden && classes.hidden,
-      )
-    }
+    className={clsx(classes.item)}
     disableGutters={true}
-    ref={dropRef}
   >
-    <div ref={dragRef} className={classes.dragHandleContainer}>
+    <div className={classes.dragHandleContainer}>
       <DragIcon className={classes.dragHandle}/>
     </div>
-    <div className={classes.itemInner} ref={previewRef}>
+    <div className={classes.itemInner}>
       {inner}
     </div>
     <div className={classes.actions}>

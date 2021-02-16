@@ -240,7 +240,7 @@ export abstract class IndexedDbDataSource<
 
     let targetIndex: number;
     let before = beforeId ? await this.get(beforeId) : null;
-    console.log("Move from", currentOwner, currentIndex, targetOwner, before ? before.index : null);
+
     if (before && before.ownerId == targetOwner) {
       targetIndex = before.index;
 

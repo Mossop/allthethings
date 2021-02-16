@@ -23,3 +23,17 @@ interface Named {
 export function nameSorted<T extends Named>(list: Iterable<T>): T[] {
   return sorted(list, keyedComparator("name", stringComparator));
 }
+
+export function indexOf<T extends { id: string }>(items: T[], item: T | string): number | null {
+  let id = typeof item == "string" ? item : item.id;
+  let index = items.findIndex((val: T): boolean => val.id == id);
+  return index >= 0 ? index : null;
+}
+
+export function item<T>(items: T[], index: number): T | null {
+  if (index < 0 || index >= items.length) {
+    return null;
+  }
+
+  return items[index];
+}

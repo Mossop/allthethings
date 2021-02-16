@@ -9,27 +9,18 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { useMemo, forwardRef, useState, useCallback } from "react";
-import type { DragSourceMonitor, DropTargetMonitor } from "react-dnd";
+import { forwardRef, useState, useCallback } from "react";
+import mergeRefs from "react-merge-refs";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
-import { useMoveProjectMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
+import { nameSorted } from "../utils/collections";
 import type {
-  DraggedItem,
   DraggedProject,
   DraggedSection,
-  ItemDragTarget,
-  ProjectDragTarget,
-  SectionDragTarget,
+  ProjectDragResult,
+  SectionDragResult,
 } from "../utils/drag";
-import {
-  isProjectDragTarget,
-  useDrag,
-  DragType,
-  useDrop,
-} from "../utils/drag";
-import { nameSorted } from "../utils/sort";
+import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import type { Project, TaskList } from "../utils/state";
 import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
@@ -74,9 +65,6 @@ const useStyles = makeStyles((theme: Theme) =>
     dropping: {
       backgroundColor: alpha(theme.palette.text.secondary, 0.2),
     },
-    projectList: {
-      backgroundColor: alpha(theme.palette.text.secondary, 0.2),
-    },
     selectedItem: {
       backgroundColor: theme.palette.text.secondary,
       color: theme.palette.getContrastText(theme.palette.text.secondary),
@@ -112,10 +100,11 @@ const Item = ReactMemo(forwardRef(function Item({
   taskCount,
 }: ItemProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles({ depth });
+  let displaySelected = !useDragItem() && selected;
 
   let className = clsx(
     classes.item,
-    selected ? classes.selectedItem : classes.selectableItem,
+    displaySelected ? classes.selectedItem : classes.selectableItem,
     providedClass,
   );
 
@@ -186,89 +175,23 @@ const ProjectItem = ReactMemo(function ProjectItem({
     taskList: project,
   });
 
-  let [moveProject] = useMoveProjectMutation({
-    refetchQueries: [
-      refetchListContextStateQuery(),
-    ],
-  });
+  let {
+    isDragging,
+    dragRef,
+  } = useProjectDrag(project);
 
-  let [{ isDragging }, dragRef] = useDrag({
-    item: useMemo<DraggedProject>(() => ({
-      type: DragType.Project,
-      item: project,
-    }), [project]),
-
-    end: useCallback(
-      async (item: unknown, monitor: DragSourceMonitor): Promise<void> => {
-        if (monitor.didDrop()) {
-          let target = monitor.getDropResult();
-          if (isProjectDragTarget(target)) {
-            await moveProject({
-              variables: {
-                id: project.id,
-                taskList: target.taskList.id,
-              },
-            });
-          } else {
-            console.warn("Unknown drop target", target);
-          }
-        }
-      },
-      [moveProject, project.id],
-    ),
-
-    collect: useCallback(
-      (monitor: DragSourceMonitor) => {
-        return {
-          isDragging: monitor.isDragging(),
-        };
-      },
-      [],
-    ),
-  });
-
-  let [{ isDropping }, dropRef] = useDrop({
-    accept: [DragType.Project, DragType.Section, DragType.Item],
-    canDrop: useCallback(
-      (item: DraggedProject | DraggedSection | DraggedItem): boolean => {
-        if (item.type == DragType.Item) {
-          return item.item.parent !== project;
-        }
-
+  let {
+    canDrop,
+    isShallowOver,
+    dropRef,
+  } = useDropArea([DragType.Project, DragType.Section], {
+    getDragResult: useCallback(
+      (item: DraggedProject | DraggedSection): ProjectDragResult | SectionDragResult | null => {
         if (item.type == DragType.Section) {
-          return item.item.taskList !== project;
-        }
-
-        let parent: Project | null = project;
-        while (parent) {
-          if (parent.id == item.item.id) {
-            return false;
+          if (item.item.taskList == project) {
+            return null;
           }
 
-          parent = parent.parent;
-        }
-        return true;
-      },
-      [project],
-    ),
-
-    drop: useCallback(
-      (
-        item: DraggedProject | DraggedSection | DraggedItem,
-        monitor: DropTargetMonitor,
-      ): ProjectDragTarget | SectionDragTarget | ItemDragTarget | void => {
-        if (monitor.didDrop()) {
-          return;
-        }
-
-        if (item.type == DragType.Project) {
-          return {
-            type: DragType.Project,
-            taskList: project,
-          };
-        }
-
-        if (item.type == DragType.Section) {
           return {
             type: DragType.Section,
             taskList: project,
@@ -276,29 +199,28 @@ const ProjectItem = ReactMemo(function ProjectItem({
           };
         }
 
+        if (item.item == project || item.item.parent == project) {
+          return null;
+        }
+
+        let parent = project.parent;
+        while (parent) {
+          if (parent == item.item) {
+            return null;
+          }
+          parent = parent.parent;
+        }
+
         return {
-          type: DragType.Item,
-          target: project,
-          before: null,
+          type: DragType.Project,
+          taskList: project,
         };
       },
       [project],
     ),
-
-    collect: useCallback(
-      (monitor: DropTargetMonitor) => {
-        return {
-          isDropping: monitor.isOver() && monitor.canDrop(),
-        };
-      },
-      [],
-    ),
   });
 
-  let ref = useCallback((element: ReactElement | Element | null) => {
-    dragRef(element);
-    dropRef(element);
-  }, [dragRef, dropRef]);
+  let ref = mergeRefs([dragRef, dropRef]);
 
   let classes = useStyles({ depth });
 
@@ -307,11 +229,11 @@ const ProjectItem = ReactMemo(function ProjectItem({
       ref={ref}
       url={url}
       label={project.name}
-      selected={selected && !isDragging}
+      selected={selected}
       depth={depth}
       taskCount={project.remainingTasks}
       icon={<ProjectIcon className={classes.grabHandle}/>}
-      className={clsx(isDragging && classes.dragging, isDropping && classes.dropping)}
+      className={clsx(isDragging && classes.dragging, isShallowOver && canDrop && classes.dropping)}
     />
     {
       project.subprojects.length > 0 && <List className={classes.innerList}>
@@ -357,47 +279,19 @@ export default ReactMemo(function ProjectList({
     taskList: root,
   });
 
-  let [{ isDragging, isOver }, dropRef] = useDrop({
-    accept: [DragType.Project, DragType.Section, DragType.Item],
-    canDrop(item: DraggedProject | DraggedSection | DraggedItem): boolean {
-      if (item.type == DragType.Section) {
-        return item.item.taskList !== root;
-      }
-
-      if (item.type == DragType.Item) {
-        return item.item.parent !== root;
-      }
-
-      return !!item.item.parent;
-    },
-
-    collect: useCallback(
-      (monitor: DropTargetMonitor) => {
-        return {
-          isDragging: monitor.isOver(),
-          isOver: monitor.isOver({ shallow: true }) && monitor.canDrop(),
-        };
-      },
-      [],
-    ),
-
-    drop: useCallback(
-      (
-        item: DraggedProject | DraggedSection | DraggedItem,
-        monitor: DropTargetMonitor,
-      ): ProjectDragTarget | SectionDragTarget | ItemDragTarget | void => {
-        if (monitor.didDrop() || !("taskList" in view)) {
-          return;
-        }
-
-        if (item.type == DragType.Project) {
-          return {
-            type: DragType.Project,
-            taskList: root,
-          };
-        }
-
+  let {
+    canDrop,
+    isShallowOver,
+    isOver,
+    dropRef,
+  } = useDropArea([DragType.Project, DragType.Section], {
+    getDragResult: useCallback(
+      (item: DraggedProject | DraggedSection): ProjectDragResult | SectionDragResult | null => {
         if (item.type == DragType.Section) {
+          if (item.item.taskList === root) {
+            return null;
+          }
+
           return {
             type: DragType.Section,
             taskList: root,
@@ -405,13 +299,16 @@ export default ReactMemo(function ProjectList({
           };
         }
 
+        if (item.item.parent == null) {
+          return null;
+        }
+
         return {
-          type: DragType.Item,
-          target: root,
-          before: null,
+          type: DragType.Project,
+          taskList: root,
         };
       },
-      [view, root],
+      [root],
     ),
   });
 
@@ -419,7 +316,7 @@ export default ReactMemo(function ProjectList({
     elevation={2}
     component="nav"
     square={true}
-    className={clsx(isOver && classes.projectList)}
+    className={clsx(canDrop && isShallowOver && classes.dropping)}
     ref={dropRef}
   >
     <List component="div" className={classes.list}>
@@ -443,7 +340,7 @@ export default ReactMemo(function ProjectList({
         nameSorted(root.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
-          taskList={isDragging ? null : taskList}
+          taskList={isOver ? null : taskList}
           depth={0}
         />)
       }

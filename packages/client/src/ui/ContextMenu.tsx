@@ -7,7 +7,7 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";
 import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
-import { nameSorted } from "../utils/sort";
+import { nameSorted } from "../utils/collections";
 import type { Context, ProjectRoot } from "../utils/state";
 import {
   isContext,

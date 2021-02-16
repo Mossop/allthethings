@@ -3,11 +3,12 @@ import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import type { ReactNode } from "react";
-import { Suspense } from "react";
+import { useCallback, Suspense } from "react";
 
 import ContextMenu from "../ui/ContextMenu";
 import ProjectList from "../ui/ProjectList";
 import UserMenu from "../ui/UserMenu";
+import { AllDragTypes, useDropArea } from "../utils/drag";
 import { useUser } from "../utils/state";
 import { flexColumn, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
@@ -70,7 +71,13 @@ export default ReactMemo(function Page({
   let classes = useStyles();
   let view = useMaybeView();
 
-  return <div className={clsx(classes.outer)}>
+  let {
+    dropRef,
+  } = useDropArea(AllDragTypes, {
+    getDragResult: useCallback(() => null, []),
+  });
+
+  return <div className={clsx(classes.outer)} ref={dropRef}>
     <AppBar
       className={classes.banner}
       position="static"

@@ -2,12 +2,11 @@ import { ApolloProvider } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
-import { DndProvider } from "react-dnd";
-import { HTML5Backend } from "react-dnd-html5-backend";
 import { render } from "react-dom";
 
 import App from "./App";
 import { connect } from "./schema";
+import { DragTracker } from "./utils/drag";
 import { ViewListener } from "./utils/view";
 
 const base = createMuiTheme();
@@ -115,11 +114,11 @@ function init(): void {
       <ThemeProvider theme={baseTheme}>
         <ApolloProvider client={client}>
           <CssBaseline/>
-          <DndProvider backend={HTML5Backend}>
-            <ViewListener>
+          <ViewListener>
+            <DragTracker>
               <App/>
-            </ViewListener>
-          </DndProvider>
+            </DragTracker>
+          </ViewListener>
         </ApolloProvider>
       </ThemeProvider>
     </ThemeProvider>,
