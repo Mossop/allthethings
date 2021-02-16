@@ -15,8 +15,8 @@ import {
   useEditProjectMutation,
 } from "../schema/mutations";
 import { useListTaskListQuery } from "../schema/queries";
-import { indexOf } from "../utils/collections";
-import type { DraggedSection, SectionDragResult } from "../utils/drag";
+import { indexOf, item } from "../utils/collections";
+import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, useDragResult, DragType, useDropArea, useProjectDrag } from "../utils/drag";
 import type {
   Context,
@@ -178,10 +178,22 @@ export default ReactMemo(function TaskList({
 
   let {
     dropRef: headingDropRef,
-  } = useDropArea(DragType.Section, {
+  } = useDropArea([DragType.Section, DragType.Item], {
     getDragResult: useCallback(
-      (item: DraggedSection): SectionDragResult | null => {
-        if (item.item === entries.sections[0]) {
+      (draggedItem: DraggedSection | DraggedItem): SectionDragResult | ItemDragResult | null => {
+        if (draggedItem.type == DragType.Item) {
+          if (draggedItem.item === entries.items[0]) {
+            return null;
+          }
+
+          return {
+            type: DragType.Item,
+            target: view.taskList,
+            before: item(entries.items, 0),
+          };
+        }
+
+        if (draggedItem.item === entries.sections[0]) {
           return null;
         }
 
@@ -191,7 +203,7 @@ export default ReactMemo(function TaskList({
           before: entries.sections.length ? entries.sections[0] : null,
         };
       },
-      [entries.sections, view.taskList],
+      [entries, view.taskList],
     ),
   });
 

@@ -11,7 +11,7 @@ import mergeRefs from "react-merge-refs";
 
 import { useEditSectionMutation } from "../schema/mutations";
 import { indexOf, item } from "../utils/collections";
-import type { DraggedSection, SectionDragResult } from "../utils/drag";
+import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
 import type { Item, Section, TaskList } from "../utils/state";
 import { dragging, flexCentered, flexRow } from "../utils/styles";
@@ -76,11 +76,13 @@ export const ItemList = ReactMemo(function ItemList({
 
   let displayItems = useMemo(() => {
     let displayItems = items.map(
-      (item: Item): ReactElement => <ItemDisplay
+      (item: Item, index: number): ReactElement => <ItemDisplay
         key={item.id}
         taskList={taskList}
         section={section}
         item={item}
+        items={items}
+        index={index}
       />,
     );
 
@@ -90,6 +92,8 @@ export const ItemList = ReactMemo(function ItemList({
       displayItems.splice(index, 0, <ItemDragMarker
         key="dragging"
         item={dragItem.item}
+        section={section}
+        taskList={taskList}
       />);
     }
 
@@ -164,8 +168,27 @@ export default ReactMemo(function SectionList({
   let elementRef = useRef<Element>(null);
 
   let {
-    dropRef,
-  } = useDropArea([DragType.Section], {
+    dropRef: headingDropRef,
+  } = useDropArea(DragType.Item, {
+    getDragResult: useCallback(
+      (draggedItem: DraggedItem): ItemDragResult | null => {
+        if (draggedItem.item === section.items[0]) {
+          return null;
+        }
+
+        return {
+          type: DragType.Item,
+          target: section,
+          before: item(section.items, 0),
+        };
+      },
+      [section],
+    ),
+  });
+
+  let {
+    dropRef: listDropRef,
+  } = useDropArea(DragType.Section, {
     getDragResult: useCallback(
       (_: DraggedSection, monitor: DropTargetMonitor): SectionDragResult | null => {
         if (!elementRef.current) {
@@ -204,7 +227,7 @@ export default ReactMemo(function SectionList({
     isDragging,
   } = useSectionDrag(section);
 
-  let sectionRef = mergeRefs([dropRef, elementRef]);
+  let sectionRef = mergeRefs([listDropRef, elementRef]);
 
   return <List
     disablePadding={true}
@@ -214,6 +237,7 @@ export default ReactMemo(function SectionList({
     <ListSubheader
       disableGutters={true}
       className={clsx(classes.sectionHeading)}
+      ref={headingDropRef}
     >
       <div className={classes.sectionDragPreview} ref={previewRef}>
         <div className={classes.icon} ref={dragRef}>

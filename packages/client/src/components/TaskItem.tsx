@@ -2,18 +2,19 @@ import IconButton from "@material-ui/core/IconButton";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
+import type { Overwrite } from "utils/src/types";
+
 import { useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { Section, Task, TaskList } from "../utils/state";
+import type { Task } from "../utils/state";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import { CheckedIcon, UncheckedIcon } from "./Icons";
+import type { ItemRenderProps } from "./Item";
 
-interface TaskItemProps {
-  taskList: TaskList;
-  section: Section | null;
+export type TaskItemProps = Overwrite<ItemRenderProps, {
   item: Task;
-}
+}>;
 
 export default ReactMemo(function TaskItem({
   taskList,
