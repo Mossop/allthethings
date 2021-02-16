@@ -7,9 +7,8 @@ import { forwardRef, useCallback, useMemo } from "react";
 
 import HiddenInput from "../components/HiddenInput";
 import { ProjectIcon } from "../components/Icons";
-import ItemDisplay from "../components/Item";
 import ItemListActions from "../components/ItemListActions";
-import SectionList, { SectionDragMarker } from "../components/SectionList";
+import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
 import { Heading, TextStyles } from "../components/Text";
 import {
   useEditContextMutation,
@@ -21,7 +20,6 @@ import type { DraggedSection, SectionDragResult } from "../utils/drag";
 import { useDragItem, useDragResult, DragType, useDropArea, useProjectDrag } from "../utils/drag";
 import type {
   Context,
-  Item,
   Project,
   Section,
   User,
@@ -43,13 +41,9 @@ const useStyles = makeStyles((theme: Theme) =>
     dragging: {
       display: "none",
     },
-    outer: {
-      flex: 1,
-      position: "relative",
-    },
     content: {
       ...pageStyles(theme),
-      width: "100%",
+      flex: 1,
     },
     heading: {
       ...flexRow,
@@ -254,24 +248,15 @@ export default ReactMemo(function TaskList({
     return sections;
   }, [dragItem, dragResult, entries.sections, view.taskList]);
 
-  let items = entries.items.map((item: Item) => <ItemDisplay
-    key={item.id}
-    taskList={view.taskList}
-    section={null}
-    item={item}
-  />);
-
-  return <div className={classes.outer}>
-    <div className={classes.content}>
-      {header}
-      <List disablePadding={true}>
-        <List disablePadding={true} ref={itemsDropRef}>
-          {items}
-        </List>
-        <List disablePadding={true}>
-          {sections}
-        </List>
+  return <div className={classes.content}>
+    {header}
+    <List disablePadding={true}>
+      <List disablePadding={true} ref={itemsDropRef}>
+        <ItemList items={entries.items} taskList={view.taskList} section={null}/>
       </List>
-    </div>
+      <List disablePadding={true}>
+        {sections}
+      </List>
+    </List>
   </div>;
 });

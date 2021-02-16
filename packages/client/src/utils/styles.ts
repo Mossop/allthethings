@@ -30,5 +30,7 @@ export const dragging: CSSProperties = {
 export function pageStyles(theme: Theme): CSSProperties {
   return {
     padding: theme.spacing(3),
+    overflowX: "hidden",
+    overflowY: "auto",
   };
 }

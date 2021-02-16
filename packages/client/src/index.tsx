@@ -38,6 +38,9 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
           color: "inherit",
           cursor: "inherit",
         },
+        "html": {
+          overflow: "hidden",
+        },
         "body": {
           cursor: "default",
         },

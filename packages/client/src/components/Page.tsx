@@ -47,6 +47,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     contentSplit: {
       flex: 1,
+      height: "100%",
       ...flexRow,
     },
   }));
