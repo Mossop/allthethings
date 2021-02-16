@@ -190,6 +190,7 @@ export function useItemDrag(item: Item): DragProps {
           },
           awaitRefetchQueries: true,
           refetchQueries: [
+            refetchListContextStateQuery(),
             refetchListTaskListQuery({
               taskList: isSection(item.parent) ? item.parent.taskList.id : item.parent.id,
             }),

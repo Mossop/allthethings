@@ -4,21 +4,22 @@ import ListSubheader from "@material-ui/core/ListSubheader";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
-import { useCallback, useRef } from "react";
+import type { ReactElement } from "react";
+import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
 import { useEditSectionMutation } from "../schema/mutations";
-import { item } from "../utils/collections";
+import { indexOf, item } from "../utils/collections";
 import type { DraggedSection, SectionDragResult } from "../utils/drag";
-import { DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
-import type { Item, Section } from "../utils/state";
+import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
+import type { Item, Section, TaskList } from "../utils/state";
 import { dragging, flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import HiddenInput from "./HiddenInput";
 import { SectionIcon } from "./Icons";
-import ItemDisplay from "./Item";
+import ItemDisplay, { ItemDragMarker } from "./Item";
 import ItemListActions from "./ItemListActions";
 import { TextStyles, SubHeading } from "./Text";
 
@@ -58,6 +59,46 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1) + 2,
     },
   }));
+
+export interface ItemListProps {
+  taskList: TaskList;
+  section: Section | null;
+  items: Item[];
+}
+
+export const ItemList = ReactMemo(function ItemList({
+  items,
+  section,
+  taskList,
+}: ItemListProps): ReactResult {
+  let dragItem = useDragItem(DragType.Item);
+  let dragResult = useDragResult(DragType.Item);
+
+  let displayItems = useMemo(() => {
+    let displayItems = items.map(
+      (item: Item): ReactElement => <ItemDisplay
+        key={item.id}
+        taskList={taskList}
+        section={section}
+        item={item}
+      />,
+    );
+
+    if (dragItem && (dragResult?.target ?? dragItem.item.parent) == (section ?? taskList)) {
+      let before = dragResult ? dragResult.before : dragItem.item;
+      let index = before ? indexOf(items, before) ?? items.length : items.length;
+      displayItems.splice(index, 0, <ItemDragMarker
+        key="dragging"
+        item={dragItem.item}
+      />);
+    }
+
+    return displayItems;
+  }, [dragItem, dragResult, items, section, taskList]);
+
+  // @ts-ignore
+  return displayItems;
+});
 
 interface SectionListProps {
   section: Section;
@@ -165,13 +206,6 @@ export default ReactMemo(function SectionList({
 
   let sectionRef = mergeRefs([dropRef, elementRef]);
 
-  let items = section.items.map((item: Item) => <ItemDisplay
-    key={item.id}
-    taskList={section.taskList}
-    section={section}
-    item={item}
-  />);
-
   return <List
     disablePadding={true}
     className={clsx(classes.section, isDragging && classes.hidden)}
@@ -193,7 +227,7 @@ export default ReactMemo(function SectionList({
       </div>
       <ItemListActions list={section}/>
     </ListSubheader>
-    {items.length > 0 && <Divider/>}
-    {items}
+    {section.items.length > 0 && <Divider/>}
+    <ItemList items={section.items} section={section} taskList={section.taskList}/>
   </List>;
 });

@@ -7,6 +7,7 @@ import { useCallback } from "react";
 
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
+import { useItemDrag } from "../utils/drag";
 import type { Item as ItemState, Section, TaskList } from "../utils/state";
 import { dragging, flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
@@ -28,6 +29,10 @@ const useStyles = makeStyles((theme: Theme) =>
         color: theme.palette.getContrastText(theme.palette.text.secondary),
       },
     },
+    dragPreview: {
+      ...flexRow,
+      alignItems: "center",
+    },
     hidden: {
       display: "none",
     },
@@ -44,6 +49,9 @@ const useStyles = makeStyles((theme: Theme) =>
       ...flexRow,
       alignItems: "center",
     },
+    dragSummary: {
+      paddingLeft: theme.spacing(1),
+    },
     actions: {
       flex: 1,
       ...flexRow,
@@ -57,6 +65,26 @@ interface ItemProps {
   section: Section | null;
   item: ItemState;
 }
+
+export const ItemDragMarker = ReactMemo(function ItemDragMarker({
+  item,
+}: Pick<ItemProps, "item">): ReactResult {
+  let classes = useStyles();
+
+  return <ListItem
+    className={clsx(classes.item, classes.dragging)}
+    disableGutters={true}
+  >
+    <div className={classes.dragPreview}>
+      <div className={classes.dragHandleContainer}>
+        <DragIcon className={classes.dragHandle}/>
+      </div>
+      <div className={clsx(classes.itemInner, classes.dragSummary)}>
+        {item.summary}
+      </div>
+    </div>
+  </ListItem>;
+});
 
 export default ReactMemo(function Item({
   item,
@@ -94,15 +122,23 @@ export default ReactMemo(function Item({
 
   let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
 
+  let {
+    dragRef,
+    previewRef,
+    isDragging,
+  } = useItemDrag(item);
+
   return <ListItem
-    className={clsx(classes.item)}
+    className={clsx(classes.item, isDragging && classes.hidden)}
     disableGutters={true}
   >
-    <div className={classes.dragHandleContainer}>
-      <DragIcon className={classes.dragHandle}/>
-    </div>
-    <div className={classes.itemInner}>
-      {inner}
+    <div className={classes.dragPreview} ref={previewRef}>
+      <div className={classes.dragHandleContainer} ref={dragRef}>
+        <DragIcon className={classes.dragHandle}/>
+      </div>
+      <div className={classes.itemInner}>
+        {inner}
+      </div>
     </div>
     <div className={classes.actions}>
       <IconButton onClick={deleteItem}>

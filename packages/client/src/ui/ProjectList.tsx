@@ -15,8 +15,10 @@ import mergeRefs from "react-merge-refs";
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
 import { nameSorted } from "../utils/collections";
 import type {
+  DraggedItem,
   DraggedProject,
   DraggedSection,
+  ItemDragResult,
   ProjectDragResult,
   SectionDragResult,
 } from "../utils/drag";
@@ -184,9 +186,23 @@ const ProjectItem = ReactMemo(function ProjectItem({
     canDrop,
     isShallowOver,
     dropRef,
-  } = useDropArea([DragType.Project, DragType.Section], {
+  } = useDropArea([DragType.Project, DragType.Section, DragType.Item], {
     getDragResult: useCallback(
-      (item: DraggedProject | DraggedSection): ProjectDragResult | SectionDragResult | null => {
+      (
+        item: DraggedProject | DraggedSection | DraggedItem,
+      ): ProjectDragResult | SectionDragResult | ItemDragResult | null => {
+        if (item.type == DragType.Item) {
+          if (item.item.parent === project) {
+            return null;
+          }
+
+          return {
+            type: DragType.Item,
+            target: project,
+            before: null,
+          };
+        }
+
         if (item.type == DragType.Section) {
           if (item.item.taskList == project) {
             return null;
@@ -284,9 +300,23 @@ export default ReactMemo(function ProjectList({
     isShallowOver,
     isOver,
     dropRef,
-  } = useDropArea([DragType.Project, DragType.Section], {
+  } = useDropArea([DragType.Project, DragType.Section, DragType.Item], {
     getDragResult: useCallback(
-      (item: DraggedProject | DraggedSection): ProjectDragResult | SectionDragResult | null => {
+      (
+        item: DraggedProject | DraggedSection | DraggedItem,
+      ): ProjectDragResult | SectionDragResult | ItemDragResult | null => {
+        if (item.type == DragType.Item) {
+          if (item.item.parent === root) {
+            return null;
+          }
+
+          return {
+            type: DragType.Item,
+            target: root,
+            before: null,
+          };
+        }
+
         if (item.type == DragType.Section) {
           if (item.item.taskList === root) {
             return null;

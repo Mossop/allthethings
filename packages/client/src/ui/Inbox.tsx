@@ -15,8 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     content: {
       ...pageStyles(theme),
-      height: "100%",
-      width: "100%",
+      flex: 1,
     },
     heading: {
       ...flexRow,
@@ -35,12 +34,10 @@ const useStyles = makeStyles((theme: Theme) =>
 export default ReactMemo(function Inbox(): ReactResult {
   let classes = useStyles();
 
-  return <div className={classes.outer}>
-    <div className={classes.content}>
-      <div className={classes.heading}>
-        <InboxIcon/>
-        <Heading className={classes.headingText}>Inbox</Heading>
-      </div>
+  return <div className={classes.content}>
+    <div className={classes.heading}>
+      <InboxIcon/>
+      <Heading className={classes.headingText}>Inbox</Heading>
     </div>
   </div>;
 });
