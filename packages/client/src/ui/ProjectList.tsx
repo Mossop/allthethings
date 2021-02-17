@@ -9,7 +9,7 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import clsx from "clsx";
 import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { forwardRef, useState, useCallback } from "react";
+import { useMemo, forwardRef, useState, useCallback } from "react";
 import mergeRefs from "react-merge-refs";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
@@ -24,7 +24,7 @@ import type {
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import type { Project, TaskList } from "../utils/state";
-import { useCurrentContext, useProjectRoot } from "../utils/state";
+import { useUser, useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
@@ -275,6 +275,7 @@ export default ReactMemo(function ProjectList({
 }: ProjectListProps): ReactResult {
   let classes = useStyles({ depth: 0 });
 
+  let user = useUser();
   let root = useProjectRoot();
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
@@ -296,8 +297,8 @@ export default ReactMemo(function ProjectList({
   });
 
   let {
-    canDrop,
-    isShallowOver,
+    canDrop: canDropOnRoot,
+    isShallowOver: isShallowOverRoot,
     isOver,
     dropRef,
   } = useDropArea([DragType.Project, DragType.Section, DragType.Item], {
@@ -342,11 +343,36 @@ export default ReactMemo(function ProjectList({
     ),
   });
 
+  let inboxLabel = useMemo(() => {
+    return view.user.inbox.items.length ? `Inbox (${view.user.inbox.items.length})` : "Inbox";
+  }, [view]);
+
+  let {
+    canDrop: canDropOnInbox,
+    isShallowOver: isShallowOverInbox,
+    dropRef: inboxDropRef,
+  } = useDropArea(DragType.Item, {
+    getDragResult: useCallback(
+      (item: DraggedItem): ItemDragResult | null => {
+        if (item.item.parent == user.inbox) {
+          return null;
+        }
+
+        return {
+          type: DragType.Item,
+          target: user.inbox,
+          before: null,
+        };
+      },
+      [user.inbox],
+    ),
+  });
+
   return <Paper
     elevation={2}
     component="nav"
     square={true}
-    className={clsx(canDrop && isShallowOver && classes.dropping)}
+    className={clsx(canDropOnRoot && isShallowOverRoot && classes.dropping)}
     ref={dropRef}
   >
     <List component="div" className={classes.list}>
@@ -354,8 +380,10 @@ export default ReactMemo(function ProjectList({
         url={inboxUrl}
         icon={<InboxIcon/>}
         selected={view.type == ViewType.Inbox}
-        label="Inbox"
+        className={clsx(canDropOnInbox && isShallowOverInbox && classes.dropping)}
+        label={inboxLabel}
         depth={0}
+        ref={inboxDropRef}
       />
       <Item
         url={tasksUrl}

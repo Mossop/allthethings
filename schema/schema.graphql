@@ -83,8 +83,8 @@ type User implements ProjectRoot & TaskList @entity {
 
   id: ID!
   email: String!
-  password: String!
   contexts: [Context!]!
+  inbox: Inbox!
 }
 
 type Context implements ProjectRoot & TaskList @entity {
@@ -123,6 +123,11 @@ type Section {
 
   id: ID!
   name: String!
+}
+
+type Inbox {
+  id: ID!
+  items: [Item!]!
 }
 
 type Query {

@@ -20,7 +20,16 @@ const id = customAlphabet(ALPHABET, 28);
 
 export enum SectionIndex {
   Anonymous = -1,
-  Input = -2,
+  Inbox = -2,
+}
+
+function nameForSection(type: SectionIndex): string {
+  switch (type) {
+    case SectionIndex.Anonymous:
+      return "";
+    case SectionIndex.Inbox:
+      return "inbox";
+  }
 }
 
 function classBuilder<I, T>(
@@ -152,7 +161,7 @@ export abstract class DbDataSource<
    * Gets the DB record with the given ID.
    */
   public async get(id: string): Promise<DbObject<T> | null> {
-    return this.first(this.records.whereIn(this.ref("id"), [id]));
+    return this.first(this.table.whereIn(this.ref("id"), [id]));
   }
 
   /**
@@ -280,25 +289,13 @@ export abstract class IndexedDbDataSource<
 
     await this.table.where(this.ref("id"), id).delete();
 
-    let query = this.records
+    await this.table
       .where("ownerId", item.ownerId)
       .andWhere("index", ">", item.index)
-      .orderBy("index", "ASC");
-
-    await this.knex.raw(`
-      UPDATE :table: AS :t1:
-        SET :index: = :index2: - 1
-        FROM :query AS :t2:
-        WHERE :id1: = :id2:`, {
-      table: this.tableName,
-      t1: "t1",
-      t2: "t2",
-      id1: "t1.id",
-      id2: "t2.id",
-      index2: "t2.index",
-      index: "index",
-      query,
-    });
+      // @ts-ignore
+      .update({
+        index: this.knex.raw("?? - 1", ["index"]),
+      });
   }
 }
 
@@ -332,6 +329,8 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
     await this.context.dataSources.contexts.create(user, {
       name: "",
     });
+
+    await this.context.dataSources.sections.createSpecialSection(user.id, SectionIndex.Inbox);
 
     return user;
   }
@@ -401,9 +400,10 @@ export class ProjectDataSource extends DbDataSource<
       parentId: params.name == "" ? null : taskList.id,
     }));
 
-    await this.context.dataSources.sections.create(project, null, {
-      name: "",
-    });
+    await this.context.dataSources.sections.createSpecialSection(
+      project.id,
+      SectionIndex.Anonymous,
+    );
 
     return project;
   }
@@ -420,16 +420,30 @@ export class SectionDataSource extends IndexedDbDataSource<
     return this.table.where("index", ">=", 0);
   }
 
-  public async getSpecialSectionId(
+  public async getSpecialSection(
     ownerId: string,
     type: SectionIndex,
-  ): Promise<string | null> {
+  ): Promise<DbObject<Db.SectionDbTable> | null> {
     let record = await this.table.where({
       ownerId,
       index: type,
     }).first();
 
-    return record?.id ?? null;
+    return record ?? null;
+  }
+
+  public async createSpecialSection(
+    ownerId: string,
+    type: SectionIndex,
+  ): Promise<Impl.Section> {
+    let newId = type == SectionIndex.Anonymous ? ownerId : await id();
+
+    return this.build(this.insert({
+      id: newId,
+      name: nameForSection(type),
+      ownerId,
+      index: type,
+    }));
   }
 
   public async create(
@@ -576,7 +590,8 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
         .where({
           [this.ref("done")]: null,
           ["Section.ownerId"]: taskList,
-        }),
+        })
+        .andWhere("Section.index", ">=", SectionIndex.Anonymous),
     );
     return value ?? 0;
   }

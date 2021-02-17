@@ -156,7 +156,7 @@ export async function up(knex: Knex): Promise<void> {
 
   await knex.raw(`
     ALTER TABLE :table: ADD CHECK (
-      (:name: = '' AND :owner: = :id: AND :index: < 0)
+      (:index: < 0)
       OR
       (:name: <> '' AND :owner: <> :id: AND :index: >= 0)
     )`, {

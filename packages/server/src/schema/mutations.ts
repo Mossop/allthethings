@@ -1,4 +1,5 @@
 import type { User, Context, Project, Section, TaskList, TaskItem, Item } from "../db";
+import { SectionIndex } from "../db/datasources";
 import type { AuthedParams, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";

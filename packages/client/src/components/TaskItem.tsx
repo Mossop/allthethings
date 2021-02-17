@@ -1,3 +1,4 @@
+import type { PureQueryOptions } from "@apollo/client";
 import IconButton from "@material-ui/core/IconButton";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
@@ -20,13 +21,15 @@ export default ReactMemo(function TaskItem({
   taskList,
   item,
 }: TaskItemProps): ReactResult {
+  let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
+  if (taskList) {
+    refetchQueries.push(refetchListTaskListQuery({
+      taskList: taskList.id,
+    }));
+  }
+
   let [toggleDone] = useEditTaskMutation({
-    refetchQueries: [
-      refetchListContextStateQuery(),
-      refetchListTaskListQuery({
-        taskList: taskList.id,
-      }),
-    ],
+    refetchQueries,
   });
 
   let toggle = useCallback(() => toggleDone({

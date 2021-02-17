@@ -3,6 +3,13 @@ query ListContextState {
     id
     email
 
+    inbox {
+      id
+      items {
+        ...itemFields
+      }
+    }
+
     ...rootFields
 
     contexts {

@@ -1,15 +1,27 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { RootFields_User_Fragment, RootFields_Context_Fragment, ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment } from './fragments';
+import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
 import { gql } from '@apollo/client';
-import { RootFieldsFragmentDoc, ItemFieldsFragmentDoc } from './fragments';
+import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly contexts: ReadonlyArray<(
+    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: ReadonlyArray<(
+        { readonly __typename: 'Task' }
+        & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename: 'File' }
+        & ItemFields_File_Fragment
+      ) | (
+        { readonly __typename: 'Note' }
+        & ItemFields_Note_Fragment
+      ) | (
+        { readonly __typename: 'Link' }
+        & ItemFields_Link_Fragment
+      )> }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & RootFields_Context_Fragment
     )> }
@@ -101,6 +113,12 @@ export const ListContextStateDocument = gql`
   user {
     id
     email
+    inbox {
+      id
+      items {
+        ...itemFields
+      }
+    }
     ...rootFields
     contexts {
       id
@@ -110,7 +128,8 @@ export const ListContextStateDocument = gql`
     }
   }
 }
-    ${RootFieldsFragmentDoc}`;
+    ${ItemFieldsFragmentDoc}
+${RootFieldsFragmentDoc}`;
 
 /**
  * __useListContextStateQuery__

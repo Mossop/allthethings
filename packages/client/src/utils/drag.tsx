@@ -1,3 +1,4 @@
+import type { PureQueryOptions } from "@apollo/client";
 import { createContext, useCallback, useContext, useMemo, useState } from "react";
 import type {
   ConnectDragSource,
@@ -19,8 +20,8 @@ import {
   useMoveSectionMutation,
 } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { Item, Project, Section, TaskList } from "./state";
-import { isSection } from "./state";
+import type { Inbox, Item, Project, Section, TaskList } from "./state";
+import { isTaskList, isSection } from "./state";
 import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
@@ -94,7 +95,7 @@ export interface SectionDragResult {
 
 export interface ItemDragResult {
   type: DragType.Item;
-  target: TaskList | Section;
+  target: Inbox | TaskList | Section;
   before: Item | null;
 }
 
@@ -182,6 +183,25 @@ export function useItemDrag(item: Item): DragProps {
   return useDragBase(draggedItem, useCallback(
     async (target: unknown): Promise<void> => {
       if (isItemDragResult(target)) {
+        let taskLists = new Set<string>();
+        if (isSection(item.parent)) {
+          taskLists.add(item.parent.taskList.id);
+        } else if (isTaskList(item.parent)) {
+          taskLists.add(item.parent.id);
+        }
+
+        if (isSection(target.target)) {
+          taskLists.add(target.target.taskList.id);
+        } else if (isTaskList(target.target)) {
+          taskLists.add(target.target.id);
+        }
+
+        let refetchQueries = Array.from(taskLists.values(), (id: string): PureQueryOptions => {
+          return refetchListTaskListQuery({
+            taskList: id,
+          });
+        });
+
         await moveItem({
           variables: {
             id: item.id,
@@ -191,12 +211,7 @@ export function useItemDrag(item: Item): DragProps {
           awaitRefetchQueries: true,
           refetchQueries: [
             refetchListContextStateQuery(),
-            refetchListTaskListQuery({
-              taskList: isSection(item.parent) ? item.parent.taskList.id : item.parent.id,
-            }),
-            refetchListTaskListQuery({
-              taskList: isSection(target.target) ? target.target.taskList.id : target.target.id,
-            }),
+            ...refetchQueries,
           ],
         });
       } else {
@@ -218,6 +233,16 @@ export function useSectionDrag(section: Section): DragProps {
   return useDragBase(draggedItem, useCallback(
     async (target: unknown): Promise<void> => {
       if (isSectionDragResult(target)) {
+        let taskLists = new Set<string>();
+        taskLists.add(section.taskList.id);
+        taskLists.add(target.taskList.id);
+
+        let refetchQueries = Array.from(taskLists.values(), (id: string): PureQueryOptions => {
+          return refetchListTaskListQuery({
+            taskList: id,
+          });
+        });
+
         await moveSection({
           variables: {
             id: section.id,
@@ -226,12 +251,8 @@ export function useSectionDrag(section: Section): DragProps {
           },
           awaitRefetchQueries: true,
           refetchQueries: [
-            refetchListTaskListQuery({
-              taskList: section.taskList.id,
-            }),
-            refetchListTaskListQuery({
-              taskList: target.taskList.id,
-            }),
+            refetchListContextStateQuery(),
+            ...refetchQueries,
           ],
         });
       } else {

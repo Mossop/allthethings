@@ -12,13 +12,13 @@ import { TextFieldInput } from "../components/Forms";
 import { useCreateTaskMutation, useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
-import type { Section, Task, TaskList } from "../utils/state";
+import type { Inbox, Section, Task, TaskList } from "../utils/state";
 import { isSection } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
 type CreateTaskProps = {
   onClose: () => void;
-  list: TaskList | Section;
+  list: TaskList | Inbox | Section;
 } | {
   onClose: () => void;
   task: Task;
@@ -29,7 +29,7 @@ export default ReactMemo(function CreateTaskDialog({
   ...props
 }: CreateTaskProps): ReactElement {
   let task: Task | null;
-  let list: TaskList | Section;
+  let list: TaskList | Inbox | Section;
   if ("task" in props) {
     task = props.task;
     list = task.parent;

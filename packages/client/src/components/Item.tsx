@@ -1,3 +1,4 @@
+import type { PureQueryOptions } from "@apollo/client";
 import IconButton from "@material-ui/core/IconButton";
 import ListItem from "@material-ui/core/ListItem";
 import type { Theme } from "@material-ui/core/styles";
@@ -8,7 +9,7 @@ import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
 import { useDeleteItemMutation } from "../schema/mutations";
-import { refetchListTaskListQuery } from "../schema/queries";
+import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
@@ -96,7 +97,7 @@ function renderEditDialog(item: Item, onClose: () => void): ReactResult {
 }
 
 interface ItemProps {
-  taskList: TaskList;
+  taskList: TaskList | null;
   section: Section | null;
   item: ItemState;
   items: ItemState[];
@@ -159,15 +160,21 @@ export default ReactMemo(function Item({
 
   let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
 
+  let refetchQueries: PureQueryOptions[] = [
+    refetchListContextStateQuery(),
+  ];
+
+  if (taskList) {
+    refetchQueries.push(refetchListTaskListQuery({
+      taskList: taskList.id,
+    }));
+  }
+
   let [deleteItemMutation] = useDeleteItemMutation({
     variables: {
       id: item.id,
     },
-    refetchQueries: [
-      refetchListTaskListQuery({
-        taskList: taskList.id,
-      }),
-    ],
+    refetchQueries,
   });
 
   let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
@@ -185,7 +192,7 @@ export default ReactMemo(function Item({
   } = useDropArea(DragType.Item, {
     getDragResult: useCallback(
       (_: DraggedItem, monitor: DropTargetMonitor): ItemDragResult | null => {
-        if (!elementRef.current) {
+        if (!taskList || !elementRef.current) {
           return null;
         }
 

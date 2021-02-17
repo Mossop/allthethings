@@ -18,10 +18,15 @@ export type Project = StateO<Schema.Project, "taskList" | "items" | "sections", 
   readonly subprojects: readonly Project[];
 }>;
 
+export type Inbox = State<Schema.Inbox, {
+  items: Item[];
+}>;
+
 export type User = StateO<Schema.User, "password" | "items" | "sections", {
   readonly subprojects: readonly Project[];
   readonly projects: ReadonlyMap<string, Project>;
   readonly contexts: ReadonlyMap<string, Context>;
+  readonly inbox: Inbox;
 }>;
 
 export type Context = StateO<Schema.Context, "user" | "items" | "sections", {
@@ -36,7 +41,7 @@ export type Section = State<Schema.Section, {
 }>;
 
 interface BaseItem {
-  parent: TaskList | Section;
+  parent: Inbox | TaskList | Section;
 }
 
 export type Link = State<Schema.Link, BaseItem>;
@@ -51,6 +56,10 @@ export type ProjectRoot = User | Context;
 interface GraphQLType {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   __typename: string;
+}
+
+export function isInbox(val: GraphQLType): val is Inbox {
+  return val.__typename == "Inbox";
 }
 
 export function isSection(val: GraphQLType): val is Section {
@@ -157,7 +166,7 @@ export function buildProjects(
 }
 
 export function buildItems(
-  parent: TaskList | Section,
+  parent: Inbox | TaskList | Section,
   items: readonly SchemaItem[],
 ): Item[] {
   return items.map((item: SchemaItem): Item => ({

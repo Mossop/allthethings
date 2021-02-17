@@ -94,8 +94,8 @@ export type User = ProjectRoot & TaskList & {
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
-  readonly password: Scalars['String'];
   readonly contexts: ReadonlyArray<Context>;
+  readonly inbox: Inbox;
 };
 
 
@@ -140,6 +140,12 @@ export type Section = {
   readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
+};
+
+export type Inbox = {
+  readonly __typename?: 'Inbox';
+  readonly id: Scalars['ID'];
+  readonly items: ReadonlyArray<Item>;
 };
 
 export type Query = {

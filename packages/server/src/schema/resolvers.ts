@@ -3,6 +3,7 @@ import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } f
 import type { User, Context, Project, Section, TaskList, ProjectRoot, Item } from '../db/implementations';
 import type { ResolverContext } from './context';
 import * as Schema from './types';
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 export type WithIndex<TObject> = TObject & Record<string, any>;
 export type ResolversObject<TObject> = WithIndex<TObject>;
@@ -99,6 +100,7 @@ export type ResolversTypes = ResolversObject<{
   Context: ResolverTypeWrapper<Context>;
   Project: ResolverTypeWrapper<Project>;
   Section: ResolverTypeWrapper<Section>;
+  Inbox: ResolverTypeWrapper<Omit<Schema.Inbox, 'items'> & { items: ReadonlyArray<ResolversTypes['Item']> }>;
   Query: ResolverTypeWrapper<{}>;
   ContextParams: Schema.ContextParams;
   ProjectParams: Schema.ProjectParams;
@@ -125,6 +127,7 @@ export type ResolversParentTypes = ResolversObject<{
   Context: Context;
   Project: Project;
   Section: Section;
+  Inbox: Omit<Schema.Inbox, 'items'> & { items: ReadonlyArray<ResolversParentTypes['Item']> };
   Query: {};
   ContextParams: Schema.ContextParams;
   ProjectParams: Schema.ProjectParams;
@@ -213,8 +216,8 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
   projectById: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.UserProjectByIdArgs, 'id'>>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  password: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   contexts: Resolver<ReadonlyArray<ResolversTypes['Context']>, ParentType, ContextType>;
+  inbox: Resolver<ResolversTypes['Inbox'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -249,6 +252,12 @@ export type SectionResolvers<ContextType = ResolverContext, ParentType extends R
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type InboxResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Inbox'] = ResolversParentTypes['Inbox']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -291,6 +300,7 @@ export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
   Context: ContextResolvers<ContextType>;
   Project: ProjectResolvers<ContextType>;
   Section: SectionResolvers<ContextType>;
+  Inbox: InboxResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   Mutation: MutationResolvers<ContextType>;
 }>;

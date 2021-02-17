@@ -14,9 +14,10 @@ import {
 import CreateSectionDialog from "../ui/CreateSectionDialog";
 import TaskDialog from "../ui/TaskDialog";
 import { useBoolState } from "../utils/hooks";
-import type { Section, TaskList } from "../utils/state";
+import type { Inbox, Section, TaskList } from "../utils/state";
 import {
-  isSection,
+  isTaskList,
+  isInbox,
   useUser,
   useProjectRoot,
   isContext,
@@ -40,7 +41,7 @@ const useStyles = makeStyles(() =>
   }));
 
 interface ItemListActionsProps {
-  list: TaskList | Section;
+  list: Inbox | TaskList | Section;
 }
 
 export default ReactMemo(function ItemListActions({
@@ -67,7 +68,7 @@ export default ReactMemo(function ItemListActions({
   });
 
   let deleteList = useMemo(() => {
-    if (isUser(list)) {
+    if (isUser(list) || isInbox(list)) {
       return null;
     }
 
@@ -113,12 +114,12 @@ export default ReactMemo(function ItemListActions({
   return <>
     <div className={classes.actions}>
       <IconButton onClick={openAddTask}><CheckedIcon/></IconButton>
-      {!isSection(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
+      {isTaskList(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
       {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
     </div>
     {taskAddDialogOpen && <TaskDialog list={list} onClose={closeAddTask}/>}
     {
-      sectionAddDialogOpen && !isSection(list) &&
+      sectionAddDialogOpen && isTaskList(list) &&
       <CreateSectionDialog taskList={list} onClose={closeAddSection}/>
     }
   </>;

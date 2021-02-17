@@ -3,8 +3,8 @@ import { createBrowserHistory } from "history";
 import { useState, useMemo, useEffect, createContext, useContext } from "react";
 
 import { useListContextStateQuery } from "../schema/queries";
-import type { Context, Project, ProjectRoot, TaskList, User } from "./state";
-import { buildProjects, isContext, isUser, isProject } from "./state";
+import type { Context, Inbox, Project, ProjectRoot, TaskList, User } from "./state";
+import { buildItems, buildProjects, isContext, isUser, isProject } from "./state";
 import type { ReactChildren, ReactResult } from "./types";
 
 const ViewContext = createContext<View | null | undefined>(undefined);
@@ -350,8 +350,15 @@ export function ViewListener({ children }: ReactChildren): ReactResult {
       return null;
     }
 
+    let inbox: Inbox = {
+      ...data.user.inbox,
+      items: [],
+    };
+    inbox.items = buildItems(inbox, data.user.inbox.items);
+
     return {
       ...data.user,
+      inbox,
 
       // eslint-disable-next-line @typescript-eslint/typedef
       contexts: new Map(data.user.contexts.map((context): [string, Context] => {

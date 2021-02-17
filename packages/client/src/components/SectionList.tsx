@@ -61,7 +61,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 export interface ItemListProps {
-  taskList: TaskList;
+  taskList: TaskList | null;
   section: Section | null;
   items: Item[];
 }

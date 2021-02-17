@@ -174,8 +174,15 @@ export class User extends ProjectRootImpl<Db.UserDbTable> implements SchemaResol
     });
   }
 
+  public async inbox(): Promise<Inbox> {
+    let record = assertValid(
+      await this.dataSources.sections.getSpecialSection(this.id, Src.SectionIndex.Inbox),
+    );
+
+    return new Inbox(this.resolverContext, record);
+  }
+
   public readonly email = fields<Db.UserDbTable>()("email");
-  public readonly password = fields<Db.UserDbTable>()("password");
 }
 
 export class Context
@@ -249,6 +256,31 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
     let user = await this.dataSources.users.getOne(contextId);
     return assertValid(user);
   }
+}
+
+abstract class SpecialSection {
+  public constructor(
+    protected readonly resolverContext: ResolverContext,
+    protected readonly dbObject: Db.DbObject<Db.SectionDbTable>,
+  ) {
+  }
+
+  public get dataSources(): Src.AppDataSources {
+    return this.resolverContext.dataSources;
+  }
+
+  public get id(): string {
+    return this.dbObject.id;
+  }
+
+  public async items(): Promise<Item[]> {
+    return this.dataSources.items.find({
+      ownerId: this.id,
+    });
+  }
+}
+
+export class Inbox extends SpecialSection implements SchemaResolver<Schema.Inbox> {
 }
 
 export class Section extends BaseImpl<Db.SectionDbTable>

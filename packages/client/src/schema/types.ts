@@ -95,8 +95,8 @@ export type User = ProjectRoot & TaskList & {
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
-  readonly password: Scalars['String'];
   readonly contexts: ReadonlyArray<Context>;
+  readonly inbox: Inbox;
 };
 
 
@@ -141,6 +141,12 @@ export type Section = {
   readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
+};
+
+export type Inbox = {
+  readonly __typename: 'Inbox';
+  readonly id: Scalars['ID'];
+  readonly items: ReadonlyArray<Item>;
 };
 
 export type Query = {
@@ -355,7 +361,7 @@ export type ProjectRootFieldPolicy = {
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'email' | 'password' | 'contexts' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -365,8 +371,8 @@ export type UserFieldPolicy = {
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
-	password?: FieldPolicy<any> | FieldReadFunction<any>,
-	contexts?: FieldPolicy<any> | FieldReadFunction<any>
+	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
+	inbox?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ContextKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
@@ -398,6 +404,11 @@ export type SectionFieldPolicy = {
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type InboxKeySpecifier = ('id' | 'items' | InboxKeySpecifier)[];
+export type InboxFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type QueryKeySpecifier = ('user' | 'taskList' | 'root' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
@@ -469,6 +480,10 @@ export type TypedTypePolicies = TypePolicies & {
 	Section?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | SectionKeySpecifier | (() => undefined | SectionKeySpecifier),
 		fields?: SectionFieldPolicy,
+	},
+	Inbox?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | InboxKeySpecifier | (() => undefined | InboxKeySpecifier),
+		fields?: InboxFieldPolicy,
 	},
 	Query?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | QueryKeySpecifier | (() => undefined | QueryKeySpecifier),
