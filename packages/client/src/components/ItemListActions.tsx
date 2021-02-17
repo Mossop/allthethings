@@ -12,7 +12,7 @@ import {
   refetchListTaskListQuery,
 } from "../schema/queries";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
-import CreateTaskDialog from "../ui/CreateTaskDialog";
+import TaskDialog from "../ui/TaskDialog";
 import { useBoolState } from "../utils/hooks";
 import type { Section, TaskList } from "../utils/state";
 import {
@@ -116,7 +116,7 @@ export default ReactMemo(function ItemListActions({
       {!isSection(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
       {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
     </div>
-    {taskAddDialogOpen && <CreateTaskDialog list={list} onClose={closeAddTask}/>}
+    {taskAddDialogOpen && <TaskDialog list={list} onClose={closeAddTask}/>}
     {
       sectionAddDialogOpen && !isSection(list) &&
       <CreateSectionDialog taskList={list} onClose={closeAddSection}/>

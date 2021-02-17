@@ -9,15 +9,17 @@ import mergeRefs from "react-merge-refs";
 
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
+import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
-import type { Item as ItemState, Section, TaskList } from "../utils/state";
+import { useBoolState } from "../utils/hooks";
+import type { Item, Item as ItemState, Section, TaskList } from "../utils/state";
 import { dragging, flexCentered, flexRow } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import FileItem from "./FileItem";
-import { DragIcon, DeleteIcon } from "./Icons";
+import { DragIcon, DeleteIcon, EditIcon } from "./Icons";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import TaskItem from "./TaskItem";
@@ -77,6 +79,19 @@ function renderItem({
       return <FileItem item={item}/>;
     case "Link":
       return <LinkItem item={item}/>;
+  }
+}
+
+function renderEditDialog(item: Item, onClose: () => void): ReactResult {
+  switch (item.__typename) {
+    case "Task":
+      return <TaskDialog task={item} onClose={onClose}/>;
+    case "Note":
+      return <div/>;
+    case "File":
+      return <div/>;
+    case "Link":
+      return <div/>;
   }
 }
 
@@ -142,6 +157,8 @@ export default ReactMemo(function Item({
 }: ItemProps): ReactResult {
   let classes = useStyles();
 
+  let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
+
   let [deleteItemMutation] = useDeleteItemMutation({
     variables: {
       id: item.id,
@@ -200,30 +217,36 @@ export default ReactMemo(function Item({
 
   let itemRef = mergeRefs([dropRef, elementRef]);
 
-  return <ListItem
-    className={clsx(classes.item, isDragging && classes.hidden)}
-    disableGutters={true}
-    ref={itemRef}
-  >
-    <div className={classes.dragPreview} ref={previewRef}>
-      <div className={classes.dragHandleContainer} ref={dragRef}>
-        <DragIcon className={classes.dragHandle}/>
+  return <>
+    <ListItem
+      className={clsx(classes.item, isDragging && classes.hidden)}
+      disableGutters={true}
+      ref={itemRef}
+    >
+      <div className={classes.dragPreview} ref={previewRef}>
+        <div className={classes.dragHandleContainer} ref={dragRef}>
+          <DragIcon className={classes.dragHandle}/>
+        </div>
+        <div className={classes.itemInner}>
+          {
+            renderItem({
+              item,
+              section,
+              taskList,
+              isDragging: false,
+            })
+          }
+        </div>
       </div>
-      <div className={classes.itemInner}>
-        {
-          renderItem({
-            item,
-            section,
-            taskList,
-            isDragging: false,
-          })
-        }
+      <div className={classes.actions}>
+        <IconButton onClick={openEditDialog}>
+          <EditIcon/>
+        </IconButton>
+        <IconButton onClick={deleteItem}>
+          <DeleteIcon/>
+        </IconButton>
       </div>
-    </div>
-    <div className={classes.actions}>
-      <IconButton onClick={deleteItem}>
-        <DeleteIcon/>
-      </IconButton>
-    </div>
-  </ListItem>;
+    </ListItem>
+    {editDialogOpen && renderEditDialog(item, closeEditDialog)}
+  </>;
 });

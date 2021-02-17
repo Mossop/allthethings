@@ -10,3 +10,4 @@ export { default as DeleteIcon } from "@material-ui/icons/Delete";
 export { default as UncheckedIcon } from "@material-ui/icons/CheckBoxOutlineBlank";
 export { default as CheckedIcon } from "@material-ui/icons/CheckBox";
 export { default as DragIcon } from "@material-ui/icons/DragIndicator";
+export { default as EditIcon } from "@material-ui/icons/Edit";

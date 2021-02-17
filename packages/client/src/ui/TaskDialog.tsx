@@ -9,37 +9,51 @@ import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { TextFieldInput } from "../components/Forms";
-import { useCreateTaskMutation } from "../schema/mutations";
+import { useCreateTaskMutation, useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import { useBoolState } from "../utils/hooks";
-import type { Section, TaskList } from "../utils/state";
+import type { Section, Task, TaskList } from "../utils/state";
 import { isSection } from "../utils/state";
 import { ReactMemo } from "../utils/types";
 
-interface CreateTaskProps {
+type CreateTaskProps = {
   onClose: () => void;
   list: TaskList | Section;
-}
+} | {
+  onClose: () => void;
+  task: Task;
+};
 
 export default ReactMemo(function CreateTaskDialog({
   onClose,
-  list,
+  ...props
 }: CreateTaskProps): ReactElement {
+  let task: Task | null;
+  let list: TaskList | Section;
+  if ("task" in props) {
+    task = props.task;
+    list = task.parent;
+  } else {
+    list = props.list;
+    task = null;
+  }
+
   let [state, setState] = useState({
-    summary: "",
+    summary: task?.summary ?? "",
   });
 
   let [isOpen,, close] = useBoolState(true);
 
   let [createTask] = useCreateTaskMutation({
-    variables: {
-      list: list.id,
-      params: {
-        ...state,
-        done: null,
-        archived: false,
-      },
-    },
+    refetchQueries: [
+      refetchListTaskListQuery({
+        taskList: isSection(list) ? list.taskList.id : list.id,
+      }),
+      refetchListContextStateQuery(),
+    ],
+  });
+
+  let [editTask] = useEditTaskMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -50,9 +64,33 @@ export default ReactMemo(function CreateTaskDialog({
 
   let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
     event.preventDefault();
-    await createTask();
+
+    if (task) {
+      await editTask({
+        variables: {
+          id: task.id,
+          params: {
+            ...state,
+            done: task.done,
+            archived: task.archived,
+          },
+        },
+      });
+    } else {
+      await createTask({
+        variables: {
+          list: list.id,
+          params: {
+            ...state,
+            done: null,
+            archived: false,
+          },
+        },
+      });
+    }
+
     close();
-  }, [close, createTask]);
+  }, [close, createTask, editTask, list.id, state, task]);
 
   return <Dialog open={isOpen} onClose={close} onExited={onClose}>
     <form onSubmit={submit}>
@@ -71,7 +109,9 @@ export default ReactMemo(function CreateTaskDialog({
         </FormControl>
       </DialogContent>
       <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Create</Button>
+        <Button type="submit" variant="contained" color="primary">
+          {task ? "Edit" : "Create"}
+        </Button>
         <Button onClick={close} variant="contained">Cancel</Button>
       </DialogActions>
     </form>
