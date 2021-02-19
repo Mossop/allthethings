@@ -1,5 +1,5 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "target": "es2015",
     "module": "esnext",
@@ -11,14 +11,9 @@
     "jsx": "react-jsx"
   },
   "references": [{
-    "path": "../utils/tsconfig.json"
-  }, {
-    "path": "../types/tsconfig.json"
+    "path": "../../../packages/types/tsconfig.json"
   }],
   "include": [
-    "src/**/*.js",
-    "src/**/*.jsx",
-    "src/**/*.ts",
-    "src/**/*.tsx",
+    "src/**/*.ts"
   ]
 }

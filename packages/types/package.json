@@ -1,6 +1,6 @@
 {
-  "name": "@allthethings/utils",
-  "description": "AllTheThings shared utils.",
+  "name": "@allthethings/types",
+  "description": "AllTheThings types for plugins.",
   "repository": "Mossop/allthethings",
   "license": "MIT",
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
@@ -10,10 +10,8 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "build": "tsc -b"
   },
-  "dependencies": {
-    "@allthethings/types": "file:../types"
-  },
   "devDependencies": {
+    "@types/koa": "^2.13.0",
     "typescript": "^4.1.0"
   }
 }

@@ -1,4 +1,4 @@
-import fs from "fs";
+import { promises as fs } from "fs";
 import path from "path";
 
 import type { ApolloServer } from "apollo-server-koa";
@@ -10,6 +10,7 @@ import koaStatic from "koa-static";
 
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";
+import PluginManager from "../plugins";
 import { buildContext } from "./context";
 
 export async function createWebServer(
@@ -53,11 +54,23 @@ export async function createWebServer(
 
   app.use(gqlServer.getMiddleware());
 
-  app.use((ctx: Koa.Context) => {
-    let stream = fs.createReadStream(htmlFile);
+  PluginManager.registerServerMiddleware(app);
+
+  app.use(async (ctx: Koa.Context) => {
+    let html = await fs.readFile(htmlFile, {
+      encoding: "utf8",
+    });
+
+    html = html.replace(
+      "{plugins}",
+      PluginManager.getClientScripts(ctx).map(
+        (script: string): string => `<script defer src="${script}"></script>`,
+      ).join("\n"),
+    );
+
     ctx.status = 200;
     ctx.type = "text/html";
-    ctx.body = stream;
+    ctx.body = html;
   });
 
   app.listen(config.port);

@@ -1,3 +1,4 @@
+import type { ClientPluginExport } from "@allthethings/types";
 import { ApolloProvider } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
@@ -5,6 +6,7 @@ import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { render } from "react-dom";
 
 import App from "./App";
+import PluginManager from "./plugins";
 import { connect } from "./schema";
 import { DragTracker } from "./utils/drag";
 import { ViewListener } from "./utils/view";
@@ -128,5 +130,9 @@ function init(): void {
     document.getElementById("app"),
   );
 }
+
+window["registerPlugin"] = (plugin: ClientPluginExport): void => {
+  PluginManager.registerPlugin(plugin);
+};
 
 void init();

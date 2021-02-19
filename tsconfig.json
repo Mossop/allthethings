@@ -8,10 +8,12 @@
     "noEmit": true,
   },
   "include": [
-    "packages/server/*.js",
-    "packages/server/.*.js",
-    "packages/client/*.js",
-    "packages/client/.*.js",
+    "packages/*/*.js",
+    "packages/*/.*.js",
+    "plugins/*/server/*.js",
+    "plugins/*/server/.*.js",
+    "plugins/*/client/*.js",
+    "plugins/*/client/.*.js",
     "*.js",
     ".*.js"
   ]

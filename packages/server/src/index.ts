@@ -2,6 +2,7 @@ import { install } from "source-map-support";
 
 import { parseConfig } from "./config";
 import { createDbConnection } from "./db";
+import PluginManager from "./plugins";
 import { createGqlServer } from "./schema";
 import { createWebServer } from "./webserver";
 
@@ -13,6 +14,7 @@ async function init(): Promise<void> {
   }
 
   let config = await parseConfig(process.argv[2]);
+  await PluginManager.loadPlugins(config.plugins);
 
   let db = await createDbConnection(config);
   if (process.argv.length >= 4 && process.argv[3] == "rebuild") {

@@ -13,11 +13,15 @@ export interface DatabaseConfig {
 export interface ServerConfig {
   port: number;
   database: DatabaseConfig;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins: Record<string, any>;
 }
 
 interface ConfigFile {
   port: number;
   database?: Partial<DatabaseConfig>;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  plugins?: Record<string, any>;
 }
 
 const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
@@ -31,6 +35,7 @@ const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
 const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
   port: JsonDecoder.number,
   database: JsonDecoder.optional(DatabaseConfigDecoder),
+  plugins: JsonDecoder.optional(JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
 }, "ConfigFile");
 
 export async function parseConfig(path: string): Promise<ServerConfig> {
@@ -42,6 +47,7 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
 
   return {
     ...config,
+    plugins: config.plugins ?? {},
     database: {
       host: "localhost",
       port: 5432,

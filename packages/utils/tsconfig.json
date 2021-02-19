@@ -11,6 +11,9 @@
     ],
     "incremental": true,
   },
+  "references": [{
+    "path": "../types/tsconfig.json"
+  }],
   "include": [
     "src/**/*.ts"
   ]

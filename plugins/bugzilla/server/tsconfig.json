@@ -1,18 +1,18 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "../../../tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
+    "composite": true,
+    "declaration": true,
     "outDir": "dist",
+    "rootDir": "./src",
     "lib": [
       "ESNext"
     ],
     "incremental": true,
-    "rootDir": "./src",
   },
   "references": [{
-    "path": "../utils/tsconfig.json"
-  }, {
-    "path": "../types/tsconfig.json"
+    "path": "../../../packages/types/tsconfig.json"
   }],
   "include": [
     "src/**/*.ts"
