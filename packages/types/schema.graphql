@@ -70,7 +70,7 @@ interface ProjectRoot implements TaskList {
   projectById(id: ID!): Project
 }
 
-type User implements ProjectRoot & TaskList @entity {
+type User implements ProjectRoot & TaskList {
   # TaskList
   remainingTasks: Int!
   subprojects: [Project!]!
@@ -87,7 +87,7 @@ type User implements ProjectRoot & TaskList @entity {
   inbox: Inbox!
 }
 
-type Context implements ProjectRoot & TaskList @entity {
+type Context implements ProjectRoot & TaskList {
   # TaskList
   remainingTasks: Int!
   subprojects: [Project!]!

@@ -25,6 +25,18 @@ class PluginManager {
     return first.concat(...scripts);
   }
 
+  public getSchemas(): Promise<string[]> {
+    let promises: Promise<string>[] = [];
+
+    for (let plugin of this.plugins) {
+      if (plugin.getSchema) {
+        promises.push(plugin.getSchema());
+      }
+    }
+
+    return Promise.all(promises);
+  }
+
   public registerServerMiddleware(app: Koa): void {
     for (let plugin of this.plugins) {
       if (plugin.serverMiddleware) {

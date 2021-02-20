@@ -1,28 +1,23 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fs } from "fs";
-import path from "path";
 
+import { mergeTypeDefs } from "@graphql-tools/merge";
 import { ApolloServer } from "apollo-server-koa";
-import type { ValueNode } from "graphql";
 import { GraphQLScalarType, Kind } from "graphql";
+import type { ValueNode } from "graphql";
 import { DateTime } from "luxon";
 
 import type { Overwrite } from "@allthethings/utils";
 
 import type { ProjectRoot, TaskList } from "../db";
 import { Context, User, dataSources } from "../db";
+import PluginManager from "../plugins";
 import type { ResolverContext } from "./context";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";
 import ServerPlugin from "./plugin";
 import QueryResolvers from "./queries";
 import type * as Resolvers from "./resolvers";
-
-function loadSchema(): Promise<string> {
-  return fs.readFile(path.join(__dirname, "..", "..", "src", "schema", "schema.graphql"), {
-    encoding: "utf8",
-  });
-}
 
 type RootResolvers<ContextType = ResolverContext> = Overwrite<
   Omit<Resolvers.Resolvers<ContextType>, "User" | "Context" | "Project" | "Section">,
@@ -86,8 +81,17 @@ export const resolvers: RootResolvers = {
 };
 
 export async function createGqlServer(): Promise<ApolloServer> {
+  let baseSchema = await fs.readFile(require.resolve("@allthethings/types/schema.graphql"), {
+    encoding: "utf8",
+  });
+
+  let pluginSchemas = await PluginManager.getSchemas();
+
   return new ApolloServer({
-    typeDefs: await loadSchema(),
+    typeDefs: mergeTypeDefs([
+      baseSchema,
+      ...pluginSchemas,
+    ]),
     resolvers,
     context: buildContext,
     // @ts-ignore

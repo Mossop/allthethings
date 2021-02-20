@@ -7,6 +7,7 @@ export type Awaitable<T> = T | Promise<T>;
 export interface ServerPlugin {
   readonly id: string;
 
+  readonly getSchema?: () => Promise<string>;
   readonly serverMiddleware?: Koa.Middleware;
   readonly getClientScripts?: (ctx: Koa.Context) => string[];
 }
