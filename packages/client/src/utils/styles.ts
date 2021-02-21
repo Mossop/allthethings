@@ -1,4 +1,4 @@
-import type { Theme } from "@material-ui/core/styles";
+import type { Theme } from "@material-ui/core";
 import type { CSSProperties } from "@material-ui/core/styles/withStyles";
 
 const flex: CSSProperties = {

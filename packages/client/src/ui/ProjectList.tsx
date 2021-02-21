@@ -1,11 +1,14 @@
-import Divider from "@material-ui/core/Divider";
-import List from "@material-ui/core/List";
-import ListItem from "@material-ui/core/ListItem";
-import ListItemIcon from "@material-ui/core/ListItemIcon";
-import ListItemText from "@material-ui/core/ListItemText";
-import Paper from "@material-ui/core/Paper";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import {
+  Divider,
+  List,
+  ListItem,
+  ListItemIcon,
+  ListItemText,
+  Paper,
+  createStyles,
+  makeStyles,
+} from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import alpha from "color-alpha";
 import type { ReactElement } from "react";

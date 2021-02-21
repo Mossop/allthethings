@@ -1,6 +1,5 @@
-import List from "@material-ui/core/List";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { List, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 
 import { InboxIcon } from "../components/Icons";
 import ItemListActions from "../components/ItemListActions";

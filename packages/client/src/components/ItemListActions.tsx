@@ -1,5 +1,4 @@
-import IconButton from "@material-ui/core/IconButton";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { IconButton,  createStyles, makeStyles  } from "@material-ui/core";
 import { useMemo } from "react";
 
 import {

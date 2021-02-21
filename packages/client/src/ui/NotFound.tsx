@@ -1,5 +1,5 @@
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import type { Theme } from "@material-ui/core";
+import { createStyles, makeStyles } from "@material-ui/core";
 
 import { Text } from "../components/Text";
 import { pageStyles } from "../utils/styles";

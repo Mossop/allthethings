@@ -1,4 +1,4 @@
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { createStyles, makeStyles } from "@material-ui/core";
 
 import Loading from "./components/Loading";
 import Page from "./components/Page";

@@ -1,6 +1,5 @@
-import IconButton from "@material-ui/core/IconButton";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { IconButton,  createStyles, makeStyles  } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { KeyboardEvent } from "react";
 import { useRef, useCallback, useState } from "react";

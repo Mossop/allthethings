@@ -4,6 +4,29 @@ const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
+const lock = require("../../package-lock.json");
+const externals = require("./externals.json");
+
+function buildExternals(mode) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return externals.map(pkg => {
+    let path = mode == "production" ? pkg.path : pkg.devPath;
+    return {
+      type: "js",
+      path: `https://unpkg.com/${pkg.id}@${lock.dependencies[pkg.id].version}/${path}`,
+      publicPath: false,
+      attributes: {
+        crossorigin: true,
+        nonce: "{% nonce %}",
+      },
+      external: {
+        packageName: pkg.id,
+        variableName: pkg.variable,
+      },
+    };
+  });
+}
+
 module.exports = {
   mode: "development",
   entry: {
@@ -21,7 +44,10 @@ module.exports = {
     filename: "[name].[chunkhash].js",
     crossOriginLoading: "anonymous",
   },
-  stats: "errors-warnings",
+  stats: {
+    env: true,
+    chunkModules: true,
+  },
   devtool: "source-map",
   module: {
     rules: [{
@@ -51,6 +77,7 @@ module.exports = {
           path: "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap",
           publicPath: false,
         },
+        ...buildExternals("development"),
       ],
     }),
   ],

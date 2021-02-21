@@ -1,0 +1,20 @@
+[
+  {
+    "id": "react",
+    "variable": "React",
+    "devPath": "umd/react.development.js",
+    "path": "umd/react.production.min.js"
+  },
+  {
+    "id": "react-dom",
+    "variable": "ReactDOM",
+    "devPath": "umd/react-dom.development.js",
+    "path": "umd/react-dom.production.min.js"
+  },
+  {
+    "id": "@material-ui/core",
+    "variable": "MaterialUI",
+    "devPath": "umd/material-ui.development.js",
+    "path": "umd/material-ui.production.min.js"
+  }
+]

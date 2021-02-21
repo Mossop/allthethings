@@ -1,5 +1,5 @@
 import type { PureQueryOptions } from "@apollo/client";
-import IconButton from "@material-ui/core/IconButton";
+import { IconButton } from "@material-ui/core";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 

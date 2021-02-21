@@ -1,8 +1,5 @@
-import Divider from "@material-ui/core/Divider";
-import List from "@material-ui/core/List";
-import ListSubheader from "@material-ui/core/ListSubheader";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useMemo, useCallback, useRef } from "react";

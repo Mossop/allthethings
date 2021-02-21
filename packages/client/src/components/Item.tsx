@@ -1,8 +1,6 @@
 import type { PureQueryOptions } from "@apollo/client";
-import IconButton from "@material-ui/core/IconButton";
-import ListItem from "@material-ui/core/ListItem";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { IconButton, ListItem, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import { useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";

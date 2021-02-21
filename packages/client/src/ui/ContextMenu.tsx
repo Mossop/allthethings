@@ -1,8 +1,5 @@
-import Button from "@material-ui/core/Button";
-import Menu from "@material-ui/core/Menu";
-import MenuItem from "@material-ui/core/MenuItem";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { Button, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { ContextIcon } from "../components/Icons";

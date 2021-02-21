@@ -1,6 +1,6 @@
 import type { ApolloError } from "@apollo/client";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import type { Theme } from "@material-ui/core";
+import { createStyles, makeStyles } from "@material-ui/core";
 import alpha from "color-alpha";
 
 import { flexRow } from "../utils/styles";

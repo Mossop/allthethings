@@ -1,6 +1,5 @@
-import type { BoxProps } from "@material-ui/core/Box";
-import Box from "@material-ui/core/Box";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import type { BoxProps } from "@material-ui/core";
+import { Box,  createStyles, makeStyles  } from "@material-ui/core";
 import clsx from "clsx";
 import { forwardRef } from "react";
 

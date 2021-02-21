@@ -1,5 +1,5 @@
-import type { OutlinedInputProps } from "@material-ui/core/OutlinedInput";
-import OutlinedInput from "@material-ui/core/OutlinedInput";
+import type { OutlinedInputProps } from "@material-ui/core";
+import { OutlinedInput } from "@material-ui/core";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
 

@@ -1,7 +1,6 @@
 import { ApolloProvider } from "@apollo/client";
-import CssBaseline from "@material-ui/core/CssBaseline";
-import type { Theme } from "@material-ui/core/styles";
-import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
+import { CssBaseline,  createMuiTheme, ThemeProvider  } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 import { render } from "react-dom";
 
 import type { ClientPluginExport } from "@allthethings/types";
