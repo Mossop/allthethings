@@ -23,6 +23,7 @@ import FileItem from "./FileItem";
 import { DragIcon, DeleteIcon, EditIcon } from "./Icons";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
+import PluginItem from "./PluginItem";
 import TaskItem from "./TaskItem";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -80,6 +81,8 @@ function renderItem({
       return <FileItem item={item}/>;
     case "Link":
       return <LinkItem item={item}/>;
+    case "PluginItem":
+      return <PluginItem item={item}/>;
   }
 }
 
@@ -93,6 +96,8 @@ function renderEditDialog(item: Item, onClose: () => void): ReactResult {
       return <div/>;
     case "Link":
       return <div/>;
+    case "PluginItem":
+      throw new Error("Cannot edit plugin items.");
   }
 }
 

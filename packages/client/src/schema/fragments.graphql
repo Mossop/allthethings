@@ -39,4 +39,10 @@ fragment itemFields on Item {
     icon
     link
   }
+
+  ... on PluginItem {
+    done
+    due
+    pluginId
+  }
 }

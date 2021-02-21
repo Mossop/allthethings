@@ -242,6 +242,15 @@ export async function up(knex: Knex): Promise<void> {
     table.integer("size")
       .notNullable();
   });
+
+  await knex.schema.createTable("PluginItem", (table: Knex.CreateTableBuilder): void => {
+    itemId(table);
+
+    table.timestamp("due", { useTz: true })
+      .nullable();
+    table.timestamp("done", { useTz: true })
+      .nullable();
+  });
 }
 
 export async function down(knex: Knex): Promise<void> {

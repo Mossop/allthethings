@@ -33,6 +33,17 @@ export type Task = Item & {
   readonly link?: Maybe<Scalars['String']>;
 };
 
+export type PluginItem = Item & {
+  readonly __typename?: 'PluginItem';
+  readonly id: Scalars['ID'];
+  readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
+  readonly pluginId: Scalars['String'];
+  readonly due?: Maybe<Scalars['DateTime']>;
+  readonly done?: Maybe<Scalars['DateTime']>;
+};
+
 export type File = Item & {
   readonly __typename?: 'File';
   readonly id: Scalars['ID'];

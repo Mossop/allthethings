@@ -24,6 +24,16 @@ const migrationHelper: DbMigrationHelper = {
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   },
+
+  itemRef: (
+    table: Knex.CreateTableBuilder,
+    column: string,
+  ): Knex.ColumnBuilder => {
+    return table.text(column)
+      .references("Item.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+  },
 };
 
 class PluginManager {

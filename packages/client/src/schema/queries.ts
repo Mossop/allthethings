@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFields_Task_Fragment, ItemFields_PluginItem_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
@@ -12,6 +12,9 @@ export type ListContextStateQuery = { readonly __typename: 'Query', readonly use
     { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename: 'PluginItem' }
+        & ItemFields_PluginItem_Fragment
       ) | (
         { readonly __typename: 'File' }
         & ItemFields_File_Fragment
@@ -37,6 +40,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
+      { readonly __typename: 'PluginItem' }
+      & ItemFields_PluginItem_Fragment
+    ) | (
       { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
@@ -48,6 +54,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename: 'PluginItem' }
+        & ItemFields_PluginItem_Fragment
       ) | (
         { readonly __typename: 'File' }
         & ItemFields_File_Fragment
@@ -61,6 +70,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
+      { readonly __typename: 'PluginItem' }
+      & ItemFields_PluginItem_Fragment
+    ) | (
       { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
@@ -72,6 +84,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename: 'PluginItem' }
+        & ItemFields_PluginItem_Fragment
       ) | (
         { readonly __typename: 'File' }
         & ItemFields_File_Fragment
@@ -85,6 +100,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       { readonly __typename: 'Task' }
       & ItemFields_Task_Fragment
     ) | (
+      { readonly __typename: 'PluginItem' }
+      & ItemFields_PluginItem_Fragment
+    ) | (
       { readonly __typename: 'File' }
       & ItemFields_File_Fragment
     ) | (
@@ -96,6 +114,9 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Task' }
         & ItemFields_Task_Fragment
+      ) | (
+        { readonly __typename: 'PluginItem' }
+        & ItemFields_PluginItem_Fragment
       ) | (
         { readonly __typename: 'File' }
         & ItemFields_File_Fragment

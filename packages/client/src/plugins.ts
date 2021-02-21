@@ -1,5 +1,4 @@
 import type { ClientPlugin, ClientPluginExport } from "@allthethings/types";
-
 import { resolvePlugin } from "@allthethings/utils";
 
 class PluginManager {

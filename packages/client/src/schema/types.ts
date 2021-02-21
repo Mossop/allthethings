@@ -34,6 +34,17 @@ export type Task = Item & {
   readonly link?: Maybe<Scalars['String']>;
 };
 
+export type PluginItem = Item & {
+  readonly __typename: 'PluginItem';
+  readonly id: Scalars['ID'];
+  readonly summary: Scalars['String'];
+  readonly archived: Scalars['Boolean'];
+  readonly created: Scalars['DateTime'];
+  readonly pluginId: Scalars['String'];
+  readonly due?: Maybe<Scalars['DateTime']>;
+  readonly done?: Maybe<Scalars['DateTime']>;
+};
+
 export type File = Item & {
   readonly __typename: 'File';
   readonly id: Scalars['ID'];
@@ -318,6 +329,16 @@ export type TaskFieldPolicy = {
 	done?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type PluginItemKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'pluginId' | 'due' | 'done' | PluginItemKeySpecifier)[];
+export type PluginItemFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	summary?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	created?: FieldPolicy<any> | FieldReadFunction<any>,
+	pluginId?: FieldPolicy<any> | FieldReadFunction<any>,
+	due?: FieldPolicy<any> | FieldReadFunction<any>,
+	done?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type FileKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'filename' | 'mimetype' | 'size' | FileKeySpecifier)[];
 export type FileFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -445,6 +466,10 @@ export type TypedTypePolicies = TypePolicies & {
 		keyFields?: false | TaskKeySpecifier | (() => undefined | TaskKeySpecifier),
 		fields?: TaskFieldPolicy,
 	},
+	PluginItem?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | PluginItemKeySpecifier | (() => undefined | PluginItemKeySpecifier),
+		fields?: PluginItemFieldPolicy,
+	},
 	File?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | FileKeySpecifier | (() => undefined | FileKeySpecifier),
 		fields?: FileFieldPolicy,
@@ -504,6 +529,7 @@ export type TypedTypePolicies = TypePolicies & {
   "possibleTypes": {
     "Item": [
       "Task",
+      "PluginItem",
       "File",
       "Note",
       "Link"

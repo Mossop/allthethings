@@ -58,7 +58,7 @@ function instanceFields<T extends Db.DbTable>(): FieldGetter<T> {
   };
 }
 
-export type Item = TaskItem | LinkItem | NoteItem | FileItem;
+export type Item = TaskItem | LinkItem | NoteItem | FileItem | PluginItem;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 export type ItemGroup = User | Project | Context | Section;
@@ -445,4 +445,15 @@ export class LinkItem extends ItemImpl<Db.LinkItemDbTable> implements SchemaReso
   }
 
   public readonly link = instanceFields<Db.LinkItemDbTable>()("link");
+}
+
+export class PluginItem extends ItemImpl<Db.PluginItemDbTable>
+  implements SchemaResolver<Schema.PluginItem> {
+  protected get instanceDbObjectDataSource(): Src.PluginItemDataSource {
+    return this.dataSources.pluginItems;
+  }
+
+  public readonly pluginId = instanceFields<Db.PluginItemDbTable>()("pluginId");
+  public readonly due = instanceFields<Db.PluginItemDbTable>()("due");
+  public readonly done = instanceFields<Db.PluginItemDbTable>()("done");
 }

@@ -90,6 +90,7 @@ export type ResolversTypes = ResolversObject<{
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   Task: ResolverTypeWrapper<Item>;
+  PluginItem: ResolverTypeWrapper<Schema.PluginItem>;
   File: ResolverTypeWrapper<Schema.File>;
   Int: ResolverTypeWrapper<Schema.Scalars['Int']>;
   Note: ResolverTypeWrapper<Schema.Note>;
@@ -117,6 +118,7 @@ export type ResolversParentTypes = ResolversObject<{
   String: Schema.Scalars['String'];
   Boolean: Schema.Scalars['Boolean'];
   Task: Item;
+  PluginItem: Schema.PluginItem;
   File: Schema.File;
   Int: Schema.Scalars['Int'];
   Note: Schema.Note;
@@ -141,7 +143,7 @@ export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversT
 }
 
 export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = ResolversObject<{
-  __resolveType: TypeResolveFn<'Task' | 'File' | 'Note' | 'Link', ParentType, ContextType>;
+  __resolveType: TypeResolveFn<'Task' | 'PluginItem' | 'File' | 'Note' | 'Link', ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -156,6 +158,17 @@ export type TaskResolvers<ContextType = ResolverContext, ParentType extends Reso
   due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   link: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PluginItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginItem'] = ResolversParentTypes['PluginItem']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  archived: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
+  pluginId: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -291,6 +304,7 @@ export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
   DateTime: GraphQLScalarType;
   Item: ItemResolvers<ContextType>;
   Task: TaskResolvers<ContextType>;
+  PluginItem: PluginItemResolvers<ContextType>;
   File: FileResolvers<ContextType>;
   Note: NoteResolvers<ContextType>;
   Link: LinkResolvers<ContextType>;

@@ -6,7 +6,7 @@ type Writable<T> = {
   -readonly [K in keyof T]: T[K];
 };
 
-type SchemaItem = Schema.Task | Schema.Note | Schema.File | Schema.Link;
+type SchemaItem = Schema.Task | Schema.Note | Schema.File | Schema.Link | Schema.PluginItem;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type StateO<T, O extends string, A = {}> = Omit<T, O | keyof A> & A;
@@ -48,8 +48,9 @@ export type Link = State<Schema.Link, BaseItem>;
 export type Note = State<Schema.Note, BaseItem>;
 export type File = State<Schema.File, BaseItem>;
 export type Task = State<Schema.Task, BaseItem>;
+export type PluginItem = State<Schema.PluginItem, BaseItem>;
 
-export type Item = Task | Note | File | Link;
+export type Item = Task | Note | File | Link | PluginItem;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 

@@ -9,6 +9,7 @@ export enum ItemType {
   Link = "link",
   File = "file",
   Note = "note",
+  Plugin = "plugin",
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
@@ -119,4 +120,11 @@ export type FileItemDbTable = DbTable<{
   path: string;
   size: number;
   mimetype: string;
+}>;
+
+// A plugin provided item
+export type PluginItemDbTable = DbTable<{
+  pluginId: string;
+  due: DateTime | null;
+  done: DateTime | null;
 }>;

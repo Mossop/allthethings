@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFields_Task_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFields_Task_Fragment, ItemFields_PluginItem_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
@@ -135,6 +135,9 @@ export type MoveItemMutationVariables = Types.Exact<{
 export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Types.Maybe<(
     { readonly __typename: 'Task' }
     & ItemFields_Task_Fragment
+  ) | (
+    { readonly __typename: 'PluginItem' }
+    & ItemFields_PluginItem_Fragment
   ) | (
     { readonly __typename: 'File' }
     & ItemFields_File_Fragment

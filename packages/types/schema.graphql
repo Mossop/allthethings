@@ -19,6 +19,18 @@ type Task implements Item {
   link: String
 }
 
+type PluginItem implements Item {
+  # Item
+  id: ID!
+  summary: String!
+  archived: Boolean!
+  created: DateTime!
+
+  pluginId: String!
+  due: DateTime
+  done: DateTime
+}
+
 type File implements Item {
   # Item
   id: ID!

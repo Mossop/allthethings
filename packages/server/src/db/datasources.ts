@@ -496,6 +496,8 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbTable> {
         return new Impl.FileItem(resolverContext, dbObject, null);
       case Db.ItemType.Link:
         return new Impl.LinkItem(resolverContext, dbObject, null);
+      case Db.ItemType.Plugin:
+        return new Impl.PluginItem(resolverContext, dbObject, null);
     }
   }
 
@@ -648,6 +650,22 @@ export class LinkItemDataSource extends ExtendedItemDataSource<Impl.LinkItem, Db
   }
 }
 
+export class PluginItemDataSource extends ExtendedItemDataSource<
+  Impl.PluginItem,
+  Db.PluginItemDbTable
+> {
+  public tableName = "PluginItem";
+  protected itemType = Db.ItemType.Plugin;
+
+  protected builder(
+    resolverContext: ResolverContext,
+    instanceObject: DbObject<Db.PluginItemDbTable>,
+    dbObject?: DbObject<Db.ItemDbTable>,
+  ): Impl.PluginItem {
+    return new Impl.PluginItem(resolverContext, dbObject ?? null, instanceObject);
+  }
+}
+
 export interface AppDataSources {
   users: UserDataSource,
   contexts: ContextDataSource;
@@ -658,6 +676,7 @@ export interface AppDataSources {
   files: FileItemDataSource;
   notes: NoteItemDataSource;
   links: LinkItemDataSource;
+  pluginItems: PluginItemDataSource;
 }
 
 export function dataSources(): AppDataSources {
@@ -671,5 +690,6 @@ export function dataSources(): AppDataSources {
     files: new FileItemDataSource(),
     notes: new NoteItemDataSource(),
     links: new LinkItemDataSource(),
+    pluginItems: new PluginItemDataSource(),
   };
 }

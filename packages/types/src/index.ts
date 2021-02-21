@@ -5,9 +5,12 @@ import type Koa from "koa";
 export type MaybeCallable<T, C> = T | ((config: C) => T);
 export type Awaitable<T> = T | Promise<T>;
 
+type CreateColumn = (table: CreateTableBuilder, column: string) => ColumnBuilder;
+
 export interface DbMigrationHelper {
-  idColumn: (table: CreateTableBuilder, column: string) => ColumnBuilder;
-  userRef: (table: CreateTableBuilder, column: string, nullable?: boolean) => ColumnBuilder;
+  readonly idColumn: CreateColumn;
+  readonly userRef: CreateColumn;
+  readonly itemRef: CreateColumn;
 }
 
 export interface ServerPlugin {

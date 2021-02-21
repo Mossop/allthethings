@@ -1,9 +1,10 @@
-import type { ClientPluginExport } from "@allthethings/types";
 import { ApolloProvider } from "@apollo/client";
 import CssBaseline from "@material-ui/core/CssBaseline";
 import type { Theme } from "@material-ui/core/styles";
 import { createMuiTheme, ThemeProvider } from "@material-ui/core/styles";
 import { render } from "react-dom";
+
+import type { ClientPluginExport } from "@allthethings/types";
 
 import App from "./App";
 import PluginManager from "./plugins";
@@ -132,7 +133,7 @@ function init(): void {
 }
 
 window["registerPlugin"] = (plugin: ClientPluginExport): void => {
-  PluginManager.registerPlugin(plugin);
+  void PluginManager.registerPlugin(plugin);
 };
 
 void init();

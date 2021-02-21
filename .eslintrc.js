@@ -26,6 +26,10 @@ module.exports = {
     "node_modules",
     "packages/*/dist",
     "packages/*/node_modules",
+    "plugins/*/server/dist",
+    "plugins/*/server/node_modules",
+    "plugins/*/client/dist",
+    "plugins/*/client/node_modules",
   ],
 
   extends: [
