@@ -10,7 +10,7 @@ export type RootFieldsFragment = RootFields_User_Fragment | RootFields_Context_F
 
 export type ItemFields_Task_Fragment = { readonly __typename: 'Task', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any>, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
 
-export type ItemFields_PluginItem_Fragment = { readonly __typename: 'PluginItem', readonly done: Types.Maybe<any>, readonly due: Types.Maybe<any>, readonly pluginId: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
+export type ItemFields_PluginItem_Fragment = { readonly __typename: 'PluginItem', readonly done: Types.Maybe<any>, readonly due: Types.Maybe<any>, readonly pluginId: string, readonly pluginFields: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
 
 export type ItemFields_File_Fragment = { readonly __typename: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
 
@@ -63,6 +63,7 @@ export const ItemFieldsFragmentDoc = gql`
     done
     due
     pluginId
+    pluginFields
   }
 }
     `;

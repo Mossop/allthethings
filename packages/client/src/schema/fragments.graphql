@@ -44,5 +44,6 @@ fragment itemFields on Item {
     done
     due
     pluginId
+    pluginFields
   }
 }

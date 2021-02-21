@@ -42,6 +42,7 @@ export type PluginItem = Item & {
   readonly pluginId: Scalars['String'];
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
+  readonly pluginFields: Scalars['String'];
 };
 
 export type File = Item & {

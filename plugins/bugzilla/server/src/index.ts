@@ -1,6 +1,11 @@
 import path from "path";
 
-import type { PluginDbMigration, DbMigrationHelper, ServerPlugin } from "@allthethings/types";
+import type {
+  PluginDbMigration,
+  DbMigrationHelper,
+  ServerPlugin,
+  PluginItemFields,
+} from "@allthethings/types";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 
@@ -25,6 +30,10 @@ class BuzillaPlugin implements ServerPlugin {
 
   public getDbMigrations(helper: DbMigrationHelper): PluginDbMigration[] {
     return buildMigrations(helper);
+  }
+
+  public getItemFields(): Promise<PluginItemFields> {
+    throw new Error("Unknown item");
   }
 }
 

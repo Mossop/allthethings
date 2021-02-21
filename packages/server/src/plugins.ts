@@ -8,6 +8,7 @@ import type {
   ServerPlugin,
   ServerPluginExport,
   PluginKnex,
+  PluginItemFields,
 } from "@allthethings/types";
 import { resolvePlugin } from "@allthethings/utils";
 
@@ -107,6 +108,16 @@ function getMigrationSource(schema: string, migrations: PluginDbMigration[]): Kn
 
 class PluginManager {
   private readonly plugins: Set<ServerPlugin> = new Set();
+
+  public async getItemFields(id: string, pluginId: string): Promise<PluginItemFields> {
+    for (let plugin of this.plugins) {
+      if (plugin.id == pluginId) {
+        return plugin.getItemFields(id);
+      }
+    }
+
+    throw new Error(`Item from unknown plugin ${pluginId}`);
+  }
 
   public getClientScripts(ctx: Koa.Context): string[] {
     let scripts: string[][] = [];

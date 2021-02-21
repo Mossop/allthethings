@@ -1,4 +1,4 @@
-import type { PluginItem } from "../schema/types";
+import type { PluginItem } from "../utils/state";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 

@@ -15,6 +15,9 @@ export interface DbMigrationHelper {
   readonly itemRef: CreateColumn;
 }
 
+export interface PluginItemFields {
+}
+
 export interface PluginDbMigration {
   readonly name: string;
 
@@ -29,6 +32,7 @@ export interface ServerPlugin {
   readonly serverMiddleware?: Koa.Middleware;
   readonly getClientScripts?: (ctx: Koa.Context) => string[];
   readonly getDbMigrations?: (helper: DbMigrationHelper) => PluginDbMigration[];
+  readonly getItemFields: (id: string) => Promise<PluginItemFields>;
 }
 
 export interface ClientPlugin {

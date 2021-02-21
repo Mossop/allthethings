@@ -1,5 +1,6 @@
 import type { DateTime } from "luxon";
 
+import PluginManager from "../plugins";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";
@@ -456,4 +457,10 @@ export class PluginItem extends ItemImpl<Db.PluginItemDbTable>
   public readonly pluginId = instanceFields<Db.PluginItemDbTable>()("pluginId");
   public readonly due = instanceFields<Db.PluginItemDbTable>()("due");
   public readonly done = instanceFields<Db.PluginItemDbTable>()("done");
+
+  public async pluginFields(): Promise<string> {
+    let pluginId = await this.pluginId();
+    let fields = await PluginManager.getItemFields(this.id, pluginId);
+    return JSON.stringify(fields);
+  }
 }

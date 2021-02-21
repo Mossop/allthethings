@@ -29,6 +29,7 @@ type PluginItem implements Item {
   pluginId: String!
   due: DateTime
   done: DateTime
+  pluginFields: String!
 }
 
 type File implements Item {

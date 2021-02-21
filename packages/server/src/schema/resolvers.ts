@@ -169,6 +169,7 @@ export type PluginItemResolvers<ContextType = ResolverContext, ParentType extend
   pluginId: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
+  pluginFields: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

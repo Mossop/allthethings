@@ -43,6 +43,7 @@ export type PluginItem = Item & {
   readonly pluginId: Scalars['String'];
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
+  readonly pluginFields: Scalars['String'];
 };
 
 export type File = Item & {
@@ -329,7 +330,7 @@ export type TaskFieldPolicy = {
 	done?: FieldPolicy<any> | FieldReadFunction<any>,
 	link?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type PluginItemKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'pluginId' | 'due' | 'done' | PluginItemKeySpecifier)[];
+export type PluginItemKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'pluginId' | 'due' | 'done' | 'pluginFields' | PluginItemKeySpecifier)[];
 export type PluginItemFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	summary?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -337,7 +338,8 @@ export type PluginItemFieldPolicy = {
 	created?: FieldPolicy<any> | FieldReadFunction<any>,
 	pluginId?: FieldPolicy<any> | FieldReadFunction<any>,
 	due?: FieldPolicy<any> | FieldReadFunction<any>,
-	done?: FieldPolicy<any> | FieldReadFunction<any>
+	done?: FieldPolicy<any> | FieldReadFunction<any>,
+	pluginFields?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type FileKeySpecifier = ('id' | 'summary' | 'archived' | 'created' | 'filename' | 'mimetype' | 'size' | FileKeySpecifier)[];
 export type FileFieldPolicy = {

@@ -1,3 +1,5 @@
+import type { PluginItemFields } from "@allthethings/types";
+
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import { useView } from "./view";
@@ -48,7 +50,7 @@ export type Link = State<Schema.Link, BaseItem>;
 export type Note = State<Schema.Note, BaseItem>;
 export type File = State<Schema.File, BaseItem>;
 export type Task = State<Schema.Task, BaseItem>;
-export type PluginItem = State<Schema.PluginItem, BaseItem>;
+export type PluginItem = StateO<Schema.PluginItem, "pluginFields", BaseItem>;
 
 export type Item = Task | Note | File | Link | PluginItem;
 export type TaskList = User | Project | Context;
@@ -99,8 +101,12 @@ export function isTask(val: GraphQLType): val is Task {
   return val.__typename == "Task";
 }
 
+export function isPluginItem(val: GraphQLType): val is PluginItem {
+  return val.__typename == "PluginItem";
+}
+
 export function isItem(val: GraphQLType): val is Task {
-  return isFile(val) || isNote(val) || isTask(val) || isLink(val);
+  return isFile(val) || isNote(val) || isTask(val) || isLink(val) || isPluginItem(val);
 }
 
 export function useUser(): User {
@@ -170,10 +176,26 @@ export function buildItems(
   parent: Inbox | TaskList | Section,
   items: readonly SchemaItem[],
 ): Item[] {
-  return items.map((item: SchemaItem): Item => ({
-    ...item,
-    parent,
-  }));
+  return items.map((item: SchemaItem): Item => {
+    if (isPluginItem(item)) {
+      let {
+        pluginFields,
+        ...fields
+      } = item;
+
+      let itemFields: PluginItemFields = JSON.parse(pluginFields);
+      return {
+        ...itemFields,
+        ...fields,
+        parent,
+      };
+    } else {
+      return {
+        ...item,
+        parent,
+      };
+    }
+  });
 }
 
 export interface ProjectEntries {
