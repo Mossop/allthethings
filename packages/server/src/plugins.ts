@@ -1,13 +1,30 @@
+import type Knex from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 
-import type { ServerPlugin, ServerPluginExport } from "@allthethings/types";
+import type { DbMigrationHelper, ServerPlugin, ServerPluginExport } from "@allthethings/types";
 import { resolvePlugin } from "@allthethings/utils";
 
 async function loadPlugin<C>(spec: string, config: C): Promise<ServerPlugin> {
   let { default: module } = await import(spec) as { default: ServerPluginExport };
   return resolvePlugin(module, config);
 }
+
+const migrationHelper: DbMigrationHelper = {
+  idColumn: (table: Knex.CreateTableBuilder): Knex.ColumnBuilder => {
+    return table.text("id");
+  },
+
+  userRef: (
+    table: Knex.CreateTableBuilder,
+    column: string,
+  ): Knex.ColumnBuilder => {
+    return table.text(column)
+      .references("User.id")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+  },
+};
 
 class PluginManager {
   private readonly plugins: Set<ServerPlugin> = new Set();
@@ -23,6 +40,36 @@ class PluginManager {
 
     let first = scripts.shift() ?? [];
     return first.concat(...scripts);
+  }
+
+  public async applyDbMigrations(knex: Knex): Promise<void> {
+    for (let plugin of this.plugins) {
+      if (!plugin.getDbMigrations) {
+        continue;
+      }
+
+      let migrateConfig = {
+        tableName: `${plugin.id}_migrations`,
+        migrationSource: plugin.getDbMigrations(migrationHelper),
+      };
+
+      await knex.migrate.latest(migrateConfig);
+    }
+  }
+
+  public async rollbackDbMigrations(knex: Knex, all: boolean = false): Promise<void> {
+    for (let plugin of this.plugins) {
+      if (!plugin.getDbMigrations) {
+        continue;
+      }
+
+      let migrateConfig = {
+        tableName: `${plugin.id}_migrations`,
+        migrationSource: plugin.getDbMigrations(migrationHelper),
+      };
+
+      await knex.migrate.rollback(migrateConfig, all);
+    }
   }
 
   public getSchemas(): Promise<string[]> {

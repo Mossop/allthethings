@@ -3,6 +3,7 @@ import { DateTime } from "luxon";
 import { types } from "pg";
 
 import type { DatabaseConfig } from "../config";
+import PluginManager from "../plugins";
 import DbMigrations from "./migrations";
 
 export function parseDate(val: string): DateTime {
@@ -38,10 +39,13 @@ export class DatabaseConnection {
     }
 
     let migrateConfig = {
+      tableName: "allthethings_migrations",
       migrationSource: new DbMigrations(),
     };
 
     await this.knex.migrate.latest(migrateConfig);
+
+    await PluginManager.applyDbMigrations(this.knex);
   }
 
   public async rollback(all: boolean = false): Promise<void> {
@@ -49,7 +53,10 @@ export class DatabaseConnection {
       throw new Error("Cannot rollback while in a transaction.");
     }
 
+    await PluginManager.rollbackDbMigrations(this.knex, all);
+
     let migrateConfig = {
+      tableName: "allthethings_migrations",
       migrationSource: new DbMigrations(),
     };
 

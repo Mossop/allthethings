@@ -1,8 +1,10 @@
 import path from "path";
 
-import type { ServerPlugin } from "@allthethings/types";
+import type { DbMigrationHelper, ServerPlugin } from "@allthethings/types";
 import type Koa from "koa";
 import koaStatic from "koa-static";
+
+import DbMigrationSource from "./db/migrations";
 
 class BuzillaPlugin implements ServerPlugin {
   public readonly id = "bugzilla";
@@ -19,6 +21,10 @@ class BuzillaPlugin implements ServerPlugin {
 
   public getClientScripts(): string[] {
     return [`/${this.id}/app.js`];
+  }
+
+  public getDbMigrations(helper: DbMigrationHelper): DbMigrationSource {
+    return new DbMigrationSource(helper);
   }
 }
 
