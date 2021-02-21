@@ -2,8 +2,17 @@ import type Knex from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 
-import type { DbMigrationHelper, ServerPlugin, ServerPluginExport } from "@allthethings/types";
+import type {
+  PluginDbMigration,
+  DbMigrationHelper,
+  ServerPlugin,
+  ServerPluginExport,
+  PluginKnex,
+} from "@allthethings/types";
 import { resolvePlugin } from "@allthethings/utils";
+
+import type { DbMigration } from "./db/migration";
+import { DbMigrationSource } from "./db/migration";
 
 async function loadPlugin<C>(spec: string, config: C): Promise<ServerPlugin> {
   let { default: module } = await import(spec) as { default: ServerPluginExport };
@@ -20,7 +29,8 @@ const migrationHelper: DbMigrationHelper = {
     column: string,
   ): Knex.ColumnBuilder => {
     return table.text(column)
-      .references("User.id")
+      .references("id")
+      .inTable("public.User")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   },
@@ -30,11 +40,70 @@ const migrationHelper: DbMigrationHelper = {
     column: string,
   ): Knex.ColumnBuilder => {
     return table.text(column)
-      .references("Item.id")
+      .references("id")
+      .inTable("public.Item")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   },
 };
+
+class WrappedKnex implements PluginKnex {
+  public constructor(private readonly knex: Knex, private readonly dbSchema: string) {
+  }
+
+  public get schema(): Knex.SchemaBuilder {
+    return this.knex.schema.withSchema(this.dbSchema);
+  }
+}
+
+class PluginMigration implements DbMigration {
+  public constructor(
+    private readonly schema: string,
+    private readonly migration: PluginDbMigration,
+  ) {
+  }
+
+  public get name(): string {
+    return this.migration.name;
+  }
+
+  public up(knex: Knex): Promise<void> {
+    return this.migration.up(new WrappedKnex(knex, this.schema));
+  }
+
+  public async down(knex: Knex): Promise<void> {
+    if (this.migration.down) {
+      await this.migration.down(new WrappedKnex(knex, this.schema));
+    }
+  }
+}
+
+class SchemaMigration implements DbMigration {
+  public readonly name = "Schema";
+
+  public constructor(private readonly schema: string) {
+  }
+
+  public async up(knex: Knex): Promise<void> {
+    await knex.raw("CREATE SCHEMA ??", [this.schema]);
+  }
+
+  public async down(knex: Knex): Promise<void> {
+    await knex.raw("DROP SCHEMA IF EXISTS ?? CASCADE", [this.schema]);
+  }
+}
+
+function getMigrationSource(schema: string, migrations: PluginDbMigration[]): Knex.MigratorConfig {
+  return {
+    tableName: `${schema}_migrations`,
+    migrationSource: new DbMigrationSource([
+      new SchemaMigration(schema),
+      ...migrations.map(
+        (migration: PluginDbMigration): DbMigration => new PluginMigration(schema, migration),
+      ),
+    ]),
+  };
+}
 
 class PluginManager {
   private readonly plugins: Set<ServerPlugin> = new Set();
@@ -58,12 +127,9 @@ class PluginManager {
         continue;
       }
 
-      let migrateConfig = {
-        tableName: `${plugin.id}_migrations`,
-        migrationSource: plugin.getDbMigrations(migrationHelper),
-      };
-
-      await knex.migrate.latest(migrateConfig);
+      await knex.migrate.latest(
+        getMigrationSource(plugin.id, plugin.getDbMigrations(migrationHelper)),
+      );
     }
   }
 
@@ -73,12 +139,10 @@ class PluginManager {
         continue;
       }
 
-      let migrateConfig = {
-        tableName: `${plugin.id}_migrations`,
-        migrationSource: plugin.getDbMigrations(migrationHelper),
-      };
-
-      await knex.migrate.rollback(migrateConfig, all);
+      await knex.migrate.rollback(
+        getMigrationSource(plugin.id, plugin.getDbMigrations(migrationHelper)),
+        all,
+      );
     }
   }
 

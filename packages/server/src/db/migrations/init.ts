@@ -255,6 +255,7 @@ export async function up(knex: Knex): Promise<void> {
 
 export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("SectionItem");
+  await knex.schema.dropTableIfExists("PluginItem");
   await knex.schema.dropTableIfExists("FileItem");
   await knex.schema.dropTableIfExists("NoteItem");
   await knex.schema.dropTableIfExists("LinkItem");

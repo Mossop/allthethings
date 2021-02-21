@@ -1,21 +1,21 @@
-import type { DbMigrationHelper } from "@allthethings/types";
-import type { default as Knex, Migration, MigrationSource } from "knex";
+import type { PluginDbMigration, DbMigrationHelper, PluginKnex } from "@allthethings/types";
+import type Knex from "knex";
 
-abstract class DbMigration implements Migration {
+abstract class Migration implements PluginDbMigration {
   public readonly abstract name: string;
 
   public constructor(protected readonly helper: DbMigrationHelper) {
   }
 
-  public abstract up(knex: Knex): Promise<void>;
-  public abstract down(knex: Knex): Promise<void>;
+  public abstract up(knex: PluginKnex): Promise<void>;
+  public abstract down(knex: PluginKnex): Promise<void>;
 }
 
-class BaseMigration extends DbMigration {
+class BaseMigration extends Migration {
   public readonly name = "base";
 
-  public async up(knex: Knex): Promise<void> {
-    await knex.schema.createTable("BugzillaAccount", (table: Knex.CreateTableBuilder): void => {
+  public async up(knex: PluginKnex): Promise<void> {
+    await knex.schema.createTable("Account", (table: Knex.CreateTableBuilder): void => {
       this.helper.idColumn(table, "id")
         .notNullable()
         .unique()
@@ -30,35 +30,13 @@ class BaseMigration extends DbMigration {
     });
   }
 
-  public async down(knex: Knex): Promise<void> {
-    await knex.schema.dropTableIfExists("BugzillaAccount");
+  public async down(knex: PluginKnex): Promise<void> {
+    await knex.schema.dropTableIfExists("Account");
   }
 }
 
-export default class DbMigrationSource implements MigrationSource<DbMigration> {
-  private _migrations: DbMigration[] | undefined;
-  public constructor(private readonly helper: DbMigrationHelper) {
-  }
-
-  private get migrations(): DbMigration[] {
-    if (!this._migrations) {
-      this._migrations = [
-        new BaseMigration(this.helper),
-      ];
-    }
-
-    return this._migrations;
-  }
-
-  public async getMigrations(): Promise<DbMigration[]> {
-    return this.migrations;
-  }
-
-  public getMigrationName(migration: DbMigration): string {
-    return migration.name;
-  }
-
-  public getMigration(migration: DbMigration): Migration {
-    return migration;
-  }
+export default function BuildMigrations(helper: DbMigrationHelper): Migration[] {
+  return [
+    new BaseMigration(helper),
+  ];
 }

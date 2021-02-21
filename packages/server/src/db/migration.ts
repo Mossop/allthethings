@@ -1,11 +1,12 @@
 import path from "path";
 
-import type { default as Knex, Migration } from "knex";
+import type { default as Knex, Migration, MigrationSource } from "knex";
 
-import type { DbMigration } from "../migration";
-import { DbMigrationSource } from "../migration";
+export interface DbMigration extends Migration {
+  readonly name: string;
+}
 
-class ModuleMigration implements DbMigration {
+export class ModuleMigration implements DbMigration {
   protected module: unknown | undefined;
   public readonly name: string;
 
@@ -34,6 +35,19 @@ class ModuleMigration implements DbMigration {
   }
 }
 
-export default new DbMigrationSource([
-  new ModuleMigration("./init", "Init"),
-]);
+export class DbMigrationSource implements MigrationSource<DbMigration> {
+  public constructor(private readonly migrations: DbMigration[]) {
+  }
+
+  public async getMigrations(): Promise<DbMigration[]> {
+    return this.migrations;
+  }
+
+  public getMigrationName(migration: DbMigration): string {
+    return migration.name;
+  }
+
+  public getMigration(migration: DbMigration): Migration {
+    return migration;
+  }
+}

@@ -40,7 +40,7 @@ export class DatabaseConnection {
 
     let migrateConfig = {
       tableName: "allthethings_migrations",
-      migrationSource: new DbMigrations(),
+      migrationSource: DbMigrations,
     };
 
     await this.knex.migrate.latest(migrateConfig);
@@ -57,7 +57,7 @@ export class DatabaseConnection {
 
     let migrateConfig = {
       tableName: "allthethings_migrations",
-      migrationSource: new DbMigrations(),
+      migrationSource: DbMigrations,
     };
 
     await this.knex.migrate.rollback(migrateConfig, all);
