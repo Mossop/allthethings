@@ -35,14 +35,4 @@ export interface ServerPlugin {
   readonly getItemFields: (id: string) => Promise<PluginItemFields>;
 }
 
-export interface ClientPlugin {
-  readonly id: string;
-}
-
 export type ServerPluginExport = MaybeCallable<Awaitable<ServerPlugin>, any>;
-export type ClientPluginExport = MaybeCallable<Awaitable<ClientPlugin>, any>;
-
-export function registerClientPlugin(plugin: ClientPluginExport): void {
-  // @ts-ignore
-  registerPlugin(plugin);
-}

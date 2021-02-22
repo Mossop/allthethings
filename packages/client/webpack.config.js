@@ -43,6 +43,8 @@ module.exports = {
     publicPath: "/app/",
     filename: "[name].[chunkhash].js",
     crossOriginLoading: "anonymous",
+    library: "AllTheThings",
+    libraryTarget: "umd",
   },
   stats: {
     env: true,

@@ -14,9 +14,6 @@
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
 
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
     "baseUrl": "./packages",
     "paths": {
       "@allthethings/utils": ["utils/src"],

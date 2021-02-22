@@ -38,6 +38,7 @@ module.exports = {
     "react": "React",
     "react-dom": "ReactDOM",
     "@material-ui/core": "MaterialUI",
+    "@allthethings/client": "AllTheThings",
   },
   optimization: {
     usedExports: true,

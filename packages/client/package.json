@@ -4,6 +4,8 @@
   "repository": "Mossop/allthethings",
   "license": "MIT",
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
+  "types": "./src/index.d.ts",
+  "typings": "./src/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "build-schema": "graphql-codegen",

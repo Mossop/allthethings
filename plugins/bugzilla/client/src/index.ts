@@ -1,8 +1,8 @@
-import type { ClientPlugin } from "@allthethings/types";
-import { registerClientPlugin } from "@allthethings/types";
+import type { ClientPlugin } from "@allthethings/client";
+import { PluginManager } from "@allthethings/client";
 
 class BugzillaPlugin implements ClientPlugin {
   public readonly id = "bugzilla";
 }
 
-registerClientPlugin(new BugzillaPlugin());
+void PluginManager.registerPlugin(new BugzillaPlugin());

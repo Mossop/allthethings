@@ -46,6 +46,7 @@ module.exports = {
           nonOptionalTypename: true,
         },
         "typescript-react-apollo": {
+          useTypeImports: true,
           withRefetchFn: true,
         },
         "add": {
