@@ -1,4 +1,4 @@
-import { CircularProgress,  createStyles, makeStyles  } from "@material-ui/core";
+import { CircularProgress, createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 

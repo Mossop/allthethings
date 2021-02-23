@@ -1,4 +1,4 @@
-import { AppBar,  createStyles, makeStyles  } from "@material-ui/core";
+import { AppBar, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactNode } from "react";

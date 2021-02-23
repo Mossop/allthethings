@@ -1,4 +1,4 @@
-import { List,  createStyles, makeStyles  } from "@material-ui/core";
+import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement } from "react";

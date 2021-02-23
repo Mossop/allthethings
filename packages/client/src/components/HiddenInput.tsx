@@ -1,4 +1,4 @@
-import { IconButton,  createStyles, makeStyles  } from "@material-ui/core";
+import { IconButton, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { KeyboardEvent } from "react";
