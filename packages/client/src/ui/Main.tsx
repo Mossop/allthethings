@@ -11,6 +11,7 @@ import { useMaybeView, ViewType } from "../utils/view";
 import Inbox from "./Inbox";
 import LoginDialog from "./LoginDialog";
 import NotFound from "./NotFound";
+import Settings from "./Settings";
 import TaskList from "./TaskList";
 
 const useStyles = makeStyles(() =>
@@ -51,6 +52,8 @@ function MainContent(): ReactResult {
       return <TaskList view={view}/>;
     case ViewType.NotFound:
       return <NotFound/>;
+    case ViewType.Settings:
+      return <Settings/>;
   }
 }
 

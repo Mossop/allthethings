@@ -15,6 +15,7 @@ export enum ViewType {
   TaskList = "tasklist",
   Inbox = "inbox",
   NotFound = "notfound",
+  Settings = "settings",
 }
 
 export interface BaseView {
@@ -22,33 +23,33 @@ export interface BaseView {
   readonly context: Context | null;
 }
 
-export type NotFoundView = BaseView & {
+export interface NotFoundView {
   readonly type: ViewType.NotFound;
-};
+}
 
-export type InboxView = BaseView & {
+export interface InboxView {
   readonly type: ViewType.Inbox;
-};
+}
 
-export type TaskListView = BaseView & {
+export interface TaskListView {
   readonly type: ViewType.TaskList;
   readonly taskList: TaskList;
-};
+}
 
-export type View =
-  LinkableView |
-  NotFoundView;
+export interface SettingsView {
+  readonly type: ViewType.Settings;
+}
+
+export type View = BaseView & (LinkableView | NotFoundView);
 
 export type LinkableView =
   InboxView |
-  TaskListView;
+  TaskListView |
+  SettingsView;
 
-export type NavigableView = {
+export type NavigableView = LinkableView & {
   context?: Context | null;
-} & (
-  Omit<InboxView, keyof BaseView | "context"> |
-  Omit<TaskListView, keyof BaseView | "context">
-);
+};
 
 export function useUrl(view: NavigableView): URL {
   let currentView = useView();
@@ -74,6 +75,13 @@ export function useView(): View {
   return view;
 }
 
+/**
+ * After the state updates we replace the current view with a new view.
+ *
+ * @param {View} view The previous view including the old state.
+ * @param {User} user The new user state.
+ * @returns The new view including the new state.
+ */
 function updateView(view: View, user: User): View {
   let base: BaseView = {
     user,
@@ -82,11 +90,8 @@ function updateView(view: View, user: User): View {
 
   switch (view.type) {
     case ViewType.NotFound:
-      return {
-        ...base,
-        type: view.type,
-      };
     case ViewType.Inbox:
+    case ViewType.Settings:
       return {
         ...base,
         type: view.type,
@@ -125,7 +130,7 @@ function updateView(view: View, user: User): View {
   }
 }
 
-export function viewToUrl(view: InboxView | TaskListView): URL {
+export function viewToUrl(view: LinkableView & BaseView): URL {
   let path: string;
   let searchParams = new URLSearchParams();
 
@@ -150,6 +155,8 @@ export function viewToUrl(view: InboxView | TaskListView): URL {
         path = "/";
       }
       break;
+    case ViewType.Settings:
+      path = "/settings";
   }
 
   let url = new URL(`${path}`, document.URL);
@@ -199,6 +206,15 @@ export function urlToView(user: User, url: URL): View {
       }
       return {
         type: ViewType.Inbox,
+        user,
+        context,
+      };
+    case "settings":
+      if (pathParts.length) {
+        return notFound;
+      }
+      return {
+        type: ViewType.Settings,
         user,
         context,
       };
@@ -286,8 +302,8 @@ export class NavigationHandler {
 }
 
 function buildView(
-  args: [view: LinkableView] | [view: NavigableView, currentView: View],
-): LinkableView {
+  args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View],
+): LinkableView & BaseView {
   if (args.length == 2) {
     let [newView, currentView] = args;
     return {
@@ -302,7 +318,7 @@ function buildView(
 }
 
 export function pushView(
-  ...args: [view: LinkableView] | [view: NavigableView, currentView: View]
+  ...args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View]
 ): void {
   let view = buildView(args);
 
@@ -310,7 +326,7 @@ export function pushView(
 }
 
 export function replaceView(
-  ...args: [view: LinkableView] | [view: NavigableView, currentView: View]
+  ...args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View]
 ): void {
   let view = buildView(args);
 
