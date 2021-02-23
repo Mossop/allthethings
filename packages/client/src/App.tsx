@@ -1,6 +1,10 @@
 import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
-import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
+import {
+  CssBaseline,
+  createMuiTheme,
+  ThemeProvider,
+} from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
 import Main from "./ui/Main";

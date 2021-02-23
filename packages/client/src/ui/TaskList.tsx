@@ -7,6 +7,7 @@ import { forwardRef, useCallback, useMemo } from "react";
 import HiddenInput from "../components/HiddenInput";
 import { ProjectIcon } from "../components/Icons";
 import ItemListActions from "../components/ItemListActions";
+import Page from "../components/Page";
 import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
 import { Heading, TextStyles } from "../components/Text";
 import {
@@ -28,6 +29,7 @@ import { flexRow, pageStyles, flexCentered } from "../utils/styles";
 import type { ReactRef, ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
 import type { TaskListView } from "../utils/view";
+import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -259,15 +261,17 @@ export default ReactMemo(function TaskList({
     return sections;
   }, [dragItem, dragResult, entries.sections, view.taskList]);
 
-  return <div className={classes.content}>
-    {header}
-    <List disablePadding={true}>
-      <List disablePadding={true} ref={itemsDropRef}>
-        <ItemList items={entries.items} taskList={view.taskList} section={null}/>
-      </List>
+  return <Page sidebar={<ProjectList/>}>
+    <div className={classes.content}>
+      {header}
       <List disablePadding={true}>
-        {sections}
+        <List disablePadding={true} ref={itemsDropRef}>
+          <ItemList items={entries.items} taskList={view.taskList} section={null}/>
+        </List>
+        <List disablePadding={true}>
+          {sections}
+        </List>
       </List>
-    </List>
-  </div>;
+    </div>
+  </Page>;
 });

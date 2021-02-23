@@ -27,12 +27,11 @@ import type {
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import type { Project, TaskList } from "../utils/state";
-import { useUser, useCurrentContext, useProjectRoot } from "../utils/state";
+import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
-import { pushUrl, useUrl, ViewType } from "../utils/view";
-import type { View } from "../utils/view";
+import { pushUrl, useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -269,16 +268,10 @@ const ProjectItem = ReactMemo(function ProjectItem({
   </>;
 });
 
-interface ProjectListProps {
-  view: View;
-}
-
-export default ReactMemo(function ProjectList({
-  view,
-}: ProjectListProps): ReactResult {
+export default ReactMemo(function ProjectList(): ReactResult {
   let classes = useStyles({ depth: 0 });
 
-  let user = useUser();
+  let view = useView();
   let root = useProjectRoot();
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
@@ -357,17 +350,17 @@ export default ReactMemo(function ProjectList({
   } = useDropArea(DragType.Item, {
     getDragResult: useCallback(
       (item: DraggedItem): ItemDragResult | null => {
-        if (item.item.parent == user.inbox) {
+        if (item.item.parent == view.user.inbox) {
           return null;
         }
 
         return {
           type: DragType.Item,
-          target: user.inbox,
+          target: view.user.inbox,
           before: null,
         };
       },
-      [user.inbox],
+      [view.user.inbox],
     ),
   });
 

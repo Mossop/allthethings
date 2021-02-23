@@ -1,10 +1,13 @@
 import { createStyles, makeStyles } from "@material-ui/core";
+import clsx from "clsx";
+import { useCallback, Suspense } from "react";
 
 import Loading from "../components/Loading";
 import Page from "../components/Page";
+import { useDropArea, AllDragTypes } from "../utils/drag";
+import { flexColumn } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { useMaybeView, ViewType } from "../utils/view";
-import type { View } from "../utils/view";
 import Inbox from "./Inbox";
 import LoginDialog from "./LoginDialog";
 import NotFound from "./NotFound";
@@ -15,15 +18,32 @@ const useStyles = makeStyles(() =>
     content: {
       flex: 1,
     },
+    outer: {
+      ...flexColumn,
+      height: "100vh",
+      width: "100vw",
+    },
+    loading: {
+      flex: 1,
+    },
   }));
 
-interface PageContentProps {
-  view: View;
-}
+function MainContent(): ReactResult {
+  let view = useMaybeView();
+  let classes = useStyles();
 
-function PageContent({
-  view,
-}: PageContentProps): ReactResult {
+  if (view === undefined) {
+    return <Page>
+      <Loading className={classes.content}/>
+    </Page>;
+  }
+
+  if (!view) {
+    return <Page>
+      <LoginDialog/>
+    </Page>;
+  }
+
   switch (view.type) {
     case ViewType.Inbox:
       return <Inbox/>;
@@ -34,23 +54,18 @@ function PageContent({
   }
 }
 
-export default function App(): ReactResult {
-  let state = useMaybeView();
+export default function Main(): ReactResult {
   let classes = useStyles();
 
-  if (state === undefined) {
-    return <Page>
-      <Loading className={classes.content}/>
-    </Page>;
-  }
+  let {
+    dropRef,
+  } = useDropArea(AllDragTypes, {
+    getDragResult: useCallback(() => null, []),
+  });
 
-  if (!state) {
-    return <Page>
-      <LoginDialog/>
-    </Page>;
-  }
-
-  return <Page>
-    <PageContent view={state}/>
-  </Page>;
+  return <div className={clsx(classes.outer)} ref={dropRef}>
+    <Suspense fallback={<Loading className={classes.loading}/>}>
+      <MainContent/>
+    </Suspense>
+  </div>;
 }
