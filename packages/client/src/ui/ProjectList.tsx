@@ -31,7 +31,7 @@ import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
-import { pushUrl, useUrl, useView, ViewType } from "../utils/view";
+import { pushClickedLink, useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -116,15 +116,6 @@ const Item = ReactMemo(forwardRef(function Item({
     label += ` (${taskCount})`;
   }
 
-  let click = useCallback((event: React.MouseEvent) => {
-    if (event.button != 0 || !url) {
-      return;
-    }
-
-    event.preventDefault();
-    pushUrl(url);
-  }, [url]);
-
   if (selected) {
     return <ListItem
       ref={ref}
@@ -143,7 +134,7 @@ const Item = ReactMemo(forwardRef(function Item({
       className={className}
       component="a"
       href={url.toString()}
-      onClick={click}
+      onClick={pushClickedLink}
     >
       <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
       <ListItemText>{label}</ListItemText>
