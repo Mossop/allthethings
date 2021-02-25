@@ -1,9 +1,6 @@
 import {
   Divider,
   List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
   Paper,
   createStyles,
   makeStyles,
@@ -16,6 +13,7 @@ import { useMemo, forwardRef, useState, useCallback } from "react";
 import mergeRefs from "react-merge-refs";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
+import SelectableListItem from "../components/SelectableListItem";
 import { nameSorted } from "../utils/collections";
 import type {
   DraggedItem,
@@ -31,7 +29,7 @@ import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
 import { ReactMemo } from "../utils/types";
 import type { ReactResult, ReactRef } from "../utils/types";
-import { pushClickedLink, useUrl, useView, ViewType } from "../utils/view";
+import { useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -116,41 +114,17 @@ const Item = ReactMemo(forwardRef(function Item({
     label += ` (${taskCount})`;
   }
 
-  if (selected) {
-    return <ListItem
-      ref={ref}
-      dense={true}
-      className={className}
-      component="div"
-    >
-      <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
-      <ListItemText>{label}</ListItemText>
-    </ListItem>;
-  } else if (url) {
-    return <ListItem
-      ref={ref}
-      dense={true}
-      button={true}
-      className={className}
-      component="a"
-      href={url.toString()}
-      onClick={pushClickedLink}
-    >
-      <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
-      <ListItemText>{label}</ListItemText>
-    </ListItem>;
-  } else {
-    return <ListItem
-      ref={ref}
-      dense={true}
-      button={true}
-      className={className}
-      onClick={onClick}
-    >
-      <ListItemIcon className={classes.icon}>{icon}</ListItemIcon>
-      <ListItemText>{label}</ListItemText>
-    </ListItem>;
-  }
+  return <SelectableListItem
+    ref={ref}
+    selected={selected ?? false}
+    className={className}
+    iconClassName={classes.icon}
+    icon={icon}
+    href={url?.toString()}
+    onClick={onClick}
+  >
+    {label}
+  </SelectableListItem>;
 }));
 
 interface ProjectItemProps {

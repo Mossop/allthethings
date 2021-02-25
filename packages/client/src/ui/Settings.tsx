@@ -10,11 +10,16 @@ import {
   ListItemIcon,
   ListItemText,
 } from "@material-ui/core";
+import SettingsIcon from "@material-ui/icons/Settings";
+import clsx from "clsx";
+import { Fragment, useCallback, createContext, useState, useContext } from "react";
+import type { ReactNode } from "react";
 
 import { BackIcon } from "../components/Icons";
 import Page from "../components/Page";
+import SelectableListItem from "../components/SelectableListItem";
 import { Text } from "../components/Text";
-import type { ClientPlugin, PluginSettingItem } from "../plugins";
+import type { ClientPlugin } from "../plugins";
 import { usePlugins } from "../plugins";
 import { useProjectRoot } from "../utils/state";
 import { flexCentered, flexRow, pageStyles } from "../utils/styles";
@@ -53,40 +58,68 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
     },
+    selectedItem: {
+      backgroundColor: theme.palette.text.secondary,
+      color: theme.palette.getContrastText(theme.palette.text.secondary),
+    },
   }));
 
-interface PluginSidebarItemsProps {
-  plugin: ClientPlugin;
+interface SectionContextProps {
+  setSection: (section: string) => void;
+  section: string;
 }
 
-function PluginSidebarItems({
-  plugin,
-}: PluginSidebarItemsProps): ReactResult {
+// eslint-disable-next-line @typescript-eslint/naming-convention
+let SectionContext = createContext<SectionContextProps>({
+  section: "general",
+  setSection: () => {
+    // no-op
+  },
+});
+
+export interface SettingSectionProps {
+  sectionId?: string;
+  icon?: ReactNode;
+  href?: string;
+  onClick?: () => void;
+  children: ReactNode;
+}
+
+export function SettingSection({
+  icon,
+  sectionId,
+  href,
+  onClick,
+  children,
+}: SettingSectionProps): ReactResult {
   let classes = useStyles();
-  let items = plugin.useSettingsItems();
+  let {
+    section,
+    setSection,
+  } = useContext(SectionContext);
 
-  if (items.length == 0) {
-    return null;
-  }
+  let click = useCallback(() => {
+    if (onClick) {
+      onClick();
+    }
 
-  return <>
-    <Divider className={classes.divider}/>
-    <List disablePadding={true}>
-      <ListSubheader className={classes.pluginHeader}>
-        {plugin.name}
-      </ListSubheader>
-      {
-        items.map((sidebarItem: PluginSettingItem) => <ListItem
-          key={sidebarItem.id}
-          dense={true}
-          className={classes.listitem}
-        >
-          <ListItemIcon className={classes.icon}>{sidebarItem.icon}</ListItemIcon>
-          <ListItemText>{sidebarItem.label}</ListItemText>
-        </ListItem>)
-      }
-    </List>
-  </>;
+    if (sectionId) {
+      setSection(sectionId);
+    }
+  }, [sectionId, onClick, setSection]);
+
+  let selected = section == sectionId;
+
+  return <SelectableListItem
+    selected={selected}
+    className={clsx(classes.listitem, selected && classes.selectedItem)}
+    onClick={click}
+    iconClassName={classes.icon}
+    icon={icon}
+    href={href}
+  >
+    {children}
+  </SelectableListItem>;
 }
 
 function SettingsSidebar(): ReactResult {
@@ -115,11 +148,23 @@ function SettingsSidebar(): ReactResult {
         <ListItemIcon className={classes.icon}><BackIcon/></ListItemIcon>
         <ListItemText>Back to Tasks</ListItemText>
       </ListItem>
+      <Divider className={classes.divider}/>
+      <SettingSection
+        sectionId="general"
+        icon={<SettingsIcon/>}
+      >
+        General
+      </SettingSection>
       {
-        plugins.map((plugin: ClientPlugin) => <PluginSidebarItems
-          key={plugin.id}
-          plugin={plugin}
-        />)
+        plugins.map((plugin: ClientPlugin) => <Fragment key={plugin.id}>
+          <Divider className={classes.divider}/>
+          <List disablePadding={true}>
+            <ListSubheader className={classes.pluginHeader}>
+              {plugin.name}
+            </ListSubheader>
+            {plugin.renderPluginSections()}
+          </List>
+        </Fragment>)
       }
     </List>
   </Paper>;
@@ -127,10 +172,13 @@ function SettingsSidebar(): ReactResult {
 
 export default ReactMemo(function Settings(): ReactResult {
   let classes = useStyles();
+  let [section, setSection] = useState<string>("general");
 
-  return <Page sidebar={<SettingsSidebar/>}>
-    <div className={classes.content}>
-      <Text>Settings</Text>
-    </div>
-  </Page>;
+  return <SectionContext.Provider value={{ section, setSection }}>
+    <Page sidebar={<SettingsSidebar/>}>
+      <div className={classes.content}>
+        <Text>Settings</Text>
+      </div>
+    </Page>
+  </SectionContext.Provider>;
 });

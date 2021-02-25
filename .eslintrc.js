@@ -30,6 +30,7 @@ module.exports = {
     "plugins/*/server/node_modules",
     "plugins/*/client/dist",
     "plugins/*/client/node_modules",
+    "packages/client/types",
   ],
 
   extends: [

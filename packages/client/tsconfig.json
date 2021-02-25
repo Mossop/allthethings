@@ -8,12 +8,12 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationDir": "types"
   },
   "references": [{
     "path": "../utils/tsconfig.json"
-  }, {
-    "path": "../types/tsconfig.json"
   }],
   "include": [
     "src/**/*.js",

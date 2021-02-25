@@ -1,17 +1,11 @@
 import type { ReactNode } from "react";
 import { useEffect, useState } from "react";
 
-export interface PluginSettingItem {
-  id: string;
-  icon: ReactNode;
-  label: string;
-}
-
 export interface ClientPlugin {
   readonly id: string;
   readonly name: string;
 
-  readonly useSettingsItems: () => PluginSettingItem[];
+  readonly renderPluginSections: () => ReactNode
 }
 
 export function usePlugins(): ClientPlugin[] {
@@ -45,7 +39,6 @@ class PluginManager implements ClientPluginManager {
   }
 
   public async registerPlugin(plugin: ClientPlugin): Promise<void> {
-    console.log("register", plugin.id);
     this.plugins.set(plugin.id, plugin);
 
     for (let listener of this.listeners) {

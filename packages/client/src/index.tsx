@@ -15,3 +15,5 @@ function init(): void {
 void init();
 
 export { default as PluginManager } from "./plugins";
+export type { ClientPlugin } from "./plugins";
+export { SettingSection } from "./ui/Settings";

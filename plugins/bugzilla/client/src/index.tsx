@@ -1,5 +1,6 @@
-import type { ClientPlugin, PluginSettingItem } from "@allthethings/client";
-import { PluginManager } from "@allthethings/client";
+import type { ClientPlugin } from "@allthethings/client";
+import { PluginManager, SettingSection } from "@allthethings/client";
+import type { ReactNode } from "react";
 
 import Icon from "./Icon";
 
@@ -7,14 +8,13 @@ class BugzillaPlugin implements ClientPlugin {
   public readonly id = "bugzilla";
   public readonly name = "Bugzilla";
 
-  public useSettingsItems(): PluginSettingItem[] {
-    return [{
-      id: "addaccount",
-      label: "Add Account",
-      icon: <Icon/>,
-    }];
+  public renderPluginSections(): ReactNode {
+    return <SettingSection
+      icon={<Icon/>}
+    >
+      Add Account
+    </SettingSection>;
   }
 }
 
-console.log("Start");
 void PluginManager.registerPlugin(new BugzillaPlugin());
