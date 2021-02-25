@@ -19,6 +19,7 @@ class BuzillaPlugin implements ServerPlugin {
 
   public constructor() {
     this.clientPath = path.dirname(require.resolve("@allthethings/bugzilla-client/dist/app.js"));
+
     this.serverMiddleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
     });

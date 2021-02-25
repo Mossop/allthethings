@@ -11,3 +11,4 @@ export { default as UncheckedIcon } from "@material-ui/icons/CheckBoxOutlineBlan
 export { default as CheckedIcon } from "@material-ui/icons/CheckBox";
 export { default as DragIcon } from "@material-ui/icons/DragIndicator";
 export { default as EditIcon } from "@material-ui/icons/Edit";
+export { default as BackIcon } from "@material-ui/icons/ArrowBack";

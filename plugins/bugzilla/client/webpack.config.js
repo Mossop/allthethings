@@ -5,7 +5,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 module.exports = {
   mode: "development",
   entry: {
-    app: path.join(__dirname, "src", "index.ts"),
+    app: path.join(__dirname, "src", "index.tsx"),
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
@@ -19,7 +19,10 @@ module.exports = {
     filename: "[name].js",
     crossOriginLoading: "anonymous",
   },
-  stats: "errors-warnings",
+  stats: {
+    env: true,
+    chunkModules: true,
+  },
   devtool: "source-map",
   module: {
     rules: [{
@@ -32,6 +35,9 @@ module.exports = {
           projectReferences: true,
         },
       }],
+    }, {
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
     }],
   },
   externals: {
@@ -39,13 +45,5 @@ module.exports = {
     "react-dom": "ReactDOM",
     "@material-ui/core": "MaterialUI",
     "@allthethings/client": "AllTheThings",
-  },
-  optimization: {
-    usedExports: true,
-    mangleExports: false,
-    splitChunks: {
-      chunks: "all",
-    },
-    chunkIds: "named",
   },
 };
