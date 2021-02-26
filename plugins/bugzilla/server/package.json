@@ -8,7 +8,8 @@
   "types": "dist/index",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "build": "tsc -b"
+    "build": "tsc -b",
+    "watch": "tsc -b -w"
   },
   "dependencies": {
     "@allthethings/bugzilla-client": "file:../client",

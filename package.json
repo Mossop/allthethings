@@ -9,6 +9,7 @@
     "clean": "lerna run clean",
     "build-schema": "lerna run build-schema",
     "build": "lerna run build-schema && lerna run build",
+    "watch": "npm run build && lerna run --parallel watch",
     "start": "cd packages/server && npm start -- ../../testing/config.json",
     "lint": "eslint ."
   },

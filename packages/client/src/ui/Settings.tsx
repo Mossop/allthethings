@@ -6,9 +6,6 @@ import {
   makeStyles,
   Paper,
   List,
-  ListItem,
-  ListItemIcon,
-  ListItemText,
 } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
 import clsx from "clsx";
@@ -25,7 +22,7 @@ import { useProjectRoot } from "../utils/state";
 import { flexCentered, flexRow, pageStyles } from "../utils/styles";
 import type { ReactResult } from "../utils/types";
 import { ReactMemo } from "../utils/types";
-import { pushClickedLink, useUrl, ViewType } from "../utils/view";
+import { useUrl, ViewType } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -137,17 +134,12 @@ function SettingsSidebar(): ReactResult {
     square={true}
   >
     <List component="div" className={classes.list}>
-      <ListItem
-        dense={true}
-        button={true}
-        className={classes.listitem}
-        component="a"
+      <SettingSection
         href={taskLink.toString()}
-        onClick={pushClickedLink}
+        icon={<BackIcon/>}
       >
-        <ListItemIcon className={classes.icon}><BackIcon/></ListItemIcon>
-        <ListItemText>Back to Tasks</ListItemText>
-      </ListItem>
+        Back to Tasks
+      </SettingSection>
       <Divider className={classes.divider}/>
       <SettingSection
         sectionId="general"
