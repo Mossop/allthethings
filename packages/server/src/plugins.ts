@@ -9,11 +9,17 @@ import type {
   ServerPluginExport,
   PluginKnex,
   PluginItemFields,
+  Resolver,
+  GraphQLContext,
+  TypeResolver,
+  TableRef,
 } from "@allthethings/types";
 import { resolvePlugin } from "@allthethings/utils";
 
+import { id } from "./db/connection";
 import type { DbMigration } from "./db/migration";
 import { DbMigrationSource } from "./db/migration";
+import type { ResolverContext } from "./schema/context";
 
 async function loadPlugin<C>(spec: string, config: C): Promise<ServerPlugin> {
   let { default: module } = await import(spec) as { default: ServerPluginExport };
@@ -48,13 +54,76 @@ const migrationHelper: DbMigrationHelper = {
   },
 };
 
-class WrappedKnex implements PluginKnex {
-  public constructor(private readonly knex: Knex, private readonly dbSchema: string) {
+function wrapKnex(knex: Knex, dbSchema: string): PluginKnex {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return Object.create(knex, {
+    schema: {
+      enumerable: true,
+      configurable: false,
+      get(): Knex.SchemaBuilder {
+        return knex.schema.withSchema(dbSchema);
+      },
+    },
+
+    transaction: {
+      enumerable: false,
+      configurable: false,
+      get(): never {
+        throw new Error("Plugins cannot access the transaction.");
+      },
+    },
+  });
+}
+
+function wrapContext(plugin: ServerPlugin, context: ResolverContext): GraphQLContext {
+  return {
+    userId: context.userId,
+
+    get knex(): PluginKnex {
+      return wrapKnex(context.db.knex, plugin.id);
+    },
+
+    get userTableRef(): TableRef {
+      return context.db.knex.ref("User").withSchema("public");
+    },
+
+    id(): Promise<string> {
+      return id();
+    },
+
+    tableRef(name: string): TableRef {
+      return context.db.knex.ref(name).withSchema(plugin.id);
+    },
+
+    // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
+    table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]> {
+      return this.knex.table(this.tableRef(name));
+    },
+  };
+}
+
+function wrapResolver(
+  plugin: ServerPlugin,
+  resolver: Resolver<GraphQLContext>,
+): Resolver<ResolverContext> {
+  let wrapped: Resolver<ResolverContext> = {};
+
+  for (let [type, typeResolver] of Object.entries(resolver)) {
+    let wrappedTypeResolver: TypeResolver<ResolverContext> = {};
+    wrapped[type] = wrappedTypeResolver;
+
+    for (let [fn, resolverFn] of Object.entries(typeResolver)) {
+      wrappedTypeResolver[fn] = (
+        parent: unknown,
+        args: unknown,
+        context: ResolverContext,
+      ): unknown => {
+        return resolverFn.call(typeResolver, parent, args, wrapContext(plugin, context));
+      };
+    }
   }
 
-  public get schema(): Knex.SchemaBuilder {
-    return this.knex.schema.withSchema(this.dbSchema);
-  }
+  return wrapped;
 }
 
 class PluginMigration implements DbMigration {
@@ -69,12 +138,12 @@ class PluginMigration implements DbMigration {
   }
 
   public up(knex: Knex): Promise<void> {
-    return this.migration.up(new WrappedKnex(knex, this.schema));
+    return this.migration.up(wrapKnex(knex, this.schema), migrationHelper);
   }
 
   public async down(knex: Knex): Promise<void> {
     if (this.migration.down) {
-      await this.migration.down(new WrappedKnex(knex, this.schema));
+      await this.migration.down(wrapKnex(knex, this.schema), migrationHelper);
     }
   }
 }
@@ -139,7 +208,7 @@ class PluginManager {
       }
 
       await knex.migrate.latest(
-        getMigrationSource(plugin.id, plugin.getDbMigrations(migrationHelper)),
+        getMigrationSource(plugin.id, plugin.getDbMigrations()),
       );
     }
   }
@@ -151,7 +220,7 @@ class PluginManager {
       }
 
       await knex.migrate.rollback(
-        getMigrationSource(plugin.id, plugin.getDbMigrations(migrationHelper)),
+        getMigrationSource(plugin.id, plugin.getDbMigrations()),
         all,
       );
     }
@@ -167,6 +236,21 @@ class PluginManager {
     }
 
     return Promise.all(promises);
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  public getResolvers(): Resolver<ResolverContext>[] {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let resolvers: Resolver<ResolverContext>[] = [];
+
+    for (let plugin of this.plugins) {
+      if (plugin.getResolvers) {
+        resolvers.push(wrapResolver(plugin, plugin.getResolvers()));
+      }
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return resolvers;
   }
 
   public registerServerMiddleware(app: Koa): void {

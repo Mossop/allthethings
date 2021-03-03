@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fs } from "fs";
 
-import { mergeTypeDefs } from "@graphql-tools/merge";
+import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
 import { ApolloServer } from "apollo-server-koa";
 import { GraphQLScalarType, Kind } from "graphql";
 import type { ValueNode } from "graphql";
@@ -28,7 +28,7 @@ type RootResolvers<ContextType = ResolverContext> = Overwrite<
   }
 >;
 
-export const resolvers: RootResolvers = {
+const rootResolvers: RootResolvers = {
   DateTime: new GraphQLScalarType({
     name: "DateTime",
     description: "DateTime",
@@ -85,14 +85,15 @@ export async function createGqlServer(): Promise<ApolloServer> {
     encoding: "utf8",
   });
 
-  let pluginSchemas = await PluginManager.getSchemas();
-
   return new ApolloServer({
     typeDefs: mergeTypeDefs([
       baseSchema,
-      ...pluginSchemas,
+      ...await PluginManager.getSchemas(),
     ]),
-    resolvers,
+    resolvers: mergeResolvers([
+      rootResolvers,
+      ...PluginManager.getResolvers(),
+    ]),
     context: buildContext,
     // @ts-ignore
     dataSources: () => dataSources(),

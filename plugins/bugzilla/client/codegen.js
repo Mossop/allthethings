@@ -1,0 +1,41 @@
+/* eslint-disable @typescript-eslint/naming-convention */
+const path = require("path");
+
+module.exports = {
+  overwrite: true,
+  schema: [
+    require.resolve("@allthethings/types/schema.graphql"),
+    path.join(__dirname, "..", "schema.graphql"),
+  ],
+  errorsOnly: true,
+  generates: {
+    [path.join(__dirname, "src", "schema.ts")]: {
+      documents: path.join(__dirname, "operations.graphql"),
+      plugins: {
+        "typescript": {
+          useIndexSignature: true,
+          useTypeImports: true,
+          immutableTypes: true,
+          scalars: {
+            DateTime: "luxon#DateTime",
+          },
+        },
+        "typescript-operations": {
+          avoidOptionals: true,
+          immutableTypes: true,
+          preResolveTypes: true,
+          useTypeImports: true,
+          onlyOperationTypes: true,
+          nonOptionalTypename: true,
+        },
+        "typescript-react-apollo": {
+          useTypeImports: true,
+          withRefetchFn: true,
+        },
+        "add": {
+          content: "/* eslint-disable */",
+        },
+      },
+    },
+  },
+};

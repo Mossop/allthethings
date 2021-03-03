@@ -1,5 +1,7 @@
 import type { DateTime } from "luxon";
 
+import type * as Types from "@allthethings/types";
+
 import PluginManager from "../plugins";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
@@ -164,7 +166,8 @@ abstract class ProjectRootImpl<
   }
 }
 
-export class User extends ProjectRootImpl<Db.UserDbTable> implements SchemaResolver<Schema.User> {
+export class User extends ProjectRootImpl<Db.UserDbTable>
+  implements SchemaResolver<Schema.User>, Types.User {
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }

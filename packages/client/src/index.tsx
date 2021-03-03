@@ -17,3 +17,6 @@ void init();
 export { default as PluginManager } from "./plugins";
 export type { ClientPlugin } from "./plugins";
 export { SettingSection } from "./ui/Settings";
+export { TextFieldInput, RadioGroupInput } from "./components/Forms";
+export { useBoolState } from "./utils/hooks";
+export * as Apollo from "@apollo/client";

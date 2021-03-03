@@ -2,10 +2,10 @@ import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type Knex from "knex";
-import { customAlphabet } from "nanoid/async";
 
 import type { ResolverContext } from "../schema/context";
 import type { DatabaseConnection } from "./connection";
+import { id } from "./connection";
 import type { ImplBuilder, Item } from "./implementations";
 import * as Impl from "./implementations";
 import * as Db from "./types";
@@ -13,10 +13,6 @@ import type { DbInsertObject, DbObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
-
-const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-
-const id = customAlphabet(ALPHABET, 28);
 
 export enum SectionIndex {
   Anonymous = -1,

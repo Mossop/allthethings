@@ -1,15 +1,18 @@
+import { promises as fs } from "fs";
 import path from "path";
 
 import type {
   PluginDbMigration,
-  DbMigrationHelper,
   ServerPlugin,
   PluginItemFields,
+  GraphQLContext,
+  Resolver,
 } from "@allthethings/types";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 
 import buildMigrations from "./db/migrations";
+import Resolvers from "./resolvers";
 
 class BuzillaPlugin implements ServerPlugin {
   public readonly id = "bugzilla";
@@ -25,12 +28,23 @@ class BuzillaPlugin implements ServerPlugin {
     });
   }
 
+  public getSchema(): Promise<string> {
+    let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
+    return fs.readFile(schemaFile, {
+      encoding: "utf8",
+    });
+  }
+
+  public getResolvers(): Resolver<GraphQLContext> {
+    return Resolvers;
+  }
+
   public getClientScripts(): string[] {
     return [`/${this.id}/app.js`];
   }
 
-  public getDbMigrations(helper: DbMigrationHelper): PluginDbMigration[] {
-    return buildMigrations(helper);
+  public getDbMigrations(): PluginDbMigration[] {
+    return buildMigrations();
   }
 
   public getItemFields(): Promise<PluginItemFields> {

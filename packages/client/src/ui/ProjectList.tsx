@@ -9,7 +9,7 @@ import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { useMemo, forwardRef, useState, useCallback } from "react";
+import { useMemo, forwardRef, useCallback } from "react";
 import mergeRefs from "react-merge-refs";
 
 import { AddProjectIcon, ProjectIcon, InboxIcon } from "../components/Icons";
@@ -24,6 +24,7 @@ import type {
   SectionDragResult,
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
+import { useBoolState } from "../utils/hooks";
 import type { Project, TaskList } from "../utils/state";
 import { useCurrentContext, useProjectRoot } from "../utils/state";
 import { dragging } from "../utils/styles";
@@ -241,13 +242,11 @@ export default ReactMemo(function ProjectList(): ReactResult {
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
 
-  let [showCreateProjectDialog, setShowCreateProjectDialog] = useState(false);
-  let openCreateProjectDialog = useCallback(() => {
-    setShowCreateProjectDialog(true);
-  }, []);
-  let closeCreateProjectDialog = useCallback(() => {
-    setShowCreateProjectDialog(false);
-  }, []);
+  let [
+    showCreateProjectDialog,
+    openCreateProjectDialog,
+    closeCreateProjectDialog,
+  ] = useBoolState(false);
 
   let inboxUrl = useUrl({
     type: ViewType.Inbox,

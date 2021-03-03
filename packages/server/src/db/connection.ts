@@ -1,5 +1,6 @@
 import Knex from "knex";
 import { DateTime } from "luxon";
+import { customAlphabet } from "nanoid/async";
 import { types } from "pg";
 
 import type { DatabaseConfig } from "../config";
@@ -12,6 +13,10 @@ export function parseDate(val: string): DateTime {
 
 types.setTypeParser(types.builtins.INT8, BigInt);
 types.setTypeParser(types.builtins.TIMESTAMPTZ, parseDate);
+
+const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+export const id = customAlphabet(ALPHABET, 28);
 
 export class DatabaseConnection {
   private _transaction: Knex.Transaction | null = null;

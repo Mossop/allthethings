@@ -6,6 +6,7 @@
   "author": "Dave Townsend <dtownsend@oxymoronical.com>",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build-schema": "graphql-codegen",
     "build": "webpack",
     "watch": "webpack --watch"
   },

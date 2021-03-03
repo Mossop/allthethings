@@ -1,0 +1,14 @@
+type BugzillaAccount {
+  id: ID!
+  icon: String
+  url: String!
+  username: String!
+}
+
+type User {
+  bugzillaAccounts: [BugzillaAccount!]!
+}
+
+type Mutation {
+  createBugzillaAccount(url: String!, username: String!, password: String): BugzillaAccount!
+}

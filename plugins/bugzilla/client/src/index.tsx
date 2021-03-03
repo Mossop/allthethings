@@ -1,19 +1,57 @@
 import type { ClientPlugin } from "@allthethings/client";
-import { PluginManager, SettingSection } from "@allthethings/client";
-import type { ReactNode } from "react";
+import { useBoolState, PluginManager, SettingSection } from "@allthethings/client";
+import type { ReactNode, ReactElement } from "react";
+import { useCallback } from "react";
 
+import AccountDialog from "./AccountDialog";
 import Icon from "./Icon";
+import { useListBugzillaAccountsQuery } from "./schema";
+
+interface BugzillaAccount {
+  id: string;
+  icon: string | null;
+  url: string;
+}
+function SettingSections(): ReactElement {
+  let [
+    showAccountDialog,
+    openAccountDialog,
+    closeAccountDialog,
+  ] = useBoolState(false);
+
+  let onAccountCreated = useCallback(() => {
+    closeAccountDialog();
+  }, []);
+
+  let { data } = useListBugzillaAccountsQuery();
+  let accounts = data?.user?.bugzillaAccounts ?? [];
+
+  return <>
+    {accounts.map((account: BugzillaAccount) => <SettingSection
+      sectionId={`bugzilla:${account.url}`}
+      icon={<Icon/>}
+    >
+      {account.url}
+    </SettingSection>)}
+    <SettingSection
+      icon={<Icon/>}
+      onClick={openAccountDialog}
+    >
+      Add Account
+    </SettingSection>
+    {showAccountDialog && <AccountDialog
+      onClose={closeAccountDialog}
+      onAccountCreated={onAccountCreated}
+    />}
+  </>;
+}
 
 class BugzillaPlugin implements ClientPlugin {
   public readonly id = "bugzilla";
   public readonly name = "Bugzilla";
 
   public renderPluginSections(): ReactNode {
-    return <SettingSection
-      icon={<Icon/>}
-    >
-      Add Account
-    </SettingSection>;
+    return <SettingSections/>;
   }
 }
 

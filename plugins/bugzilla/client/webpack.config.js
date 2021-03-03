@@ -45,5 +45,6 @@ module.exports = {
     "react-dom": "ReactDOM",
     "@material-ui/core": "MaterialUI",
     "@allthethings/client": "AllTheThings",
+    "@apollo/client": "AllTheThings.Apollo",
   },
 };

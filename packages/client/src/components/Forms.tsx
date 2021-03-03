@@ -1,5 +1,5 @@
 import type { OutlinedInputProps } from "@material-ui/core";
-import { OutlinedInput } from "@material-ui/core";
+import { FormControlLabel, Radio, RadioGroup, OutlinedInput } from "@material-ui/core";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
 
@@ -77,5 +77,40 @@ export const TextFieldInput = ReactMemo(
       value={value}
       onChange={change}
     />;
+  },
+);
+
+type RadioValue<T, K extends keyof T> = [T[K], string];
+
+type RadioGroupInputProps<T, K extends keyof T> = FieldProps<T, K> & {
+  values: RadioValue<T, K>[]
+};
+
+export const RadioGroupInput = ReactMemo(
+  function RadioGroupInput<T, K extends keyof T>({
+    state,
+    setState,
+    stateKey,
+    values,
+  }: RadioGroupInputProps<T, K>): ReactElement {
+    let value = useMemo(() => state[stateKey], [state, stateKey]);
+
+    let onChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      setState((state: T): T => ({
+        ...state,
+        [stateKey]: event.target.value,
+      }));
+    }, [setState, stateKey]);
+
+    return <RadioGroup value={value} onChange={onChange}>
+      {
+        values.map(([value, label]: RadioValue<T, K>) => <FormControlLabel
+          key={String(value)}
+          value={value}
+          control={<Radio/>}
+          label={label}
+        />)
+      }
+    </RadioGroup>;
   },
 );
