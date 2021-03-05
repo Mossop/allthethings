@@ -15,6 +15,7 @@
   "dependencies": {
     "@allthethings/bugzilla-client": "file:../client",
     "@allthethings/types": "file:../../../packages/types",
+    "bugzilla": "^0.1.1",
     "koa-static": "^5.0.0"
   },
   "devDependencies": {

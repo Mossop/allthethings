@@ -1,4 +1,4 @@
-import { RadioGroupInput, TextFieldInput, useBoolState } from "@allthethings/client";
+import { RadioGroupInput, TextFieldInput, useBoolState, Error } from "@allthethings/client";
 import {
   Button,
   Dialog,
@@ -18,6 +18,7 @@ import {
 } from "./schema";
 
 enum AuthType {
+  Public = "public",
   Password = "password",
   ApiKey = "apikey",
 }
@@ -40,7 +41,7 @@ export default function AccountDialog({
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount] = useCreateBugzillaAccountMutation({
+  let [createAccount, { error }] = useCreateBugzillaAccountMutation({
     variables: {
       url: state.url,
       username: state.auth == AuthType.Password ? state.username : state.key,
@@ -65,6 +66,7 @@ export default function AccountDialog({
     <form onSubmit={submit}>
       <DialogTitle>Add Bugzilla Account</DialogTitle>
       <DialogContent>
+        {error && <Error error={error}/>}
         <FormControl margin="normal" variant="outlined">
           <InputLabel htmlFor="name">Address:</InputLabel>
           <TextFieldInput
@@ -85,6 +87,7 @@ export default function AccountDialog({
             setState={setState}
             stateKey="auth"
             values={[
+              [AuthType.Public, "Unauthenticated"],
               [AuthType.Password, "Password"],
               [AuthType.ApiKey, "API Key"],
             ]}
@@ -92,43 +95,44 @@ export default function AccountDialog({
         </FormControl>
 
         {
-          state.auth == AuthType.Password
-            ? <>
-              <FormControl margin="normal" variant="outlined">
-                <InputLabel htmlFor="name">Username:</InputLabel>
-                <TextFieldInput
-                  id="username"
-                  label="Username:"
-                  state={state}
-                  setState={setState}
-                  stateKey="username"
-                  required={true}
-                />
-              </FormControl>
-
-              <FormControl margin="normal" variant="outlined">
-                <InputLabel htmlFor="name">Password:</InputLabel>
-                <TextFieldInput
-                  id="password"
-                  label="Password:"
-                  state={state}
-                  setState={setState}
-                  stateKey="password"
-                  required={true}
-                />
-              </FormControl>
-            </>
-            : <FormControl margin="normal" variant="outlined">
-              <InputLabel htmlFor="name">API Key:</InputLabel>
+          state.auth == AuthType.Password && <>
+            <FormControl margin="normal" variant="outlined">
+              <InputLabel htmlFor="name">Username:</InputLabel>
               <TextFieldInput
-                id="apikey"
-                label="API Key:"
+                id="username"
+                label="Username:"
                 state={state}
                 setState={setState}
-                stateKey="key"
+                stateKey="username"
                 required={true}
               />
             </FormControl>
+
+            <FormControl margin="normal" variant="outlined">
+              <InputLabel htmlFor="name">Password:</InputLabel>
+              <TextFieldInput
+                id="password"
+                label="Password:"
+                state={state}
+                setState={setState}
+                stateKey="password"
+                required={true}
+              />
+            </FormControl>
+          </>
+        }
+        {
+          state.auth == AuthType.ApiKey && <FormControl margin="normal" variant="outlined">
+            <InputLabel htmlFor="name">API Key:</InputLabel>
+            <TextFieldInput
+              id="apikey"
+              label="API Key:"
+              state={state}
+              setState={setState}
+              stateKey="key"
+              required={true}
+            />
+          </FormControl>
         }
       </DialogContent>
       <DialogActions>

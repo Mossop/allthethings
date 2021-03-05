@@ -2,7 +2,7 @@ type BugzillaAccount {
   id: ID!
   icon: String
   url: String!
-  username: String!
+  username: String
 }
 
 type User {
@@ -10,5 +10,5 @@ type User {
 }
 
 type Mutation {
-  createBugzillaAccount(url: String!, username: String!, password: String): BugzillaAccount!
+  createBugzillaAccount(url: String!, username: String, password: String): BugzillaAccount!
 }

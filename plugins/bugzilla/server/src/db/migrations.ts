@@ -16,7 +16,7 @@ class BaseMigration implements PluginDbMigration {
       table.text("url")
         .notNullable();
       table.text("username")
-        .notNullable();
+        .nullable();
       table.text("icon")
         .nullable();
       table.text("password")

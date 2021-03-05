@@ -20,3 +20,4 @@ export { SettingSection } from "./ui/Settings";
 export { TextFieldInput, RadioGroupInput } from "./components/Forms";
 export { useBoolState } from "./utils/hooks";
 export * as Apollo from "@apollo/client";
+export { default as Error } from "./components/Error";
