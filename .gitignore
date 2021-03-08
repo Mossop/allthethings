@@ -3,7 +3,7 @@
 /packages/*/dist
 /plugins/*/*/dist
 /plugins/*/*/node_modules
-/packages/client/types
+/packages/ui/types
 /.vscode
 .*
 *.tsbuildinfo

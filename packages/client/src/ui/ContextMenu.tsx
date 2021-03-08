@@ -2,7 +2,9 @@ import { Button, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/c
 import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
-import { ContextIcon } from "../components/Icons";
+import { Icons, Styles, ReactMemo, pushUrl } from "@allthethings/ui";
+import type { ReactRef, ReactResult } from "@allthethings/ui";
+
 import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { nameSorted } from "../utils/collections";
 import type { Context, ProjectRoot } from "../utils/state";
@@ -12,17 +14,14 @@ import {
   useCurrentContext,
   useContexts,
 } from "../utils/state";
-import { flexRow } from "../utils/styles";
-import type { ReactRef, ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import type { NavigableView } from "../utils/view";
-import { pushUrl, ViewType, useView, useUrl } from "../utils/view";
+import { ViewType, useView, useUrl } from "../utils/view";
 import CreateContextDialog from "./CreateContextDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     button: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       minWidth: "auto",
       textTransform: "none",
@@ -124,7 +123,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       color="inherit"
       {...bindTrigger(contextMenuState)}
     >
-      <ContextIcon className={classes.icon}/>
+      <Icons.ContextIcon className={classes.icon}/>
       {currentContext && <div className={classes.context}>{currentContext.name}</div>}
     </Button>
     <Menu

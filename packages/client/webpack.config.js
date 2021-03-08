@@ -2,7 +2,6 @@ const path = require("path");
 
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
-const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 
 const lock = require("../../package-lock.json");
 const externals = require("./externals.json");
@@ -17,7 +16,6 @@ function buildExternals(mode) {
       publicPath: false,
       attributes: {
         crossorigin: true,
-        nonce: "{% nonce %}",
       },
       external: {
         packageName: pkg.id,
@@ -34,17 +32,13 @@ module.exports = {
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
-    plugins: [
-      new TsconfigPathsPlugin(),
-    ],
   },
   output: {
     path: path.join(__dirname, "dist", "app"),
     publicPath: "/app/",
-    filename: "[name].[chunkhash].js",
+    filename: "[name].js",
     crossOriginLoading: "anonymous",
-    library: "AllTheThings",
-    libraryTarget: "umd",
+    clean: true,
   },
   stats: {
     env: true,
@@ -64,6 +58,9 @@ module.exports = {
       }],
     }],
   },
+  externals: {
+    "@apollo/client": "AllTheThingsUI.Apollo",
+  },
   plugins: [
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, "dist", "index.html"),
@@ -80,15 +77,23 @@ module.exports = {
           publicPath: false,
         },
         ...buildExternals("development"),
+        {
+          type: "js",
+          path: "/ui/ui.js",
+          publicPath: false,
+          attributes: {
+            crossorigin: true,
+          },
+          external: {
+            packageName: "@allthethings/ui",
+            variableName: "AllTheThingsUI",
+          },
+        },
       ],
     }),
   ],
   optimization: {
     usedExports: true,
     mangleExports: false,
-    splitChunks: {
-      chunks: "all",
-    },
-    chunkIds: "named",
   },
 };

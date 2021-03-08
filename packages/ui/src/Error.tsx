@@ -3,11 +3,11 @@ import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import alpha from "color-alpha";
 
-import { flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import { ErrorIcon } from "./Icons";
+import { flexRow } from "./styles";
 import { Info } from "./Text";
+import type { ReactResult } from "./types";
+import { ReactMemo } from "./types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -31,7 +31,7 @@ interface ErrorsProps {
   error: ApolloError;
 }
 
-export default ReactMemo(function Errors({
+export const Error = ReactMemo(function Errors({
   error,
 }: ErrorsProps): ReactResult {
   let classes = useStyles();

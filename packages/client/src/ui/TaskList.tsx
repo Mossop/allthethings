@@ -4,12 +4,12 @@ import clsx from "clsx";
 import type { ReactElement } from "react";
 import { forwardRef, useCallback, useMemo } from "react";
 
-import HiddenInput from "../components/HiddenInput";
-import { ProjectIcon } from "../components/Icons";
+import { Icons, Styles, Heading, TextStyles, HiddenInput, ReactMemo } from "@allthethings/ui";
+import type { ReactRef, ReactResult } from "@allthethings/ui";
+
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
-import { Heading, TextStyles } from "../components/Text";
 import {
   useEditContextMutation,
   useEditProjectMutation,
@@ -25,16 +25,13 @@ import type {
   User,
 } from "../utils/state";
 import { isUser, buildEntries, isProject } from "../utils/state";
-import { flexRow, pageStyles, flexCentered } from "../utils/styles";
-import type { ReactRef, ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import type { TaskListView } from "../utils/view";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     icon: {
-      ...flexCentered,
+      ...Styles.flexCentered,
     },
     dragHandle: {
       cursor: "grab",
@@ -43,11 +40,11 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "none",
     },
     content: {
-      ...pageStyles(theme),
+      ...Styles.pageStyles(theme),
       flex: 1,
     },
     heading: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       paddingBottom: theme.spacing(1),
       borderBottomWidth: 1,
@@ -55,7 +52,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottomStyle: "solid",
     },
     headingDragPreview: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
     },
     tasksHeading: {
@@ -75,7 +72,7 @@ const UserHeader = ReactMemo(forwardRef(function TasksHeader({
 
   return <div ref={ref} className={classes.heading}>
     <div className={classes.icon}>
-      <ProjectIcon/>
+      <Icons.ProjectIcon/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
     <ItemListActions list={user}/>
@@ -106,7 +103,7 @@ const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
 
   return <div ref={ref} className={classes.heading}>
     <div className={classes.icon}>
-      <ProjectIcon/>
+      <Icons.ProjectIcon/>
     </div>
     <HiddenInput
       className={classes.headingInput}
@@ -146,7 +143,7 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
   return <div ref={ref} className={clsx(classes.heading)}>
     <div className={classes.headingDragPreview} ref={previewRef}>
       <div ref={dragRef} className={classes.icon}>
-        <ProjectIcon className={classes.dragHandle}/>
+        <Icons.ProjectIcon className={classes.dragHandle}/>
       </div>
       <HiddenInput
         className={classes.headingInput}

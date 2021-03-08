@@ -1,8 +1,8 @@
-import type { PluginContext } from "@allthethings/types";
+import type { PluginContext } from "@allthethings/server";
 
 import type { BugzillaAccount, MutationCreateBugzillaAccountArgs } from "../schema";
 
-type Impl<T> = Required<Omit<T, "__typename">>;
+type Impl<T> = Omit<T, "__typename">;
 
 export class Account implements Impl<BugzillaAccount> {
   public constructor(private readonly record: Impl<BugzillaAccount>) {
@@ -20,7 +20,7 @@ export class Account implements Impl<BugzillaAccount> {
     return this.record.url;
   }
 
-  public get username(): string {
+  public get username(): string | null {
     return this.record.username;
   }
 

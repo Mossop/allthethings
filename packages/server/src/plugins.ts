@@ -2,6 +2,12 @@ import type Knex from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 
+import { resolvePlugin } from "@allthethings/utils";
+
+import { id } from "./db/connection";
+import type { DbMigration } from "./db/migration";
+import { DbMigrationSource } from "./db/migration";
+import type { ResolverContext } from "./schema/context";
 import type {
   PluginDbMigration,
   DbMigrationHelper,
@@ -13,13 +19,7 @@ import type {
   GraphQLContext,
   TypeResolver,
   TableRef,
-} from "@allthethings/types";
-import { resolvePlugin } from "@allthethings/utils";
-
-import { id } from "./db/connection";
-import type { DbMigration } from "./db/migration";
-import { DbMigrationSource } from "./db/migration";
-import type { ResolverContext } from "./schema/context";
+} from "./types";
 
 async function loadPlugin<C>(spec: string, config: C): Promise<ServerPlugin> {
   let { default: module } = await import(spec) as { default: ServerPluginExport };

@@ -8,12 +8,8 @@
     ],
     "incremental": true,
     "rootDir": "./src",
+    "declaration": true,
   },
-  "references": [{
-    "path": "../utils/tsconfig.json"
-  }, {
-    "path": "../types/tsconfig.json"
-  }],
   "include": [
     "src/**/*.ts"
   ]

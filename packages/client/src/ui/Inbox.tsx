@@ -1,15 +1,13 @@
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
-import { InboxIcon } from "../components/Icons";
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, Icons, Styles, Heading } from "@allthethings/ui";
+
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
-import { Heading } from "../components/Text";
 import { useUser } from "../utils/state";
-import { flexRow, pageStyles } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -19,11 +17,11 @@ const useStyles = makeStyles((theme: Theme) =>
       position: "relative",
     },
     content: {
-      ...pageStyles(theme),
+      ...Styles.pageStyles(theme),
       flex: 1,
     },
     heading: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       paddingBottom: theme.spacing(1),
       marginBottom: theme.spacing(1),
@@ -45,7 +43,7 @@ export default ReactMemo(function Inbox(): ReactResult {
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
       <div className={classes.heading}>
-        <InboxIcon/>
+        <Icons.InboxIcon/>
         <Heading className={classes.headingText}>Inbox</Heading>
         <ItemListActions list={user.inbox}/>
       </div>

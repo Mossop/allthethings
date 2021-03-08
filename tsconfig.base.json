@@ -13,11 +13,5 @@
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
-
-    "baseUrl": "./packages",
-    "paths": {
-      "@allthethings/utils": ["utils/src"],
-      "@allthethings/types": ["types/src"]
-    }
   }
 }

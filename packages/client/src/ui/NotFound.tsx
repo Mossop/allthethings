@@ -1,17 +1,16 @@
 import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, Styles, Text } from "@allthethings/ui";
+
 import Page from "../components/Page";
-import { Text } from "../components/Text";
-import { pageStyles } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     content: {
-      ...pageStyles(theme),
+      ...Styles.pageStyles(theme),
       flex: 1,
     },
   }));

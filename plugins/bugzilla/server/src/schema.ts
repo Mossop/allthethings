@@ -17,9 +17,9 @@ export type Scalars = {
 export type BugzillaAccount = {
   readonly __typename?: 'BugzillaAccount';
   readonly id: Scalars['ID'];
-  readonly icon?: Maybe<Scalars['String']>;
+  readonly icon: Maybe<Scalars['String']>;
   readonly url: Scalars['String'];
-  readonly username: Scalars['String'];
+  readonly username: Maybe<Scalars['String']>;
 };
 
 export type User = {
@@ -35,8 +35,8 @@ export type Mutation = {
 
 export type MutationCreateBugzillaAccountArgs = {
   url: Scalars['String'];
-  username: Scalars['String'];
-  password?: Maybe<Scalars['String']>;
+  username: Maybe<Scalars['String']>;
+  password: Maybe<Scalars['String']>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -140,7 +140,7 @@ export type BugzillaAccountResolvers<ContextType = any, ParentType extends Resol
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   icon: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  username: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  username: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -150,7 +150,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url' | 'username'>>;
+  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url'>>;
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{

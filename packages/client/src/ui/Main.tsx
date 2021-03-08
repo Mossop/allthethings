@@ -2,11 +2,11 @@ import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import { useCallback, Suspense } from "react";
 
-import Loading from "../components/Loading";
+import { Loading, Styles } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+
 import Page from "../components/Page";
 import { useDropArea, AllDragTypes } from "../utils/drag";
-import { flexColumn } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
 import { useMaybeView, ViewType } from "../utils/view";
 import Inbox from "./Inbox";
 import LoginDialog from "./LoginDialog";
@@ -20,7 +20,7 @@ const useStyles = makeStyles(() =>
       flex: 1,
     },
     outer: {
-      ...flexColumn,
+      ...Styles.flexColumn,
       height: "100vh",
       width: "100vw",
     },

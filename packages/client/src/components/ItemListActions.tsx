@@ -1,6 +1,9 @@
 import { IconButton, createStyles, makeStyles } from "@material-ui/core";
 import { useMemo } from "react";
 
+import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+
 import {
   useDeleteContextMutation,
   useDeleteProjectMutation,
@@ -12,7 +15,6 @@ import {
 } from "../schema/queries";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
 import TaskDialog from "../ui/TaskDialog";
-import { useBoolState } from "../utils/hooks";
 import type { Inbox, Section, TaskList } from "../utils/state";
 import {
   isTaskList,
@@ -23,17 +25,13 @@ import {
   isUser,
   isProject,
 } from "../utils/state";
-import { flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import { ViewType, replaceView, useView } from "../utils/view";
-import { SectionIcon, DeleteIcon, CheckedIcon } from "./Icons";
 
 const useStyles = makeStyles(() =>
   createStyles({
     actions: {
       flex: 1,
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       justifyContent: "end",
     },
@@ -112,9 +110,9 @@ export default ReactMemo(function ItemListActions({
 
   return <>
     <div className={classes.actions}>
-      <IconButton onClick={openAddTask}><CheckedIcon/></IconButton>
-      {isTaskList(list) && <IconButton onClick={openAddSection}><SectionIcon/></IconButton>}
-      {deleteList && <IconButton onClick={deleteList}><DeleteIcon/></IconButton>}
+      <IconButton onClick={openAddTask}><Icons.CheckedIcon/></IconButton>
+      {isTaskList(list) && <IconButton onClick={openAddSection}><Icons.SectionIcon/></IconButton>}
+      {deleteList && <IconButton onClick={deleteList}><Icons.DeleteIcon/></IconButton>}
     </div>
     {taskAddDialogOpen && <TaskDialog list={list} onClose={closeAddTask}/>}
     {

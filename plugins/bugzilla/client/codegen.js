@@ -4,7 +4,7 @@ const path = require("path");
 module.exports = {
   overwrite: true,
   schema: [
-    require.resolve("@allthethings/types/schema.graphql"),
+    require.resolve("@allthethings/schema/schema.graphql"),
     path.join(__dirname, "..", "schema.graphql"),
   ],
   errorsOnly: true,
@@ -16,6 +16,7 @@ module.exports = {
           useIndexSignature: true,
           useTypeImports: true,
           immutableTypes: true,
+          avoidOptionals: true,
           scalars: {
             DateTime: "luxon#DateTime",
           },

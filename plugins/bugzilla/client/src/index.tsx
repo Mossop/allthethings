@@ -1,5 +1,5 @@
-import type { ClientPlugin } from "@allthethings/client";
-import { useBoolState, PluginManager, SettingSection } from "@allthethings/client";
+import { useBoolState, SettingSection, PluginManager } from "@allthethings/ui";
+import type { ClientPlugin } from "@allthethings/ui";
 import type { ReactNode, ReactElement } from "react";
 import { useCallback } from "react";
 

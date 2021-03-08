@@ -1,15 +1,14 @@
-import type { Location, To, Update } from "history";
-import { createBrowserHistory } from "history";
+import type { Location, Update } from "history";
 import { useState, useMemo, useEffect, createContext, useContext } from "react";
+
+import type { ReactChildren, ReactResult } from "@allthethings/ui";
+import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 
 import { useListContextStateQuery } from "../schema/queries";
 import type { Context, Inbox, Project, ProjectRoot, TaskList, User } from "./state";
 import { buildItems, buildProjects, isContext, isUser, isProject } from "./state";
-import type { ReactChildren, ReactResult } from "./types";
 
 const ViewContext = createContext<View | null | undefined>(undefined);
-
-export const history = createBrowserHistory();
 
 export enum ViewType {
   TaskList = "tasklist",
@@ -331,50 +330,6 @@ export function replaceView(
   let view = buildView(args);
 
   replaceUrl(viewToUrl(view));
-}
-
-export function pushUrl(url: URL | string): void {
-  if (typeof url == "string") {
-    url = new URL(url, document.documentURI);
-  }
-
-  let {
-    pathname,
-    search,
-  } = url;
-
-  let to: To = {
-    pathname,
-    search: search.length > 1 ? search : "",
-  };
-
-  history.push(to);
-}
-
-export function replaceUrl({ pathname, search }: URL): void {
-  let to: To = {
-    pathname,
-    search: search.length > 1 ? search : "",
-  };
-
-  history.replace(to);
-}
-
-export function pushClickedLink(event: React.MouseEvent<HTMLElement>): void {
-  if (event.button != 0) {
-    return;
-  }
-
-  let currentTarget: HTMLElement | null = event.currentTarget;
-  while (currentTarget) {
-    if (currentTarget instanceof HTMLAnchorElement) {
-      event.preventDefault();
-      pushUrl(currentTarget.href);
-      return;
-    }
-
-    currentTarget = currentTarget.parentElement;
-  }
 }
 
 export function ViewListener({ children }: ReactChildren): ReactResult {

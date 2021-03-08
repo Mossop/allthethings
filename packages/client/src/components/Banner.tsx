@@ -1,12 +1,12 @@
 import { AppBar, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
+import { Styles, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+
 import ContextMenu from "../ui/ContextMenu";
 import UserMenu from "../ui/UserMenu";
 import { useUser } from "../utils/state";
-import { flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import { useMaybeView } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -16,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingBottom: theme.spacing(1),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       justifyContent: "space-between",
     },
@@ -26,7 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     pageControls: {
       fontSize: "1rem",
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       columnGap: theme.spacing(2),
     },

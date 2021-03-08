@@ -6,19 +6,17 @@ import { useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
+import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
-import { useBoolState } from "../utils/hooks";
 import type { Item, Item as ItemState, Section, TaskList } from "../utils/state";
-import { dragging, flexCentered, flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import FileItem from "./FileItem";
-import { DragIcon, DeleteIcon, EditIcon } from "./Icons";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import PluginItem from "./PluginItem";
@@ -27,7 +25,7 @@ import TaskItem from "./TaskItem";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     item: {
-      ...flexRow,
+      ...Styles.flexRow,
       "alignItems": "center",
       "fontSize": "1.1rem",
       "&:hover": {
@@ -37,28 +35,28 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dragPreview: {
       flex: 1,
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
     },
     hidden: {
       display: "none",
     },
     dragging: {
-      ...dragging,
+      ...Styles.dragging,
     },
     dragHandleContainer: {
-      ...flexCentered,
+      ...Styles.flexCentered,
     },
     dragHandle: {
       cursor: "grab",
     },
     itemInner: {
       flex: 1,
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
     },
     actions: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       justifyContent: "end",
     },
@@ -136,7 +134,7 @@ export const ItemDragMarker = ReactMemo(function ItemDragMarker({
   >
     <div className={classes.dragPreview}>
       <div className={classes.dragHandleContainer}>
-        <DragIcon className={classes.dragHandle}/>
+        <Icons.DragIcon className={classes.dragHandle}/>
       </div>
       <div className={classes.itemInner}>
         {
@@ -235,7 +233,7 @@ export default ReactMemo(function Item({
     >
       <div className={classes.dragPreview} ref={previewRef}>
         <div className={classes.dragHandleContainer} ref={dragRef}>
-          <DragIcon className={classes.dragHandle}/>
+          <Icons.DragIcon className={classes.dragHandle}/>
         </div>
         <div className={classes.itemInner}>
           {
@@ -250,10 +248,10 @@ export default ReactMemo(function Item({
       </div>
       <div className={classes.actions}>
         <IconButton onClick={openEditDialog}>
-          <EditIcon/>
+          <Icons.EditIcon/>
         </IconButton>
         <IconButton onClick={deleteItem}>
-          <DeleteIcon/>
+          <Icons.DeleteIcon/>
         </IconButton>
       </div>
     </ListItem>

@@ -13,6 +13,7 @@
     "watch": "webpack --watch"
   },
   "dependencies": {
+    "@allthethings/ui": "file:../ui",
     "@allthethings/utils": "file:../utils",
     "@apollo/client": "^3.3.6",
     "@material-ui/core": "^4.11.2",
@@ -45,7 +46,6 @@
     "html-webpack-plugin": "^4.5.1",
     "html-webpack-tags-plugin": "^2.0.17",
     "ts-loader": "^8.0.14",
-    "tsconfig-paths-webpack-plugin": "^3.3.0",
     "typescript": "^4.1.0",
     "webpack": "^5.12.3",
     "webpack-cli": "^4.3.1"

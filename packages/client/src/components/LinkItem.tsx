@@ -1,6 +1,7 @@
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo } from "@allthethings/ui";
+
 import type { Link } from "../utils/state";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 
 interface LinkItemProps {
   item: Link;

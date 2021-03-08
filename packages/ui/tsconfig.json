@@ -8,7 +8,9 @@
       "DOM",
       "DOM.Iterable"
     ],
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "declaration": true,
+    "declarationDir": "types"
   },
   "include": [
     "src/**/*.js",

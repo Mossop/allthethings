@@ -1,4 +1,4 @@
-import { RadioGroupInput, TextFieldInput, useBoolState, Error } from "@allthethings/client";
+import { RadioGroupInput, TextFieldInput, useBoolState, Error } from "@allthethings/ui";
 import {
   Button,
   Dialog,

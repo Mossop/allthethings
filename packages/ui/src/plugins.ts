@@ -9,11 +9,11 @@ export interface ClientPlugin {
 }
 
 export function usePlugins(): ClientPlugin[] {
-  let [plugins, setPlugins] = useState(manager.getPlugins());
+  let [plugins, setPlugins] = useState(PluginManager.getPlugins());
 
   useEffect(() => {
-    return manager.listen(() => {
-      setPlugins(manager.getPlugins());
+    return PluginManager.listen(() => {
+      setPlugins(PluginManager.getPlugins());
     });
   }, []);
 
@@ -24,7 +24,7 @@ export interface ClientPluginManager {
   registerPlugin: (pluginExport: ClientPlugin) => Promise<void>;
 }
 
-class PluginManager implements ClientPluginManager {
+class PluginManagerImpl implements ClientPluginManager {
   private plugins: Map<string, ClientPlugin> = new Map();
   private listeners: Set<(plugin: ClientPlugin) => void> = new Set();
 
@@ -47,5 +47,4 @@ class PluginManager implements ClientPluginManager {
   }
 }
 
-const manager = new PluginManager();
-export default manager;
+export const PluginManager = new PluginManagerImpl();

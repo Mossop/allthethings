@@ -81,7 +81,7 @@ const rootResolvers: RootResolvers = {
 };
 
 export async function createGqlServer(): Promise<ApolloServer> {
-  let baseSchema = await fs.readFile(require.resolve("@allthethings/types/schema.graphql"), {
+  let baseSchema = await fs.readFile(require.resolve("@allthethings/schema/schema.graphql"), {
     encoding: "utf8",
   });
 

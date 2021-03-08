@@ -3,8 +3,8 @@ import { Box, createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import { forwardRef } from "react";
 
-import type { ReactRef, ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
+import type { ReactRef, ReactResult } from "./types";
+import { ReactMemo } from "./types";
 
 type Classes = typeof useTextStyles extends () => Record<infer K, unknown> ? K : never;
 

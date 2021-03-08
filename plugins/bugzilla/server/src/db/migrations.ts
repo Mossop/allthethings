@@ -1,4 +1,4 @@
-import type { PluginDbMigration, DbMigrationHelper, PluginKnex } from "@allthethings/types";
+import type { PluginDbMigration, DbMigrationHelper, PluginKnex } from "@allthethings/server";
 import type Knex from "knex";
 
 class BaseMigration implements PluginDbMigration {

@@ -2,8 +2,8 @@ import { ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import type { ForwardedRef, ReactNode } from "react";
 import { forwardRef } from "react";
 
-import type { ReactResult } from "../utils/types";
-import { pushClickedLink } from "../utils/view";
+import type { ReactResult } from "./types";
+import { pushClickedLink } from "./url";
 
 export interface SelectableListItemProps {
   selected: boolean;
@@ -15,7 +15,7 @@ export interface SelectableListItemProps {
   href?: string;
 }
 
-export default forwardRef(function SelectableListItem(
+export const SelectableListItem = forwardRef(function SelectableListItem(
   {
     selected,
     className,

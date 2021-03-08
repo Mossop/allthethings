@@ -2,8 +2,7 @@
 import type Knex from "knex";
 import type Koa from "koa";
 
-export type MaybeCallable<T, C> = T | ((config: C) => T);
-export type Awaitable<T> = T | Promise<T>;
+import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 
 export type PluginKnex = Omit<Knex, "transaction">;
 

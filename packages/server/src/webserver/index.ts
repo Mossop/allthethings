@@ -21,6 +21,7 @@ export async function createWebServer(
   let htmlFile = require.resolve("@allthethings/client/dist/index.html");
 
   let clientRoot = path.dirname(htmlFile);
+  let uiRoot = path.dirname(require.resolve("@allthethings/ui/dist/ui.js"));
   let context = await buildContext(config, db);
 
   let app = new koa();
@@ -33,6 +34,14 @@ export async function createWebServer(
   app.use(koaMount(
     "/app",
     koaStatic(path.join(clientRoot, "app"), {
+      maxAge: 1000 * 60 * 60 * 365,
+      immutable: true,
+    }),
+  ));
+
+  app.use(koaMount(
+    "/ui",
+    koaStatic(uiRoot, {
       maxAge: 1000 * 60 * 60 * 365,
       immutable: true,
     }),

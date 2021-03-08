@@ -7,7 +7,7 @@ import type {
   PluginItemFields,
   GraphQLContext,
   Resolver,
-} from "@allthethings/types";
+} from "@allthethings/server";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 

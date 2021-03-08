@@ -1,8 +1,9 @@
-import type { PluginItemFields } from "@allthethings/types";
-
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import { useView } from "./view";
+
+export interface PluginItemFields {
+}
 
 type Writable<T> = {
   -readonly [K in keyof T]: T[K];

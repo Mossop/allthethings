@@ -1,10 +1,9 @@
 import type { DateTime } from "luxon";
 
-import type * as Types from "@allthethings/types";
-
 import PluginManager from "../plugins";
 import type { ResolverContext } from "../schema/context";
 import type * as Schema from "../schema/types";
+import type * as Types from "../types";
 import * as Src from "./datasources";
 import type * as Db from "./types";
 

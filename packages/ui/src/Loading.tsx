@@ -2,8 +2,8 @@ import { CircularProgress, createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import type { HTMLAttributes } from "react";
 
-import { flexCentered } from "../utils/styles";
-import { ReactMemo } from "../utils/types";
+import { flexCentered } from "./styles";
+import { ReactMemo } from "./types";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -12,7 +12,7 @@ const useStyles = makeStyles(() =>
     },
   }));
 
-export default ReactMemo(function Loading({
+export const Loading = ReactMemo(function Loading({
   className,
   ...divProps
 }: HTMLAttributes<HTMLDivElement>): React.ReactElement {

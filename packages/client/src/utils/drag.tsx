@@ -14,6 +14,9 @@ import {
 } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
+import type { ReactChildren, ReactResult } from "@allthethings/ui";
+import { ReactMemo } from "@allthethings/ui";
+
 import {
   useMoveItemMutation,
   useMoveProjectMutation,
@@ -22,8 +25,6 @@ import {
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { Inbox, Item, Project, Section, TaskList } from "./state";
 import { isTaskList, isSection } from "./state";
-import type { ReactChildren, ReactResult } from "./types";
-import { ReactMemo } from "./types";
 
 function shallowEqual<T>(a: T | null | undefined, b: T | null | undefined): boolean {
   if (Object.is(a, b)) {

@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
   overwrite: true,
-  schema: require.resolve("@allthethings/types/schema.graphql"),
+  schema: require.resolve("@allthethings/schema/schema.graphql"),
   errorsOnly: true,
   generates: {
     [path.join(__dirname, "src", "schema", "types.ts")]: {

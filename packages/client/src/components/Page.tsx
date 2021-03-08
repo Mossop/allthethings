@@ -2,22 +2,22 @@ import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
-import { flexColumn, flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, Styles } from "@allthethings/ui";
+
 import Banner from "./Banner";
 
 const useStyles = makeStyles(() =>
   createStyles({
     outer: {
-      ...flexColumn,
+      ...Styles.flexColumn,
       height: "100vh",
       width: "100vw",
     },
     contentSplit: {
       flex: 1,
       height: "100%",
-      ...flexRow,
+      ...Styles.flexRow,
     },
   }));
 

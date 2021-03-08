@@ -12,6 +12,7 @@ module.exports = {
           useIndexSignature: true,
           useTypeImports: true,
           immutableTypes: true,
+          avoidOptionals: true,
           scalars: {
             DateTime: "luxon#DateTime",
           },

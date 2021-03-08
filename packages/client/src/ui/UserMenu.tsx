@@ -2,12 +2,13 @@ import { Avatar, IconButton, Menu, MenuItem, createStyles, makeStyles } from "@m
 import md5 from "md5";
 import { useCallback } from "react";
 
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo } from "@allthethings/ui";
+
 import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { useLogoutMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import type { User } from "../utils/state";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
 import { pushView, useView, ViewType } from "../utils/view";
 
 function avatarSources(email: string): string[] {

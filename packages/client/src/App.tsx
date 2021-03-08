@@ -7,9 +7,10 @@ import {
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
+import type { ReactResult } from "@allthethings/ui";
+
 import Main from "./ui/Main";
 import { DragTracker } from "./utils/drag";
-import type { ReactResult } from "./utils/types";
 import { ViewListener } from "./utils/view";
 
 const base = createMuiTheme();

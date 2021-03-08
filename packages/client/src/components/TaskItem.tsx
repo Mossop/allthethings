@@ -3,14 +3,13 @@ import { IconButton } from "@material-ui/core";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
-import type { Overwrite } from "utils/src/types";
+import { Icons, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+import type { Overwrite } from "@allthethings/utils";
 
 import { useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { Task } from "../utils/state";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
-import { CheckedIcon, UncheckedIcon } from "./Icons";
 import type { ItemRenderProps } from "./Item";
 
 export type TaskItemProps = Overwrite<ItemRenderProps, {
@@ -47,7 +46,7 @@ export default ReactMemo(function TaskItem({
 
   return <>
     <IconButton onClick={toggle}>
-      {item.done ? <CheckedIcon/> : <UncheckedIcon/>}
+      {item.done ? <Icons.CheckedIcon/> : <Icons.UncheckedIcon/>}
     </IconButton>
     <div>{item.summary}</div>
   </>;

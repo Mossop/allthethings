@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Resolver, GraphQLContext, User } from "@allthethings/types";
+import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import BugzillaAPI from "bugzilla";
 
 import { Account } from "./db/implementations";

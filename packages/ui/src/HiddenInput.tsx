@@ -4,11 +4,11 @@ import clsx from "clsx";
 import type { KeyboardEvent } from "react";
 import { useRef, useCallback, useState } from "react";
 
-import { flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
-import { useFieldState } from "./Forms";
 import { SaveIcon, CancelIcon } from "./Icons";
+import { flexRow } from "./styles";
+import type { ReactResult } from "./types";
+import { ReactMemo } from "./types";
+import { useFieldState } from "./Forms";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -50,7 +50,7 @@ export interface HiddenInputProps {
   onSubmit: (value: string) => void;
 }
 
-export default ReactMemo(function HiddenInput({
+export const HiddenInput = ReactMemo(function HiddenInput({
   initialValue,
   className,
   onSubmit,

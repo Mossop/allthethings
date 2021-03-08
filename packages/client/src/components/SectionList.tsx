@@ -6,30 +6,27 @@ import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@allthethings/ui";
+
 import { useEditSectionMutation } from "../schema/mutations";
 import { indexOf, item } from "../utils/collections";
 import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
 import type { Item, Section, TaskList } from "../utils/state";
-import { dragging, flexCentered, flexRow } from "../utils/styles";
-import type { ReactResult } from "../utils/types";
-import { ReactMemo } from "../utils/types";
-import HiddenInput from "./HiddenInput";
-import { SectionIcon } from "./Icons";
 import ItemDisplay, { ItemDragMarker } from "./Item";
 import ItemListActions from "./ItemListActions";
-import { TextStyles, SubHeading } from "./Text";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     icon: {
-      ...flexCentered,
+      ...Styles.flexCentered,
     },
     dragHandle: {
       cursor: "grab",
     },
     dragging: {
-      ...dragging,
+      ...Styles.dragging,
     },
     hidden: {
       display: "none",
@@ -38,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
     },
     sectionHeading: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
       color: theme.palette.text.primary,
       paddingBottom: theme.spacing(1),
@@ -48,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderTopStyle: "solid",
     },
     sectionDragPreview: {
-      ...flexRow,
+      ...Styles.flexRow,
       alignItems: "center",
     },
     sectionHeadingInput: TextStyles.subheading,
@@ -134,7 +131,7 @@ export function SectionDragMarker({
     >
       <div className={classes.sectionDragPreview}>
         <div className={classes.icon}>
-          <SectionIcon className={classes.dragHandle}/>
+          <Icons.SectionIcon className={classes.dragHandle}/>
         </div>
         <SubHeading className={classes.sectionDragHeading}>{section.name}</SubHeading>
       </div>
@@ -238,7 +235,7 @@ export default ReactMemo(function SectionList({
     >
       <div className={classes.sectionDragPreview} ref={previewRef}>
         <div className={classes.icon} ref={dragRef}>
-          <SectionIcon className={classes.dragHandle}/>
+          <Icons.SectionIcon className={classes.dragHandle}/>
         </div>
         <HiddenInput
           className={classes.sectionHeadingInput}

@@ -27,3 +27,5 @@ async function init(): Promise<void> {
 }
 
 init().catch((e: Error) => console.error(e));
+
+export * from "./types";

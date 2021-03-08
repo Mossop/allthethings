@@ -3,16 +3,18 @@ const path = require("path");
 module.exports = {
   mode: "development",
   entry: {
-    app: path.join(__dirname, "src", "index.tsx"),
+    ui: path.join(__dirname, "src", "index.ts"),
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
   },
   output: {
     path: path.join(__dirname, "dist"),
-    publicPath: "/bugzilla/",
+    publicPath: "/ui/",
     filename: "[name].js",
     crossOriginLoading: "anonymous",
+    library: "AllTheThingsUI",
+    libraryTarget: "umd",
     clean: true,
   },
   stats: {
@@ -31,18 +33,12 @@ module.exports = {
           projectReferences: true,
         },
       }],
-    }, {
-      test: /\.svg$/,
-      use: ["@svgr/webpack"],
     }],
   },
   externals: {
     "react": "React",
     "react-dom": "ReactDOM",
     "@material-ui/core": "MaterialUI",
-    "@allthethings/client": "AllTheThings",
-    "@allthethings/ui": "AllTheThingsUI",
-    "@apollo/client": "AllTheThingsUI.Apollo",
   },
   optimization: {
     usedExports: true,
