@@ -1,9 +1,8 @@
+import { Icons, Styles, ReactMemo, pushUrl } from "@allthethings/ui";
+import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { Button, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo, useState } from "react";
-
-import { Icons, Styles, ReactMemo, pushUrl } from "@allthethings/ui";
-import type { ReactRef, ReactResult } from "@allthethings/ui";
 
 import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { nameSorted } from "../utils/collections";
@@ -161,6 +160,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       }
       <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>
     </Menu>
-    {showCreateDialog && <CreateContextDialog onClose={closeCreateDialog}/>}
+    {showCreateDialog && <CreateContextDialog onClosed={closeCreateDialog}/>}
   </>;
 });

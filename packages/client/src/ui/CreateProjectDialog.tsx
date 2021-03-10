@@ -1,16 +1,6 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
-import { useEffect, useMemo, useState, useCallback } from "react";
-
-import { Error, TextFieldInput, ReactMemo, useBoolState } from "@allthethings/ui";
+import { ReactMemo, useBoolState, Dialog, TextFieldInput } from "@allthethings/ui";
+import type { ReactElement } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { useCreateProjectMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
@@ -19,12 +9,12 @@ import { useProjectRoot } from "../utils/state";
 import { useView, pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
-  onClose: () => void;
+  onClosed: () => void;
   taskList: TaskList;
 }
 
 export default ReactMemo(function CreateProjectDialog({
-  onClose,
+  onClosed,
   taskList,
 }: CreateProjectProps): ReactElement {
   let [state, setState] = useState({
@@ -66,32 +56,21 @@ export default ReactMemo(function CreateProjectDialog({
     close();
   }, [newProject, close, view]);
 
-  let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    void createProject();
-  }, [createProject]);
-
-  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
-    <form onSubmit={submit}>
-      <DialogTitle>Create Project</DialogTitle>
-      <DialogContent>
-        {error && <Error error={error}/>}
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="name">Name:</InputLabel>
-          <TextFieldInput
-            id="name"
-            label="Name:"
-            state={state}
-            setState={setState}
-            stateKey="name"
-            autoFocus={true}
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={close} variant="contained">Cancel</Button>
-      </DialogActions>
-    </form>
+  return <Dialog
+    title="Create Project"
+    submitLabel="Create"
+    error={error}
+    isOpen={isOpen}
+    onClose={close}
+    onClosed={onClosed}
+    onSubmit={createProject}
+  >
+    <TextFieldInput
+      id="name"
+      label="Name:"
+      state={state}
+      setState={setState}
+      stateKey="name"
+    />
   </Dialog>;
 });

@@ -1,3 +1,13 @@
+import type { ClientPlugin, ReactResult } from "@allthethings/ui";
+import {
+  SectionContext,
+  SettingSection,
+  usePlugins,
+  ReactMemo,
+  Icons,
+  Styles,
+  Text,
+} from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import {
   Divider,
@@ -9,17 +19,6 @@ import {
 } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useState } from "react";
-
-import type { ClientPlugin, ReactResult } from "@allthethings/ui";
-import {
-  SectionContext,
-  SettingSection,
-  usePlugins,
-  ReactMemo,
-  Icons,
-  Styles,
-  Text,
-} from "@allthethings/ui";
 
 import Page from "../components/Page";
 import { useProjectRoot } from "../utils/state";

@@ -4,11 +4,11 @@ import clsx from "clsx";
 import type { KeyboardEvent } from "react";
 import { useRef, useCallback, useState } from "react";
 
+import { useFieldState } from "./Forms";
 import { SaveIcon, CancelIcon } from "./Icons";
 import { flexRow } from "./styles";
 import type { ReactResult } from "./types";
 import { ReactMemo } from "./types";
-import { useFieldState } from "./Forms";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

@@ -1,15 +1,5 @@
-import { RadioGroupInput, TextFieldInput, useBoolState, Error } from "@allthethings/ui";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-  FormLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
+import { RadioGroupInput, TextFieldInput, Dialog, useBoolState } from "@allthethings/ui";
+import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import {
@@ -25,12 +15,12 @@ enum AuthType {
 
 interface AccountDialogProps {
   onAccountCreated: (section: string) => void;
-  onClose: () => void;
+  onClosed: () => void;
 }
 
 export default function AccountDialog({
   onAccountCreated,
-  onClose,
+  onClosed,
 }: AccountDialogProps): ReactElement {
   let [state, setState] = useState({
     url: "",
@@ -52,8 +42,7 @@ export default function AccountDialog({
     ],
   });
 
-  let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
+  let submit = useCallback(async (): Promise<void> => {
     let { data: account } = await createAccount();
     if (!account) {
       return;
@@ -62,83 +51,67 @@ export default function AccountDialog({
     onAccountCreated(account.createBugzillaAccount.id);
   }, []);
 
-  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
-    <form onSubmit={submit}>
-      <DialogTitle>Add Bugzilla Account</DialogTitle>
-      <DialogContent>
-        {error && <Error error={error}/>}
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="name">Address:</InputLabel>
-          <TextFieldInput
-            id="url"
-            label="Address:"
-            state={state}
-            setState={setState}
-            stateKey="url"
-            required={true}
-            autoFocus={true}
-          />
-        </FormControl>
+  return <Dialog
+    title="Add Bugzilla Account"
+    submitLabel="Add"
+    error={error}
+    isOpen={isOpen}
+    onClose={close}
+    onClosed={onClosed}
+    onSubmit={submit}
+  >
+    <TextFieldInput
+      id="url"
+      label="Address:"
+      state={state}
+      setState={setState}
+      stateKey="url"
+      required={true}
+      autoFocus={true}
+    />
 
-        <FormControl component="fieldset" margin="normal" variant="outlined">
-          <FormLabel component="legend">Authentication type:</FormLabel>
-          <RadioGroupInput
-            state={state}
-            setState={setState}
-            stateKey="auth"
-            values={[
-              [AuthType.Public, "Unauthenticated"],
-              [AuthType.Password, "Password"],
-              [AuthType.ApiKey, "API Key"],
-            ]}
-          />
-        </FormControl>
+    <RadioGroupInput
+      label="Authentication type:"
+      state={state}
+      setState={setState}
+      stateKey="auth"
+      values={[
+        { value: AuthType.Public, label: "Unauthenticated" },
+        { value: AuthType.Password, label: "Password" },
+        { value: AuthType.ApiKey, label: "API Key" },
+      ]}
+    />
 
-        {
-          state.auth == AuthType.Password && <>
-            <FormControl margin="normal" variant="outlined">
-              <InputLabel htmlFor="name">Username:</InputLabel>
-              <TextFieldInput
-                id="username"
-                label="Username:"
-                state={state}
-                setState={setState}
-                stateKey="username"
-                required={true}
-              />
-            </FormControl>
+    {
+      state.auth == AuthType.Password && <>
+        <TextFieldInput
+          id="username"
+          label="Username:"
+          state={state}
+          setState={setState}
+          stateKey="username"
+          required={true}
+        />
 
-            <FormControl margin="normal" variant="outlined">
-              <InputLabel htmlFor="name">Password:</InputLabel>
-              <TextFieldInput
-                id="password"
-                label="Password:"
-                state={state}
-                setState={setState}
-                stateKey="password"
-                required={true}
-              />
-            </FormControl>
-          </>
-        }
-        {
-          state.auth == AuthType.ApiKey && <FormControl margin="normal" variant="outlined">
-            <InputLabel htmlFor="name">API Key:</InputLabel>
-            <TextFieldInput
-              id="apikey"
-              label="API Key:"
-              state={state}
-              setState={setState}
-              stateKey="key"
-              required={true}
-            />
-          </FormControl>
-        }
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={close} variant="contained">Cancel</Button>
-      </DialogActions>
-    </form>
+        <TextFieldInput
+          id="password"
+          label="Password:"
+          state={state}
+          setState={setState}
+          stateKey="password"
+          required={true}
+        />
+      </>
+    }
+    {
+      state.auth == AuthType.ApiKey && <TextFieldInput
+        id="apikey"
+        label="API Key:"
+        state={state}
+        setState={setState}
+        stateKey="key"
+        required={true}
+      />
+    }
   </Dialog>;
 }

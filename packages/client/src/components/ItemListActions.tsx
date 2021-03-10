@@ -1,8 +1,7 @@
-import { IconButton, createStyles, makeStyles } from "@material-ui/core";
-import { useMemo } from "react";
-
 import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
+import { IconButton, createStyles, makeStyles } from "@material-ui/core";
+import { useMemo } from "react";
 
 import {
   useDeleteContextMutation,
@@ -117,7 +116,7 @@ export default ReactMemo(function ItemListActions({
     {taskAddDialogOpen && <TaskDialog list={list} onClose={closeAddTask}/>}
     {
       sectionAddDialogOpen && isTaskList(list) &&
-      <CreateSectionDialog taskList={list} onClose={closeAddSection}/>
+      <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>
     }
   </>;
 });

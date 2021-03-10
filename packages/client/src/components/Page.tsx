@@ -1,9 +1,8 @@
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, Styles } from "@allthethings/ui";
 import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactNode } from "react";
-
-import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, Styles } from "@allthethings/ui";
 
 import Banner from "./Banner";
 

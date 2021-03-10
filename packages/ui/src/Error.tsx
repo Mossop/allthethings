@@ -1,4 +1,3 @@
-import type { ApolloError } from "@apollo/client";
 import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import alpha from "color-alpha";
@@ -28,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 interface ErrorsProps {
-  error: ApolloError;
+  error: Error;
 }
 
 export const Error = ReactMemo(function Errors({

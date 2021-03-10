@@ -1,3 +1,5 @@
+import { Icons, Styles, SelectableListItem, useBoolState, ReactMemo } from "@allthethings/ui";
+import type { ReactResult, ReactRef } from "@allthethings/ui";
 import {
   Divider,
   List,
@@ -11,9 +13,6 @@ import alpha from "color-alpha";
 import type { ReactElement } from "react";
 import { useMemo, forwardRef, useCallback } from "react";
 import mergeRefs from "react-merge-refs";
-
-import { Icons, Styles, SelectableListItem, useBoolState, ReactMemo } from "@allthethings/ui";
-import type { ReactResult, ReactRef } from "@allthethings/ui";
 
 import { nameSorted } from "../utils/collections";
 import type {
@@ -370,7 +369,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
     </List>
     {
       showCreateProjectDialog && <CreateProjectDialog
-        onClose={closeCreateProjectDialog}
+        onClosed={closeCreateProjectDialog}
         taskList={taskList ?? root}
       />
     }

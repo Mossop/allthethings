@@ -1,28 +1,18 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
+import { Dialog, useBoolState, ReactMemo, TextFieldInput } from "@allthethings/ui";
+import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
-
-import { Error, useBoolState, TextFieldInput, ReactMemo } from "@allthethings/ui";
 
 import { useCreateSectionMutation } from "../schema/mutations";
 import { refetchListTaskListQuery } from "../schema/queries";
 import type { TaskList } from "../utils/state";
 
 interface CreateSectionProps {
-  onClose: () => void;
+  onClosed: () => void;
   taskList: TaskList;
 }
 
 export default ReactMemo(function CreateSectionDialog({
-  onClose,
+  onClosed,
   taskList,
 }: CreateSectionProps): ReactElement {
   let [state, setState] = useState({
@@ -43,33 +33,26 @@ export default ReactMemo(function CreateSectionDialog({
     ],
   });
 
-  let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
+  let submit = useCallback(async (): Promise<void> => {
     await createSection();
     close();
   }, [createSection, close]);
 
-  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
-    <form onSubmit={submit}>
-      <DialogTitle>Create Section</DialogTitle>
-      <DialogContent>
-        {error && <Error error={error}/>}
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="name">Name:</InputLabel>
-          <TextFieldInput
-            id="name"
-            label="Name:"
-            state={state}
-            setState={setState}
-            stateKey="name"
-            autoFocus={true}
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={close} variant="contained">Cancel</Button>
-      </DialogActions>
-    </form>
+  return <Dialog
+    title="Create Section"
+    submitLabel="Create"
+    error={error}
+    isOpen={isOpen}
+    onClose={close}
+    onClosed={onClosed}
+    onSubmit={submit}
+  >
+    <TextFieldInput
+      id="name"
+      label="Name:"
+      state={state}
+      setState={setState}
+      stateKey="name"
+    />
   </Dialog>;
 });

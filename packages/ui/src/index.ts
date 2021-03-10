@@ -1,3 +1,4 @@
+export * from "./Dialog";
 export * from "./Error";
 export * from "./Forms";
 export * from "./HiddenInput";

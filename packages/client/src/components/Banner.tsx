@@ -1,8 +1,7 @@
-import { AppBar, createStyles, makeStyles } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
-
 import { Styles, ReactMemo } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
+import { AppBar, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 
 import ContextMenu from "../ui/ContextMenu";
 import UserMenu from "../ui/UserMenu";

@@ -1,3 +1,5 @@
+import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
 import type { PureQueryOptions } from "@apollo/client";
 import { IconButton, ListItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
@@ -5,9 +7,6 @@ import clsx from "clsx";
 import { useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
-
-import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
-import type { ReactResult } from "@allthethings/ui";
 
 import { useDeleteItemMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";

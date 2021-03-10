@@ -1,3 +1,4 @@
+import type { ReactResult } from "@allthethings/ui";
 import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
 import {
@@ -6,8 +7,6 @@ import {
   ThemeProvider,
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
-
-import type { ReactResult } from "@allthethings/ui";
 
 import Main from "./ui/Main";
 import { DragTracker } from "./utils/drag";

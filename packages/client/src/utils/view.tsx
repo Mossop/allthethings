@@ -1,8 +1,7 @@
-import type { Location, Update } from "history";
-import { useState, useMemo, useEffect, createContext, useContext } from "react";
-
 import type { ReactChildren, ReactResult } from "@allthethings/ui";
 import { pushUrl, replaceUrl, history } from "@allthethings/ui";
+import type { Location, Update } from "history";
+import { useState, useMemo, useEffect, createContext, useContext } from "react";
 
 import { useListContextStateQuery } from "../schema/queries";
 import type { Context, Inbox, Project, ProjectRoot, TaskList, User } from "./state";

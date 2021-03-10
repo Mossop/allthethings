@@ -1,13 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fs } from "fs";
 
+import type { Overwrite } from "@allthethings/utils";
 import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
 import { ApolloServer } from "apollo-server-koa";
 import { GraphQLScalarType, Kind } from "graphql";
 import type { ValueNode } from "graphql";
 import { DateTime } from "luxon";
-
-import type { Overwrite } from "@allthethings/utils";
 
 import type { ProjectRoot, TaskList } from "../db";
 import { Context, User, dataSources } from "../db";

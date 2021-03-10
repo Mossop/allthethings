@@ -1,8 +1,7 @@
-import { List, createStyles, makeStyles } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
-
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo, Icons, Styles, Heading } from "@allthethings/ui";
+import { List, createStyles, makeStyles } from "@material-ui/core";
+import type { Theme } from "@material-ui/core";
 
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";

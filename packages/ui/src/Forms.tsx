@@ -1,9 +1,16 @@
+import type { Overwrite } from "@allthethings/utils";
 import type { OutlinedInputProps } from "@material-ui/core";
-import { FormControlLabel, Radio, RadioGroup, OutlinedInput } from "@material-ui/core";
+import {
+  FormLabel,
+  FormControl,
+  InputLabel,
+  FormControlLabel,
+  Radio,
+  RadioGroup,
+  OutlinedInput,
+} from "@material-ui/core";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
-
-import type { Overwrite } from "@allthethings/utils";
 
 import { ReactMemo } from "./types";
 
@@ -41,7 +48,7 @@ export function useFieldState<T>(setter: Dispatch<SetStateAction<T>>): Dispatch<
   }, [setter]);
 }
 
-interface FieldProps<T, K extends keyof T> {
+export interface FieldProps<T, K extends keyof T> {
   state: T;
   setState: Dispatch<SetStateAction<T>>;
   stateKey: K;
@@ -50,16 +57,20 @@ interface FieldProps<T, K extends keyof T> {
 type TextFieldInputProps<T, K extends keyof T> = Overwrite<
   Omit<OutlinedInputProps, "onChange" | "value" | "multiline">,
   {
+    id: string;
+    label: string;
     type?: "email" | "password" | "text" | "url";
   }
 > & FieldProps<T, K>;
 
-type TypedProps<S, T> = {
+export type TypedProps<S, T> = {
   [K in keyof S]: S[K] extends T ? K : never;
 }[keyof S];
 
 export const TextFieldInput = ReactMemo(
   function TextFieldInput<T, K extends TypedProps<T, string>>({
+    id,
+    label,
     state,
     setState,
     stateKey,
@@ -71,23 +82,33 @@ export const TextFieldInput = ReactMemo(
       useScopedState(stateKey, setState),
     ) as unknown as Dispatch<FieldEvent<string>>;
 
-    return <OutlinedInput
-      {...props}
-      type={type}
-      value={value}
-      onChange={change}
-    />;
+    return <FormControl margin="normal" variant="outlined">
+      <InputLabel htmlFor={id}>{label}</InputLabel>
+      <OutlinedInput
+        {...props}
+        id={id}
+        label={label}
+        type={type}
+        value={value}
+        onChange={change}
+      />
+    </FormControl>;
   },
 );
 
-type RadioValue<T, K extends keyof T> = [T[K], string];
+export interface RadioValue<T> {
+  label: string;
+  value: T;
+}
 
 type RadioGroupInputProps<T, K extends keyof T> = FieldProps<T, K> & {
-  values: RadioValue<T, K>[]
+  label: string;
+  values: RadioValue<T[K]>[]
 };
 
 export const RadioGroupInput = ReactMemo(
   function RadioGroupInput<T, K extends keyof T>({
+    label,
     state,
     setState,
     stateKey,
@@ -102,15 +123,18 @@ export const RadioGroupInput = ReactMemo(
       }));
     }, [setState, stateKey]);
 
-    return <RadioGroup value={value} onChange={onChange}>
-      {
-        values.map(([value, label]: RadioValue<T, K>) => <FormControlLabel
-          key={String(value)}
-          value={value}
-          control={<Radio/>}
-          label={label}
-        />)
-      }
-    </RadioGroup>;
+    return <FormControl component="fieldset" margin="normal" variant="outlined">
+      <FormLabel component="legend">{label}</FormLabel>
+      <RadioGroup value={value} onChange={onChange}>
+        {
+          values.map(({ value, label }: RadioValue<T[K]>) => <FormControlLabel
+            key={String(value)}
+            value={value}
+            control={<Radio/>}
+            label={label}
+          />)
+        }
+      </RadioGroup>
+    </FormControl>;
   },
 );

@@ -1,27 +1,17 @@
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
-import { useMemo, useEffect, useState, useCallback } from "react";
-
-import { Error, useBoolState, TextFieldInput, ReactMemo } from "@allthethings/ui";
+import { useBoolState, ReactMemo, Dialog, TextFieldInput } from "@allthethings/ui";
+import type { ReactElement } from "react";
+import { useMemo, useEffect, useState } from "react";
 
 import { useCreateContextMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import { useView, pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
-  onClose: () => void;
+  onClosed: () => void;
 }
 
 export default ReactMemo(function CreateContextDialog({
-  onClose,
+  onClosed,
 }: CreateContextProps): ReactElement {
   let [state, setState] = useState({
     name: "",
@@ -62,32 +52,21 @@ export default ReactMemo(function CreateContextDialog({
     close();
   }, [newContext, view, close]);
 
-  let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
-    void createContext();
-  }, [createContext]);
-
-  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
-    <form onSubmit={submit}>
-      <DialogTitle>Create Context</DialogTitle>
-      <DialogContent>
-        {error && <Error error={error}/>}
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="name">Name:</InputLabel>
-          <TextFieldInput
-            id="name"
-            label="Name:"
-            state={state}
-            setState={setState}
-            stateKey="name"
-            autoFocus={true}
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Create</Button>
-        <Button onClick={close} variant="contained">Cancel</Button>
-      </DialogActions>
-    </form>
+  return <Dialog
+    title="Create Context"
+    submitLabel="Create"
+    error={error}
+    isOpen={isOpen}
+    onClose={close}
+    onClosed={onClosed}
+    onSubmit={createContext}
+  >
+    <TextFieldInput
+      id="name"
+      label="Name:"
+      state={state}
+      setState={setState}
+      stateKey="name"
+    />
   </Dialog>;
 });

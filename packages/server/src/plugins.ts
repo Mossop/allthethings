@@ -1,8 +1,7 @@
+import { resolvePlugin } from "@allthethings/utils";
 import type Knex from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
-
-import { resolvePlugin } from "@allthethings/utils";
 
 import { id } from "./db/connection";
 import type { DbMigration } from "./db/migration";

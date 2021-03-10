@@ -27,22 +27,27 @@ function SettingSections(): ReactElement {
   let accounts = data?.user?.bugzillaAccounts ?? [];
 
   return <>
-    {accounts.map((account: BugzillaAccount) => <SettingSection
-      sectionId={`bugzilla:${account.url}`}
-      icon={<Icon/>}
-    >
-      {account.url}
-    </SettingSection>)}
+    {
+      accounts.map((account: BugzillaAccount) => <SettingSection
+        key={`bugzilla:${account.url}`}
+        sectionId={`bugzilla:${account.url}`}
+        icon={<Icon/>}
+      >
+        {account.url}
+      </SettingSection>)
+    }
     <SettingSection
       icon={<Icon/>}
       onClick={openAccountDialog}
     >
       Add Account
     </SettingSection>
-    {showAccountDialog && <AccountDialog
-      onClose={closeAccountDialog}
-      onAccountCreated={onAccountCreated}
-    />}
+    {
+      showAccountDialog && <AccountDialog
+        onClosed={closeAccountDialog}
+        onAccountCreated={onAccountCreated}
+      />
+    }
   </>;
 }
 

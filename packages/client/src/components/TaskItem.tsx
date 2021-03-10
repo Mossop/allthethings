@@ -1,11 +1,10 @@
+import { Icons, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
 import { IconButton } from "@material-ui/core";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
-
-import { Icons, ReactMemo } from "@allthethings/ui";
-import type { ReactResult } from "@allthethings/ui";
-import type { Overwrite } from "@allthethings/utils";
 
 import { useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";

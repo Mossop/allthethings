@@ -1,3 +1,4 @@
+import { TextFieldInput, ReactMemo, useBoolState } from "@allthethings/ui";
 import {
   Button,
   Dialog,
@@ -9,8 +10,6 @@ import {
 } from "@material-ui/core";
 import type { FormEvent, ReactElement } from "react";
 import { useState, useCallback } from "react";
-
-import { TextFieldInput, ReactMemo, useBoolState } from "@allthethings/ui";
 
 import { useCreateTaskMutation, useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";

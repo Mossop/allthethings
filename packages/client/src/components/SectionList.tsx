@@ -1,3 +1,5 @@
+import type { ReactResult } from "@allthethings/ui";
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@allthethings/ui";
 import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
@@ -5,9 +7,6 @@ import type { ReactElement } from "react";
 import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
-
-import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@allthethings/ui";
 
 import { useEditSectionMutation } from "../schema/mutations";
 import { indexOf, item } from "../utils/collections";

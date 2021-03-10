@@ -1,9 +1,8 @@
+import { Loading, Styles } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
 import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import { useCallback, Suspense } from "react";
-
-import { Loading, Styles } from "@allthethings/ui";
-import type { ReactResult } from "@allthethings/ui";
 
 import Page from "../components/Page";
 import { useDropArea, AllDragTypes } from "../utils/drag";

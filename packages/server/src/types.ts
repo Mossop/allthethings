@@ -1,8 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type Knex from "knex";
 import type Koa from "koa";
-
-import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 
 export type PluginKnex = Omit<Knex, "transaction">;
 
