@@ -15,12 +15,12 @@ import { ReactMemo } from "./types";
 export interface DialogProps {
   isOpen: boolean;
   onSubmit: () => void;
-  onClose: () => void;
-  onClosed: () => void;
+  onClose?: () => void;
+  onClosed?: () => void;
   title: string;
   error?: Error | null;
   submitLabel?: string;
-  cancelLabel?: string;
+  cancelLabel?: string | null;
 }
 
 export const Dialog = ReactMemo(function Dialog({
@@ -31,7 +31,7 @@ export const Dialog = ReactMemo(function Dialog({
   title,
   error,
   submitLabel,
-  cancelLabel,
+  cancelLabel = "Cancel",
   children,
 }: DialogProps & ReactChildren): ReactResult {
   let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
@@ -48,7 +48,7 @@ export const Dialog = ReactMemo(function Dialog({
       </DialogContent>
       <DialogActions>
         <Button type="submit" variant="contained" color="primary">{submitLabel ?? "Submit"}</Button>
-        <Button onClick={onClose} variant="contained">{cancelLabel ?? "Cancel"}</Button>
+        {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
       </DialogActions>
     </form>
   </MuiDialog>;

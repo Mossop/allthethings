@@ -1,68 +1,41 @@
 scalar DateTime
 
-interface Item {
-  id: ID!
-  summary: String!
-  archived: Boolean!
-  created: DateTime!
-}
-
-type Task implements Item {
-  # Item
-  id: ID!
-  summary: String!
-  archived: Boolean!
-  created: DateTime!
-
+type TaskInfo {
   due: DateTime
   done: DateTime
-  link: String
 }
 
-type PluginItem implements Item {
-  # Item
-  id: ID!
-  summary: String!
-  archived: Boolean!
-  created: DateTime!
-
+type PluginDetail {
   pluginId: String!
-  due: DateTime
-  done: DateTime
-  pluginFields: String!
+  fields: String!
 }
 
-type File implements Item {
-  # Item
-  id: ID!
-  summary: String!
-  archived: Boolean!
-  created: DateTime!
-
+type FileDetail {
   filename: String!
   mimetype: String!
   size: Int!
 }
 
-type Note implements Item {
-  # Item
-  id: ID!
-  summary: String!
-  archived: Boolean!
-  created: DateTime!
-
+type NoteDetail {
   note: String!
 }
 
-type Link implements Item {
-  # Item
+type LinkDetail {
+  icon: String
+  url: String!
+}
+
+union ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail
+
+type Item {
   id: ID!
   summary: String!
-  archived: Boolean!
   created: DateTime!
+  archived: DateTime
+  snoozed: DateTime
 
-  icon: String
-  link: String!
+  taskInfo: TaskInfo
+  detail: ItemDetail
 }
 
 interface TaskList {
@@ -162,12 +135,23 @@ input SectionParams {
   name: String!
 }
 
-input TaskParams {
-  archived: Boolean!
+input ItemParams {
   summary: String!
-  done: DateTime
-  link: String
+  archived: DateTime
+  snoozed: DateTime
+}
+
+input TaskInfoParams {
   due: DateTime
+  done: DateTime
+}
+
+input LinkDetailParams {
+  url: String!
+}
+
+input NoteDetailParams {
+  note: String!
 }
 
 type Mutation {
@@ -188,8 +172,12 @@ type Mutation {
   editSection(id: ID!, params: SectionParams!): Section
   deleteSection(id: ID!): Boolean!
 
-  createTask(list: ID, params: TaskParams!): Task!
-  editTask(id: ID!, params: TaskParams!): Task
+  createTask(list: ID, item: ItemParams!, taskInfo: TaskInfoParams!): Item!
+  createNote(list: ID, item: ItemParams!, detail: NoteDetailParams!, taskInfo: TaskInfoParams): Item!
+  createLink(list: ID, item: ItemParams!, detail: LinkDetailParams!, taskInfo: TaskInfoParams): Item!
+
+  editItem(id: ID!, item: ItemParams!): Item
+  editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
 
   moveItem(id: ID!, parent: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!

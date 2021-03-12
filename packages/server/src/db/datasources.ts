@@ -6,13 +6,15 @@ import type Knex from "knex";
 import type { ResolverContext } from "../schema/context";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";
-import type { ImplBuilder, Item } from "./implementations";
+import type { ImplBuilder } from "./implementations";
 import * as Impl from "./implementations";
 import * as Db from "./types";
-import type { DbInsertObject, DbObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
+
+type DbInsertObject<T> = Db.DbInsertObject<T>;
+type DbObject<T> = Db.DbObject<T>;
 
 export enum SectionIndex {
   Anonymous = -1,
@@ -53,7 +55,7 @@ async function count(query: Knex.QueryBuilder): Promise<number | null> {
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
 export abstract class DbDataSource<
-  I extends { id: string },
+  I extends { id: () => string },
   T extends Db.DbTable = Db.DbTable,
 > extends DataSource<ResolverContext> {
   public readonly abstract tableName: string;
@@ -156,15 +158,15 @@ export abstract class DbDataSource<
   /**
    * Gets the DB record with the given ID.
    */
-  public async get(id: string): Promise<DbObject<T> | null> {
+  public async getRecord(id: string): Promise<DbObject<T> | null> {
     return this.first(this.table.whereIn(this.ref("id"), [id]));
   }
 
   /**
    * Gets the high-level implementation with the given ID.
    */
-  public async getOne(id: string): Promise<I | null> {
-    return this.build(await this.get(id));
+  public async getImpl(id: string): Promise<I | null> {
+    return this.build(await this.getRecord(id));
   }
 
   /**
@@ -218,7 +220,7 @@ export abstract class DbDataSource<
 }
 
 export abstract class IndexedDbDataSource<
-  I extends { id: string },
+  I extends { id: () => string },
   T extends Db.DbTable<Db.IndexedDbEntity> = Db.DbTable<Db.IndexedDbEntity>,
 > extends DbDataSource<I, T> {
   protected async nextIndex(owner: string): Promise<number> {
@@ -235,7 +237,7 @@ export abstract class IndexedDbDataSource<
     targetOwner: string,
     beforeId: string | null,
   ): Promise<void> {
-    let current = await this.get(itemId);
+    let current = await this.getRecord(itemId);
     if (!current) {
       return;
     }
@@ -244,7 +246,7 @@ export abstract class IndexedDbDataSource<
     let currentOwner = current.ownerId;
 
     let targetIndex: number;
-    let before = beforeId ? await this.get(beforeId) : null;
+    let before = beforeId ? await this.getRecord(beforeId) : null;
 
     if (before && before.ownerId == targetOwner) {
       targetIndex = before.index;
@@ -278,7 +280,7 @@ export abstract class IndexedDbDataSource<
   }
 
   public async delete(id: string): Promise<void> {
-    let item = await this.get(id);
+    let item = await this.getRecord(id);
     if (!item) {
       return;
     }
@@ -326,7 +328,7 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
       name: "",
     });
 
-    await this.context.dataSources.sections.createSpecialSection(user.id, SectionIndex.Inbox);
+    await this.context.dataSources.sections.createSpecialSection(user.id(), SectionIndex.Inbox);
 
     return user;
   }
@@ -349,7 +351,7 @@ export class ContextDataSource extends DbDataSource<
       return null;
     }
 
-    return this.context.dataSources.users.getOne(record.userId);
+    return this.context.dataSources.users.getImpl(record.userId);
   }
 
   public async create(
@@ -357,9 +359,9 @@ export class ContextDataSource extends DbDataSource<
     params: Omit<DbInsertObject<Db.ContextDbTable>, "id" | "userId">,
   ): Promise<Impl.Context> {
     let context = await this.build(this.insert({
-      id: params.name == "" ? user.id : await id(),
+      id: params.name == "" ? user.id() : await id(),
       ...params,
-      userId: user.id,
+      userId: user.id(),
     }));
 
     await this.context.dataSources.projects.create(context, {
@@ -390,14 +392,14 @@ export class ProjectDataSource extends DbDataSource<
       : taskList;
 
     let project = await this.build(this.insert({
-      id: params.name == "" ? taskList.id : await id(),
-      contextId: context.id,
+      id: params.name == "" ? taskList.id() : await id(),
+      contextId: context.id(),
       ...params,
-      parentId: params.name == "" ? null : taskList.id,
+      parentId: params.name == "" ? null : taskList.id(),
     }));
 
     await this.context.dataSources.sections.createSpecialSection(
-      project.id,
+      project.id(),
       SectionIndex.Anonymous,
     );
 
@@ -454,65 +456,52 @@ export class SectionDataSource extends IndexedDbDataSource<
     } else if (before) {
       let record = await this.records
         .where({
-          ownerId: project.id,
+          ownerId: project.id(),
           id: before,
         })
         .first();
       if (record !== undefined) {
         await this.table.where({
-          ownerId: project.id,
+          ownerId: project.id(),
         }).andWhere("index", ">=", record.index).update("index", this.knex.raw(":index: + 1", {
           index: "index",
         }));
       }
 
-      index = record?.index ?? await this.nextIndex(project.id);
+      index = record?.index ?? await this.nextIndex(project.id());
     } else {
-      index = await this.nextIndex(project.id);
+      index = await this.nextIndex(project.id());
     }
 
     return this.build(this.insert({
-      id: params.name == "" ? project.id : await id(),
+      id: params.name == "" ? project.id() : await id(),
       ...params,
-      ownerId: project.id,
+      ownerId: project.id(),
       index,
     }));
   }
 }
 
-export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbTable> {
+export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTable> {
   public tableName = "Item";
-  protected builder(resolverContext: ResolverContext, dbObject: DbObject<Db.ItemDbTable>): Item {
-    switch (dbObject.type) {
-      case Db.ItemType.Task:
-        return new Impl.TaskItem(resolverContext, dbObject, null);
-      case Db.ItemType.Note:
-        return new Impl.NoteItem(resolverContext, dbObject, null);
-      case Db.ItemType.File:
-        return new Impl.FileItem(resolverContext, dbObject, null);
-      case Db.ItemType.Link:
-        return new Impl.LinkItem(resolverContext, dbObject, null);
-      case Db.ItemType.Plugin:
-        return new Impl.PluginItem(resolverContext, dbObject, null);
-    }
-  }
+  protected builder = classBuilder<Impl.Item, Db.ItemDbTable>(Impl.Item);
 
   public async create(
     owner: Impl.TaskList | Impl.Section,
     params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index">,
-  ): Promise<DbObject<Db.ItemDbTable>> {
-    return this.insert({
+  ): Promise<Impl.Item> {
+    return this.build(this.insert({
       id: await id(),
-      ownerId: owner.id,
-      index: await this.nextIndex(owner.id),
+      ownerId: owner.id(),
+      index: await this.nextIndex(owner.id()),
       ...params,
-    });
+    }));
   }
 
   public listSpecialSection(
     owner: string,
     type: SectionIndex,
-  ): Promise<Item[]> {
+  ): Promise<Impl.Item[]> {
     return this.buildAll(this.select(this.records
       .join("Section", "Section.id", "Item.ownerId")
       .where("Section.ownerId", owner)
@@ -521,63 +510,18 @@ export class ItemDataSource extends IndexedDbDataSource<Item, Db.ItemDbTable> {
   }
 }
 
-type ExtendedItemInsert<T> =
-  Omit<DbInsertObject<T>, "id"> &
-  Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index" | "type">;
-
-abstract class ExtendedItemDataSource<
-  I extends { id: string },
-  T extends Db.DbTable = Db.DbTable,
-> extends DbDataSource<I, T> {
-  protected abstract readonly itemType: Db.ItemType;
-  protected abstract builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<T>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): I;
-
-  public get items(): ItemDataSource {
-    return this.context.dataSources.items;
-  }
+export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTable> {
+  public tableName = "TaskInfo";
+  protected builder = classBuilder<Impl.TaskInfo, Db.TaskInfoDbTable>(Impl.TaskInfo);
 
   public async create(
-    owner: Impl.TaskList | Impl.Section,
-    {
-      summary,
-      archived,
-      ...params
-    }: ExtendedItemInsert<T>,
-  ): Promise<I> {
-    let base = await this.items.create(owner, {
-      type: this.itemType,
-      archived,
-      summary,
-    });
-
-    // @ts-ignore
-    let task = await this.insert({
-      id: base.id,
+    item: Impl.Item,
+    params: Omit<DbInsertObject<Db.TaskInfoDbTable>, "id">,
+  ): Promise<Impl.TaskInfo> {
+    return this.build(this.insert({
       ...params,
-    });
-
-    return this.builder(this.context, task, base);
-  }
-
-  public delete(id: string): Promise<void> {
-    return this.items.delete(id);
-  }
-}
-
-export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db.TaskItemDbTable> {
-  public tableName = "TaskItem";
-  protected itemType = Db.ItemType.Task;
-
-  protected builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<Db.TaskItemDbTable>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): Impl.TaskItem {
-    return new Impl.TaskItem(resolverContext, dbObject ?? null, instanceObject);
+      id: item.id(),
+    }));
   }
 
   public async taskListTaskCount(taskList: string): Promise<number> {
@@ -607,58 +551,83 @@ export class TaskItemDataSource extends ExtendedItemDataSource<Impl.TaskItem, Db
   }
 }
 
-export class FileItemDataSource extends ExtendedItemDataSource<Impl.FileItem, Db.FileItemDbTable> {
-  public tableName = "FileItem";
-  protected itemType = Db.ItemType.File;
+export class LinkDetailSource extends DbDataSource<Impl.LinkDetail, Db.LinkDetailDbTable> {
+  public tableName = "LinkDetail";
+  protected builder = classBuilder<Impl.LinkDetail, Db.LinkDetailDbTable>(Impl.LinkDetail);
 
-  protected builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<Db.FileItemDbTable>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): Impl.FileItem {
-    return new Impl.FileItem(resolverContext, dbObject ?? null, instanceObject);
+  public async create(
+    item: Impl.Item,
+    params: Omit<DbInsertObject<Db.LinkDetailDbTable>, "id">,
+  ): Promise<Impl.LinkDetail> {
+    let type = await item.type();
+    if (Db.ItemType.Link != type) {
+      throw new Error(`Attempt to add link detail to a '${type}' item.`);
+    }
+
+    return this.build(this.insert({
+      ...params,
+      id: item.id(),
+    }));
   }
 }
 
-export class NoteItemDataSource extends ExtendedItemDataSource<Impl.NoteItem, Db.NoteItemDbTable> {
-  public tableName = "NoteItem";
-  protected itemType = Db.ItemType.Note;
+export class NoteDetailSource extends DbDataSource<Impl.NoteDetail, Db.NoteDetailDbTable> {
+  public tableName = "NoteDetail";
+  protected builder = classBuilder<Impl.NoteDetail, Db.NoteDetailDbTable>(Impl.NoteDetail);
 
-  protected builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<Db.NoteItemDbTable>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): Impl.NoteItem {
-    return new Impl.NoteItem(resolverContext, dbObject ?? null, instanceObject);
+  public async create(
+    item: Impl.Item,
+    params: Omit<DbInsertObject<Db.NoteDetailDbTable>, "id">,
+  ): Promise<Impl.NoteDetail> {
+    let type = await item.type();
+    if (Db.ItemType.Note != type) {
+      throw new Error(`Attempt to add note detail to a '${type}' item.`);
+    }
+
+    return this.build(this.insert({
+      ...params,
+      id: item.id(),
+    }));
   }
 }
 
-export class LinkItemDataSource extends ExtendedItemDataSource<Impl.LinkItem, Db.LinkItemDbTable> {
-  public tableName = "LinkItem";
-  protected itemType = Db.ItemType.Link;
+export class FileDetailSource extends DbDataSource<Impl.FileDetail, Db.FileDetailDbTable> {
+  public tableName = "FileDetail";
+  protected builder = classBuilder<Impl.FileDetail, Db.FileDetailDbTable>(Impl.FileDetail);
 
-  protected builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<Db.LinkItemDbTable>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): Impl.LinkItem {
-    return new Impl.LinkItem(resolverContext, dbObject ?? null, instanceObject);
+  public async create(
+    item: Impl.Item,
+    params: Omit<DbInsertObject<Db.FileDetailDbTable>, "id">,
+  ): Promise<Impl.FileDetail> {
+    let type = await item.type();
+    if (Db.ItemType.File != type) {
+      throw new Error(`Attempt to add file detail to a '${type}' item.`);
+    }
+
+    return this.build(this.insert({
+      ...params,
+      id: item.id(),
+    }));
   }
 }
 
-export class PluginItemDataSource extends ExtendedItemDataSource<
-  Impl.PluginItem,
-  Db.PluginItemDbTable
-> {
-  public tableName = "PluginItem";
-  protected itemType = Db.ItemType.Plugin;
+export class PluginDetailSource extends DbDataSource<Impl.PluginDetail, Db.PluginDetailDbTable> {
+  public tableName = "PluginDetail";
+  protected builder = classBuilder<Impl.PluginDetail, Db.PluginDetailDbTable>(Impl.PluginDetail);
 
-  protected builder(
-    resolverContext: ResolverContext,
-    instanceObject: DbObject<Db.PluginItemDbTable>,
-    dbObject?: DbObject<Db.ItemDbTable>,
-  ): Impl.PluginItem {
-    return new Impl.PluginItem(resolverContext, dbObject ?? null, instanceObject);
+  public async create(
+    item: Impl.Item,
+    params: Omit<DbInsertObject<Db.PluginDetailDbTable>, "id">,
+  ): Promise<Impl.PluginDetail> {
+    let type = await item.type();
+    if (Db.ItemType.Plugin != type) {
+      throw new Error(`Attempt to add plugin detail to a '${type}' item.`);
+    }
+
+    return this.build(this.insert({
+      ...params,
+      id: item.id(),
+    }));
   }
 }
 
@@ -668,11 +637,11 @@ export interface AppDataSources {
   projects: ProjectDataSource;
   sections: SectionDataSource;
   items: ItemDataSource;
-  tasks: TaskItemDataSource;
-  files: FileItemDataSource;
-  notes: NoteItemDataSource;
-  links: LinkItemDataSource;
-  pluginItems: PluginItemDataSource;
+  taskInfo: TaskInfoSource;
+  fileDetail: FileDetailSource;
+  pluginDetail: PluginDetailSource;
+  noteDetail: NoteDetailSource;
+  linkDetail: LinkDetailSource;
 }
 
 export function dataSources(): AppDataSources {
@@ -682,10 +651,10 @@ export function dataSources(): AppDataSources {
     projects: new ProjectDataSource(),
     sections: new SectionDataSource(),
     items: new ItemDataSource(),
-    tasks: new TaskItemDataSource(),
-    files: new FileItemDataSource(),
-    notes: new NoteItemDataSource(),
-    links: new LinkItemDataSource(),
-    pluginItems: new PluginItemDataSource(),
+    taskInfo: new TaskInfoSource(),
+    fileDetail: new FileDetailSource(),
+    pluginDetail: new PluginDetailSource(),
+    noteDetail: new NoteDetailSource(),
+    linkDetail: new LinkDetailSource(),
   };
 }

@@ -18,7 +18,7 @@ export type ResolverContext = BaseContext & {
   dataSources: AppDataSources;
 };
 
-type AuthedContext = Omit<ResolverContext, "userId"> & {
+export type AuthedContext = Omit<ResolverContext, "userId"> & {
   userId: string;
 };
 
@@ -86,12 +86,12 @@ export async function buildContext({
     },
 
     async getRoot(this: ResolverContext, id: string): Promise<ProjectRoot | null> {
-      let context = await this.dataSources.contexts.getOne(id);
+      let context = await this.dataSources.contexts.getImpl(id);
       if (context) {
         return context;
       }
 
-      let user = await this.dataSources.users.getOne(id);
+      let user = await this.dataSources.users.getImpl(id);
       if (user) {
         return user;
       }
@@ -100,7 +100,7 @@ export async function buildContext({
     },
 
     async getTaskList(this: ResolverContext, id: string): Promise<TaskList | null> {
-      let project = await this.dataSources.projects.getOne(id);
+      let project = await this.dataSources.projects.getImpl(id);
       if (project) {
         return project;
       }
@@ -113,8 +113,8 @@ export async function buildContext({
         throw new Error("Session is not initialized.");
       }
 
-      this.userId = user.id;
-      ctx.session.userId = user.id;
+      this.userId = user.id();
+      ctx.session.userId = user.id();
       ctx.session.save();
     },
 

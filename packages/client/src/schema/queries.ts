@@ -1,29 +1,18 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFields_Task_Fragment, ItemFields_PluginItem_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFieldsFragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
+const defaultOptions =  {}
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
     { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Task' }
-        & ItemFields_Task_Fragment
-      ) | (
-        { readonly __typename: 'PluginItem' }
-        & ItemFields_PluginItem_Fragment
-      ) | (
-        { readonly __typename: 'File' }
-        & ItemFields_File_Fragment
-      ) | (
-        { readonly __typename: 'Note' }
-        & ItemFields_Note_Fragment
-      ) | (
-        { readonly __typename: 'Link' }
-        & ItemFields_Link_Fragment
+        { readonly __typename: 'Item' }
+        & ItemFieldsFragment
       )> }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & RootFields_Context_Fragment
@@ -37,95 +26,23 @@ export type ListTaskListQueryVariables = Types.Exact<{
 
 
 export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Task' }
-      & ItemFields_Task_Fragment
-    ) | (
-      { readonly __typename: 'PluginItem' }
-      & ItemFields_PluginItem_Fragment
-    ) | (
-      { readonly __typename: 'File' }
-      & ItemFields_File_Fragment
-    ) | (
-      { readonly __typename: 'Note' }
-      & ItemFields_Note_Fragment
-    ) | (
-      { readonly __typename: 'Link' }
-      & ItemFields_Link_Fragment
+      { readonly __typename: 'Item' }
+      & ItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Task' }
-        & ItemFields_Task_Fragment
-      ) | (
-        { readonly __typename: 'PluginItem' }
-        & ItemFields_PluginItem_Fragment
-      ) | (
-        { readonly __typename: 'File' }
-        & ItemFields_File_Fragment
-      ) | (
-        { readonly __typename: 'Note' }
-        & ItemFields_Note_Fragment
-      ) | (
-        { readonly __typename: 'Link' }
-        & ItemFields_Link_Fragment
+        { readonly __typename: 'Item' }
+        & ItemFieldsFragment
       )> }> } | { readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Task' }
-      & ItemFields_Task_Fragment
-    ) | (
-      { readonly __typename: 'PluginItem' }
-      & ItemFields_PluginItem_Fragment
-    ) | (
-      { readonly __typename: 'File' }
-      & ItemFields_File_Fragment
-    ) | (
-      { readonly __typename: 'Note' }
-      & ItemFields_Note_Fragment
-    ) | (
-      { readonly __typename: 'Link' }
-      & ItemFields_Link_Fragment
+      { readonly __typename: 'Item' }
+      & ItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Task' }
-        & ItemFields_Task_Fragment
-      ) | (
-        { readonly __typename: 'PluginItem' }
-        & ItemFields_PluginItem_Fragment
-      ) | (
-        { readonly __typename: 'File' }
-        & ItemFields_File_Fragment
-      ) | (
-        { readonly __typename: 'Note' }
-        & ItemFields_Note_Fragment
-      ) | (
-        { readonly __typename: 'Link' }
-        & ItemFields_Link_Fragment
+        { readonly __typename: 'Item' }
+        & ItemFieldsFragment
       )> }> } | { readonly __typename: 'Project', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Task' }
-      & ItemFields_Task_Fragment
-    ) | (
-      { readonly __typename: 'PluginItem' }
-      & ItemFields_PluginItem_Fragment
-    ) | (
-      { readonly __typename: 'File' }
-      & ItemFields_File_Fragment
-    ) | (
-      { readonly __typename: 'Note' }
-      & ItemFields_Note_Fragment
-    ) | (
-      { readonly __typename: 'Link' }
-      & ItemFields_Link_Fragment
+      { readonly __typename: 'Item' }
+      & ItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Task' }
-        & ItemFields_Task_Fragment
-      ) | (
-        { readonly __typename: 'PluginItem' }
-        & ItemFields_PluginItem_Fragment
-      ) | (
-        { readonly __typename: 'File' }
-        & ItemFields_File_Fragment
-      ) | (
-        { readonly __typename: 'Note' }
-        & ItemFields_Note_Fragment
-      ) | (
-        { readonly __typename: 'Link' }
-        & ItemFields_Link_Fragment
+        { readonly __typename: 'Item' }
+        & ItemFieldsFragment
       )> }> }> };
 
 
@@ -168,10 +85,12 @@ ${RootFieldsFragmentDoc}`;
  * });
  */
 export function useListContextStateQuery(baseOptions?: Apollo.QueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
-        return Apollo.useQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, options);
       }
 export function useListContextStateLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
-          return Apollo.useLazyQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, baseOptions);
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, options);
         }
 export type ListContextStateQueryHookResult = ReturnType<typeof useListContextStateQuery>;
 export type ListContextStateLazyQueryHookResult = ReturnType<typeof useListContextStateLazyQuery>;
@@ -215,10 +134,12 @@ export const ListTaskListDocument = gql`
  * });
  */
 export function useListTaskListQuery(baseOptions: Apollo.QueryHookOptions<ListTaskListQuery, ListTaskListQueryVariables>) {
-        return Apollo.useQuery<ListTaskListQuery, ListTaskListQueryVariables>(ListTaskListDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListTaskListQuery, ListTaskListQueryVariables>(ListTaskListDocument, options);
       }
 export function useListTaskListLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListTaskListQuery, ListTaskListQueryVariables>) {
-          return Apollo.useLazyQuery<ListTaskListQuery, ListTaskListQueryVariables>(ListTaskListDocument, baseOptions);
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListTaskListQuery, ListTaskListQueryVariables>(ListTaskListDocument, options);
         }
 export type ListTaskListQueryHookResult = ReturnType<typeof useListTaskListQuery>;
 export type ListTaskListLazyQueryHookResult = ReturnType<typeof useListTaskListLazyQuery>;

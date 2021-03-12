@@ -1,10 +1,10 @@
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo } from "@allthethings/ui";
 
-import type { Note } from "../utils/state";
+import type { NoteItem } from "../utils/state";
 
 interface NoteItemProps {
-  item: Note;
+  item: NoteItem;
 }
 
 export default ReactMemo(function NoteItem({

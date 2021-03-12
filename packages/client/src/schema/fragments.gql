@@ -18,32 +18,33 @@ fragment itemFields on Item {
   id
   summary
   archived
+  snoozed
   created
 
-  ... on Task {
+  taskInfo {
     due
     done
   }
 
-  ... on File {
-    size
-    filename
-    mimetype
-  }
+  detail {
+    ... on FileDetail {
+      size
+      filename
+      mimetype
+    }
 
-  ... on Note {
-    note
-  }
+    ... on NoteDetail {
+      note
+    }
 
-  ... on Link {
-    icon
-    link
-  }
+    ... on LinkDetail {
+      icon
+      url
+    }
 
-  ... on PluginItem {
-    done
-    due
-    pluginId
-    pluginFields
+    ... on PluginDetail {
+      pluginId
+      fields
+    }
   }
 }

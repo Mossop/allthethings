@@ -1,10 +1,10 @@
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo } from "@allthethings/ui";
 
-import type { File } from "../utils/state";
+import type { FileItem } from "../utils/state";
 
 interface FileItemProps {
-  item: File;
+  item: FileItem;
 }
 
 export default ReactMemo(function FileItem({

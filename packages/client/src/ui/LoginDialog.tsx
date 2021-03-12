@@ -1,14 +1,5 @@
-import { TextFieldInput, ReactMemo } from "@allthethings/ui";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
+import { TextFieldInput, ReactMemo, Dialog } from "@allthethings/ui";
+import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { useLoginMutation } from "../schema/mutations";
@@ -25,40 +16,31 @@ export default ReactMemo(function LoginDialog(): ReactElement {
     refetchQueries: [refetchListContextStateQuery()],
   });
 
-  let submit = useCallback((event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  let submit = useCallback(() => {
     void login();
   }, [login]);
 
-  return <Dialog open={true}>
-    <form onSubmit={submit}>
-      <DialogTitle>Login</DialogTitle>
-      <DialogContent>
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="email">Email address:</InputLabel>
-          <TextFieldInput
-            id="email"
-            label="Email address:"
-            state={state}
-            setState={setState}
-            stateKey="email"
-          />
-        </FormControl>
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="password">Password:</InputLabel>
-          <TextFieldInput
-            id="password"
-            label="Password:"
-            type="password"
-            state={state}
-            setState={setState}
-            stateKey="password"
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">Login</Button>
-      </DialogActions>
-    </form>
+  return <Dialog
+    isOpen={true}
+    onSubmit={submit}
+    title="Login"
+    submitLabel="Login"
+    cancelLabel={null}
+  >
+    <TextFieldInput
+      id="email"
+      label="Email address:"
+      state={state}
+      setState={setState}
+      stateKey="email"
+    />
+    <TextFieldInput
+      id="password"
+      label="Password:"
+      type="password"
+      state={state}
+      setState={setState}
+      stateKey="password"
+    />
   </Dialog>;
 });

@@ -1,3 +1,5 @@
+import type { Overwrite } from "@allthethings/utils";
+
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import { useView } from "./view";
@@ -8,8 +10,6 @@ export interface PluginItemFields {
 type Writable<T> = {
   -readonly [K in keyof T]: T[K];
 };
-
-type SchemaItem = Schema.Task | Schema.Note | Schema.File | Schema.Link | Schema.PluginItem;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 type StateO<T, O extends string, A = {}> = Omit<T, O | keyof A> & A;
@@ -47,13 +47,32 @@ interface BaseItem {
   parent: Inbox | TaskList | Section;
 }
 
-export type Link = State<Schema.Link, BaseItem>;
-export type Note = State<Schema.Note, BaseItem>;
-export type File = State<Schema.File, BaseItem>;
-export type Task = State<Schema.Task, BaseItem>;
-export type PluginItem = StateO<Schema.PluginItem, "pluginFields", BaseItem>;
+export type PluginItem = State<Schema.Item, BaseItem & {
+  taskInfo: Schema.TaskInfo | null;
+  detail: Schema.PluginDetail & PluginItemFields;
+}>;
+export type NoteItem = State<Schema.Item, BaseItem & {
+  taskInfo: Schema.TaskInfo | null;
+  detail: Schema.NoteDetail;
+}>;
+export type FileItem = State<Schema.Item, BaseItem & {
+  taskInfo: Schema.TaskInfo | null;
+  detail: Schema.FileDetail;
+}>;
+export type LinkItem = State<Schema.Item, BaseItem & {
+  taskInfo: Schema.TaskInfo | null;
+  detail: Schema.LinkDetail;
+}>;
+export type TaskItem = State<Schema.Item, BaseItem & {
+  taskInfo: Schema.TaskInfo;
+  detail: null;
+}>;
+export type Item = TaskItem | LinkItem | NoteItem | FileItem | PluginItem;
 
-export type Item = Task | Note | File | Link | PluginItem;
+export type WithTask<T extends Item> = Overwrite<T, {
+  taskInfo: Schema.TaskInfo;
+}>;
+
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
 
@@ -86,28 +105,37 @@ export function isTaskList(val: GraphQLType): val is TaskList {
   return isUser(val) || isProject(val) || isContext(val);
 }
 
-export function isLink(val: GraphQLType): val is Link {
-  return val.__typename == "Link";
+export function isItem(val: GraphQLType): val is Item {
+  return val.__typename == "Item";
 }
 
-export function isNote(val: GraphQLType): val is Note {
-  return val.__typename == "Note";
+export function isPluginItem(item: Item): item is PluginItem {
+  return item.detail?.__typename == "PluginDetail";
 }
 
-export function isFile(val: GraphQLType): val is File {
-  return val.__typename == "File";
+export function isNoteItem(item: Item): item is NoteItem {
+  return item.detail?.__typename == "NoteDetail";
 }
 
-export function isTask(val: GraphQLType): val is Task {
-  return val.__typename == "Task";
+export function isLinkItem(item: Item): item is LinkItem {
+  return item.detail?.__typename == "LinkDetail";
 }
 
-export function isPluginItem(val: GraphQLType): val is PluginItem {
-  return val.__typename == "PluginItem";
+export function isFileItem(item: Item): item is FileItem {
+  return item.detail?.__typename == "FileDetail";
 }
 
-export function isItem(val: GraphQLType): val is Task {
-  return isFile(val) || isNote(val) || isTask(val) || isLink(val) || isPluginItem(val);
+export function isTaskItem(item: Item): item is TaskItem {
+  return !item.detail && !!item.taskInfo;
+}
+
+export function isTask(item: PluginItem): item is WithTask<PluginItem>;
+export function isTask(item: NoteItem): item is WithTask<NoteItem>;
+export function isTask(item: FileItem): item is WithTask<FileItem>;
+export function isTask(item: LinkItem): item is WithTask<LinkItem>;
+export function isTask(item: Item): item is WithTask<Item>;
+export function isTask(item: Item): boolean {
+  return !!item.taskInfo;
 }
 
 export function useUser(): User {
@@ -175,27 +203,31 @@ export function buildProjects(
 
 export function buildItems(
   parent: Inbox | TaskList | Section,
-  items: readonly SchemaItem[],
+  items: readonly Schema.Item[],
 ): Item[] {
-  return items.map((item: SchemaItem): Item => {
-    if (isPluginItem(item)) {
-      let {
-        pluginFields,
-        ...fields
-      } = item;
-
-      let itemFields: PluginItemFields = JSON.parse(pluginFields);
-      return {
-        ...itemFields,
-        ...fields,
-        parent,
-      };
-    } else {
+  return items.map((item: Schema.Item): Item => {
+    if (item.detail?.__typename == "PluginDetail") {
+      let pluginFields: PluginItemFields = JSON.parse(item.detail.fields);
       return {
         ...item,
+        detail: {
+          ...item.detail,
+          ...pluginFields,
+        },
+        taskInfo: item.taskInfo ?? null,
         parent,
       };
     }
+
+    if (!item.detail && !item.taskInfo) {
+      throw new Error("Basic item is missing task info.");
+    }
+
+    // @ts-ignore
+    return {
+      ...item,
+      parent,
+    };
   });
 }
 

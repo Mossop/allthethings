@@ -1,18 +1,15 @@
-import { Icons, ReactMemo } from "@allthethings/ui";
+import { ReactMemo } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
-import { IconButton } from "@material-ui/core";
-import { DateTime } from "luxon";
-import { useCallback } from "react";
 
-import { useEditTaskMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { Task } from "../utils/state";
+import type { TaskItem } from "../utils/state";
 import type { ItemRenderProps } from "./Item";
+import TaskDoneToggle from "./TaskDoneToggle";
 
 export type TaskItemProps = Overwrite<ItemRenderProps, {
-  item: Task;
+  item: TaskItem;
 }>;
 
 export default ReactMemo(function TaskItem({
@@ -26,27 +23,8 @@ export default ReactMemo(function TaskItem({
     }));
   }
 
-  let [toggleDone] = useEditTaskMutation({
-    refetchQueries,
-  });
-
-  let toggle = useCallback(() => toggleDone({
-    variables: {
-      id: item.id,
-      params: {
-        link: item.link,
-        archived: item.archived,
-        summary: item.summary,
-        due: item.due,
-        done: item.done ? null : DateTime.utc(),
-      },
-    },
-  }), [item, toggleDone]);
-
   return <>
-    <IconButton onClick={toggle}>
-      {item.done ? <Icons.CheckedIcon/> : <Icons.UncheckedIcon/>}
-    </IconButton>
+    <TaskDoneToggle item={item}/>
     <div>{item.summary}</div>
   </>;
 });

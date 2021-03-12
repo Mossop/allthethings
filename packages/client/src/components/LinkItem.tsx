@@ -1,10 +1,10 @@
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo } from "@allthethings/ui";
 
-import type { Link } from "../utils/state";
+import type { LinkItem } from "../utils/state";
 
 interface LinkItemProps {
-  item: Link;
+  item: LinkItem;
 }
 
 export default ReactMemo(function LinkItem({

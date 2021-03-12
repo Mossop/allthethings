@@ -1,20 +1,9 @@
-import type { DateTime } from "luxon";
-
 import PluginManager from "../plugins";
 import type { ResolverContext } from "../schema/context";
+import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
-import type * as Types from "../types";
 import * as Src from "./datasources";
-import type * as Db from "./types";
-
-type Resolver<T> = T | Promise<T> | (() => T | Promise<T>);
-
-type SchemaResolver<T> =
-  T extends DateTime
-    ? DateTime
-    : {
-      [K in keyof Omit<T, "__typename">]: Resolver<SchemaResolver<T[K]>>;
-    };
+import * as Db from "./types";
 
 export type ImplBuilder<I, T> = (resolverContext: ResolverContext, dbObject: Db.DbObject<T>) => I;
 
@@ -52,21 +41,13 @@ function fields<T extends Db.DbTable>(): FieldGetter<T> {
     };
   };
 }
-function instanceFields<T extends Db.DbTable>(): FieldGetter<T> {
-  return <K extends keyof Db.DbObject<T>>(key: K): () => Promise<Db.DbObject<T>[K]> => {
-    return async function(this: ItemImpl<T>): Promise<Db.DbObject<T>[K]> {
-      return (await this.instanceDbObject)[key];
-    };
-  };
-}
 
-export type Item = TaskItem | LinkItem | NoteItem | FileItem | PluginItem;
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
-export type ItemGroup = User | Project | Context | Section;
+export type ItemDetail = NoteDetail | LinkDetail | PluginDetail | FileDetail;
 
 abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
-  public readonly id: string;
+  protected readonly _id: string;
   protected _dbObject: Promise<Db.DbObject<T>> | null;
 
   public constructor(resolverContext: ResolverContext, dbObject: Db.DbObject<T>);
@@ -76,16 +57,20 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
     arg: Db.DbObject<T> | string,
   ) {
     if (typeof arg == "string") {
-      this.id = arg;
+      this._id = arg;
       this._dbObject = null;
     } else {
-      this.id = arg.id;
+      this._id = arg.id;
       this._dbObject = Promise.resolve(arg);
     }
   }
 
+  public id(): string {
+    return this._id;
+  }
+
   protected async getDbObject(): Promise<Db.DbObject<T>> {
-    return assertValid(await this.dbObjectDataSource.get(this.id));
+    return assertValid(await this.dbObjectDataSource.getRecord(this._id));
   }
 
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -106,7 +91,7 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
   }
 
   protected async updateDbObject(props: Db.DbUpdateObject<T>): Promise<void> {
-    let newObject = await this.dbObjectDataSource.updateOne(this.id, props);
+    let newObject = await this.dbObjectDataSource.updateOne(this._id, props);
     if (!newObject) {
       throw new Error("Missing item in database.");
     }
@@ -118,47 +103,50 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
   }
 
   public async delete(): Promise<void> {
-    return this.dbObjectDataSource.delete(this.id);
+    return this.dbObjectDataSource.delete(this._id);
   }
 }
 
 abstract class TaskListImpl<
   T extends Db.DbTable,
-> extends BaseImpl<T> implements SchemaResolver<Schema.TaskList> {
+> extends BaseImpl<T> implements Omit<Rslv.TaskListResolvers, "__resolveType"> {
   public async remainingTasks(): Promise<number> {
-    return this.dataSources.tasks.taskListTaskCount(this.id);
+    return this.dataSources.taskInfo.taskListTaskCount(this._id);
   }
 
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
-      parentId: this.id,
+      parentId: this._id,
     });
   }
 
   public async sections(): Promise<readonly Section[]> {
     return this.dataSources.sections.find({
-      ownerId: this.id,
+      ownerId: this._id,
     });
   }
 
   public async items(): Promise<readonly Item[]> {
-    return this.dataSources.items.listSpecialSection(this.id, Src.SectionIndex.Anonymous);
+    return this.dataSources.items.listSpecialSection(this._id, Src.SectionIndex.Anonymous);
   }
 }
 
 abstract class ProjectRootImpl<
   T extends Db.DbTable,
-> extends TaskListImpl<T> implements SchemaResolver<Schema.ProjectRoot> {
+> extends TaskListImpl<T> implements Omit<Rslv.ProjectRootResolvers, "__resolveType"> {
   public async projects(): Promise<readonly Project[]> {
     return this.dataSources.projects.find({
-      contextId: this.id,
+      contextId: this._id,
     });
   }
 
-  public async projectById(id: string): Promise<Project | null> {
+  public async projectById(
+    parent: unknown,
+    args: Schema.ProjectRootProjectByIdArgs,
+  ): Promise<Project | null> {
     let results = await this.dataSources.projects.find({
-      contextId: this.id,
-      id,
+      contextId: this._id,
+      id: args.id,
     });
 
     return results.length ? results[0] : null;
@@ -166,20 +154,20 @@ abstract class ProjectRootImpl<
 }
 
 export class User extends ProjectRootImpl<Db.UserDbTable>
-  implements SchemaResolver<Schema.User>, Types.User {
+  implements Rslv.UserResolvers {
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }
 
   public async contexts(): Promise<readonly Context[]> {
     return this.dataSources.contexts.find({
-      userId: this.id,
+      userId: this._id,
     });
   }
 
   public async inbox(): Promise<Inbox> {
     let record = assertValid(
-      await this.dataSources.sections.getSpecialSection(this.id, Src.SectionIndex.Inbox),
+      await this.dataSources.sections.getSpecialSection(this._id, Src.SectionIndex.Inbox),
     );
 
     return new Inbox(this.resolverContext, record);
@@ -189,7 +177,7 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
 }
 
 export class Context
-  extends ProjectRootImpl<Db.ContextDbTable> implements SchemaResolver<Schema.Context> {
+  extends ProjectRootImpl<Db.ContextDbTable> implements Rslv.ContextResolvers {
   protected get dbObjectDataSource(): Src.ContextDataSource {
     return this.dataSources.contexts;
   }
@@ -209,7 +197,7 @@ export class Context
 }
 
 export class Project extends TaskListImpl<Db.ProjectDbTable>
-  implements SchemaResolver<Schema.Project> {
+  implements Rslv.ProjectResolvers {
   protected get dbObjectDataSource(): Src.ProjectDataSource {
     return this.dataSources.projects;
   }
@@ -219,7 +207,7 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
   }
 
   public async context(): Promise<Context | null> {
-    return this.dataSources.contexts.getOne((await this.dbObject).contextId);
+    return this.dataSources.contexts.getImpl((await this.dbObject).contextId);
   }
 
   public async edit(
@@ -233,12 +221,12 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
     if (taskList instanceof Project) {
       contextId = (await taskList.dbObject).contextId;
     } else {
-      contextId = taskList.id;
+      contextId = taskList.id();
     }
 
-    await this.dbObjectDataSource.updateOne(this.id, {
+    await this.dbObjectDataSource.updateOne(this._id, {
       contextId,
-      parentId: taskList.id,
+      parentId: taskList.id(),
     });
   }
 
@@ -251,12 +239,12 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
       return new Project(this.resolverContext, parentId);
     }
 
-    let context = await this.dataSources.contexts.getOne(contextId);
+    let context = await this.dataSources.contexts.getImpl(contextId);
     if (context) {
       return context;
     }
 
-    let user = await this.dataSources.users.getOne(contextId);
+    let user = await this.dataSources.users.getImpl(contextId);
     return assertValid(user);
   }
 }
@@ -272,33 +260,33 @@ abstract class SpecialSection {
     return this.resolverContext.dataSources;
   }
 
-  public get id(): string {
+  public id(): string {
     return this.dbObject.id;
   }
 
   public async items(): Promise<Item[]> {
     return this.dataSources.items.find({
-      ownerId: this.id,
+      ownerId: this.id(),
     });
   }
 }
 
-export class Inbox extends SpecialSection implements SchemaResolver<Schema.Inbox> {
+export class Inbox extends SpecialSection implements Rslv.InboxResolvers {
 }
 
 export class Section extends BaseImpl<Db.SectionDbTable>
-  implements SchemaResolver<Schema.Section> {
+  implements Rslv.SectionResolvers {
   protected get dbObjectDataSource(): Src.SectionDataSource {
     return this.dataSources.sections;
   }
 
   public async remainingTasks(): Promise<number> {
-    return this.dataSources.tasks.sectionTaskCount(this.id);
+    return this.dataSources.taskInfo.sectionTaskCount(this._id);
   }
 
   public async items(): Promise<readonly Item[]> {
     return this.dataSources.items.find({
-      ownerId: this.id,
+      ownerId: this._id,
     });
   }
 
@@ -312,7 +300,7 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     taskList: User | Context | Project,
     before: string | null,
   ): Promise<void> {
-    await this.dbObjectDataSource.move(this.id, taskList.id, before);
+    await this.dbObjectDataSource.move(this._id, taskList.id(), before);
 
     this._dbObject = null;
   }
@@ -321,148 +309,95 @@ export class Section extends BaseImpl<Db.SectionDbTable>
   public readonly name = fields<Db.SectionDbTable>()("name");
 }
 
-type ProvideEither<A, B> = [A, B | null] | [A | null, B];
-
-abstract class ItemImpl<T extends Db.DbTable = Db.DbTable> extends BaseImpl<Db.ItemDbTable>
-  implements SchemaResolver<Schema.Item> {
-  protected _instanceDbObject: Promise<Db.DbObject<T>> | null;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  protected abstract readonly instanceDbObjectDataSource: Src.DbDataSource<any, T>;
-
-  public constructor(
-    resolverContext: ResolverContext,
-    dbObject: Db.DbObject<Db.ItemDbTable>,
-    instanceDbObject: Db.DbObject<T> | null,
-  );
-  public constructor(
-    resolverContext: ResolverContext,
-    dbObject: Db.DbObject<Db.ItemDbTable> | null,
-    instanceDbObject: Db.DbObject<T>,
-  );
-  public constructor(resolverContext: ResolverContext, id: string);
-  public constructor(
-    resolverContext: ResolverContext,
-    ...args: ProvideEither<Db.DbObject<Db.ItemDbTable>, Db.DbObject<T>> | [string]
-  ) {
-    // @ts-ignore
-    super(resolverContext, args[0] ?? args[1].id);
-
-    if (args.length == 1) {
-      this._instanceDbObject = null;
-    } else {
-      let [, instanceDbObject] = args;
-      if (instanceDbObject) {
-        if (this.id != instanceDbObject.id) {
-          throw new Error("ID mismatch.");
-        }
-        this._instanceDbObject = Promise.resolve(instanceDbObject);
-      } else {
-        this._instanceDbObject = null;
-      }
-    }
-  }
-
+export class Item extends BaseImpl<Db.ItemDbTable>
+  implements Rslv.ItemResolvers {
   protected get dbObjectDataSource(): Src.ItemDataSource {
     return this.dataSources.items;
   }
 
-  protected async getInstanceDbObject(): Promise<Db.DbObject<T>> {
-    return assertValid(await this.instanceDbObjectDataSource.get(this.id));
-  }
-
-  protected get instanceDbObject(): Promise<Db.DbObject<T>> {
-    if (this._instanceDbObject) {
-      return this._instanceDbObject;
-    }
-
-    this._instanceDbObject = this.getInstanceDbObject();
-
-    return this._instanceDbObject;
-  }
-
-  protected async updateInstanceDbObject(props: Db.DbUpdateObject<T>): Promise<void> {
-    let newObject = await this.instanceDbObjectDataSource.updateOne(this.id, props);
-    if (!newObject) {
-      throw new Error("Missing item in database.");
-    }
-    this._instanceDbObject = Promise.resolve(newObject);
-  }
-
-  public async edit(
-    {
-      summary,
-      archived,
-      ...props
-    }: Db.DbUpdateObject<Db.ItemDbTable> & Db.DbUpdateObject<T>,
-  ): Promise<void> {
-    await this.updateDbObject({
-      summary,
-      archived,
-    });
-    // @ts-ignore
-    await this.updateInstanceDbObject(props);
-  }
-
   public async move(parent: TaskList | Section, before: string | null): Promise<void> {
-    await this.dbObjectDataSource.move(this.id, parent.id, before);
+    await this.dbObjectDataSource.move(this._id, parent.id(), before);
 
     this._dbObject = null;
   }
 
+  public async taskInfo(): Promise<TaskInfo | null> {
+    return this.dataSources.taskInfo.getImpl(this._id);
+  }
+
+  public async detail(): Promise<ItemDetail | null> {
+    switch (await this.type()) {
+      case null:
+        return null;
+      case Db.ItemType.File:
+        return this.dataSources.fileDetail.getImpl(this.id());
+      case Db.ItemType.Note:
+        return this.dataSources.noteDetail.getImpl(this.id());
+      case Db.ItemType.Plugin:
+        return this.dataSources.pluginDetail.getImpl(this.id());
+      case Db.ItemType.Link:
+        return this.dataSources.linkDetail.getImpl(this.id());
+    }
+  }
+
+  public readonly type = fields<Db.ItemDbTable>()("type");
   public readonly created = fields<Db.ItemDbTable>()("created");
   public readonly archived = fields<Db.ItemDbTable>()("archived");
+  public readonly snoozed = fields<Db.ItemDbTable>()("archived");
   public readonly summary = fields<Db.ItemDbTable>()("summary");
 }
 
-export class TaskItem extends ItemImpl<Db.TaskItemDbTable> implements SchemaResolver<Schema.Task> {
-  protected get instanceDbObjectDataSource(): Src.TaskItemDataSource {
-    return this.dataSources.tasks;
+export class TaskInfo extends BaseImpl<Db.TaskInfoDbTable>
+  implements Rslv.TaskInfoResolvers {
+  protected get dbObjectDataSource(): Src.TaskInfoSource {
+    return this.dataSources.taskInfo;
   }
 
-  public readonly due = instanceFields<Db.TaskItemDbTable>()("due");
-  public readonly done = instanceFields<Db.TaskItemDbTable>()("done");
+  public readonly due = fields<Db.TaskInfoDbTable>()("due");
+  public readonly done = fields<Db.TaskInfoDbTable>()("done");
 }
 
-export class FileItem extends ItemImpl<Db.FileItemDbTable> implements SchemaResolver<Schema.File> {
-  protected get instanceDbObjectDataSource(): Src.FileItemDataSource {
-    return this.dataSources.files;
+export class LinkDetail extends BaseImpl<Db.LinkDetailDbTable>
+  implements Rslv.LinkDetailResolvers {
+  protected get dbObjectDataSource(): Src.LinkDetailSource {
+    return this.dataSources.linkDetail;
   }
 
-  public readonly path = instanceFields<Db.FileItemDbTable>()("path");
-  public readonly filename = instanceFields<Db.FileItemDbTable>()("filename");
-  public readonly mimetype = instanceFields<Db.FileItemDbTable>()("mimetype");
-  public readonly size = instanceFields<Db.FileItemDbTable>()("size");
+  public readonly icon = fields<Db.LinkDetailDbTable>()("icon");
+  public readonly url = fields<Db.LinkDetailDbTable>()("url");
 }
 
-export class NoteItem extends ItemImpl<Db.NoteItemDbTable> implements SchemaResolver<Schema.Note> {
-  protected get instanceDbObjectDataSource(): Src.NoteItemDataSource {
-    return this.dataSources.notes;
+export class NoteDetail extends BaseImpl<Db.NoteDetailDbTable>
+  implements Rslv.NoteDetailResolvers {
+  protected get dbObjectDataSource(): Src.NoteDetailSource {
+    return this.dataSources.noteDetail;
   }
 
-  public readonly note = instanceFields<Db.NoteItemDbTable>()("note");
+  public readonly note = fields<Db.NoteDetailDbTable>()("note");
 }
 
-export class LinkItem extends ItemImpl<Db.LinkItemDbTable> implements SchemaResolver<Schema.Link> {
-  protected get instanceDbObjectDataSource(): Src.LinkItemDataSource {
-    return this.dataSources.links;
+export class FileDetail extends BaseImpl<Db.FileDetailDbTable>
+  implements Rslv.FileDetailResolvers {
+  protected get dbObjectDataSource(): Src.FileDetailSource {
+    return this.dataSources.fileDetail;
   }
 
-  public readonly link = instanceFields<Db.LinkItemDbTable>()("link");
+  public readonly filename = fields<Db.FileDetailDbTable>()("filename");
+  public readonly mimetype = fields<Db.FileDetailDbTable>()("mimetype");
+  public readonly size = fields<Db.FileDetailDbTable>()("size");
 }
 
-export class PluginItem extends ItemImpl<Db.PluginItemDbTable>
-  implements SchemaResolver<Schema.PluginItem> {
-  protected get instanceDbObjectDataSource(): Src.PluginItemDataSource {
-    return this.dataSources.pluginItems;
+export class PluginDetail extends BaseImpl<Db.PluginDetailDbTable>
+  implements Rslv.PluginDetailResolvers {
+  protected get dbObjectDataSource(): Src.PluginDetailSource {
+    return this.dataSources.pluginDetail;
   }
 
-  public readonly pluginId = instanceFields<Db.PluginItemDbTable>()("pluginId");
-  public readonly due = instanceFields<Db.PluginItemDbTable>()("due");
-  public readonly done = instanceFields<Db.PluginItemDbTable>()("done");
-
-  public async pluginFields(): Promise<string> {
+  public async fields(): Promise<string> {
     let pluginId = await this.pluginId();
-    let fields = await PluginManager.getItemFields(this.id, pluginId);
+    let fields = await PluginManager.getItemFields(this._id, pluginId);
     return JSON.stringify(fields);
   }
+
+  public readonly pluginId = fields<Db.PluginDetailDbTable>()("pluginId");
 }

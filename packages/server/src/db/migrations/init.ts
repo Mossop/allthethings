@@ -181,13 +181,14 @@ export async function up(knex: Knex): Promise<void> {
     table.text("summary")
       .notNullable();
     table.text("type")
-      .notNullable();
+      .nullable();
     table.timestamp("created", { useTz: true })
       .notNullable()
       .defaultTo("now");
-    table.boolean("archived")
-      .notNullable()
-      .defaultTo(false);
+    table.timestamp("archived", { useTz: true })
+      .nullable();
+    table.timestamp("snoozed", { useTz: true })
+      .nullable();
   });
 
   await knex.raw(`
@@ -203,18 +204,16 @@ export async function up(knex: Knex): Promise<void> {
     index: "index",
   });
 
-  await knex.schema.createTable("TaskItem", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("TaskInfo", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
-    table.text("link")
-      .nullable();
     table.timestamp("due", { useTz: true })
       .nullable();
     table.timestamp("done", { useTz: true })
       .nullable();
   });
 
-  await knex.schema.createTable("LinkItem", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("LinkDetail", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
     table.text("link")
@@ -223,14 +222,14 @@ export async function up(knex: Knex): Promise<void> {
       .nullable();
   });
 
-  await knex.schema.createTable("NoteItem", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("NoteDetail", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
     table.text("note")
       .notNullable();
   });
 
-  await knex.schema.createTable("FileItem", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("FileDetail", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
     table.text("filename")
@@ -243,13 +242,11 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
   });
 
-  await knex.schema.createTable("PluginItem", (table: Knex.CreateTableBuilder): void => {
+  await knex.schema.createTable("PluginDetail", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
-    table.timestamp("due", { useTz: true })
-      .nullable();
-    table.timestamp("done", { useTz: true })
-      .nullable();
+    table.text("pluginId")
+      .notNullable();
   });
 }
 
@@ -260,6 +257,11 @@ export async function down(knex: Knex): Promise<void> {
   await knex.schema.dropTableIfExists("NoteItem");
   await knex.schema.dropTableIfExists("LinkItem");
   await knex.schema.dropTableIfExists("TaskItem");
+  await knex.schema.dropTableIfExists("PluginDetail");
+  await knex.schema.dropTableIfExists("FileDetail");
+  await knex.schema.dropTableIfExists("NoteDetail");
+  await knex.schema.dropTableIfExists("LinkDetail");
+  await knex.schema.dropTableIfExists("TaskInfo");
   await knex.schema.dropTableIfExists("Item");
   await knex.schema.dropTableIfExists("Section");
   await knex.schema.dropTableIfExists("Project");

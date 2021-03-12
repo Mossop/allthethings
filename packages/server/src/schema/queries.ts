@@ -12,7 +12,7 @@ const resolvers: QueryResolvers = {
       return null;
     }
 
-    let user = await ctx.dataSources.users.getOne(ctx.userId);
+    let user = await ctx.dataSources.users.getImpl(ctx.userId);
     if (!user) {
       ctx.logout();
       return null;

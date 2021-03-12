@@ -1,8 +1,47 @@
-import type { User, Context, Project, Section, TaskList, TaskItem, Item } from "../db";
-import type { AuthedParams, ResolverParams } from "./context";
+import type { Overwrite } from "@allthethings/utils";
+
+import type { User, Context, Project, Section, TaskList, Item } from "../db";
+import { ItemType } from "../db/types";
+import type { AuthedParams, AuthedContext, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
+
+type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
+  taskInfo?: Types.TaskInfoParams | null;
+}>;
+
+async function baseCreateItem(
+  ctx: AuthedContext,
+  { list: listId, item: itemParams, taskInfo }: ItemCreateArgs,
+  type: ItemType | null,
+): Promise<Item> {
+  let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+  if (!list && listId) {
+    list = await ctx.dataSources.sections.getImpl(listId);
+  }
+
+  if (!list) {
+    throw new Error("Unknown task list.");
+  }
+
+  let item = await ctx.dataSources.items.create(list, {
+    ...itemParams,
+    archived: itemParams.archived ?? null,
+    snoozed: itemParams.snoozed ?? null,
+    type,
+  });
+
+  if (taskInfo) {
+    await ctx.dataSources.taskInfo.create(item, {
+      ...taskInfo,
+      due: taskInfo.due ?? null,
+      done: taskInfo.done ?? null,
+    });
+  }
+
+  return item;
+}
 
 const resolvers: MutationResolvers = {
   login: resolver(async ({
@@ -34,7 +73,7 @@ const resolvers: MutationResolvers = {
     args: { params },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateContextArgs>): Promise<Context> => {
-    let user = await ctx.dataSources.users.getOne(ctx.userId);
+    let user = await ctx.dataSources.users.getImpl(ctx.userId);
     if (!user) {
       throw new Error("Unknown user.");
     }
@@ -45,7 +84,7 @@ const resolvers: MutationResolvers = {
     args: { id, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationEditContextArgs>): Promise<Context | null> => {
-    let context = await ctx.dataSources.contexts.getOne(id);
+    let context = await ctx.dataSources.contexts.getImpl(id);
     if (!context) {
       return null;
     }
@@ -79,7 +118,7 @@ const resolvers: MutationResolvers = {
     args: { id, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationEditProjectArgs>): Promise<Project | null> => {
-    let project = await ctx.dataSources.projects.getOne(id);
+    let project = await ctx.dataSources.projects.getImpl(id);
 
     if (!project) {
       return null;
@@ -94,7 +133,7 @@ const resolvers: MutationResolvers = {
     args: { id, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveProjectArgs>): Promise<Project | null> => {
-    let project = await ctx.dataSources.projects.getOne(id);
+    let project = await ctx.dataSources.projects.getImpl(id);
     if (!project) {
       return null;
     }
@@ -112,7 +151,7 @@ const resolvers: MutationResolvers = {
     args: { id },
     ctx,
   }: AuthedParams<unknown, Types.MutationDeleteProjectArgs>): Promise<boolean> => {
-    let project = await ctx.dataSources.projects.getOne(id);
+    let project = await ctx.dataSources.projects.getImpl(id);
     if (!project) {
       return false;
     }
@@ -137,7 +176,7 @@ const resolvers: MutationResolvers = {
     args: { id, params },
     ctx,
   }: AuthedParams<unknown, Types.MutationEditSectionArgs>): Promise<Section | null> => {
-    let section = await ctx.dataSources.sections.getOne(id);
+    let section = await ctx.dataSources.sections.getImpl(id);
 
     if (!section) {
       return null;
@@ -152,7 +191,7 @@ const resolvers: MutationResolvers = {
     args: { id, before, taskList },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
-    let section = await ctx.dataSources.sections.getOne(id);
+    let section = await ctx.dataSources.sections.getImpl(id);
     if (!section) {
       return null;
     }
@@ -170,7 +209,7 @@ const resolvers: MutationResolvers = {
     args: { id },
     ctx,
   }: AuthedParams<unknown, Types.MutationDeleteSectionArgs>): Promise<boolean> => {
-    let section = await ctx.dataSources.sections.getOne(id);
+    let section = await ctx.dataSources.sections.getImpl(id);
     if (!section) {
       return false;
     }
@@ -180,40 +219,71 @@ const resolvers: MutationResolvers = {
   }),
 
   createTask: authed(async ({
-    args: { list: listId, params },
+    args,
     ctx,
-  }: AuthedParams<unknown, Types.MutationCreateTaskArgs>): Promise<TaskItem> => {
-    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
-    if (!list && listId) {
-      list = await ctx.dataSources.sections.getOne(listId);
-    }
-
-    if (!list) {
-      throw new Error("Unknown task list.");
-    }
-
-    return ctx.dataSources.tasks.create(list, {
-      ...params,
-      due: params.due ?? null,
-      done: params.done ?? null,
-      link: params.link ?? null,
-    });
+  }: AuthedParams<unknown, Types.MutationCreateTaskArgs>): Promise<Item> => {
+    return baseCreateItem(ctx, args, null);
   }),
 
-  editTask: authed(async ({
-    args: { id, params },
+  createLink: authed(async ({
+    args: { detail, ...args },
     ctx,
-  }: AuthedParams<unknown, Types.MutationEditTaskArgs>): Promise<TaskItem | null> => {
-    let item = await ctx.dataSources.tasks.getOne(id);
+  }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
+    let item = await baseCreateItem(ctx, args, ItemType.Link);
+
+    await ctx.dataSources.linkDetail.create(item, {
+      ...detail,
+      icon: null,
+    });
+
+    return item;
+  }),
+
+  createNote: authed(async ({
+    args: { detail, ...args },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationCreateNoteArgs>): Promise<Item> => {
+    let item = await baseCreateItem(ctx, args, ItemType.Note);
+
+    await ctx.dataSources.noteDetail.create(item, {
+      ...detail,
+    });
+
+    return item;
+  }),
+
+  editItem: authed(async ({
+    args: { id, item: params },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditItemArgs>): Promise<Item | null> => {
+    await ctx.dataSources.items.updateOne(id, {
+      ...params,
+      archived: params.archived ?? null,
+      snoozed: params.snoozed ?? null,
+    });
+
+    return ctx.dataSources.items.getImpl(id);
+  }),
+
+  editTaskInfo: authed(async ({
+    args: { id, taskInfo },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditTaskInfoArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
       return null;
     }
 
-    await item.edit({
-      ...params,
-      done: params.done ?? null,
-    });
+    if (taskInfo) {
+      await ctx.dataSources.taskInfo.updateOne(id, {
+        ...taskInfo,
+        due: taskInfo.due ?? null,
+        done: taskInfo.done ?? null,
+      });
+    } else {
+      await ctx.dataSources.taskInfo.delete(id);
+    }
 
     return item;
   }),
@@ -222,7 +292,7 @@ const resolvers: MutationResolvers = {
     args: { id, parent, before },
     ctx,
   }: AuthedParams<unknown, Types.MutationMoveItemArgs>): Promise<Item | null> => {
-    let item = await ctx.dataSources.items.getOne(id);
+    let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
       return null;
@@ -234,7 +304,7 @@ const resolvers: MutationResolvers = {
 
     let owner: TaskList | Section | null = await ctx.getTaskList(parent);
     if (!owner) {
-      owner = await ctx.dataSources.sections.getOne(parent);
+      owner = await ctx.dataSources.sections.getImpl(parent);
     }
     if (!owner) {
       throw new Error("Owner not found.");
@@ -248,7 +318,7 @@ const resolvers: MutationResolvers = {
     args: { id },
     ctx,
   }: AuthedParams<unknown, Types.MutationDeleteItemArgs>): Promise<boolean> => {
-    let item = await ctx.dataSources.items.getOne(id);
+    let item = await ctx.dataSources.items.getImpl(id);
     if (!item) {
       return false;
     }

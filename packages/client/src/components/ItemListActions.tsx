@@ -113,7 +113,7 @@ export default ReactMemo(function ItemListActions({
       {isTaskList(list) && <IconButton onClick={openAddSection}><Icons.SectionIcon/></IconButton>}
       {deleteList && <IconButton onClick={deleteList}><Icons.DeleteIcon/></IconButton>}
     </div>
-    {taskAddDialogOpen && <TaskDialog list={list} onClose={closeAddTask}/>}
+    {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
     {
       sectionAddDialogOpen && isTaskList(list) &&
       <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>

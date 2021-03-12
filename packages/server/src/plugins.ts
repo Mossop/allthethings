@@ -117,6 +117,7 @@ function wrapResolver(
         args: unknown,
         context: ResolverContext,
       ): unknown => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return resolverFn.call(typeResolver, parent, args, wrapContext(plugin, context));
       };
     }

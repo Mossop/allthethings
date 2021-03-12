@@ -5,7 +5,6 @@ import type { DateTime } from "luxon";
 // levels.
 
 export enum ItemType {
-  Task = "task",
   Link = "link",
   File = "file",
   Note = "note",
@@ -87,44 +86,42 @@ export type SectionDbTable = DbTable<IndexedDbEntity & {
   stub: string;
 }>;
 
-// Every item, abstract.
+// Every item.
 export type ItemDbTable = DbTable<IndexedDbEntity & {
   summary: string;
-  archived: boolean;
-  type: ItemType;
+  archived: DateTime | null;
+  snoozed: DateTime | null;
+  type: ItemType | null;
 }, {
   created: DateTime;
 }>;
 
-// A special instance of an item. id is a foreign key to ItemDbTable.id.
-export type TaskItemDbTable = DbTable<{
+// Task data for an item. id is a foreign key to ItemDbTable.id
+export type TaskInfoDbTable = DbTable<{
   due: DateTime | null;
   done: DateTime | null;
-  link: string | null;
 }>;
 
-// A link artifact.
-export type LinkItemDbTable = DbTable<{
+// Data for a link. id is a foreign key to ItemDbTable.id.
+export type LinkDetailDbTable = DbTable<{
   icon: string | null;
-  link: string;
+  url: string;
 }>;
 
-// A note artifact.
-export type NoteItemDbTable = DbTable<{
+// Data for a note. id is a foreign key to ItemDbTable.id.
+export type NoteDetailDbTable = DbTable<{
   note: string;
 }>;
 
-// A file artifact.
-export type FileItemDbTable = DbTable<{
+// Data for a file. id is a foreign key to ItemDbTable.id.
+export type FileDetailDbTable = DbTable<{
   filename: string;
   path: string;
   size: number;
   mimetype: string;
 }>;
 
-// A plugin provided item
-export type PluginItemDbTable = DbTable<{
+// Data for a plugin item. id is a foreign key to ItemDbTable.id.
+export type PluginDetailDbTable = DbTable<{
   pluginId: string;
-  due: DateTime | null;
-  done: DateTime | null;
 }>;

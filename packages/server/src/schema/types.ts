@@ -15,64 +15,47 @@ export type Scalars = {
 };
 
 
-export type Item = {
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
-};
-
-export type Task = Item & {
-  readonly __typename?: 'Task';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type TaskInfo = {
+  readonly __typename?: 'TaskInfo';
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
-  readonly link?: Maybe<Scalars['String']>;
 };
 
-export type PluginItem = Item & {
-  readonly __typename?: 'PluginItem';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type PluginDetail = {
+  readonly __typename?: 'PluginDetail';
   readonly pluginId: Scalars['String'];
-  readonly due?: Maybe<Scalars['DateTime']>;
-  readonly done?: Maybe<Scalars['DateTime']>;
-  readonly pluginFields: Scalars['String'];
+  readonly fields: Scalars['String'];
 };
 
-export type File = Item & {
-  readonly __typename?: 'File';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type FileDetail = {
+  readonly __typename?: 'FileDetail';
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
 };
 
-export type Note = Item & {
-  readonly __typename?: 'Note';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type NoteDetail = {
+  readonly __typename?: 'NoteDetail';
   readonly note: Scalars['String'];
 };
 
-export type Link = Item & {
-  readonly __typename?: 'Link';
+export type LinkDetail = {
+  readonly __typename?: 'LinkDetail';
+  readonly icon?: Maybe<Scalars['String']>;
+  readonly url: Scalars['String'];
+};
+
+export type ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail;
+
+export type Item = {
+  readonly __typename?: 'Item';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
   readonly created: Scalars['DateTime'];
-  readonly icon?: Maybe<Scalars['String']>;
-  readonly link: Scalars['String'];
+  readonly archived?: Maybe<Scalars['DateTime']>;
+  readonly snoozed?: Maybe<Scalars['DateTime']>;
+  readonly taskInfo?: Maybe<TaskInfo>;
+  readonly detail?: Maybe<ItemDetail>;
 };
 
 export type TaskList = {
@@ -189,12 +172,23 @@ export type SectionParams = {
   readonly name: Scalars['String'];
 };
 
-export type TaskParams = {
-  readonly archived: Scalars['Boolean'];
+export type ItemParams = {
   readonly summary: Scalars['String'];
-  readonly done?: Maybe<Scalars['DateTime']>;
-  readonly link?: Maybe<Scalars['String']>;
+  readonly archived?: Maybe<Scalars['DateTime']>;
+  readonly snoozed?: Maybe<Scalars['DateTime']>;
+};
+
+export type TaskInfoParams = {
   readonly due?: Maybe<Scalars['DateTime']>;
+  readonly done?: Maybe<Scalars['DateTime']>;
+};
+
+export type LinkDetailParams = {
+  readonly url: Scalars['String'];
+};
+
+export type NoteDetailParams = {
+  readonly note: Scalars['String'];
 };
 
 export type Mutation = {
@@ -212,8 +206,11 @@ export type Mutation = {
   readonly moveSection?: Maybe<Section>;
   readonly editSection?: Maybe<Section>;
   readonly deleteSection: Scalars['Boolean'];
-  readonly createTask: Task;
-  readonly editTask?: Maybe<Task>;
+  readonly createTask: Item;
+  readonly createNote: Item;
+  readonly createLink: Item;
+  readonly editItem?: Maybe<Item>;
+  readonly editTaskInfo?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
   readonly deleteItem: Scalars['Boolean'];
 };
@@ -291,13 +288,36 @@ export type MutationDeleteSectionArgs = {
 
 export type MutationCreateTaskArgs = {
   list?: Maybe<Scalars['ID']>;
-  params: TaskParams;
+  item: ItemParams;
+  taskInfo: TaskInfoParams;
 };
 
 
-export type MutationEditTaskArgs = {
+export type MutationCreateNoteArgs = {
+  list?: Maybe<Scalars['ID']>;
+  item: ItemParams;
+  detail: NoteDetailParams;
+  taskInfo?: Maybe<TaskInfoParams>;
+};
+
+
+export type MutationCreateLinkArgs = {
+  list?: Maybe<Scalars['ID']>;
+  item: ItemParams;
+  detail: LinkDetailParams;
+  taskInfo?: Maybe<TaskInfoParams>;
+};
+
+
+export type MutationEditItemArgs = {
   id: Scalars['ID'];
-  params: TaskParams;
+  item: ItemParams;
+};
+
+
+export type MutationEditTaskInfoArgs = {
+  id: Scalars['ID'];
+  taskInfo?: Maybe<TaskInfoParams>;
 };
 
 

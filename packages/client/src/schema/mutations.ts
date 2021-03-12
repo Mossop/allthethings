@@ -1,10 +1,11 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFields_Task_Fragment, ItemFields_PluginItem_Fragment, ItemFields_File_Fragment, ItemFields_Note_Fragment, ItemFields_Link_Fragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFieldsFragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
+const defaultOptions =  {}
 export type LoginMutationVariables = Types.Exact<{
   email: Types.Scalars['String'];
   password: Types.Scalars['String'];
@@ -105,24 +106,36 @@ export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly 
 
 export type CreateTaskMutationVariables = Types.Exact<{
   list: Types.Maybe<Types.Scalars['ID']>;
-  params: Types.TaskParams;
+  item: Types.ItemParams;
+  taskInfo: Types.TaskInfoParams;
 }>;
 
 
 export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: (
-    { readonly __typename: 'Task' }
-    & ItemFields_Task_Fragment
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
   ) };
 
-export type EditTaskMutationVariables = Types.Exact<{
+export type EditItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  params: Types.TaskParams;
+  item: Types.ItemParams;
 }>;
 
 
-export type EditTaskMutation = { readonly __typename: 'Mutation', readonly editTask: Types.Maybe<(
-    { readonly __typename: 'Task' }
-    & ItemFields_Task_Fragment
+export type EditItemMutation = { readonly __typename: 'Mutation', readonly editItem: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
+  )> };
+
+export type EditTaskInfoMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  taskInfo: Types.Maybe<Types.TaskInfoParams>;
+}>;
+
+
+export type EditTaskInfoMutation = { readonly __typename: 'Mutation', readonly editTaskInfo: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
   )> };
 
 export type MoveItemMutationVariables = Types.Exact<{
@@ -133,20 +146,8 @@ export type MoveItemMutationVariables = Types.Exact<{
 
 
 export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Types.Maybe<(
-    { readonly __typename: 'Task' }
-    & ItemFields_Task_Fragment
-  ) | (
-    { readonly __typename: 'PluginItem' }
-    & ItemFields_PluginItem_Fragment
-  ) | (
-    { readonly __typename: 'File' }
-    & ItemFields_File_Fragment
-  ) | (
-    { readonly __typename: 'Note' }
-    & ItemFields_Note_Fragment
-  ) | (
-    { readonly __typename: 'Link' }
-    & ItemFields_Link_Fragment
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
   )> };
 
 export type DeleteItemMutationVariables = Types.Exact<{
@@ -185,7 +186,8 @@ export type LoginMutationFn = Apollo.MutationFunction<LoginMutation, LoginMutati
  * });
  */
 export function useLoginMutation(baseOptions?: Apollo.MutationHookOptions<LoginMutation, LoginMutationVariables>) {
-        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LoginMutation, LoginMutationVariables>(LoginDocument, options);
       }
 export type LoginMutationHookResult = ReturnType<typeof useLoginMutation>;
 export type LoginMutationResult = Apollo.MutationResult<LoginMutation>;
@@ -214,7 +216,8 @@ export type LogoutMutationFn = Apollo.MutationFunction<LogoutMutation, LogoutMut
  * });
  */
 export function useLogoutMutation(baseOptions?: Apollo.MutationHookOptions<LogoutMutation, LogoutMutationVariables>) {
-        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<LogoutMutation, LogoutMutationVariables>(LogoutDocument, options);
       }
 export type LogoutMutationHookResult = ReturnType<typeof useLogoutMutation>;
 export type LogoutMutationResult = Apollo.MutationResult<LogoutMutation>;
@@ -248,7 +251,8 @@ export type CreateContextMutationFn = Apollo.MutationFunction<CreateContextMutat
  * });
  */
 export function useCreateContextMutation(baseOptions?: Apollo.MutationHookOptions<CreateContextMutation, CreateContextMutationVariables>) {
-        return Apollo.useMutation<CreateContextMutation, CreateContextMutationVariables>(CreateContextDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateContextMutation, CreateContextMutationVariables>(CreateContextDocument, options);
       }
 export type CreateContextMutationHookResult = ReturnType<typeof useCreateContextMutation>;
 export type CreateContextMutationResult = Apollo.MutationResult<CreateContextMutation>;
@@ -283,7 +287,8 @@ export type EditContextMutationFn = Apollo.MutationFunction<EditContextMutation,
  * });
  */
 export function useEditContextMutation(baseOptions?: Apollo.MutationHookOptions<EditContextMutation, EditContextMutationVariables>) {
-        return Apollo.useMutation<EditContextMutation, EditContextMutationVariables>(EditContextDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditContextMutation, EditContextMutationVariables>(EditContextDocument, options);
       }
 export type EditContextMutationHookResult = ReturnType<typeof useEditContextMutation>;
 export type EditContextMutationResult = Apollo.MutationResult<EditContextMutation>;
@@ -313,7 +318,8 @@ export type DeleteContextMutationFn = Apollo.MutationFunction<DeleteContextMutat
  * });
  */
 export function useDeleteContextMutation(baseOptions?: Apollo.MutationHookOptions<DeleteContextMutation, DeleteContextMutationVariables>) {
-        return Apollo.useMutation<DeleteContextMutation, DeleteContextMutationVariables>(DeleteContextDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteContextMutation, DeleteContextMutationVariables>(DeleteContextDocument, options);
       }
 export type DeleteContextMutationHookResult = ReturnType<typeof useDeleteContextMutation>;
 export type DeleteContextMutationResult = Apollo.MutationResult<DeleteContextMutation>;
@@ -347,7 +353,8 @@ export type CreateSectionMutationFn = Apollo.MutationFunction<CreateSectionMutat
  * });
  */
 export function useCreateSectionMutation(baseOptions?: Apollo.MutationHookOptions<CreateSectionMutation, CreateSectionMutationVariables>) {
-        return Apollo.useMutation<CreateSectionMutation, CreateSectionMutationVariables>(CreateSectionDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateSectionMutation, CreateSectionMutationVariables>(CreateSectionDocument, options);
       }
 export type CreateSectionMutationHookResult = ReturnType<typeof useCreateSectionMutation>;
 export type CreateSectionMutationResult = Apollo.MutationResult<CreateSectionMutation>;
@@ -381,7 +388,8 @@ export type EditSectionMutationFn = Apollo.MutationFunction<EditSectionMutation,
  * });
  */
 export function useEditSectionMutation(baseOptions?: Apollo.MutationHookOptions<EditSectionMutation, EditSectionMutationVariables>) {
-        return Apollo.useMutation<EditSectionMutation, EditSectionMutationVariables>(EditSectionDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditSectionMutation, EditSectionMutationVariables>(EditSectionDocument, options);
       }
 export type EditSectionMutationHookResult = ReturnType<typeof useEditSectionMutation>;
 export type EditSectionMutationResult = Apollo.MutationResult<EditSectionMutation>;
@@ -416,7 +424,8 @@ export type MoveSectionMutationFn = Apollo.MutationFunction<MoveSectionMutation,
  * });
  */
 export function useMoveSectionMutation(baseOptions?: Apollo.MutationHookOptions<MoveSectionMutation, MoveSectionMutationVariables>) {
-        return Apollo.useMutation<MoveSectionMutation, MoveSectionMutationVariables>(MoveSectionDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MoveSectionMutation, MoveSectionMutationVariables>(MoveSectionDocument, options);
       }
 export type MoveSectionMutationHookResult = ReturnType<typeof useMoveSectionMutation>;
 export type MoveSectionMutationResult = Apollo.MutationResult<MoveSectionMutation>;
@@ -446,7 +455,8 @@ export type DeleteSectionMutationFn = Apollo.MutationFunction<DeleteSectionMutat
  * });
  */
 export function useDeleteSectionMutation(baseOptions?: Apollo.MutationHookOptions<DeleteSectionMutation, DeleteSectionMutationVariables>) {
-        return Apollo.useMutation<DeleteSectionMutation, DeleteSectionMutationVariables>(DeleteSectionDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteSectionMutation, DeleteSectionMutationVariables>(DeleteSectionDocument, options);
       }
 export type DeleteSectionMutationHookResult = ReturnType<typeof useDeleteSectionMutation>;
 export type DeleteSectionMutationResult = Apollo.MutationResult<DeleteSectionMutation>;
@@ -481,7 +491,8 @@ export type CreateProjectMutationFn = Apollo.MutationFunction<CreateProjectMutat
  * });
  */
 export function useCreateProjectMutation(baseOptions?: Apollo.MutationHookOptions<CreateProjectMutation, CreateProjectMutationVariables>) {
-        return Apollo.useMutation<CreateProjectMutation, CreateProjectMutationVariables>(CreateProjectDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateProjectMutation, CreateProjectMutationVariables>(CreateProjectDocument, options);
       }
 export type CreateProjectMutationHookResult = ReturnType<typeof useCreateProjectMutation>;
 export type CreateProjectMutationResult = Apollo.MutationResult<CreateProjectMutation>;
@@ -516,7 +527,8 @@ export type EditProjectMutationFn = Apollo.MutationFunction<EditProjectMutation,
  * });
  */
 export function useEditProjectMutation(baseOptions?: Apollo.MutationHookOptions<EditProjectMutation, EditProjectMutationVariables>) {
-        return Apollo.useMutation<EditProjectMutation, EditProjectMutationVariables>(EditProjectDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditProjectMutation, EditProjectMutationVariables>(EditProjectDocument, options);
       }
 export type EditProjectMutationHookResult = ReturnType<typeof useEditProjectMutation>;
 export type EditProjectMutationResult = Apollo.MutationResult<EditProjectMutation>;
@@ -551,7 +563,8 @@ export type MoveProjectMutationFn = Apollo.MutationFunction<MoveProjectMutation,
  * });
  */
 export function useMoveProjectMutation(baseOptions?: Apollo.MutationHookOptions<MoveProjectMutation, MoveProjectMutationVariables>) {
-        return Apollo.useMutation<MoveProjectMutation, MoveProjectMutationVariables>(MoveProjectDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MoveProjectMutation, MoveProjectMutationVariables>(MoveProjectDocument, options);
       }
 export type MoveProjectMutationHookResult = ReturnType<typeof useMoveProjectMutation>;
 export type MoveProjectMutationResult = Apollo.MutationResult<MoveProjectMutation>;
@@ -581,14 +594,15 @@ export type DeleteProjectMutationFn = Apollo.MutationFunction<DeleteProjectMutat
  * });
  */
 export function useDeleteProjectMutation(baseOptions?: Apollo.MutationHookOptions<DeleteProjectMutation, DeleteProjectMutationVariables>) {
-        return Apollo.useMutation<DeleteProjectMutation, DeleteProjectMutationVariables>(DeleteProjectDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteProjectMutation, DeleteProjectMutationVariables>(DeleteProjectDocument, options);
       }
 export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProjectMutation>;
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const CreateTaskDocument = gql`
-    mutation CreateTask($list: ID, $params: TaskParams!) {
-  createTask(list: $list, params: $params) {
+    mutation CreateTask($list: ID, $item: ItemParams!, $taskInfo: TaskInfoParams!) {
+  createTask(list: $list, item: $item, taskInfo: $taskInfo) {
     ...itemFields
   }
 }
@@ -609,49 +623,86 @@ export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, C
  * const [createTaskMutation, { data, loading, error }] = useCreateTaskMutation({
  *   variables: {
  *      list: // value for 'list'
- *      params: // value for 'params'
+ *      item: // value for 'item'
+ *      taskInfo: // value for 'taskInfo'
  *   },
  * });
  */
 export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<CreateTaskMutation, CreateTaskMutationVariables>) {
-        return Apollo.useMutation<CreateTaskMutation, CreateTaskMutationVariables>(CreateTaskDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateTaskMutation, CreateTaskMutationVariables>(CreateTaskDocument, options);
       }
 export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
-export const EditTaskDocument = gql`
-    mutation EditTask($id: ID!, $params: TaskParams!) {
-  editTask(id: $id, params: $params) {
+export const EditItemDocument = gql`
+    mutation EditItem($id: ID!, $item: ItemParams!) {
+  editItem(id: $id, item: $item) {
     ...itemFields
   }
 }
     ${ItemFieldsFragmentDoc}`;
-export type EditTaskMutationFn = Apollo.MutationFunction<EditTaskMutation, EditTaskMutationVariables>;
+export type EditItemMutationFn = Apollo.MutationFunction<EditItemMutation, EditItemMutationVariables>;
 
 /**
- * __useEditTaskMutation__
+ * __useEditItemMutation__
  *
- * To run a mutation, you first call `useEditTaskMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useEditTaskMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useEditItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditItemMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [editTaskMutation, { data, loading, error }] = useEditTaskMutation({
+ * const [editItemMutation, { data, loading, error }] = useEditItemMutation({
  *   variables: {
  *      id: // value for 'id'
- *      params: // value for 'params'
+ *      item: // value for 'item'
  *   },
  * });
  */
-export function useEditTaskMutation(baseOptions?: Apollo.MutationHookOptions<EditTaskMutation, EditTaskMutationVariables>) {
-        return Apollo.useMutation<EditTaskMutation, EditTaskMutationVariables>(EditTaskDocument, baseOptions);
+export function useEditItemMutation(baseOptions?: Apollo.MutationHookOptions<EditItemMutation, EditItemMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditItemMutation, EditItemMutationVariables>(EditItemDocument, options);
       }
-export type EditTaskMutationHookResult = ReturnType<typeof useEditTaskMutation>;
-export type EditTaskMutationResult = Apollo.MutationResult<EditTaskMutation>;
-export type EditTaskMutationOptions = Apollo.BaseMutationOptions<EditTaskMutation, EditTaskMutationVariables>;
+export type EditItemMutationHookResult = ReturnType<typeof useEditItemMutation>;
+export type EditItemMutationResult = Apollo.MutationResult<EditItemMutation>;
+export type EditItemMutationOptions = Apollo.BaseMutationOptions<EditItemMutation, EditItemMutationVariables>;
+export const EditTaskInfoDocument = gql`
+    mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
+  editTaskInfo(id: $id, taskInfo: $taskInfo) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type EditTaskInfoMutationFn = Apollo.MutationFunction<EditTaskInfoMutation, EditTaskInfoMutationVariables>;
+
+/**
+ * __useEditTaskInfoMutation__
+ *
+ * To run a mutation, you first call `useEditTaskInfoMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditTaskInfoMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editTaskInfoMutation, { data, loading, error }] = useEditTaskInfoMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      taskInfo: // value for 'taskInfo'
+ *   },
+ * });
+ */
+export function useEditTaskInfoMutation(baseOptions?: Apollo.MutationHookOptions<EditTaskInfoMutation, EditTaskInfoMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditTaskInfoMutation, EditTaskInfoMutationVariables>(EditTaskInfoDocument, options);
+      }
+export type EditTaskInfoMutationHookResult = ReturnType<typeof useEditTaskInfoMutation>;
+export type EditTaskInfoMutationResult = Apollo.MutationResult<EditTaskInfoMutation>;
+export type EditTaskInfoMutationOptions = Apollo.BaseMutationOptions<EditTaskInfoMutation, EditTaskInfoMutationVariables>;
 export const MoveItemDocument = gql`
     mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
   moveItem(id: $id, parent: $parent, before: $before) {
@@ -681,7 +732,8 @@ export type MoveItemMutationFn = Apollo.MutationFunction<MoveItemMutation, MoveI
  * });
  */
 export function useMoveItemMutation(baseOptions?: Apollo.MutationHookOptions<MoveItemMutation, MoveItemMutationVariables>) {
-        return Apollo.useMutation<MoveItemMutation, MoveItemMutationVariables>(MoveItemDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MoveItemMutation, MoveItemMutationVariables>(MoveItemDocument, options);
       }
 export type MoveItemMutationHookResult = ReturnType<typeof useMoveItemMutation>;
 export type MoveItemMutationResult = Apollo.MutationResult<MoveItemMutation>;
@@ -711,7 +763,8 @@ export type DeleteItemMutationFn = Apollo.MutationFunction<DeleteItemMutation, D
  * });
  */
 export function useDeleteItemMutation(baseOptions?: Apollo.MutationHookOptions<DeleteItemMutation, DeleteItemMutationVariables>) {
-        return Apollo.useMutation<DeleteItemMutation, DeleteItemMutationVariables>(DeleteItemDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteItemMutation, DeleteItemMutationVariables>(DeleteItemDocument, options);
       }
 export type DeleteItemMutationHookResult = ReturnType<typeof useDeleteItemMutation>;
 export type DeleteItemMutationResult = Apollo.MutationResult<DeleteItemMutation>;

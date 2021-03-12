@@ -1,34 +1,25 @@
-import { TextFieldInput, ReactMemo, useBoolState } from "@allthethings/ui";
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  FormControl,
-  InputLabel,
-} from "@material-ui/core";
-import type { FormEvent, ReactElement } from "react";
+import { TextFieldInput, ReactMemo, useBoolState, Dialog } from "@allthethings/ui";
+import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateTaskMutation, useEditTaskMutation } from "../schema/mutations";
+import { useCreateTaskMutation, useEditItemMutation } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { Inbox, Section, Task, TaskList } from "../utils/state";
+import type { Inbox, Section, TaskItem, TaskList } from "../utils/state";
 import { isSection } from "../utils/state";
 
 type CreateTaskProps = {
-  onClose: () => void;
+  onClosed: () => void;
   list: TaskList | Inbox | Section;
 } | {
-  onClose: () => void;
-  task: Task;
+  onClosed: () => void;
+  task: TaskItem;
 };
 
 export default ReactMemo(function CreateTaskDialog({
-  onClose,
+  onClosed,
   ...props
 }: CreateTaskProps): ReactElement {
-  let task: Task | null;
+  let task: TaskItem | null;
   let list: TaskList | Inbox | Section;
   if ("task" in props) {
     task = props.task;
@@ -44,7 +35,7 @@ export default ReactMemo(function CreateTaskDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createTask] = useCreateTaskMutation({
+  let [createTask, { error: createError }] = useCreateTaskMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -53,7 +44,7 @@ export default ReactMemo(function CreateTaskDialog({
     ],
   });
 
-  let [editTask] = useEditTaskMutation({
+  let [editTask, { error: editError }] = useEditItemMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -62,17 +53,15 @@ export default ReactMemo(function CreateTaskDialog({
     ],
   });
 
-  let submit = useCallback(async (event: FormEvent<HTMLFormElement>): Promise<void> => {
-    event.preventDefault();
-
+  let submit = useCallback(async (): Promise<void> => {
     if (task) {
       await editTask({
         variables: {
           id: task.id,
-          params: {
+          item: {
             ...state,
-            done: task.done,
             archived: task.archived,
+            snoozed: task.snoozed,
           },
         },
       });
@@ -80,10 +69,14 @@ export default ReactMemo(function CreateTaskDialog({
       await createTask({
         variables: {
           list: list.id,
-          params: {
+          item: {
             ...state,
+            archived: null,
+            snoozed: null,
+          },
+          taskInfo: {
+            due: null,
             done: null,
-            archived: false,
           },
         },
       });
@@ -92,28 +85,22 @@ export default ReactMemo(function CreateTaskDialog({
     close();
   }, [close, createTask, editTask, list.id, state, task]);
 
-  return <Dialog open={isOpen} onClose={close} onExited={onClose}>
-    <form onSubmit={submit}>
-      <DialogTitle>Create Task</DialogTitle>
-      <DialogContent>
-        <FormControl margin="normal" variant="outlined">
-          <InputLabel htmlFor="summary">Summary:</InputLabel>
-          <TextFieldInput
-            id="summary"
-            label="Summary:"
-            state={state}
-            setState={setState}
-            stateKey="summary"
-            autoFocus={true}
-          />
-        </FormControl>
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">
-          {task ? "Edit" : "Create"}
-        </Button>
-        <Button onClick={close} variant="contained">Cancel</Button>
-      </DialogActions>
-    </form>
+  return <Dialog
+    title={task ? "Edit Task" : "Create Task"}
+    submitLabel={task ? "Edit" : "Create"}
+    error={createError ?? editError}
+    isOpen={isOpen}
+    onClose={close}
+    onClosed={onClosed}
+    onSubmit={submit}
+  >
+    <TextFieldInput
+      id="summary"
+      label="Summary:"
+      state={state}
+      setState={setState}
+      stateKey="summary"
+      autoFocus={true}
+    />
   </Dialog>;
 });

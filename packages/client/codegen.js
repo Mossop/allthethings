@@ -30,7 +30,7 @@ module.exports = {
       },
     },
     [path.join(__dirname, "src", "schema")]: {
-      documents: path.join(__dirname, "src", "schema", "*.graphql"),
+      documents: path.join(__dirname, "src", "schema", "*.gql"),
       preset: "near-operation-file",
       presetConfig: {
         baseTypesPath: "./types",

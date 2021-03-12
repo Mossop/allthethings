@@ -8,17 +8,7 @@ export type RootFields_Context_Fragment = { readonly __typename: 'Context', read
 
 export type RootFieldsFragment = RootFields_User_Fragment | RootFields_Context_Fragment;
 
-export type ItemFields_Task_Fragment = { readonly __typename: 'Task', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any>, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
-
-export type ItemFields_PluginItem_Fragment = { readonly __typename: 'PluginItem', readonly done: Types.Maybe<any>, readonly due: Types.Maybe<any>, readonly pluginId: string, readonly pluginFields: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
-
-export type ItemFields_File_Fragment = { readonly __typename: 'File', readonly size: number, readonly filename: string, readonly mimetype: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
-
-export type ItemFields_Note_Fragment = { readonly __typename: 'Note', readonly note: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
-
-export type ItemFields_Link_Fragment = { readonly __typename: 'Link', readonly icon: Types.Maybe<string>, readonly link: string, readonly id: string, readonly summary: string, readonly archived: boolean, readonly created: any };
-
-export type ItemFieldsFragment = ItemFields_Task_Fragment | ItemFields_PluginItem_Fragment | ItemFields_File_Fragment | ItemFields_Note_Fragment | ItemFields_Link_Fragment;
+export type ItemFieldsFragment = { readonly __typename: 'Item', readonly id: string, readonly summary: string, readonly archived: Types.Maybe<any>, readonly snoozed: Types.Maybe<any>, readonly created: any, readonly taskInfo: Types.Maybe<{ readonly __typename: 'TaskInfo', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any> }>, readonly detail: Types.Maybe<{ readonly __typename: 'PluginDetail', readonly pluginId: string, readonly fields: string } | { readonly __typename: 'LinkDetail', readonly icon: Types.Maybe<string>, readonly url: string } | { readonly __typename: 'NoteDetail', readonly note: string } | { readonly __typename: 'FileDetail', readonly size: number, readonly filename: string, readonly mimetype: string }> };
 
 export const RootFieldsFragmentDoc = gql`
     fragment rootFields on ProjectRoot {
@@ -42,28 +32,29 @@ export const ItemFieldsFragmentDoc = gql`
   id
   summary
   archived
+  snoozed
   created
-  ... on Task {
+  taskInfo {
     due
     done
   }
-  ... on File {
-    size
-    filename
-    mimetype
-  }
-  ... on Note {
-    note
-  }
-  ... on Link {
-    icon
-    link
-  }
-  ... on PluginItem {
-    done
-    due
-    pluginId
-    pluginFields
+  detail {
+    ... on FileDetail {
+      size
+      filename
+      mimetype
+    }
+    ... on NoteDetail {
+      note
+    }
+    ... on LinkDetail {
+      icon
+      url
+    }
+    ... on PluginDetail {
+      pluginId
+      fields
+    }
   }
 }
     `;

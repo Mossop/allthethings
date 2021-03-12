@@ -15,6 +15,7 @@ import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
 import type { Item, Item as ItemState, Section, TaskList } from "../utils/state";
+import { isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
 import FileItem from "./FileItem";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
@@ -67,33 +68,27 @@ function renderItem({
   taskList,
   isDragging,
 }: ItemRenderProps): ReactResult {
-  switch (item.__typename) {
-    case "Task":
-      return <TaskItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
-    case "Note":
-      return <NoteItem item={item}/>;
-    case "File":
-      return <FileItem item={item}/>;
-    case "Link":
-      return <LinkItem item={item}/>;
-    case "PluginItem":
-      return <PluginItem item={item}/>;
-  }
+  if (isNoteItem(item))
+    return <NoteItem item={item}/>;
+  if (isFileItem(item))
+    return <FileItem item={item}/>;
+  if (isLinkItem(item))
+    return <LinkItem item={item}/>;
+  if (isPluginItem(item))
+    return <PluginItem item={item}/>;
+  return <TaskItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
 }
 
-function renderEditDialog(item: Item, onClose: () => void): ReactResult {
-  switch (item.__typename) {
-    case "Task":
-      return <TaskDialog task={item} onClose={onClose}/>;
-    case "Note":
-      return <div/>;
-    case "File":
-      return <div/>;
-    case "Link":
-      return <div/>;
-    case "PluginItem":
-      throw new Error("Cannot edit plugin items.");
-  }
+function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
+  if (isNoteItem(item))
+    return <div/>;
+  if (isFileItem(item))
+    return <div/>;
+  if (isLinkItem(item))
+    return <div/>;
+  if (isPluginItem(item))
+    throw new Error("Cannot edit plugin items.");
+  return <TaskDialog task={item} onClosed={onClosed}/>;
 }
 
 interface ItemProps {
