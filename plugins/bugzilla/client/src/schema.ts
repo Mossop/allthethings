@@ -6,6 +6,7 @@ export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+const defaultOptions =  {}
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -17,64 +18,47 @@ export type Scalars = {
 };
 
 
-export type Item = {
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
-};
-
-export type Task = Item & {
-  readonly __typename?: 'Task';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type TaskInfo = {
+  readonly __typename?: 'TaskInfo';
   readonly due: Maybe<Scalars['DateTime']>;
   readonly done: Maybe<Scalars['DateTime']>;
-  readonly link: Maybe<Scalars['String']>;
 };
 
-export type PluginItem = Item & {
-  readonly __typename?: 'PluginItem';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type PluginDetail = {
+  readonly __typename?: 'PluginDetail';
   readonly pluginId: Scalars['String'];
-  readonly due: Maybe<Scalars['DateTime']>;
-  readonly done: Maybe<Scalars['DateTime']>;
-  readonly pluginFields: Scalars['String'];
+  readonly fields: Scalars['String'];
 };
 
-export type File = Item & {
-  readonly __typename?: 'File';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type FileDetail = {
+  readonly __typename?: 'FileDetail';
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
 };
 
-export type Note = Item & {
-  readonly __typename?: 'Note';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
-  readonly created: Scalars['DateTime'];
+export type NoteDetail = {
+  readonly __typename?: 'NoteDetail';
   readonly note: Scalars['String'];
 };
 
-export type Link = Item & {
-  readonly __typename?: 'Link';
+export type LinkDetail = {
+  readonly __typename?: 'LinkDetail';
+  readonly icon: Maybe<Scalars['String']>;
+  readonly url: Scalars['String'];
+};
+
+export type ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail;
+
+export type Item = {
+  readonly __typename?: 'Item';
   readonly id: Scalars['ID'];
   readonly summary: Scalars['String'];
-  readonly archived: Scalars['Boolean'];
   readonly created: Scalars['DateTime'];
-  readonly icon: Maybe<Scalars['String']>;
-  readonly link: Scalars['String'];
+  readonly archived: Maybe<Scalars['DateTime']>;
+  readonly snoozed: Maybe<Scalars['DateTime']>;
+  readonly taskInfo: Maybe<TaskInfo>;
+  readonly detail: Maybe<ItemDetail>;
 };
 
 export type TaskList = {
@@ -192,29 +176,43 @@ export type SectionParams = {
   readonly name: Scalars['String'];
 };
 
-export type TaskParams = {
-  readonly archived: Scalars['Boolean'];
+export type ItemParams = {
   readonly summary: Scalars['String'];
-  readonly done: Maybe<Scalars['DateTime']>;
-  readonly link: Maybe<Scalars['String']>;
+  readonly archived: Maybe<Scalars['DateTime']>;
+  readonly snoozed: Maybe<Scalars['DateTime']>;
+};
+
+export type TaskInfoParams = {
   readonly due: Maybe<Scalars['DateTime']>;
+  readonly done: Maybe<Scalars['DateTime']>;
+};
+
+export type LinkDetailParams = {
+  readonly url: Scalars['String'];
+};
+
+export type NoteDetailParams = {
+  readonly note: Scalars['String'];
 };
 
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createContext: Context;
+  readonly createLink: Item;
+  readonly createNote: Item;
   readonly createProject: Project;
   readonly createSection: Section;
-  readonly createTask: Task;
+  readonly createTask: Item;
   readonly deleteContext: Scalars['Boolean'];
   readonly deleteItem: Scalars['Boolean'];
   readonly deleteProject: Scalars['Boolean'];
   readonly deleteSection: Scalars['Boolean'];
   readonly editContext: Maybe<Context>;
+  readonly editItem: Maybe<Item>;
   readonly editProject: Maybe<Project>;
   readonly editSection: Maybe<Section>;
-  readonly editTask: Maybe<Task>;
+  readonly editTaskInfo: Maybe<Item>;
   readonly login: Maybe<User>;
   readonly logout: Maybe<Scalars['Boolean']>;
   readonly moveItem: Maybe<Item>;
@@ -235,6 +233,22 @@ export type MutationCreateContextArgs = {
 };
 
 
+export type MutationCreateLinkArgs = {
+  list: Maybe<Scalars['ID']>;
+  item: ItemParams;
+  detail: LinkDetailParams;
+  taskInfo: Maybe<TaskInfoParams>;
+};
+
+
+export type MutationCreateNoteArgs = {
+  list: Maybe<Scalars['ID']>;
+  item: ItemParams;
+  detail: NoteDetailParams;
+  taskInfo: Maybe<TaskInfoParams>;
+};
+
+
 export type MutationCreateProjectArgs = {
   taskList: Maybe<Scalars['ID']>;
   params: ProjectParams;
@@ -250,7 +264,8 @@ export type MutationCreateSectionArgs = {
 
 export type MutationCreateTaskArgs = {
   list: Maybe<Scalars['ID']>;
-  params: TaskParams;
+  item: ItemParams;
+  taskInfo: TaskInfoParams;
 };
 
 
@@ -280,6 +295,12 @@ export type MutationEditContextArgs = {
 };
 
 
+export type MutationEditItemArgs = {
+  id: Scalars['ID'];
+  item: ItemParams;
+};
+
+
 export type MutationEditProjectArgs = {
   id: Scalars['ID'];
   params: ProjectParams;
@@ -292,9 +313,9 @@ export type MutationEditSectionArgs = {
 };
 
 
-export type MutationEditTaskArgs = {
+export type MutationEditTaskInfoArgs = {
   id: Scalars['ID'];
-  params: TaskParams;
+  taskInfo: Maybe<TaskInfoParams>;
 };
 
 
@@ -374,10 +395,12 @@ export const ListBugzillaAccountsDocument = gql`
  * });
  */
 export function useListBugzillaAccountsQuery(baseOptions?: Apollo.QueryHookOptions<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>) {
-        return Apollo.useQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, options);
       }
 export function useListBugzillaAccountsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>) {
-          return Apollo.useLazyQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, baseOptions);
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, options);
         }
 export type ListBugzillaAccountsQueryHookResult = ReturnType<typeof useListBugzillaAccountsQuery>;
 export type ListBugzillaAccountsLazyQueryHookResult = ReturnType<typeof useListBugzillaAccountsLazyQuery>;
@@ -416,7 +439,8 @@ export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<CreateBugz
  * });
  */
 export function useCreateBugzillaAccountMutation(baseOptions?: Apollo.MutationHookOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>) {
-        return Apollo.useMutation<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>(CreateBugzillaAccountDocument, baseOptions);
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>(CreateBugzillaAccountDocument, options);
       }
 export type CreateBugzillaAccountMutationHookResult = ReturnType<typeof useCreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationResult = Apollo.MutationResult<CreateBugzillaAccountMutation>;

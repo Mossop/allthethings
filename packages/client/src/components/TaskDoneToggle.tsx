@@ -10,13 +10,13 @@ import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schem
 import type { Item, WithTask } from "../utils/state";
 import { isSection, isTaskList } from "../utils/state";
 
-export interface TaskDoneToggleProps {
-  item: WithTask<Item>;
+export interface TaskDoneToggleProps<T extends Item> {
+  item: WithTask<T>;
 }
 
-export default ReactMemo(function TaskDoneToggle({
+export default ReactMemo(function TaskDoneToggle<T extends Item>({
   item,
-}: TaskDoneToggleProps): ReactResult {
+}: TaskDoneToggleProps<T>): ReactResult {
   let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
   if (isSection(item.parent)) {
     refetchQueries.push(refetchListTaskListQuery({

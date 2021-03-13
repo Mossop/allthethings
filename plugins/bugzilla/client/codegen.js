@@ -10,7 +10,7 @@ module.exports = {
   errorsOnly: true,
   generates: {
     [path.join(__dirname, "src", "schema.ts")]: {
-      documents: path.join(__dirname, "operations.graphql"),
+      documents: path.join(__dirname, "operations.gql"),
       plugins: {
         "typescript": {
           useIndexSignature: true,

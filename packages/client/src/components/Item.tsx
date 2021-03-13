@@ -69,13 +69,13 @@ function renderItem({
   isDragging,
 }: ItemRenderProps): ReactResult {
   if (isNoteItem(item))
-    return <NoteItem item={item}/>;
+    return <NoteItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
   if (isFileItem(item))
-    return <FileItem item={item}/>;
+    return <FileItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
   if (isLinkItem(item))
-    return <LinkItem item={item}/>;
+    return <LinkItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
   if (isPluginItem(item))
-    return <PluginItem item={item}/>;
+    return <PluginItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
   return <TaskItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
 }
 

@@ -1,14 +1,21 @@
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo } from "@allthethings/ui";
+import type { Overwrite } from "@allthethings/utils";
 
 import type { NoteItem } from "../utils/state";
+import { isTask } from "../utils/state";
+import type { ItemRenderProps } from "./Item";
+import TaskDoneToggle from "./TaskDoneToggle";
 
-interface NoteItemProps {
+export type NoteItemProps = Overwrite<ItemRenderProps, {
   item: NoteItem;
-}
+}>;
 
 export default ReactMemo(function NoteItem({
-  item: _item,
+  item,
 }: NoteItemProps): ReactResult {
-  return <div>item.summary</div>;
+  return <>
+    {isTask(item) && <TaskDoneToggle item={item}/>}
+    <div>{item.summary}</div>
+  </>;
 });

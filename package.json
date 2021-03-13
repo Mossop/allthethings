@@ -11,7 +11,8 @@
     "build": "lerna run build-schema && lerna run build",
     "watch": "npm run build && lerna run --parallel watch",
     "start": "cd packages/server && npm start -- ../../testing/config.json",
-    "lint": "eslint ."
+    "jslint": "eslint .",
+    "lint": "npm run jslint && lerna run lint"
   },
   "workspaces": [
     "packages/*",

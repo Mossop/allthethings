@@ -48,19 +48,15 @@ interface BaseItem {
 }
 
 export type PluginItem = State<Schema.Item, BaseItem & {
-  taskInfo: Schema.TaskInfo | null;
-  detail: Schema.PluginDetail & PluginItemFields;
+  detail: Schema.PluginDetail;
 }>;
 export type NoteItem = State<Schema.Item, BaseItem & {
-  taskInfo: Schema.TaskInfo | null;
   detail: Schema.NoteDetail;
 }>;
 export type FileItem = State<Schema.Item, BaseItem & {
-  taskInfo: Schema.TaskInfo | null;
   detail: Schema.FileDetail;
 }>;
 export type LinkItem = State<Schema.Item, BaseItem & {
-  taskInfo: Schema.TaskInfo | null;
   detail: Schema.LinkDetail;
 }>;
 export type TaskItem = State<Schema.Item, BaseItem & {
@@ -206,26 +202,23 @@ export function buildItems(
   items: readonly Schema.Item[],
 ): Item[] {
   return items.map((item: Schema.Item): Item => {
-    if (item.detail?.__typename == "PluginDetail") {
-      let pluginFields: PluginItemFields = JSON.parse(item.detail.fields);
+    if (item.detail) {
       return {
         ...item,
-        detail: {
-          ...item.detail,
-          ...pluginFields,
-        },
         taskInfo: item.taskInfo ?? null,
+        detail: item.detail,
         parent,
       };
     }
 
-    if (!item.detail && !item.taskInfo) {
+    if (!item.taskInfo) {
       throw new Error("Basic item is missing task info.");
     }
 
-    // @ts-ignore
     return {
       ...item,
+      taskInfo: item.taskInfo,
+      detail: null,
       parent,
     };
   });
