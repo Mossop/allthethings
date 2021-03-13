@@ -29,8 +29,8 @@ const useStyles = makeStyles((theme: Theme) =>
       "alignItems": "center",
       "fontSize": "1.1rem",
       "&:hover": {
-        backgroundColor: theme.palette.text.secondary,
-        color: theme.palette.getContrastText(theme.palette.text.secondary),
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.getContrastText(theme.palette.background.paper),
       },
     },
     dragPreview: {
@@ -128,7 +128,7 @@ export const ItemDragMarker = ReactMemo(function ItemDragMarker({
   >
     <div className={classes.dragPreview}>
       <div className={classes.dragHandleContainer}>
-        <Icons.DragIcon className={classes.dragHandle}/>
+        <Icons.Drag className={classes.dragHandle}/>
       </div>
       <div className={classes.itemInner}>
         {
@@ -227,7 +227,7 @@ export default ReactMemo(function Item({
     >
       <div className={classes.dragPreview} ref={previewRef}>
         <div className={classes.dragHandleContainer} ref={dragRef}>
-          <Icons.DragIcon className={classes.dragHandle}/>
+          <Icons.Drag className={classes.dragHandle}/>
         </div>
         <div className={classes.itemInner}>
           {
@@ -242,10 +242,10 @@ export default ReactMemo(function Item({
       </div>
       <div className={classes.actions}>
         <IconButton onClick={openEditDialog}>
-          <Icons.EditIcon/>
+          <Icons.Edit/>
         </IconButton>
         <IconButton onClick={deleteItem}>
-          <Icons.DeleteIcon/>
+          <Icons.Delete/>
         </IconButton>
       </div>
     </ListItem>

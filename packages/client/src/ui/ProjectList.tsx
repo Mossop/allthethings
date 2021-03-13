@@ -214,7 +214,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
       selected={selected}
       depth={depth}
       taskCount={project.remainingTasks}
-      icon={<Icons.ProjectIcon className={classes.grabHandle}/>}
+      icon={<Icons.Project className={classes.grabHandle}/>}
       className={clsx(isDragging && classes.dragging, isShallowOver && canDrop && classes.dropping)}
     />
     {
@@ -336,7 +336,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
     <List component="div" className={classes.list}>
       <Item
         url={inboxUrl}
-        icon={<Icons.InboxIcon/>}
+        icon={<Icons.Inbox/>}
         selected={view.type == ViewType.Inbox}
         className={clsx(canDropOnInbox && isShallowOverInbox && classes.dropping)}
         label={inboxLabel}
@@ -345,7 +345,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
       />
       <Item
         url={tasksUrl}
-        icon={<Icons.ProjectIcon/>}
+        icon={<Icons.Project/>}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
         taskCount={root.remainingTasks}
         label={context?.name ?? "Tasks"}
@@ -362,7 +362,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
       }
       <Item
         onClick={openCreateProjectDialog}
-        icon={<Icons.AddProjectIcon/>}
+        icon={<Icons.AddProject/>}
         label="Add Project..."
         depth={0}
       />

@@ -130,7 +130,7 @@ export function SectionDragMarker({
     >
       <div className={classes.sectionDragPreview}>
         <div className={classes.icon}>
-          <Icons.SectionIcon className={classes.dragHandle}/>
+          <Icons.Section className={classes.dragHandle}/>
         </div>
         <SubHeading className={classes.sectionDragHeading}>{section.name}</SubHeading>
       </div>
@@ -234,7 +234,7 @@ export default ReactMemo(function SectionList({
     >
       <div className={classes.sectionDragPreview} ref={previewRef}>
         <div className={classes.icon} ref={dragRef}>
-          <Icons.SectionIcon className={classes.dragHandle}/>
+          <Icons.Section className={classes.dragHandle}/>
         </div>
         <HiddenInput
           className={classes.sectionHeadingInput}

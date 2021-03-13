@@ -5,7 +5,7 @@ import type { KeyboardEvent } from "react";
 import { useRef, useCallback, useState } from "react";
 
 import { useFieldState } from "./Forms";
-import { SaveIcon, CancelIcon } from "./Icons";
+import * as Icons from "./Icons";
 import { flexRow } from "./styles";
 import type { ReactResult } from "./types";
 import { ReactMemo } from "./types";
@@ -112,13 +112,13 @@ export const HiddenInput = ReactMemo(function HiddenInput({
       className={clsx(classes.buttonShared, !active && classes.buttonInactive)}
       onClick={submit}
     >
-      <SaveIcon/>
+      <Icons.Save/>
     </IconButton>
     <IconButton
       className={clsx(classes.buttonShared, !active && classes.buttonInactive)}
       onClick={cancel}
     >
-      <CancelIcon/>
+      <Icons.Cancel/>
     </IconButton>
   </div>;
 });

@@ -9,8 +9,8 @@ export default ReactMemo(function Bug({
   item,
 }: BugProps): ReactResult {
   return <>
-    {item.taskInfo?.done && <Icons.CheckedIcon/>}
-    {item.taskInfo && !item.taskInfo.done && <Icons.UncheckedIcon/>}
+    {item.taskInfo?.done && <Icons.Checked/>}
+    {item.taskInfo && !item.taskInfo.done && <Icons.Unchecked/>}
     <div>{item.summary}</div>
   </>;
 });

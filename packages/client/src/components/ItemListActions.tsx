@@ -13,6 +13,7 @@ import {
   refetchListTaskListQuery,
 } from "../schema/queries";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
+import LinkDialog from "../ui/LinkDialog";
 import TaskDialog from "../ui/TaskDialog";
 import type { Inbox, Section, TaskList } from "../utils/state";
 import {
@@ -50,6 +51,7 @@ export default ReactMemo(function ItemListActions({
 
   let [sectionAddDialogOpen, openAddSection, closeAddSection] = useBoolState();
   let [taskAddDialogOpen, openAddTask, closeAddTask] = useBoolState();
+  let [linkAddDialogOpen, openAddLink, closeAddLink] = useBoolState();
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -109,11 +111,13 @@ export default ReactMemo(function ItemListActions({
 
   return <>
     <div className={classes.actions}>
-      <IconButton onClick={openAddTask}><Icons.CheckedIcon/></IconButton>
-      {isTaskList(list) && <IconButton onClick={openAddSection}><Icons.SectionIcon/></IconButton>}
-      {deleteList && <IconButton onClick={deleteList}><Icons.DeleteIcon/></IconButton>}
+      <IconButton onClick={openAddTask}><Icons.Checked/></IconButton>
+      <IconButton onClick={openAddLink}><Icons.Link/></IconButton>
+      {isTaskList(list) && <IconButton onClick={openAddSection}><Icons.Section/></IconButton>}
+      {deleteList && <IconButton onClick={deleteList}><Icons.Delete/></IconButton>}
     </div>
     {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
+    {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink}/>}
     {
       sectionAddDialogOpen && isTaskList(list) &&
       <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>

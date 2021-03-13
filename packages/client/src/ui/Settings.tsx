@@ -64,7 +64,7 @@ function SettingsSidebar(): ReactResult {
     <List component="div" className={classes.list}>
       <SettingSection
         href={taskLink.toString()}
-        icon={<Icons.BackIcon/>}
+        icon={<Icons.Back/>}
       >
         Back to Tasks
       </SettingSection>

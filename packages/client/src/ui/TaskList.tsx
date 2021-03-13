@@ -71,7 +71,7 @@ const UserHeader = ReactMemo(forwardRef(function TasksHeader({
 
   return <div ref={ref} className={classes.heading}>
     <div className={classes.icon}>
-      <Icons.ProjectIcon/>
+      <Icons.Project/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
     <ItemListActions list={user}/>
@@ -102,7 +102,7 @@ const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
 
   return <div ref={ref} className={classes.heading}>
     <div className={classes.icon}>
-      <Icons.ProjectIcon/>
+      <Icons.Project/>
     </div>
     <HiddenInput
       className={classes.headingInput}
@@ -142,7 +142,7 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
   return <div ref={ref} className={clsx(classes.heading)}>
     <div className={classes.headingDragPreview} ref={previewRef}>
       <div ref={dragRef} className={classes.icon}>
-        <Icons.ProjectIcon className={classes.dragHandle}/>
+        <Icons.Project className={classes.dragHandle}/>
       </div>
       <HiddenInput
         className={classes.headingInput}

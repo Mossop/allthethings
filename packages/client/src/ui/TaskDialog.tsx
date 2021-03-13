@@ -15,7 +15,7 @@ type CreateTaskProps = {
   task: TaskItem;
 };
 
-export default ReactMemo(function CreateTaskDialog({
+export default ReactMemo(function TaskDialog({
   onClosed,
   ...props
 }: CreateTaskProps): ReactElement {
@@ -44,7 +44,7 @@ export default ReactMemo(function CreateTaskDialog({
     ],
   });
 
-  let [editTask, { error: editError }] = useEditItemMutation({
+  let [editItem, { error: editError }] = useEditItemMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -55,7 +55,7 @@ export default ReactMemo(function CreateTaskDialog({
 
   let submit = useCallback(async (): Promise<void> => {
     if (task) {
-      await editTask({
+      await editItem({
         variables: {
           id: task.id,
           item: {
@@ -83,7 +83,7 @@ export default ReactMemo(function CreateTaskDialog({
     }
 
     close();
-  }, [close, createTask, editTask, list.id, state, task]);
+  }, [close, createTask, editItem, list.id, state, task]);
 
   return <Dialog
     title={task ? "Edit Task" : "Create Task"}

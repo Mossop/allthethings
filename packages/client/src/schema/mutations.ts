@@ -116,6 +116,19 @@ export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly cre
     & ItemFieldsFragment
   ) };
 
+export type CreateLinkMutationVariables = Types.Exact<{
+  list: Types.Maybe<Types.Scalars['ID']>;
+  item: Types.ItemParams;
+  detail: Types.LinkDetailParams;
+  taskInfo: Types.Maybe<Types.TaskInfoParams>;
+}>;
+
+
+export type CreateLinkMutation = { readonly __typename: 'Mutation', readonly createLink: (
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
+  ) };
+
 export type EditItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
   item: Types.ItemParams;
@@ -635,6 +648,42 @@ export function useCreateTaskMutation(baseOptions?: Apollo.MutationHookOptions<C
 export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutation>;
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
+export const CreateLinkDocument = gql`
+    mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $taskInfo: TaskInfoParams) {
+  createLink(list: $list, item: $item, detail: $detail, taskInfo: $taskInfo) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type CreateLinkMutationFn = Apollo.MutationFunction<CreateLinkMutation, CreateLinkMutationVariables>;
+
+/**
+ * __useCreateLinkMutation__
+ *
+ * To run a mutation, you first call `useCreateLinkMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateLinkMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createLinkMutation, { data, loading, error }] = useCreateLinkMutation({
+ *   variables: {
+ *      list: // value for 'list'
+ *      item: // value for 'item'
+ *      detail: // value for 'detail'
+ *      taskInfo: // value for 'taskInfo'
+ *   },
+ * });
+ */
+export function useCreateLinkMutation(baseOptions?: Apollo.MutationHookOptions<CreateLinkMutation, CreateLinkMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateLinkMutation, CreateLinkMutationVariables>(CreateLinkDocument, options);
+      }
+export type CreateLinkMutationHookResult = ReturnType<typeof useCreateLinkMutation>;
+export type CreateLinkMutationResult = Apollo.MutationResult<CreateLinkMutation>;
+export type CreateLinkMutationOptions = Apollo.BaseMutationOptions<CreateLinkMutation, CreateLinkMutationVariables>;
 export const EditItemDocument = gql`
     mutation EditItem($id: ID!, $item: ItemParams!) {
   editItem(id: $id, item: $item) {

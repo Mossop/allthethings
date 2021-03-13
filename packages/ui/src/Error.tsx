@@ -2,7 +2,7 @@ import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import alpha from "color-alpha";
 
-import { ErrorIcon } from "./Icons";
+import * as Icons from "./Icons";
 import { flexRow } from "./styles";
 import { Info } from "./Text";
 import type { ReactResult } from "./types";
@@ -36,7 +36,7 @@ export const Error = ReactMemo(function Errors({
   let classes = useStyles();
 
   return <div className={classes.errorBox}>
-    <ErrorIcon/>
+    <Icons.Error/>
     <Info className={classes.errorMessage}>{error.message}</Info>
   </div>;
 });

@@ -216,7 +216,7 @@ export async function up(knex: Knex): Promise<void> {
   await knex.schema.createTable("LinkDetail", (table: Knex.CreateTableBuilder): void => {
     itemId(table);
 
-    table.text("link")
+    table.text("url")
       .notNullable();
     table.text("icon")
       .nullable();

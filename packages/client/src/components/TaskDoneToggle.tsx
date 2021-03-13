@@ -43,6 +43,6 @@ export default ReactMemo(function TaskDoneToggle<T extends Item>({
   }), [item, toggleDone]);
 
   return <IconButton onClick={toggle}>
-    {item.taskInfo.done ? <Icons.CheckedIcon/> : <Icons.UncheckedIcon/>}
+    {item.taskInfo.done ? <Icons.Checked/> : <Icons.Unchecked/>}
   </IconButton>;
 });

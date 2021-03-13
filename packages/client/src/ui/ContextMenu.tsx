@@ -122,7 +122,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       color="inherit"
       {...bindTrigger(contextMenuState)}
     >
-      <Icons.ContextIcon className={classes.icon}/>
+      <Icons.Context className={classes.icon}/>
       {currentContext && <div className={classes.context}>{currentContext.name}</div>}
     </Button>
     <Menu

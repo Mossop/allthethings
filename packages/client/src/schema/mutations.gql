@@ -87,6 +87,12 @@ mutation CreateTask($list: ID, $item: ItemParams!, $taskInfo: TaskInfoParams!) {
   }
 }
 
+mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $taskInfo: TaskInfoParams) {
+  createLink(list: $list, item: $item, detail: $detail, taskInfo: $taskInfo) {
+    ...itemFields
+  }
+}
+
 mutation EditItem($id: ID!, $item: ItemParams!) {
   editItem(id: $id, item: $item) {
     ...itemFields

@@ -42,7 +42,7 @@ export default ReactMemo(function Inbox(): ReactResult {
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
       <div className={classes.heading}>
-        <Icons.InboxIcon/>
+        <Icons.Inbox/>
         <Heading className={classes.headingText}>Inbox</Heading>
         <ItemListActions list={user.inbox}/>
       </div>
