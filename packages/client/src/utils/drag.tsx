@@ -142,12 +142,17 @@ function useDragBase(
   let dragItem = useDragItem();
 
   let [, dragRef, previewRef] = useDrag({
+    type: item.type,
     item,
 
     end: useCallback(
-      async (_: unknown, monitor: DragSourceMonitor): Promise<void> => {
+      async (_: unknown, monitor: DragSourceMonitor<DraggedObject, DragResult>): Promise<void> => {
         if (monitor.didDrop()) {
-          await handler(monitor.getDropResult());
+          let result = monitor.getDropResult();
+          if (!result) {
+            throw new Error("Expected a drop result.");
+          }
+          await handler(result);
         }
 
         setDragItem(null);
@@ -156,7 +161,7 @@ function useDragBase(
     ),
 
     collect: useCallback(
-      (monitor: DragSourceMonitor): void => {
+      (monitor: DragSourceMonitor<DraggedObject, DragResult>): void => {
         if (monitor.isDragging()) {
           setDragItem(item);
         }

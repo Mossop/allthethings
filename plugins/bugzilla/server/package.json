@@ -1,5 +1,6 @@
 {
   "name": "@allthethings/bugzilla-server",
+  "version": "1.0.0",
   "description": "AllTheThings Bugzilla server integration.",
   "repository": "Mossop/allthethings",
   "license": "MIT",
@@ -13,8 +14,8 @@
     "watch": "tsc -b -w"
   },
   "dependencies": {
-    "@allthethings/bugzilla-client": "file:../client",
-    "@allthethings/server": "file:../../../packages/server",
+    "@allthethings/bugzilla-client": "^1.0.0",
+    "@allthethings/server": "^1.0.0",
     "bugzilla": "^0.1.1",
     "koa-static": "^5.0.0"
   },

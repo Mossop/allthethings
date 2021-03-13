@@ -1,5 +1,6 @@
 {
   "name": "@allthethings/schema",
+  "version": "1.0.0",
   "description": "AllTheThings GraphQL schema.",
   "repository": "Mossop/allthethings",
   "license": "MIT",

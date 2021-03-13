@@ -1,7 +1,7 @@
 import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
-import type Knex from "knex";
+import type { Knex } from "knex";
 
 import type { ResolverContext } from "../schema/context";
 import type { DatabaseConnection } from "./connection";

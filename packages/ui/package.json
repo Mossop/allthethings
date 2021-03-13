@@ -1,5 +1,6 @@
 {
   "name": "@allthethings/ui",
+  "version": "1.0.0",
   "description": "AllTheThings Shared UI.",
   "repository": "Mossop/allthethings",
   "license": "MIT",

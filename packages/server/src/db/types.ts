@@ -1,4 +1,4 @@
-import type Knex from "knex";
+import type { Knex } from "knex";
 import type { DateTime } from "luxon";
 
 // This stucture is a little complex to support having items and sections available at multiple

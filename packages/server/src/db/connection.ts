@@ -1,4 +1,5 @@
-import Knex from "knex";
+import type { Knex } from "knex";
+import { knex } from "knex";
 import { DateTime } from "luxon";
 import { customAlphabet } from "nanoid/async";
 import { types } from "pg";
@@ -142,8 +143,6 @@ export class DatabaseConnection {
       };
     }
 
-    let knex = Knex(knexConfig);
-
-    return new DatabaseConnection(knex);
+    return new DatabaseConnection(knex(knexConfig));
   }
 }

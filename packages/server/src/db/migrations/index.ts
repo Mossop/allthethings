@@ -1,6 +1,6 @@
 import path from "path";
 
-import type { default as Knex, Migration } from "knex";
+import type { Knex } from "knex";
 
 import type { DbMigration } from "../migration";
 import { DbMigrationSource } from "../migration";
@@ -13,12 +13,12 @@ class ModuleMigration implements DbMigration {
     this.name = name ?? path.basename(spec);
   }
 
-  protected async loadModule(): Promise<Migration> {
+  protected async loadModule(): Promise<Knex.Migration> {
     if (!this.module) {
       this.module = await import(this.spec);
     }
 
-    return this.module as Migration;
+    return this.module as Knex.Migration;
   }
 
   public async up(knex: Knex): Promise<void> {

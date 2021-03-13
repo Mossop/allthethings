@@ -1,4 +1,4 @@
-import type { default as Knex } from "knex";
+import type { Knex } from "knex";
 
 function id(table: Knex.CreateTableBuilder): void {
   table.text("id")

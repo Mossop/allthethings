@@ -3,16 +3,16 @@ const path = require("path");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 
-const lock = require("../../package-lock.json");
 const externals = require("./externals.json");
 
 function buildExternals(mode) {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
   return externals.map(pkg => {
     let path = mode == "production" ? pkg.path : pkg.devPath;
+    let package = require(`${pkg.id}/package.json`);
     return {
       type: "js",
-      path: `https://unpkg.com/${pkg.id}@${lock.dependencies[pkg.id].version}/${path}`,
+      path: `https://unpkg.com/${pkg.id}@${package.version}/${path}`,
       publicPath: false,
       attributes: {
         crossorigin: true,
