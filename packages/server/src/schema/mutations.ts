@@ -1,3 +1,5 @@
+import { URL } from "url";
+
 import type { Overwrite } from "@allthethings/utils";
 import cheerio from "cheerio";
 import fetch from "node-fetch";
@@ -243,6 +245,9 @@ const resolvers: MutationResolvers = {
     if (!summary) {
       summary = dom("title").text();
     }
+    if (!summary) {
+      throw new Error("No page title found.");
+    }
 
     let item = await baseCreateItem(ctx, {
       ...args,
@@ -252,9 +257,16 @@ const resolvers: MutationResolvers = {
       },
     }, ItemType.Link);
 
+    let icon: string | null = null;
+    let favicon = new URL("/favicon.ico", detail.url);
+    response = await fetch(favicon);
+    if (response.ok) {
+      icon = favicon.toString();
+    }
+
     await ctx.dataSources.linkDetail.create(item, {
       ...detail,
-      icon: null,
+      icon,
     });
 
     return item;
