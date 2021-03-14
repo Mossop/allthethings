@@ -1,4 +1,6 @@
 import type { Overwrite } from "@allthethings/utils";
+import cheerio from "cheerio";
+import fetch from "node-fetch";
 
 import type { User, Context, Project, Section, TaskList, Item } from "../db";
 import { ItemType } from "../db/types";
@@ -229,7 +231,26 @@ const resolvers: MutationResolvers = {
     args: { detail, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
-    let item = await baseCreateItem(ctx, args, ItemType.Link);
+    let response = await fetch(detail.url);
+    if (!response.ok) {
+      throw new Error(response.statusText);
+    }
+
+    let html = await response.text();
+    let dom = cheerio.load(html);
+
+    let summary = args.item.summary;
+    if (!summary) {
+      summary = dom("title").text();
+    }
+
+    let item = await baseCreateItem(ctx, {
+      ...args,
+      item: {
+        ...args.item,
+        summary,
+      },
+    }, ItemType.Link);
 
     await ctx.dataSources.linkDetail.create(item, {
       ...detail,

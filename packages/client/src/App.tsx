@@ -40,6 +40,7 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
           margin: 0,
           color: "inherit",
           cursor: "inherit",
+          textDecoration: "none",
         },
         "html": {
           overflow: "hidden",

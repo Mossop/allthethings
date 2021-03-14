@@ -43,7 +43,7 @@ export default ReactMemo(function LinkItem({
             : <Icons.Link/>
         }
       </div>
+      <div>{item.summary}</div>
     </a>
-    <div>{item.summary}</div>
   </>;
 });
