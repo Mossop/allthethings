@@ -22,6 +22,10 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingRight: theme.spacing(1.5),
       ...Styles.flexCentered,
     },
+    favicon: {
+      width: "1.5rem",
+      height: "1.5rem",
+    },
   }));
 
 export type LinkItemProps = Overwrite<ItemRenderProps, {
@@ -39,7 +43,7 @@ export default ReactMemo(function LinkItem({
       <div className={classes.iconContainer}>
         {
           item.detail.icon
-            ? <img src={item.detail.icon}/>
+            ? <img className={classes.favicon} src={item.detail.icon}/>
             : <Icons.Link/>
         }
       </div>

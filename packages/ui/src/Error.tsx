@@ -20,6 +20,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.error.contrastText,
       ...flexRow,
       alignItems: "start",
+      marginBottom: theme.spacing(1),
     },
     errorMessage: {
       paddingLeft: theme.spacing(1),
