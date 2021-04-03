@@ -104,7 +104,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
     // @ts-ignore
     resolvers: mergeResolvers([
       rootResolvers,
-      ...PluginManager.getResolvers(),
+      ...await PluginManager.getResolvers(),
     ]),
     context: buildContext,
     // @ts-ignore

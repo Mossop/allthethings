@@ -63,7 +63,7 @@ export async function createWebServer(
 
   app.use(gqlServer.getMiddleware());
 
-  PluginManager.registerServerMiddleware(app);
+  await PluginManager.registerServerMiddleware(app);
 
   app.use(async (ctx: Koa.Context) => {
     let html = await fs.readFile(htmlFile, {
@@ -72,7 +72,7 @@ export async function createWebServer(
 
     html = html.replace(
       "{plugins}",
-      PluginManager.getClientScripts(ctx).map(
+      (await PluginManager.getClientScripts(ctx)).map(
         (script: string): string => `<script defer src="${script}"></script>`,
       ).join("\n"),
     );

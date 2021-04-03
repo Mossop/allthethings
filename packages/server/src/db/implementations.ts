@@ -1,11 +1,10 @@
 import PluginManager from "../plugins";
-import type { ResolverContext } from "../schema/context";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";
 import * as Db from "./types";
 
-export type ImplBuilder<I, T> = (resolverContext: ResolverContext, dbObject: Db.DbObject<T>) => I;
+export type ImplBuilder<I, T> = (dataSources: Src.AppDataSources, dbObject: Db.DbObject<T>) => I;
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 function assertValid<T extends {}>(val: T | null | undefined): T {
@@ -50,10 +49,10 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
   protected readonly _id: string;
   protected _dbObject: Promise<Db.DbObject<T>> | null;
 
-  public constructor(resolverContext: ResolverContext, dbObject: Db.DbObject<T>);
-  public constructor(resolverContext: ResolverContext, id: string);
+  public constructor(dataSources: Src.AppDataSources, dbObject: Db.DbObject<T>);
+  public constructor(dataSources: Src.AppDataSources, id: string);
   public constructor(
-    protected readonly resolverContext: ResolverContext,
+    protected readonly dataSources: Src.AppDataSources,
     arg: Db.DbObject<T> | string,
   ) {
     if (typeof arg == "string") {
@@ -84,10 +83,6 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
     this._dbObject = this.getDbObject();
 
     return this._dbObject;
-  }
-
-  public get dataSources(): Src.AppDataSources {
-    return this.resolverContext.dataSources;
   }
 
   protected async updateDbObject(props: Db.DbUpdateObject<T>): Promise<void> {
@@ -170,7 +165,7 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
       await this.dataSources.sections.getSpecialSection(this._id, Src.SectionIndex.Inbox),
     );
 
-    return new Inbox(this.resolverContext, record);
+    return new Inbox(this.dataSources, record);
   }
 
   public readonly email = fields<Db.UserDbTable>()("email");
@@ -192,7 +187,7 @@ export class Context
   public readonly name = fields<Db.ContextDbTable>()("name");
 
   public async user(): Promise<User> {
-    return new User(this.resolverContext, (await this.dbObject).userId);
+    return new User(this.dataSources, (await this.dbObject).userId);
   }
 }
 
@@ -236,7 +231,7 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
   public async taskList(): Promise<Project | User | Context> {
     let { parentId, contextId } = await this.dbObject;
     if (parentId) {
-      return new Project(this.resolverContext, parentId);
+      return new Project(this.dataSources, parentId);
     }
 
     let context = await this.dataSources.contexts.getImpl(contextId);
@@ -251,13 +246,9 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
 
 abstract class SpecialSection {
   public constructor(
-    protected readonly resolverContext: ResolverContext,
+    protected readonly dataSources: Src.AppDataSources,
     protected readonly dbObject: Db.DbObject<Db.SectionDbTable>,
   ) {
-  }
-
-  public get dataSources(): Src.AppDataSources {
-    return this.resolverContext.dataSources;
   }
 
   public id(): string {

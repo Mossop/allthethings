@@ -14,9 +14,9 @@ async function init(): Promise<void> {
   }
 
   let config = await parseConfig(process.argv[2]);
-  await PluginManager.loadPlugins(config.plugins);
-
   let db = await createDbConnection(config);
+  await PluginManager.loadPlugins(db, config.plugins);
+
   if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
     await db.rollback(true);
   }
@@ -24,6 +24,7 @@ async function init(): Promise<void> {
 
   let gqlServer = await createGqlServer();
   await createWebServer(config, db, gqlServer);
+  await PluginManager.startPlugins();
 }
 
 init().catch((e: Error) => console.error(e));

@@ -7,6 +7,8 @@ import type {
   PluginItemFields,
   GraphQLContext,
   Resolver,
+  ServerPluginExport,
+  PluginServer,
 } from "@allthethings/server";
 import type Koa from "koa";
 import koaStatic from "koa-static";
@@ -14,13 +16,13 @@ import koaStatic from "koa-static";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
-class BuzillaPlugin implements ServerPlugin {
+class BugzillaPlugin implements ServerPlugin {
   public readonly id = "bugzilla";
   public readonly serverMiddleware: Koa.Middleware;
 
   private readonly clientPath: string;
 
-  public constructor() {
+  public constructor(private readonly server: PluginServer) {
     this.clientPath = path.dirname(require.resolve("@allthethings/bugzilla-client/dist/app.js"));
 
     this.serverMiddleware = koaStatic(this.clientPath, {
@@ -28,22 +30,22 @@ class BuzillaPlugin implements ServerPlugin {
     });
   }
 
-  public getSchema(): Promise<string> {
+  public schema(): Promise<string> {
     let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
     return fs.readFile(schemaFile, {
       encoding: "utf8",
     });
   }
 
-  public getResolvers(): Resolver<GraphQLContext> {
+  public resolvers(): Resolver<GraphQLContext> {
     return Resolvers;
   }
 
-  public getClientScripts(): string[] {
+  public clientScripts(): string[] {
     return [`/${this.id}/app.js`];
   }
 
-  public getDbMigrations(): PluginDbMigration[] {
+  public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
   }
 
@@ -52,4 +54,6 @@ class BuzillaPlugin implements ServerPlugin {
   }
 }
 
-export default new BuzillaPlugin();
+const plugin: ServerPluginExport = (server: PluginServer) => new BugzillaPlugin(server);
+
+export default plugin;

@@ -31,12 +31,12 @@ function nameForSection(type: SectionIndex): string {
 }
 
 function classBuilder<I, T>(
-  cls: new (resolverContext: ResolverContext, dbObject: DbObject<T>) => I,
+  cls: new (dataSources: AppDataSources, dbObject: DbObject<T>) => I,
 ): ImplBuilder<I, T> {
   return (
-    resolverContext: ResolverContext,
+    dataSources: AppDataSources,
     dbObject: DbObject<T>,
-  ) => new cls(resolverContext, dbObject);
+  ) => new cls(dataSources, dbObject);
 }
 
 async function max<D>(
@@ -59,29 +59,30 @@ export abstract class DbDataSource<
   T extends Db.DbTable = Db.DbTable,
 > extends DataSource<ResolverContext> {
   public readonly abstract tableName: string;
-  protected abstract builder(resolverContext: ResolverContext, dbObject: DbObject<T>): I;
-  private _config: DataSourceConfig<ResolverContext> | null = null;
+  protected abstract builder(dataSources: AppDataSources, dbObject: DbObject<T>): I;
+  private _db: DatabaseConnection | null = null;
+  private context: { dataSources: AppDataSources } | null = null;
 
-  protected get config(): DataSourceConfig<ResolverContext> {
-    if (!this._config) {
+  /**
+   * The server datasources.
+   */
+  protected get dataSources(): AppDataSources {
+    if (!this.context) {
       throw new Error("Not initialized.");
     }
 
-    return this._config;
-  }
-
-  /**
-   * The GraphQL resolver context.
-   */
-  protected get context(): ResolverContext {
-    return this.config.context;
+    return this.context.dataSources;
   }
 
   /**
    * The database connection. This may be in a transaction.
    */
   protected get connection(): DatabaseConnection {
-    return this.context.db;
+    if (!this._db) {
+      throw new Error("Not initialized.");
+    }
+
+    return this._db;
   }
 
   /**
@@ -92,7 +93,13 @@ export abstract class DbDataSource<
   }
 
   public initialize(config: DataSourceConfig<ResolverContext>): void {
-    this._config = config;
+    this._db = config.context.db;
+    this.context = config.context;
+  }
+
+  public init(db: DatabaseConnection, dataSources: AppDataSources): void {
+    this._db = db;
+    this.context = { dataSources };
   }
 
   /**
@@ -140,7 +147,7 @@ export abstract class DbDataSource<
     if (!dbObject) {
       return null;
     }
-    return this.builder(this.context, dbObject);
+    return this.builder(this.dataSources, dbObject);
   }
 
   /**
@@ -324,11 +331,11 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
       password: await bcryptHash(params.password, 12),
     }));
 
-    await this.context.dataSources.contexts.create(user, {
+    await this.dataSources.contexts.create(user, {
       name: "",
     });
 
-    await this.context.dataSources.sections.createSpecialSection(user.id(), SectionIndex.Inbox);
+    await this.dataSources.sections.createSpecialSection(user.id(), SectionIndex.Inbox);
 
     return user;
   }
@@ -351,7 +358,7 @@ export class ContextDataSource extends DbDataSource<
       return null;
     }
 
-    return this.context.dataSources.users.getImpl(record.userId);
+    return this.dataSources.users.getImpl(record.userId);
   }
 
   public async create(
@@ -364,7 +371,7 @@ export class ContextDataSource extends DbDataSource<
       userId: user.id(),
     }));
 
-    await this.context.dataSources.projects.create(context, {
+    await this.dataSources.projects.create(context, {
       name: "",
     });
 
@@ -398,7 +405,7 @@ export class ProjectDataSource extends DbDataSource<
       parentId: params.name == "" ? null : taskList.id(),
     }));
 
-    await this.context.dataSources.sections.createSpecialSection(
+    await this.dataSources.sections.createSpecialSection(
       project.id(),
       SectionIndex.Anonymous,
     );
@@ -657,4 +664,12 @@ export function dataSources(): AppDataSources {
     noteDetail: new NoteDetailSource(),
     linkDetail: new LinkDetailSource(),
   };
+}
+
+export function buildDataSources(db: DatabaseConnection): AppDataSources {
+  let datasources = dataSources();
+  for (let source of Object.values(datasources)) {
+    source.init(db, datasources);
+  }
+  return datasources;
 }
