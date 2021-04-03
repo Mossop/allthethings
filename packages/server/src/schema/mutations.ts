@@ -4,6 +4,7 @@ import type { Overwrite } from "@allthethings/utils";
 
 import type { User, Context, Project, Section, TaskList, Item } from "../db";
 import { ItemType } from "../db/types";
+import PluginManager from "../plugins";
 import type { Icon } from "../utils/page";
 import { loadPageInfo } from "../utils/page";
 import type { AuthedParams, AuthedContext, ResolverParams } from "./context";
@@ -12,23 +13,15 @@ import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
 
 type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
+  list: TaskList | Section;
   taskInfo?: Types.TaskInfoParams | null;
 }>;
 
 async function baseCreateItem(
   ctx: AuthedContext,
-  { list: listId, item: itemParams, taskInfo }: ItemCreateArgs,
+  { list, item: itemParams, taskInfo }: ItemCreateArgs,
   type: ItemType | null,
 ): Promise<Item> {
-  let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
-  if (!list && listId) {
-    list = await ctx.dataSources.sections.getImpl(listId);
-  }
-
-  if (!list) {
-    throw new Error("Unknown task list.");
-  }
-
   let item = await ctx.dataSources.items.create(list, {
     ...itemParams,
     archived: itemParams.archived ?? null,
@@ -223,14 +216,23 @@ const resolvers: MutationResolvers = {
   }),
 
   createTask: authed(async ({
-    args,
+    args: { list: listId, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateTaskArgs>): Promise<Item> => {
-    return baseCreateItem(ctx, args, null);
+    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    if (!list && listId) {
+      list = await ctx.dataSources.sections.getImpl(listId);
+    }
+
+    if (!list) {
+      throw new Error("Unknown task list.");
+    }
+
+    return baseCreateItem(ctx, { list, ...args }, null);
   }),
 
   createLink: authed(async ({
-    args: { detail, ...args },
+    args: { detail, list: listId, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
     let url: URL;
@@ -238,6 +240,24 @@ const resolvers: MutationResolvers = {
       url = new URL(detail.url);
     } catch (e) {
       throw new Error("Invalid url.");
+    }
+
+    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    if (!list && listId) {
+      list = await ctx.dataSources.sections.getImpl(listId);
+    }
+
+    if (!list) {
+      throw new Error("Unknown task list.");
+    }
+
+    let itemId = await PluginManager.handleURL(ctx, url);
+    if (itemId) {
+      let item = await ctx.dataSources.items.getImpl(itemId);
+      if (item) {
+        await item.move(list, null);
+        return item;
+      }
     }
 
     let pageInfo = await loadPageInfo(url);
@@ -252,6 +272,7 @@ const resolvers: MutationResolvers = {
 
     let item = await baseCreateItem(ctx, {
       ...args,
+      list,
       item: {
         ...args.item,
         summary,
@@ -286,10 +307,19 @@ const resolvers: MutationResolvers = {
   }),
 
   createNote: authed(async ({
-    args: { detail, ...args },
+    args: { detail, list: listId, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateNoteArgs>): Promise<Item> => {
-    let item = await baseCreateItem(ctx, args, ItemType.Note);
+    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    if (!list && listId) {
+      list = await ctx.dataSources.sections.getImpl(listId);
+    }
+
+    if (!list) {
+      throw new Error("Unknown task list.");
+    }
+
+    let item = await baseCreateItem(ctx, { list, ...args }, ItemType.Note);
 
     await ctx.dataSources.noteDetail.create(item, {
       ...detail,

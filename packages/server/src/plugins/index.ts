@@ -1,3 +1,5 @@
+import type { URL } from "url";
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
@@ -49,7 +51,8 @@ export interface ServerPlugin {
   readonly middleware?: PluginField<Koa.Middleware>;
   readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;
   readonly dbMigrations?: PluginField<PluginDbMigration[]>;
-  readonly getItemFields: PluginField<PluginItemFields, [id: string]>;
+  readonly getItemFields: (id: string) => Awaitable<PluginItemFields>;
+  readonly handleURL?: (context: GraphQLContext, url: URL) => Awaitable<string | null>;
 }
 
 export interface PluginServer {
@@ -218,6 +221,17 @@ class PluginManager {
         app.use(koaMount("/" + plugin.id, middleware));
       }
     });
+  }
+
+  public async handleURL(context: ResolverContext, url: URL): Promise<string | null> {
+    for (let plugin of this.plugins) {
+      let result = await plugin.handleURL(wrapResolverContext(plugin, context), url);
+      if (result) {
+        return result;
+      }
+    }
+
+    return null;
   }
 
   public async loadPlugins(

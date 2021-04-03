@@ -1,3 +1,5 @@
+import type { URL } from "url";
+
 import type Koa from "koa";
 
 import type {
@@ -116,5 +118,9 @@ export default class PluginInstance implements PluginServer {
 
   public startup(): Promise<void> {
     return getField(this.plugin, this.plugin.startup, undefined);
+  }
+
+  public handleURL(context: GraphQLContext, url: URL): Promise<string | null> {
+    return getField(this.plugin, this.plugin.handleURL, null, context, url);
   }
 }
