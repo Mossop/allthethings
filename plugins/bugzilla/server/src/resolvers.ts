@@ -12,7 +12,7 @@ const Resolvers: Resolver<GraphQLContext> = {
       args: unknown,
       ctx: GraphQLContext,
     ): Promise<Account[]> {
-      return Account.list(ctx, user.id);
+      return Account.list(ctx, user.id());
     },
   },
 

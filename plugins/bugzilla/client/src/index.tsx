@@ -5,7 +5,7 @@ import Bug from "./Bug";
 import { SettingSections } from "./Settings";
 
 class BugzillaPlugin implements ClientPlugin {
-  public readonly id = "bugzilla";
+  public readonly serverId = "@allthethings/bugzilla-server";
   public readonly name = "Bugzilla";
 
   public renderPluginSections(): ReactResult {

@@ -9,7 +9,7 @@ export type PluginItemProps = Overwrite<ItemRenderProps, {
   item: PluginItem;
 }>;
 
-export default ReactMemo(function NoteItem({
+export default ReactMemo(function PluginItem({
   item,
 }: PluginItemProps): ReactResult {
   let plugin = usePlugin(item.detail.pluginId);

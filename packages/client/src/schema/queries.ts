@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFieldsFragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFieldsFragment, RootFields_Context_Fragment, RootFields_User_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
@@ -25,19 +25,19 @@ export type ListTaskListQueryVariables = Types.Exact<{
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Item' }
-      & ItemFieldsFragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Item' }
-        & ItemFieldsFragment
-      )> }> } | { readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
+export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Item' }
       & ItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ItemFieldsFragment
       )> }> } | { readonly __typename: 'Project', readonly remainingTasks: number, readonly items: ReadonlyArray<(
+      { readonly __typename: 'Item' }
+      & ItemFieldsFragment
+    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
+        { readonly __typename: 'Item' }
+        & ItemFieldsFragment
+      )> }> } | { readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Item' }
       & ItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(

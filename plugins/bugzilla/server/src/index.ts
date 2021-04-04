@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import type { URL } from "url";
 
 import type {
   PluginDbMigration,
@@ -9,15 +10,16 @@ import type {
   Resolver,
   ServerPluginExport,
   PluginServer,
+  PluginContext,
 } from "@allthethings/server";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 
+import { Account, Bug } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
 class BugzillaPlugin implements ServerPlugin {
-  public readonly id = "bugzilla";
   public readonly serverMiddleware: Koa.Middleware;
 
   private readonly clientPath: string;
@@ -28,6 +30,10 @@ class BugzillaPlugin implements ServerPlugin {
     this.serverMiddleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
     });
+  }
+
+  public middleware(): Koa.Middleware {
+    return this.serverMiddleware;
   }
 
   public schema(): Promise<string> {
@@ -42,15 +48,36 @@ class BugzillaPlugin implements ServerPlugin {
   }
 
   public clientScripts(): string[] {
-    return [`/${this.id}/app.js`];
+    return ["/app.js"];
   }
 
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
   }
 
-  public getItemFields(): Promise<PluginItemFields> {
-    throw new Error("Unknown item");
+  public async getItemFields(context: PluginContext, itemId: string): Promise<PluginItemFields> {
+    let bug = await Bug.getForItem(context, itemId);
+    if (!bug) {
+      throw new Error("Missing bug record.");
+    }
+
+    return bug.fields;
+  }
+
+  public async createItemFromURL(context: GraphQLContext, url: URL): Promise<string | null> {
+    if (!context.userId) {
+      return null;
+    }
+
+    let accounts = await Account.list(context, context.userId);
+    for (let account of accounts) {
+      let bug = await account.getBugFromURL(url);
+      if (bug) {
+        return bug.itemId;
+      }
+    }
+
+    return null;
   }
 }
 

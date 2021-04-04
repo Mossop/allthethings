@@ -22,9 +22,29 @@ class BaseMigration implements PluginDbMigration {
       table.text("password")
         .nullable();
     });
+
+    await knex.schema.createTable("Bug", (table: Knex.CreateTableBuilder): void => {
+      helper.itemRef(table, "itemId")
+        .notNullable()
+        .unique()
+        .primary();
+
+      helper.idColumn(table, "accountId")
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"));
+      table.integer("bugId")
+        .notNullable();
+
+      table.text("summary")
+        .notNullable();
+
+      table.unique(["accountId", "bugId"]);
+    });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
+    await knex.schema.dropTableIfExists("Bug");
     await knex.schema.dropTableIfExists("Account");
   }
 }

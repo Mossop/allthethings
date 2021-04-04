@@ -13,6 +13,7 @@ export interface DbMigrationHelper {
   readonly idColumn: CreateColumn;
   readonly userRef: CreateColumn;
   readonly itemRef: CreateColumn;
+  readonly tableName: (name: string) => string;
 }
 
 export interface PluginDbMigration {
@@ -22,33 +23,40 @@ export interface PluginDbMigration {
   readonly down?: (knex: PluginKnex, helper: DbMigrationHelper) => Promise<void>;
 }
 
-const migrationHelper: DbMigrationHelper = {
-  idColumn: (table: Knex.CreateTableBuilder): Knex.ColumnBuilder => {
-    return table.text("id");
-  },
+class MigrationHelper implements DbMigrationHelper {
+  public constructor(private readonly schema: string) {
+  }
 
-  userRef: (
+  public idColumn(table: Knex.CreateTableBuilder, column: string): Knex.ColumnBuilder {
+    return table.text(column);
+  }
+
+  public userRef(
     table: Knex.CreateTableBuilder,
     column: string,
-  ): Knex.ColumnBuilder => {
+  ): Knex.ColumnBuilder {
     return table.text(column)
       .references("id")
       .inTable("public.User")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-  },
+  }
 
-  itemRef: (
+  public itemRef(
     table: Knex.CreateTableBuilder,
     column: string,
-  ): Knex.ColumnBuilder => {
+  ): Knex.ColumnBuilder {
     return table.text(column)
       .references("id")
       .inTable("public.Item")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
-  },
-};
+  }
+
+  public tableName(name: string): string {
+    return `${this.schema}.${name}`;
+  }
+}
 
 export function wrapKnex(knex: Knex, dbSchema: string): PluginKnex {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -83,12 +91,12 @@ class PluginMigration implements DbMigration {
   }
 
   public up(knex: Knex): Promise<void> {
-    return this.migration.up(wrapKnex(knex, this.schema), migrationHelper);
+    return this.migration.up(wrapKnex(knex, this.schema), new MigrationHelper(this.schema));
   }
 
   public async down(knex: Knex): Promise<void> {
     if (this.migration.down) {
-      await this.migration.down(wrapKnex(knex, this.schema), migrationHelper);
+      await this.migration.down(wrapKnex(knex, this.schema), new MigrationHelper(this.schema));
     }
   }
 }

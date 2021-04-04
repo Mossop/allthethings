@@ -51,7 +51,7 @@ export interface GraphQLContext extends PluginContext {
 }
 
 export interface User {
-  id: string;
+  id: () => string;
 }
 
 export interface PluginItemFields {
@@ -66,7 +66,7 @@ export interface ServerPlugin {
   readonly middleware?: PluginField<Koa.Middleware>;
   readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;
   readonly dbMigrations?: PluginField<PluginDbMigration[]>;
-  readonly getItemFields: (id: string) => Awaitable<PluginItemFields>;
+  readonly getItemFields: (context: PluginContext, id: string) => Awaitable<PluginItemFields>;
   readonly createItemFromURL?: (context: GraphQLContext, url: URL) => Awaitable<string | null>;
 }
 
@@ -81,12 +81,13 @@ export type ServerPluginExport = MaybeCallable<
 
 export function buildContext(
   plugin: PluginInstance,
-  db: DatabaseConnection,
   dataSources: AppDataSources,
 ): PluginContext {
+  let db = dataSources.users.connection;
+
   return {
     get knex(): PluginKnex {
-      return wrapKnex(db.knex, plugin.id);
+      return wrapKnex(db.knex, plugin.schema);
     },
 
     get userTableRef(): TableRef {
@@ -98,7 +99,7 @@ export function buildContext(
     },
 
     tableRef(name: string): TableRef {
-      return db.knex.ref(name).withSchema(plugin.id);
+      return db.knex.ref(name).withSchema(plugin.schema);
     },
 
     // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
@@ -134,7 +135,7 @@ export function buildContext(
 
 function wrapResolverContext(plugin: PluginInstance, context: ResolverContext): GraphQLContext {
   // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return Object.create(buildContext(plugin, context.db, context.dataSources), {
+  return Object.create(buildContext(plugin, context.dataSources), {
     userId: {
       value: context.userId,
       writable: false,
@@ -182,10 +183,14 @@ class PluginManager {
     return results.filter(filter);
   }
 
-  public async getItemFields(id: string, pluginId: string): Promise<PluginItemFields> {
+  public async getItemFields(
+    dataSources: AppDataSources,
+    id: string,
+    pluginId: string,
+  ): Promise<PluginItemFields> {
     for (let plugin of this.plugins) {
       if (plugin.id == pluginId) {
-        return plugin.getItemFields(id);
+        return plugin.getItemFields(buildContext(plugin, dataSources), id);
       }
     }
 
@@ -194,7 +199,16 @@ class PluginManager {
 
   public async getClientScripts(ctx: Koa.Context): Promise<string[]> {
     let scripts = await this.withAll(
-      (plugin: PluginInstance): Promise<string[]> => plugin.getClientScripts(ctx),
+      async (plugin: PluginInstance): Promise<string[]> => {
+        let scripts = await plugin.getClientScripts(ctx);
+        return scripts.map((script: string): string => {
+          if (script.startsWith("/") && !script.startsWith("//")) {
+            return `/plugin/${plugin.schema}${script}`;
+          }
+
+          return script;
+        });
+      },
     );
 
     let first = scripts.shift() ?? [];
@@ -209,7 +223,7 @@ class PluginManager {
       }
 
       await knex.migrate.latest(
-        getMigrationSource(plugin.id, migrations),
+        getMigrationSource(plugin.schema, migrations),
       );
     });
   }
@@ -222,7 +236,7 @@ class PluginManager {
       }
 
       await knex.migrate.rollback(
-        getMigrationSource(plugin.id, migrations),
+        getMigrationSource(plugin.schema, migrations),
         all,
       );
     });
@@ -257,7 +271,7 @@ class PluginManager {
     await this.withAll(async (plugin: PluginInstance): Promise<void> => {
       let middleware = await plugin.getServerMiddleware();
       if (middleware) {
-        app.use(koaMount("/" + plugin.id, middleware));
+        app.use(koaMount("/plugin/" + plugin.schema, middleware));
       }
     });
   }

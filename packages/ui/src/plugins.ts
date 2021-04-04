@@ -9,7 +9,7 @@ export type PluginItem = Overwrite<Schema.Item, {
 }>;
 
 export interface ClientPlugin {
-  readonly id: string;
+  readonly serverId: string;
   readonly name: string;
 
   readonly renderPluginSections: () => ReactResult;
@@ -33,7 +33,7 @@ export function usePlugin(id: string): ClientPlugin | null {
 
   return useMemo(() => {
     for (let plugin of plugins) {
-      if (plugin.id == id) {
+      if (plugin.serverId == id) {
         return plugin;
       }
     }
@@ -65,7 +65,7 @@ class PluginManagerImpl implements ClientPluginManager {
   }
 
   public async registerPlugin(plugin: ClientPlugin): Promise<void> {
-    this.plugins.set(plugin.id, plugin);
+    this.plugins.set(plugin.serverId, plugin);
     this.staticPlugins = null;
 
     for (let listener of this.listeners) {

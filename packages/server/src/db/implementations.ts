@@ -1,4 +1,5 @@
 import PluginManager from "../plugins";
+import type { User as PluginUser } from "../plugins";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";
@@ -149,7 +150,7 @@ abstract class ProjectRootImpl<
 }
 
 export class User extends ProjectRootImpl<Db.UserDbTable>
-  implements Rslv.UserResolvers {
+  implements Rslv.UserResolvers, PluginUser {
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
   }
@@ -386,7 +387,7 @@ export class PluginDetail extends BaseImpl<Db.PluginDetailDbTable>
 
   public async fields(): Promise<string> {
     let pluginId = await this.pluginId();
-    let fields = await PluginManager.getItemFields(this._id, pluginId);
+    let fields = await PluginManager.getItemFields(this.dataSources, this._id, pluginId);
     return JSON.stringify(fields);
   }
 

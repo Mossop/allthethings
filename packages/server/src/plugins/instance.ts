@@ -49,14 +49,18 @@ function getField<R, D, A extends unknown[]>(
 }
 
 export default class PluginInstance implements PluginServer {
-  public readonly id: string;
+  public readonly schema: string;
   private _plugin: ServerPlugin | null = null;
   private readonly pluginPromise: Promise<void>;
 
-  public constructor(spec: string, private readonly db: DatabaseConnection, config: unknown) {
-    this.id = spec.replace(/[^0-9a-zA-Z_]/g, "_");
+  public constructor(
+    public readonly id: string,
+    private readonly db: DatabaseConnection,
+    config: unknown,
+  ) {
+    this.schema = this.id.replace(/[^0-9a-zA-Z_]/g, "_");
 
-    this.pluginPromise = loadPlugin(spec, this, config).then((plugin: ServerPlugin) => {
+    this.pluginPromise = loadPlugin(this.id, this, config).then((plugin: ServerPlugin) => {
       this._plugin = plugin;
     });
   }
@@ -74,7 +78,7 @@ export default class PluginInstance implements PluginServer {
     let dataSources = buildDataSources(cloned);
 
     try {
-      let result = await task(buildContext(this, cloned, dataSources));
+      let result = await task(buildContext(this, dataSources));
       await cloned.commitTransaction();
       return result;
     } catch (e) {
@@ -91,8 +95,8 @@ export default class PluginInstance implements PluginServer {
     return this._plugin;
   }
 
-  public getItemFields(id: string): Promise<PluginItemFields> {
-    return getField(this.plugin, this.plugin.getItemFields, {}, id);
+  public getItemFields(context: PluginContext, id: string): Promise<PluginItemFields> {
+    return getField(this.plugin, this.plugin.getItemFields, {}, context, id);
   }
 
   public getClientScripts(ctx: Koa.Context): Promise<string[]> {

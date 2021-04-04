@@ -1,7 +1,7 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFieldsFragment, RootFields_User_Fragment, RootFields_Context_Fragment } from './fragments';
+import { ItemFieldsFragment, RootFields_Context_Fragment, RootFields_User_Fragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';

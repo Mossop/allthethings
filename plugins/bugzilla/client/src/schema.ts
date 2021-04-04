@@ -17,89 +17,12 @@ export type Scalars = {
   DateTime: DateTime;
 };
 
-
-export type TaskInfo = {
-  readonly __typename?: 'TaskInfo';
-  readonly due: Maybe<Scalars['DateTime']>;
-  readonly done: Maybe<Scalars['DateTime']>;
-};
-
-export type PluginDetail = {
-  readonly __typename?: 'PluginDetail';
-  readonly pluginId: Scalars['String'];
-  readonly fields: Scalars['String'];
-};
-
-export type FileDetail = {
-  readonly __typename?: 'FileDetail';
-  readonly filename: Scalars['String'];
-  readonly mimetype: Scalars['String'];
-  readonly size: Scalars['Int'];
-};
-
-export type NoteDetail = {
-  readonly __typename?: 'NoteDetail';
-  readonly note: Scalars['String'];
-};
-
-export type LinkDetail = {
-  readonly __typename?: 'LinkDetail';
+export type BugzillaAccount = {
+  readonly __typename?: 'BugzillaAccount';
+  readonly id: Scalars['ID'];
   readonly icon: Maybe<Scalars['String']>;
   readonly url: Scalars['String'];
-};
-
-export type ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail;
-
-export type Item = {
-  readonly __typename?: 'Item';
-  readonly id: Scalars['ID'];
-  readonly summary: Scalars['String'];
-  readonly created: Scalars['DateTime'];
-  readonly archived: Maybe<Scalars['DateTime']>;
-  readonly snoozed: Maybe<Scalars['DateTime']>;
-  readonly taskInfo: Maybe<TaskInfo>;
-  readonly detail: Maybe<ItemDetail>;
-};
-
-export type TaskList = {
-  readonly remainingTasks: Scalars['Int'];
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ReadonlyArray<Item>;
-};
-
-export type ProjectRoot = {
-  readonly remainingTasks: Scalars['Int'];
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ReadonlyArray<Item>;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById: Maybe<Project>;
-};
-
-
-export type ProjectRootProjectByIdArgs = {
-  id: Scalars['ID'];
-};
-
-export type User = ProjectRoot & TaskList & {
-  readonly __typename?: 'User';
-  readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
-  readonly contexts: ReadonlyArray<Context>;
-  readonly email: Scalars['String'];
-  readonly id: Scalars['ID'];
-  readonly inbox: Inbox;
-  readonly items: ReadonlyArray<Item>;
-  readonly projectById: Maybe<Project>;
-  readonly projects: ReadonlyArray<Project>;
-  readonly remainingTasks: Scalars['Int'];
-  readonly sections: ReadonlyArray<Section>;
-  readonly subprojects: ReadonlyArray<Project>;
-};
-
-
-export type UserProjectByIdArgs = {
-  id: Scalars['ID'];
+  readonly username: Maybe<Scalars['String']>;
 };
 
 export type Context = ProjectRoot & TaskList & {
@@ -121,24 +44,16 @@ export type ContextProjectByIdArgs = {
   id: Scalars['ID'];
 };
 
-export type Project = TaskList & {
-  readonly __typename?: 'Project';
-  readonly remainingTasks: Scalars['Int'];
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ReadonlyArray<Item>;
-  readonly id: Scalars['ID'];
-  readonly stub: Scalars['String'];
+export type ContextParams = {
   readonly name: Scalars['String'];
-  readonly taskList: TaskList;
 };
 
-export type Section = {
-  readonly __typename?: 'Section';
-  readonly remainingTasks: Scalars['Int'];
-  readonly items: ReadonlyArray<Item>;
-  readonly id: Scalars['ID'];
-  readonly name: Scalars['String'];
+
+export type FileDetail = {
+  readonly __typename?: 'FileDetail';
+  readonly filename: Scalars['String'];
+  readonly mimetype: Scalars['String'];
+  readonly size: Scalars['Int'];
 };
 
 export type Inbox = {
@@ -147,34 +62,18 @@ export type Inbox = {
   readonly items: ReadonlyArray<Item>;
 };
 
-export type Query = {
-  readonly __typename?: 'Query';
-  readonly user: Maybe<User>;
-  readonly taskList: Maybe<TaskList>;
-  readonly root: Maybe<ProjectRoot>;
+export type Item = {
+  readonly __typename?: 'Item';
+  readonly id: Scalars['ID'];
+  readonly summary: Scalars['String'];
+  readonly created: Scalars['DateTime'];
+  readonly archived: Maybe<Scalars['DateTime']>;
+  readonly snoozed: Maybe<Scalars['DateTime']>;
+  readonly taskInfo: Maybe<TaskInfo>;
+  readonly detail: Maybe<ItemDetail>;
 };
 
-
-export type QueryTaskListArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type QueryRootArgs = {
-  id: Scalars['ID'];
-};
-
-export type ContextParams = {
-  readonly name: Scalars['String'];
-};
-
-export type ProjectParams = {
-  readonly name: Scalars['String'];
-};
-
-export type SectionParams = {
-  readonly name: Scalars['String'];
-};
+export type ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail;
 
 export type ItemParams = {
   readonly summary: Scalars['String'];
@@ -182,17 +81,14 @@ export type ItemParams = {
   readonly snoozed: Maybe<Scalars['DateTime']>;
 };
 
-export type TaskInfoParams = {
-  readonly due: Maybe<Scalars['DateTime']>;
-  readonly done: Maybe<Scalars['DateTime']>;
+export type LinkDetail = {
+  readonly __typename?: 'LinkDetail';
+  readonly icon: Maybe<Scalars['String']>;
+  readonly url: Scalars['String'];
 };
 
 export type LinkDetailParams = {
   readonly url: Scalars['String'];
-};
-
-export type NoteDetailParams = {
-  readonly note: Scalars['String'];
 };
 
 export type Mutation = {
@@ -344,12 +240,116 @@ export type MutationMoveSectionArgs = {
   before: Maybe<Scalars['ID']>;
 };
 
-export type BugzillaAccount = {
-  readonly __typename?: 'BugzillaAccount';
+export type NoteDetail = {
+  readonly __typename?: 'NoteDetail';
+  readonly note: Scalars['String'];
+};
+
+export type NoteDetailParams = {
+  readonly note: Scalars['String'];
+};
+
+export type PluginDetail = {
+  readonly __typename?: 'PluginDetail';
+  readonly pluginId: Scalars['String'];
+  readonly fields: Scalars['String'];
+};
+
+export type Project = TaskList & {
+  readonly __typename?: 'Project';
+  readonly remainingTasks: Scalars['Int'];
+  readonly subprojects: ReadonlyArray<Project>;
+  readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
   readonly id: Scalars['ID'];
-  readonly icon: Maybe<Scalars['String']>;
-  readonly url: Scalars['String'];
-  readonly username: Maybe<Scalars['String']>;
+  readonly stub: Scalars['String'];
+  readonly name: Scalars['String'];
+  readonly taskList: TaskList;
+};
+
+export type ProjectParams = {
+  readonly name: Scalars['String'];
+};
+
+export type ProjectRoot = {
+  readonly remainingTasks: Scalars['Int'];
+  readonly subprojects: ReadonlyArray<Project>;
+  readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
+  readonly projects: ReadonlyArray<Project>;
+  readonly projectById: Maybe<Project>;
+};
+
+
+export type ProjectRootProjectByIdArgs = {
+  id: Scalars['ID'];
+};
+
+export type Query = {
+  readonly __typename?: 'Query';
+  readonly user: Maybe<User>;
+  readonly taskList: Maybe<TaskList>;
+  readonly root: Maybe<ProjectRoot>;
+};
+
+
+export type QueryTaskListArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryRootArgs = {
+  id: Scalars['ID'];
+};
+
+export type Section = {
+  readonly __typename?: 'Section';
+  readonly remainingTasks: Scalars['Int'];
+  readonly items: ReadonlyArray<Item>;
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+};
+
+export type SectionParams = {
+  readonly name: Scalars['String'];
+};
+
+export type TaskInfo = {
+  readonly __typename?: 'TaskInfo';
+  readonly due: Maybe<Scalars['DateTime']>;
+  readonly done: Maybe<Scalars['DateTime']>;
+};
+
+export type TaskInfoParams = {
+  readonly due: Maybe<Scalars['DateTime']>;
+  readonly done: Maybe<Scalars['DateTime']>;
+};
+
+export type TaskList = {
+  readonly remainingTasks: Scalars['Int'];
+  readonly subprojects: ReadonlyArray<Project>;
+  readonly sections: ReadonlyArray<Section>;
+  readonly items: ReadonlyArray<Item>;
+};
+
+export type User = ProjectRoot & TaskList & {
+  readonly __typename?: 'User';
+  readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
+  readonly contexts: ReadonlyArray<Context>;
+  readonly email: Scalars['String'];
+  readonly id: Scalars['ID'];
+  readonly inbox: Inbox;
+  readonly items: ReadonlyArray<Item>;
+  readonly projectById: Maybe<Project>;
+  readonly projects: ReadonlyArray<Project>;
+  readonly remainingTasks: Scalars['Int'];
+  readonly sections: ReadonlyArray<Section>;
+  readonly subprojects: ReadonlyArray<Project>;
+};
+
+
+export type UserProjectByIdArgs = {
+  id: Scalars['ID'];
 };
 
 export type ListBugzillaAccountsQueryVariables = Exact<{ [key: string]: never; }>;

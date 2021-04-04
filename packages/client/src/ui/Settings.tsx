@@ -76,7 +76,7 @@ function SettingsSidebar(): ReactResult {
         General
       </SettingSection>
       {
-        plugins.map((plugin: ClientPlugin) => <Fragment key={plugin.id}>
+        plugins.map((plugin: ClientPlugin) => <Fragment key={plugin.serverId}>
           <Divider className={classes.divider}/>
           <List disablePadding={true}>
             <ListSubheader className={classes.pluginHeader}>

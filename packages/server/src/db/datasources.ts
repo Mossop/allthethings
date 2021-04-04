@@ -77,7 +77,7 @@ export abstract class DbDataSource<
   /**
    * The database connection. This may be in a transaction.
    */
-  protected get connection(): DatabaseConnection {
+  public get connection(): DatabaseConnection {
     if (!this._db) {
       throw new Error("Not initialized.");
     }

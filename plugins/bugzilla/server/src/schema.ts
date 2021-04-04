@@ -22,11 +22,6 @@ export type BugzillaAccount = {
   readonly username: Maybe<Scalars['String']>;
 };
 
-export type User = {
-  readonly __typename?: 'User';
-  readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
-};
-
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
@@ -37,6 +32,11 @@ export type MutationCreateBugzillaAccountArgs = {
   url: Scalars['String'];
   username: Maybe<Scalars['String']>;
   password: Maybe<Scalars['String']>;
+};
+
+export type User = {
+  readonly __typename?: 'User';
+  readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -121,8 +121,8 @@ export type ResolversTypes = ResolversObject<{
   BugzillaAccount: ResolverTypeWrapper<BugzillaAccount>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
-  User: ResolverTypeWrapper<User>;
   Mutation: ResolverTypeWrapper<{}>;
+  User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
 
@@ -131,8 +131,8 @@ export type ResolversParentTypes = ResolversObject<{
   BugzillaAccount: BugzillaAccount;
   ID: Scalars['ID'];
   String: Scalars['String'];
-  User: User;
   Mutation: {};
+  User: User;
   Boolean: Scalars['Boolean'];
 }>;
 
@@ -144,19 +144,19 @@ export type BugzillaAccountResolvers<ContextType = any, ParentType extends Resol
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url'>>;
+}>;
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   bugzillaAccounts: Resolver<ReadonlyArray<ResolversTypes['BugzillaAccount']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
-export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url'>>;
-}>;
-
 export type Resolvers<ContextType = any> = ResolversObject<{
   BugzillaAccount: BugzillaAccountResolvers<ContextType>;
-  User: UserResolvers<ContextType>;
   Mutation: MutationResolvers<ContextType>;
+  User: UserResolvers<ContextType>;
 }>;
 
 
