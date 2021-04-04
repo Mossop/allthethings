@@ -19,6 +19,13 @@ import { Account, Bug } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
+export interface BugRecord {
+  accountId: string;
+  bugId: number;
+  summary: string;
+  url: string;
+}
+
 class BugzillaPlugin implements ServerPlugin {
   public readonly serverMiddleware: Koa.Middleware;
 
@@ -61,7 +68,7 @@ class BugzillaPlugin implements ServerPlugin {
       throw new Error("Missing bug record.");
     }
 
-    return bug.fields;
+    return bug.fields();
   }
 
   public async createItemFromURL(context: GraphQLContext, url: URL): Promise<string | null> {

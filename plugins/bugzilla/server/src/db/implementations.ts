@@ -1,9 +1,10 @@
 import { URL } from "url";
 
-import type { PluginContext, PluginItemFields } from "@allthethings/server";
+import type { PluginContext } from "@allthethings/server";
 import type { Bug as BugzillaBug } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 
+import type { BugRecord } from "..";
 import type { BugzillaAccount, MutationCreateBugzillaAccountArgs } from "../schema";
 
 type Impl<T> = Omit<T, "__typename">;
@@ -119,6 +120,15 @@ export class Bug {
   ) {
   }
 
+  public async account(): Promise<Account> {
+    let account = await Account.get(this.context, this.record.accountId);
+    if (!account) {
+      throw new Error("Missing account record.");
+    }
+
+    return account;
+  }
+
   public get bugId(): number {
     return this.record.bugId;
   }
@@ -127,11 +137,15 @@ export class Bug {
     return this.record.itemId;
   }
 
-  public get fields(): PluginItemFields {
+  public async fields(): Promise<BugRecord> {
+    let account = await this.account();
+    let baseUrl = new URL(account.url);
+
     return {
       accountId: this.record.accountId,
       bugId: this.record.bugId,
       summary: this.record.summary,
+      url: new URL(`/show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
     };
   }
 
