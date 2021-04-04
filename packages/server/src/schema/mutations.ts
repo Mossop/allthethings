@@ -251,13 +251,10 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    let itemId = await PluginManager.handleURL(ctx, url);
-    if (itemId) {
-      let item = await ctx.dataSources.items.getImpl(itemId);
-      if (item) {
-        await item.move(list, null);
-        return item;
-      }
+    let item = await PluginManager.createItemFromURL(ctx, url);
+    if (item) {
+      await item.move(list, null);
+      return item;
     }
 
     let pageInfo = await loadPageInfo(url);
@@ -270,7 +267,7 @@ const resolvers: MutationResolvers = {
       throw new Error("No page title found.");
     }
 
-    let item = await baseCreateItem(ctx, {
+    item = await baseCreateItem(ctx, {
       ...args,
       list,
       item: {

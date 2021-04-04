@@ -120,7 +120,7 @@ export default class PluginInstance implements PluginServer {
     return getField(this.plugin, this.plugin.startup, undefined);
   }
 
-  public handleURL(context: GraphQLContext, url: URL): Promise<string | null> {
-    return getField(this.plugin, this.plugin.handleURL, null, context, url);
+  public createItemFromURL(context: GraphQLContext, url: URL): Promise<string | null> {
+    return getField(this.plugin, this.plugin.createItemFromURL, null, context, url);
   }
 }

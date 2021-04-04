@@ -5,10 +5,13 @@ import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
+import type { DateTime } from "luxon";
 
+import type { Item } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import { id } from "../db/connection";
 import type { AppDataSources } from "../db/datasources";
+import { ItemType } from "../db/types";
 import type { ResolverContext } from "../schema/context";
 import type { PluginDbMigration, PluginKnex, TableRef } from "./db";
 import { wrapKnex, getMigrationSource } from "./db";
@@ -22,6 +25,17 @@ export type ResolverFn<TContext = any, TResult = any, TParent = any, TArgs = any
 export type TypeResolver<TContext> = Record<string, ResolverFn<TContext>>;
 export type Resolver<TContext> = Record<string, TypeResolver<TContext>>;
 
+export interface ItemProps {
+  summary: string;
+  archived: DateTime | null;
+  snoozed: DateTime | null;
+}
+
+export interface TaskProps {
+  due: DateTime | null;
+  done: DateTime | null;
+}
+
 export interface PluginContext {
   readonly knex: PluginKnex;
   readonly userTableRef: TableRef;
@@ -29,6 +43,7 @@ export interface PluginContext {
   tableRef(name: string): TableRef;
   // eslint-disable-next-line @typescript-eslint/ban-types
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
+  createItem(user: string, props: ItemProps, taskProps?: TaskProps): Promise<string>;
 }
 
 export interface GraphQLContext extends PluginContext {
@@ -52,7 +67,7 @@ export interface ServerPlugin {
   readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;
   readonly dbMigrations?: PluginField<PluginDbMigration[]>;
   readonly getItemFields: (id: string) => Awaitable<PluginItemFields>;
-  readonly handleURL?: (context: GraphQLContext, url: URL) => Awaitable<string | null>;
+  readonly createItemFromURL?: (context: GraphQLContext, url: URL) => Awaitable<string | null>;
 }
 
 export interface PluginServer {
@@ -67,7 +82,7 @@ export type ServerPluginExport = MaybeCallable<
 export function buildContext(
   plugin: PluginInstance,
   db: DatabaseConnection,
-  _dataSources: AppDataSources,
+  dataSources: AppDataSources,
 ): PluginContext {
   return {
     get knex(): PluginKnex {
@@ -89,6 +104,30 @@ export function buildContext(
     // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
     table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]> {
       return this.knex.table(this.tableRef(name));
+    },
+
+    async createItem(userId: string, itemProps: ItemProps, taskProps?: TaskProps): Promise<string> {
+      let user = await dataSources.users.getImpl(userId);
+      if (!user) {
+        throw new Error("Unknown user.");
+      }
+
+      let item = await dataSources.items.create(user, {
+        ...itemProps,
+        type: ItemType.Plugin,
+      });
+
+      if (taskProps) {
+        await dataSources.taskInfo.create(item, {
+          ...taskProps,
+        });
+      }
+
+      await dataSources.pluginDetail.create(item, {
+        pluginId: plugin.id,
+      });
+
+      return item.id();
     },
   };
 }
@@ -223,11 +262,14 @@ class PluginManager {
     });
   }
 
-  public async handleURL(context: ResolverContext, url: URL): Promise<string | null> {
+  public async createItemFromURL(context: ResolverContext, url: URL): Promise<Item | null> {
     for (let plugin of this.plugins) {
-      let result = await plugin.handleURL(wrapResolverContext(plugin, context), url);
+      let result = await plugin.createItemFromURL(wrapResolverContext(plugin, context), url);
       if (result) {
-        return result;
+        let item = await context.dataSources.items.getImpl(result);
+        if (item) {
+          return item;
+        }
       }
     }
 
