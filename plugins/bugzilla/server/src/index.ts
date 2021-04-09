@@ -69,7 +69,7 @@ class BugzillaPlugin implements ServerPlugin {
       throw new Error("Missing bug record.");
     }
 
-    return bug.editTaskInfo(context, taskInfo);
+    return bug.editTaskInfo(taskInfo);
   }
 
   public async getItemFields(

@@ -11,4 +11,5 @@ type User {
 
 type Mutation {
   createBugzillaAccount(url: String!, username: String, password: String): BugzillaAccount!
+  setItemTaskType(item: ID!, taskType: String!): Boolean!
 }

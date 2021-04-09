@@ -9,6 +9,7 @@ import { id } from "./connection";
 import type { ImplBuilder } from "./implementations";
 import * as Impl from "./implementations";
 import * as Db from "./types";
+import type { DbUpdateObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -529,6 +530,25 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
       ...params,
       id: item.id(),
     }));
+  }
+
+  public async setItemTaskInfo(
+    item: Impl.Item,
+    taskInfo: DbUpdateObject<Db.TaskInfoDbTable> | null,
+  ): Promise<void> {
+    if (!taskInfo) {
+      return this.delete(item.id());
+    }
+
+    let record = await this.updateOne(item.id(), taskInfo);
+    if (!record) {
+      await this.insert({
+        ...taskInfo,
+        due: taskInfo.due ?? null,
+        done: taskInfo.done ?? null,
+        id: item.id(),
+      });
+    }
   }
 
   public async taskListTaskCount(taskList: string): Promise<number> {

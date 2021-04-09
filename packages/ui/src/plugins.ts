@@ -1,4 +1,5 @@
 import type { Overwrite } from "@allthethings/utils";
+import type { PureQueryOptions } from "@apollo/client";
 import { useMemo, useEffect, useState } from "react";
 
 import type { Item } from "./schema";
@@ -9,12 +10,17 @@ export type PluginItem = Overwrite<Item, {
   detail: Schema.PluginDetail;
 }>;
 
+export interface PluginItemProps {
+  item: PluginItem;
+  refetchQueries: () => PureQueryOptions[];
+}
+
 export interface ClientPlugin {
   readonly serverId: string;
   readonly name: string;
 
   readonly renderPluginSections: () => ReactResult;
-  readonly renderItem: (item: PluginItem) => ReactResult;
+  readonly renderItem: (itemProps: PluginItemProps) => ReactResult;
 }
 
 export function usePlugins(): ClientPlugin[] {

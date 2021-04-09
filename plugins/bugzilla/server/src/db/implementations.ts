@@ -3,6 +3,7 @@ import { URL } from "url";
 import type { PluginContext, BasePluginItem, PluginTaskInfo } from "@allthethings/server";
 import type { Bug as BugzillaBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
+import type { DateTime } from "luxon";
 
 import type { BugzillaAccount, MutationCreateBugzillaAccountArgs } from "../schema";
 import type { BugRecord } from "../types";
@@ -95,6 +96,39 @@ export class Account implements Impl<BugzillaAccount> {
     }
   }
 
+  public async doneForStatus(bug: BugzillaBug): Promise<DateTime | null> {
+    if (!isDone(bug.status)) {
+      return null;
+    }
+
+    // If it is done we need to find the last time the resolution was changed.
+    let api = this.getAPI();
+    let history = await api.bugHistory(bug.id);
+    // Work newest to oldest.
+    history.reverse();
+
+    // Find the first item where the status changed from a not done state.
+    let change = history.find((history: History): boolean => {
+      for (let change of history.changes) {
+        if (change.field_name != "status") {
+          continue;
+        }
+
+        if (!isDone(change.removed)) {
+          return true;
+        }
+      }
+
+      return false;
+    });
+
+    if (change) {
+      return change.when;
+    }
+
+    return null;
+  }
+
   public static async list(context: PluginContext, user: string): Promise<Account[]> {
     let records = await context.table<BugzillaAccountRecord>("Account").where("user", user);
     return records.map((record: BugzillaAccountRecord): Account => new Account(context, record));
@@ -148,6 +182,18 @@ export class Bug {
     return account;
   }
 
+  public async getBug(): Promise<BugzillaBug> {
+    let account = await this.account();
+    let api = account.getAPI();
+    let bugs = await api.getBugs([this.bugId]);
+
+    if (!bugs.length) {
+      throw new Error("Bug is missing.");
+    }
+
+    return bugs[0];
+  }
+
   public get bugId(): number {
     return this.record.bugId;
   }
@@ -158,6 +204,49 @@ export class Bug {
 
   public get taskType(): TaskType {
     return this.record.taskType;
+  }
+
+  public async setTaskType(taskType: TaskType): Promise<void> {
+    if (taskType == this.taskType) {
+      return;
+    }
+
+    let item = await this.getItem();
+
+    switch (taskType) {
+      case TaskType.None:
+        await this.context.setItemTaskInfo(item.id, null);
+        break;
+      // The next search will update this.
+      case TaskType.Search:
+      case TaskType.Manual:
+        if (!item.taskInfo) {
+          await this.context.setItemTaskInfo(item.id, {
+            due: null,
+            done: null,
+          });
+        }
+        break;
+      case TaskType.Resolved: {
+        let account = await this.account();
+        let done = await account.doneForStatus(await this.getBug());
+
+        let taskInfo = {
+          due: null,
+          ...item.taskInfo ?? {},
+          done,
+        };
+
+        await this.context.setItemTaskInfo(item.id, taskInfo);
+        break;
+      }
+      default:
+        return;
+    }
+
+    await this.context.table("Bug").update({ taskType }).where("itemId", this.itemId);
+
+    this.record.taskType = taskType;
   }
 
   public async fields(): Promise<BugRecord> {
@@ -173,8 +262,8 @@ export class Bug {
     };
   }
 
-  public async getItem(context: PluginContext): Promise<BasePluginItem> {
-    let item = await context.getItem(this.itemId);
+  public async getItem(): Promise<BasePluginItem> {
+    let item = await this.context.getItem(this.itemId);
     if (!item) {
       throw new Error(`Missing item record for ${this.itemId}`);
     }
@@ -183,10 +272,9 @@ export class Bug {
   }
 
   public async editTaskInfo(
-    context: PluginContext,
     newTaskInfo: PluginTaskInfo | null,
   ): Promise<void> {
-    let { taskInfo: oldTaskInfo } = await this.getItem(context);
+    let { taskInfo: oldTaskInfo } = await this.getItem();
 
     if (newTaskInfo === null && oldTaskInfo === null) {
       return;
@@ -204,7 +292,7 @@ export class Bug {
       taskType: newTaskInfo ? TaskType.Manual : TaskType.None,
     };
 
-    await context.table("Bug").update(newRecord).where("itemId", this.itemId);
+    await this.context.table("Bug").update(newRecord).where("itemId", this.itemId);
   }
 
   public static async create(
@@ -228,36 +316,9 @@ export class Bug {
         break;
       case TaskType.Resolved: {
         taskInfo = {
-          done: null,
+          done: await account.doneForStatus(bug),
           due: null,
         };
-
-        if (isDone(bug.status)) {
-          // If it is done we need to find the last time the resolution was changed.
-          let api = account.getAPI();
-          let history = await api.bugHistory(bug.id);
-          // Work newest to oldest.
-          history.reverse();
-
-          // Find the first item where the status changed from a not done state.
-          let change = history.find((history: History): boolean => {
-            for (let change of history.changes) {
-              if (change.field_name != "status") {
-                continue;
-              }
-
-              if (!isDone(change.removed)) {
-                return true;
-              }
-            }
-
-            return false;
-          });
-
-          if (change) {
-            taskInfo.done = change.when;
-          }
-        }
         break;
       }
       case TaskType.Search: {

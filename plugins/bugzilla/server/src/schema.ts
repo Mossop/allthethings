@@ -25,6 +25,7 @@ export type BugzillaAccount = {
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
+  readonly setItemTaskType: Scalars['Boolean'];
 };
 
 
@@ -32,6 +33,12 @@ export type MutationCreateBugzillaAccountArgs = {
   url: Scalars['String'];
   username: Maybe<Scalars['String']>;
   password: Maybe<Scalars['String']>;
+};
+
+
+export type MutationSetItemTaskTypeArgs = {
+  item: Scalars['ID'];
+  taskType: Scalars['String'];
 };
 
 export type User = {
@@ -122,8 +129,8 @@ export type ResolversTypes = ResolversObject<{
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   Mutation: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  User: ResolverTypeWrapper<User>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -132,8 +139,8 @@ export type ResolversParentTypes = ResolversObject<{
   ID: Scalars['ID'];
   String: Scalars['String'];
   Mutation: {};
-  User: User;
   Boolean: Scalars['Boolean'];
+  User: User;
 }>;
 
 export type BugzillaAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['BugzillaAccount'] = ResolversParentTypes['BugzillaAccount']> = ResolversObject<{
@@ -146,6 +153,7 @@ export type BugzillaAccountResolvers<ContextType = any, ParentType extends Resol
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url'>>;
+  setItemTaskType: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSetItemTaskTypeArgs, 'item' | 'taskType'>>;
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{

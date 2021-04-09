@@ -2,8 +2,16 @@
 import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import BugzillaAPI from "bugzilla";
 
-import { Account } from "./db/implementations";
-import type { MutationCreateBugzillaAccountArgs } from "./schema";
+import { Account, Bug } from "./db/implementations";
+import type { MutationCreateBugzillaAccountArgs, MutationSetItemTaskTypeArgs } from "./schema";
+import { TaskType } from "./types";
+
+const TaskTypes: string[] = [
+  TaskType.None,
+  TaskType.Manual,
+  TaskType.Resolved,
+  TaskType.Search,
+];
 
 const Resolvers: Resolver<GraphQLContext> = {
   User: {
@@ -41,6 +49,25 @@ const Resolvers: Resolver<GraphQLContext> = {
       }
 
       return Account.create(ctx, ctx.userId, args);
+    },
+
+    async setItemTaskType(
+      outer: unknown,
+      { item, taskType }: MutationSetItemTaskTypeArgs,
+      ctx: GraphQLContext,
+    ): Promise<boolean> {
+      let bug = await Bug.getForItem(ctx, item);
+      if (!bug) {
+        throw new Error("Unknown bug.");
+      }
+
+      if (!TaskTypes.includes(taskType)) {
+        throw new Error(`Unknown task type ${taskType}`);
+      }
+
+      await bug.setTaskType(taskType as TaskType);
+
+      return true;
     },
   },
 };

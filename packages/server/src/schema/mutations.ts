@@ -377,12 +377,26 @@ const resolvers: MutationResolvers = {
       );
     }
 
+    await ctx.dataSources.taskInfo.setItemTaskInfo(
+      item,
+      taskInfo ?? null,
+    );
+
     if (taskInfo) {
-      await ctx.dataSources.taskInfo.updateOne(id, {
-        ...taskInfo,
-        due: taskInfo.due ?? null,
-        done: taskInfo.done ?? null,
-      });
+      let currentTaskInfo = await ctx.dataSources.taskInfo.getRecord(id);
+      if (currentTaskInfo) {
+        await ctx.dataSources.taskInfo.updateOne(id, {
+          ...taskInfo,
+          due: taskInfo.due ?? null,
+          done: taskInfo.done ?? null,
+        });
+      } else {
+        await ctx.dataSources.taskInfo.create(item, {
+          ...taskInfo,
+          due: taskInfo.due ?? null,
+          done: taskInfo.done ?? null,
+        });
+      }
     } else {
       await ctx.dataSources.taskInfo.delete(id);
     }

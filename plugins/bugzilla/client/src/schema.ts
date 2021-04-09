@@ -114,6 +114,7 @@ export type Mutation = {
   readonly moveItem: Maybe<Item>;
   readonly moveProject: Maybe<Project>;
   readonly moveSection: Maybe<Section>;
+  readonly setItemTaskType: Scalars['Boolean'];
 };
 
 
@@ -238,6 +239,12 @@ export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
   taskList: Maybe<Scalars['ID']>;
   before: Maybe<Scalars['ID']>;
+};
+
+
+export type MutationSetItemTaskTypeArgs = {
+  item: Scalars['ID'];
+  taskType: Scalars['String'];
 };
 
 export type NoteDetail = {
@@ -366,6 +373,14 @@ export type CreateBugzillaAccountMutationVariables = Exact<{
 
 export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly icon: Maybe<string>, readonly url: string } };
 
+export type SetItemTaskTypeMutationVariables = Exact<{
+  item: Scalars['ID'];
+  taskType: Scalars['String'];
+}>;
+
+
+export type SetItemTaskTypeMutation = { readonly __typename: 'Mutation', readonly setItemTaskType: boolean };
+
 
 export const ListBugzillaAccountsDocument = gql`
     query ListBugzillaAccounts {
@@ -445,3 +460,35 @@ export function useCreateBugzillaAccountMutation(baseOptions?: Apollo.MutationHo
 export type CreateBugzillaAccountMutationHookResult = ReturnType<typeof useCreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationResult = Apollo.MutationResult<CreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>;
+export const SetItemTaskTypeDocument = gql`
+    mutation SetItemTaskType($item: ID!, $taskType: String!) {
+  setItemTaskType(item: $item, taskType: $taskType)
+}
+    `;
+export type SetItemTaskTypeMutationFn = Apollo.MutationFunction<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>;
+
+/**
+ * __useSetItemTaskTypeMutation__
+ *
+ * To run a mutation, you first call `useSetItemTaskTypeMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetItemTaskTypeMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [setItemTaskTypeMutation, { data, loading, error }] = useSetItemTaskTypeMutation({
+ *   variables: {
+ *      item: // value for 'item'
+ *      taskType: // value for 'taskType'
+ *   },
+ * });
+ */
+export function useSetItemTaskTypeMutation(baseOptions?: Apollo.MutationHookOptions<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>(SetItemTaskTypeDocument, options);
+      }
+export type SetItemTaskTypeMutationHookResult = ReturnType<typeof useSetItemTaskTypeMutation>;
+export type SetItemTaskTypeMutationResult = Apollo.MutationResult<SetItemTaskTypeMutation>;
+export type SetItemTaskTypeMutationOptions = Apollo.BaseMutationOptions<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>;

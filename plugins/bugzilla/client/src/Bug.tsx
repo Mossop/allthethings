@@ -1,6 +1,6 @@
 import type { BugRecord } from "@allthethings/bugzilla-server";
 import { TaskType } from "@allthethings/bugzilla-server";
-import type { PluginItem, ReactResult } from "@allthethings/ui";
+import type { PluginItem, PluginItemProps, ReactRef, ReactResult } from "@allthethings/ui";
 import {
   useMenuState,
   bindTrigger,
@@ -22,8 +22,10 @@ import CloudIcon from "@material-ui/icons/Cloud";
 import DescriptionIcon from "@material-ui/icons/Description";
 import PersonIcon from "@material-ui/icons/Person";
 import SearchIcon from "@material-ui/icons/Search";
+import { useMemo, useCallback, forwardRef } from "react";
 
 import Icon from "./Icon";
+import { useSetItemTaskTypeMutation } from "./schema";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -72,34 +74,65 @@ function titleForType(type: TaskType): string {
   }
 }
 
-interface TypeMenuItemProps {
+type TypeMenuItemProps = PluginItemProps & {
+  item: PluginItem;
   taskType: TaskType;
   selectedType: TaskType;
-}
+};
 
-const TypeMenuItem = ReactMemo(function TypeMenuItem({
+const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
+  item,
+  refetchQueries,
   taskType,
   selectedType,
-}: TypeMenuItemProps): ReactResult {
-  return <MenuItem selected={taskType == selectedType}>
+}: TypeMenuItemProps, ref: ReactRef | null): ReactResult {
+  let [mutate, { error }] = useSetItemTaskTypeMutation({
+    variables: {
+      item: item.id,
+      taskType,
+    },
+    refetchQueries,
+  });
+
+  if (error) {
+    console.log(error);
+  }
+
+  let click = useCallback(() => {
+    if (taskType == selectedType) {
+      return;
+    }
+
+    void mutate();
+  }, [taskType, selectedType]);
+
+  return <MenuItem
+    ref={ref}
+    selected={taskType == selectedType}
+    disabled={taskType == selectedType}
+    onClick={click}
+  >
     <ListItemIcon>
       <TypeIcon taskType={taskType}/>
     </ListItemIcon>
     <ListItemText>{titleForType(taskType)}</ListItemText>
   </MenuItem>;
-});
-
-export interface BugProps {
-  item: PluginItem;
-}
+}));
 
 export default ReactMemo(function Bug({
   item,
-}: BugProps): ReactResult {
+  refetchQueries,
+}: PluginItemProps): ReactResult {
   let classes = useStyles();
   let typeMenuState = useMenuState("bug-type");
 
   let bug = JSON.parse(item.detail.fields) as BugRecord;
+
+  let baseProps = useMemo(() => ({
+    item,
+    refetchQueries,
+    selectedType: bug.taskType,
+  }), [item, bug]);
 
   return <>
     <TaskDoneToggle item={item}/>
@@ -121,10 +154,10 @@ export default ReactMemo(function Bug({
         }
       }
     >
-      <TypeMenuItem selectedType={bug.taskType} taskType={TaskType.None}/>
-      <TypeMenuItem selectedType={bug.taskType} taskType={TaskType.Manual}/>
-      <TypeMenuItem selectedType={bug.taskType} taskType={TaskType.Resolved}/>
-      <TypeMenuItem selectedType={bug.taskType} taskType={TaskType.Search}/>
+      <TypeMenuItem {...baseProps} taskType={TaskType.None}/>
+      <TypeMenuItem {...baseProps} taskType={TaskType.Manual}/>
+      <TypeMenuItem {...baseProps} taskType={TaskType.Resolved}/>
+      <TypeMenuItem {...baseProps} taskType={TaskType.Search}/>
     </Menu>
   </>;
 });

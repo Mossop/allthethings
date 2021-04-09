@@ -15,3 +15,7 @@ mutation CreateBugzillaAccount($url: String!, $username: String!, $password: Str
     url
   }
 }
+
+mutation SetItemTaskType($item: ID!, $taskType: String!) {
+  setItemTaskType(item: $item, taskType: $taskType)
+}

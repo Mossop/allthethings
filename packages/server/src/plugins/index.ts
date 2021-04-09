@@ -47,6 +47,7 @@ export interface PluginContext {
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
   createItem(user: string, props: Omit<BasePluginItem, "id">): Promise<BasePluginItem>;
   getItem(id: string): Promise<BasePluginItem | null>;
+  setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void>
 }
 
 export interface GraphQLContext extends PluginContext {
@@ -154,6 +155,15 @@ export function buildContext(
     async getItem(id: string): Promise<BasePluginItem | null> {
       let item = await dataSources.items.getImpl(id);
       return item?.forPlugin() ?? null;
+    },
+
+    async setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void> {
+      let item = await dataSources.items.getImpl(id);
+      if (!item) {
+        throw new Error("Unknown item.");
+      }
+
+      return dataSources.taskInfo.setItemTaskInfo(item, taskInfo);
     },
   };
 }
