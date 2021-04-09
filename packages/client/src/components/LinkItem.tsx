@@ -1,13 +1,11 @@
 import type { ReactResult } from "@allthethings/ui";
-import { Styles, Icons, ReactMemo } from "@allthethings/ui";
+import { Styles, Icons, ReactMemo, TaskDoneToggle } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
 import type { LinkItem } from "../utils/state";
-import { isTask } from "../utils/state";
 import type { ItemRenderProps } from "./Item";
-import TaskDoneToggle from "./TaskDoneToggle";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,7 +36,7 @@ export default ReactMemo(function LinkItem({
   let classes = useStyles();
 
   return <>
-    {isTask(item) && <TaskDoneToggle item={item}/>}
+    <TaskDoneToggle item={item}/>
     <a className={classes.link} rel="noreferrer" target="_blank" href={item.detail.url}>
       <div className={classes.iconContainer}>
         {

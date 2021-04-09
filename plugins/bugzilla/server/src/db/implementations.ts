@@ -1,7 +1,7 @@
 import { URL } from "url";
 
-import type { PluginContext } from "@allthethings/server";
-import type { Bug as BugzillaBug } from "bugzilla";
+import type { PluginContext, BasePluginItem, PluginTaskInfo } from "@allthethings/server";
+import type { Bug as BugzillaBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 
 import type { BugRecord } from "..";
@@ -13,6 +13,17 @@ type BugzillaAccountRecord = Impl<BugzillaAccount> & {
   user: string;
   password: string | null;
 };
+
+function isDone(status: string): boolean {
+  switch (status) {
+    case "RESOLVED":
+    case "VERIFIED":
+    case "CLOSED":
+      return true;
+    default:
+      return false;
+  }
+}
 
 export class Account implements Impl<BugzillaAccount> {
   public constructor(
@@ -68,7 +79,13 @@ export class Account implements Impl<BugzillaAccount> {
     try {
       let bugs = await api.getBugs([id]);
       if (bugs.length) {
-        return await Bug.create(this.context, this, bugs[0]);
+        let type = TaskType.Resolved;
+        if (isDone(bugs[0].status)) {
+          // It doesn't make much sense to be creating a complete task so assume this is not a task.
+          type = TaskType.Manual;
+        }
+
+        return await Bug.create(this.context, this, bugs[0], type);
       }
 
       return null;
@@ -107,10 +124,18 @@ export class Account implements Impl<BugzillaAccount> {
   }
 }
 
+enum TaskType {
+  None = "none",
+  Manual = "manual",
+  Search = "search",
+  Resolved = "resolved",
+}
+
 type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
   accountId: string;
   bugId: number;
   itemId: string;
+  taskType: TaskType;
 };
 
 export class Bug {
@@ -137,6 +162,10 @@ export class Bug {
     return this.record.itemId;
   }
 
+  public get taskType(): TaskType {
+    return this.record.taskType;
+  }
+
   public async fields(): Promise<BugRecord> {
     let account = await this.account();
     let baseUrl = new URL(account.url);
@@ -149,22 +178,117 @@ export class Bug {
     };
   }
 
+  public async getItem(context: PluginContext): Promise<BasePluginItem> {
+    let item = await context.getItem(this.itemId);
+    if (!item) {
+      throw new Error(`Missing item record for ${this.itemId}`);
+    }
+
+    return item;
+  }
+
+  public async editTaskInfo(
+    context: PluginContext,
+    newTaskInfo: PluginTaskInfo | null,
+  ): Promise<void> {
+    let { taskInfo: oldTaskInfo } = await this.getItem(context);
+
+    if (newTaskInfo === null && oldTaskInfo === null) {
+      return;
+    }
+
+    if (newTaskInfo && oldTaskInfo && oldTaskInfo.due?.valueOf() !== newTaskInfo.due?.valueOf()) {
+      // No change.
+      return;
+    }
+
+    // Make a manual task
+
+    let newRecord = {
+      ...this.record,
+      taskType: newTaskInfo ? TaskType.Manual : TaskType.None,
+    };
+
+    await context.table("Bug").update(newRecord).where("itemId", this.itemId);
+  }
+
   public static async create(
     context: PluginContext,
     account: Account,
     bug: BugzillaBug,
+    taskType: TaskType,
   ): Promise<Bug> {
-    let itemId = await context.createItem(account.user, {
+    let taskInfo: PluginTaskInfo | null;
+
+    switch (taskType) {
+      case TaskType.None:
+        taskInfo = null;
+        break;
+      case TaskType.Manual:
+        // Just asume that since we're creating it the user isn't done with it yet.
+        taskInfo = {
+          done: null,
+          due: null,
+        };
+        break;
+      case TaskType.Resolved: {
+        taskInfo = {
+          done: null,
+          due: null,
+        };
+
+        if (isDone(bug.status)) {
+          // If it is done we need to find the last time the resolution was changed.
+          let api = account.getAPI();
+          let history = await api.bugHistory(bug.id);
+          // Work newest to oldest.
+          history.reverse();
+
+          // Find the first item where the status changed from a not done state.
+          let change = history.find((history: History): boolean => {
+            for (let change of history.changes) {
+              if (change.field_name != "status") {
+                continue;
+              }
+
+              if (!isDone(change.removed)) {
+                return true;
+              }
+            }
+
+            return false;
+          });
+
+          if (change) {
+            taskInfo.done = change.when;
+          }
+        }
+        break;
+      }
+      case TaskType.Search: {
+        // Assume that we're only creating the item as the result of a search and so it is in the
+        // results.
+        taskInfo = {
+          done: null,
+          due: null,
+        };
+        break;
+      }
+    }
+
+    let item = await context.createItem(account.user, {
       summary: bug.summary,
       archived: null,
       snoozed: null,
+      taskInfo,
     });
 
     let record: BugzillaBugRecord = {
       accountId: account.id,
       bugId: bug.id,
-      itemId,
+      itemId: item.id,
       summary: bug.summary,
+      taskType,
     };
 
     await context.table("Bug").insert(record);

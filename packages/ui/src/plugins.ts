@@ -1,10 +1,11 @@
 import type { Overwrite } from "@allthethings/utils";
 import { useMemo, useEffect, useState } from "react";
 
+import type { Item } from "./schema";
 import type * as Schema from "./schema/types";
 import type { ReactResult } from "./types";
 
-export type PluginItem = Overwrite<Schema.Item, {
+export type PluginItem = Overwrite<Item, {
   detail: Schema.PluginDetail;
 }>;
 

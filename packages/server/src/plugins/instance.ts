@@ -9,6 +9,8 @@ import type {
   PluginItemFields,
   PluginServer,
   Resolver,
+  BasePluginItem,
+  PluginTaskInfo,
 } from ".";
 import { buildContext } from ".";
 import type { Awaitable, MaybeCallable } from "../../../utils";
@@ -95,8 +97,12 @@ export default class PluginInstance implements PluginServer {
     return this._plugin;
   }
 
-  public getItemFields(context: PluginContext, id: string): Promise<PluginItemFields> {
-    return getField(this.plugin, this.plugin.getItemFields, {}, context, id);
+  public getItemFields(context: PluginContext, item: BasePluginItem): Promise<PluginItemFields> {
+    return getField(this.plugin, this.plugin.getItemFields, {}, context, item);
+  }
+
+  public deleteItem(context: PluginContext, item: BasePluginItem): Promise<void> {
+    return getField(this.plugin, this.plugin.deleteItem, undefined, context, item);
   }
 
   public getClientScripts(ctx: Koa.Context): Promise<string[]> {
@@ -108,7 +114,6 @@ export default class PluginInstance implements PluginServer {
   }
 
   public getServerMiddleware(): Promise<Koa.Middleware | undefined> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
     return getField(this.plugin, this.plugin.middleware, undefined);
   }
 
@@ -126,5 +131,21 @@ export default class PluginInstance implements PluginServer {
 
   public createItemFromURL(context: GraphQLContext, url: URL): Promise<string | null> {
     return getField(this.plugin, this.plugin.createItemFromURL, null, context, url);
+  }
+
+  public editItem(
+    context: PluginContext,
+    item: BasePluginItem,
+    newItem: Omit<BasePluginItem, "id" | "taskInfo">,
+  ): Promise<void> {
+    return getField(this.plugin, this.plugin.editItem, undefined, context, item, newItem);
+  }
+
+  public editTaskInfo(
+    context: PluginContext,
+    item: BasePluginItem,
+    taskInfo: PluginTaskInfo | null,
+  ): Promise<void> {
+    return getField(this.plugin, this.plugin.editTaskInfo, undefined, context, item, taskInfo);
   }
 }

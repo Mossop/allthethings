@@ -3,6 +3,7 @@ import { URL } from "url";
 import type { Overwrite } from "@allthethings/utils";
 
 import type { User, Context, Project, Section, TaskList, Item } from "../db";
+import { PluginDetail } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
 import type { Icon } from "../utils/page";
@@ -329,6 +330,21 @@ const resolvers: MutationResolvers = {
     args: { id, item: params },
     ctx,
   }: AuthedParams<unknown, Types.MutationEditItemArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getImpl(id);
+
+    if (!item) {
+      return null;
+    }
+
+    let detail = await item.detail();
+    if (detail instanceof PluginDetail) {
+      await detail.editItem({
+        ...params,
+        archived: params.archived ?? null,
+        snoozed: params.snoozed ?? null,
+      });
+    }
+
     await ctx.dataSources.items.updateOne(id, {
       ...params,
       archived: params.archived ?? null,
@@ -346,6 +362,19 @@ const resolvers: MutationResolvers = {
 
     if (!item) {
       return null;
+    }
+
+    let detail = await item.detail();
+    if (detail instanceof PluginDetail) {
+      await detail.editTaskInfo(
+        taskInfo
+          ? {
+            ...taskInfo,
+            due: taskInfo.due ?? null,
+            done: taskInfo.done ?? null,
+          }
+          : null,
+      );
     }
 
     if (taskInfo) {

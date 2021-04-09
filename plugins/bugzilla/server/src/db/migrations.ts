@@ -39,6 +39,9 @@ class BaseMigration implements PluginDbMigration {
       table.text("summary")
         .notNullable();
 
+      table.text("taskType")
+        .notNullable();
+
       table.unique(["accountId", "bugId"]);
     });
   }

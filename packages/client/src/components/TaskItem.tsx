@@ -1,4 +1,4 @@
-import { ReactMemo } from "@allthethings/ui";
+import { ReactMemo, TaskDoneToggle } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
@@ -6,7 +6,6 @@ import type { PureQueryOptions } from "@apollo/client";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { TaskItem } from "../utils/state";
 import type { ItemRenderProps } from "./Item";
-import TaskDoneToggle from "./TaskDoneToggle";
 
 export type TaskItemProps = Overwrite<ItemRenderProps, {
   item: TaskItem;

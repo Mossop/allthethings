@@ -1,5 +1,5 @@
 import type { PluginItem, ReactResult } from "@allthethings/ui";
-import { Styles, Icons, ReactMemo } from "@allthethings/ui";
+import { TaskDoneToggle, Styles, ReactMemo } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
@@ -33,8 +33,7 @@ export default ReactMemo(function Bug({
   let bug = JSON.parse(item.detail.fields) as BugRecord;
 
   return <>
-    {item.taskInfo?.done && <Icons.Checked/>}
-    {item.taskInfo && !item.taskInfo.done && <Icons.Unchecked/>}
+    <TaskDoneToggle item={item}/>
     <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>
       <div className={classes.iconContainer}>
         <Icon/>

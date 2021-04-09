@@ -11,6 +11,8 @@ import type {
   ServerPluginExport,
   PluginServer,
   PluginContext,
+  BasePluginItem,
+  PluginTaskInfo,
 } from "@allthethings/server";
 import type Koa from "koa";
 import koaStatic from "koa-static";
@@ -62,8 +64,24 @@ class BugzillaPlugin implements ServerPlugin {
     return buildMigrations();
   }
 
-  public async getItemFields(context: PluginContext, itemId: string): Promise<PluginItemFields> {
-    let bug = await Bug.getForItem(context, itemId);
+  public async editTaskInfo(
+    context: PluginContext,
+    item: BasePluginItem,
+    taskInfo: PluginTaskInfo | null,
+  ): Promise<void> {
+    let bug = await Bug.getForItem(context, item.id);
+    if (!bug) {
+      throw new Error("Missing bug record.");
+    }
+
+    return bug.editTaskInfo(context, taskInfo);
+  }
+
+  public async getItemFields(
+    context: PluginContext,
+    item: BasePluginItem,
+  ): Promise<PluginItemFields> {
+    let bug = await Bug.getForItem(context, item.id);
     if (!bug) {
       throw new Error("Missing bug record.");
     }

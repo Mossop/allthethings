@@ -10,4 +10,6 @@ export {
   GraphQLContext,
   User,
   PluginServer,
+  BasePluginItem,
+  PluginTaskInfo,
 } from "./plugins";

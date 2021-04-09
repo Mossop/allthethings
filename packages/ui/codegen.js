@@ -29,5 +29,32 @@ module.exports = {
         },
       },
     },
+    [path.join(__dirname, "src", "schema")]: {
+      documents: path.join(__dirname, "src", "schema", "*.gql"),
+      preset: "near-operation-file",
+      presetConfig: {
+        baseTypesPath: "./types",
+        extension: ".ts",
+      },
+      plugins: {
+        "typescript-operations": {
+          avoidOptionals: true,
+          immutableTypes: true,
+          preResolveTypes: true,
+          useTypeImports: true,
+          onlyOperationTypes: true,
+          nonOptionalTypename: true,
+        },
+        "typescript-react-apollo": {
+          useTypeImports: true,
+          withRefetchFn: true,
+        },
+        "add": {
+          content: [
+            "/* eslint-disable */",
+          ],
+        },
+      },
+    },
   },
 };

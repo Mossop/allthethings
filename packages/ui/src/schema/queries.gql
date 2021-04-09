@@ -1,0 +1,59 @@
+fragment rootFields on ProjectRoot {
+  remainingTasks
+  subprojects {
+    id
+  }
+  projects {
+    id
+    stub
+    name
+    remainingTasks
+    subprojects {
+      id
+    }
+  }
+}
+
+query ListContextState {
+  user {
+    id
+    email
+
+    inbox {
+      id
+      items {
+        ...itemFields
+      }
+    }
+
+    ...rootFields
+
+    contexts {
+      id
+      stub
+      name
+
+      ...rootFields
+    }
+  }
+}
+
+query ListTaskList($taskList: ID!) {
+  taskList(id: $taskList) {
+    remainingTasks
+
+    items {
+      ...itemFields
+    }
+
+    sections {
+      id
+      name
+      remainingTasks
+
+      items {
+        ...itemFields
+      }
+    }
+  }
+}

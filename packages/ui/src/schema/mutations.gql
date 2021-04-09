@@ -1,0 +1,40 @@
+fragment itemFields on Item {
+  id
+  summary
+  archived
+  snoozed
+  created
+
+  taskInfo {
+    due
+    done
+  }
+
+  detail {
+    ... on FileDetail {
+      size
+      filename
+      mimetype
+    }
+
+    ... on NoteDetail {
+      note
+    }
+
+    ... on LinkDetail {
+      icon
+      url
+    }
+
+    ... on PluginDetail {
+      pluginId
+      fields
+    }
+  }
+}
+
+mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
+  editTaskInfo(id: $id, taskInfo: $taskInfo) {
+    ...itemFields
+  }
+}
