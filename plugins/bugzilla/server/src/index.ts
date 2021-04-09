@@ -21,12 +21,7 @@ import { Account, Bug } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
-export interface BugRecord {
-  accountId: string;
-  bugId: number;
-  summary: string;
-  url: string;
-}
+export * from "./types";
 
 class BugzillaPlugin implements ServerPlugin {
   public readonly serverMiddleware: Koa.Middleware;

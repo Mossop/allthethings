@@ -12,6 +12,7 @@
     "watch": "webpack --watch"
   },
   "dependencies": {
+    "@allthethings/bugzilla-server": "^1.0.0",
     "@allthethings/ui": "^1.0.0"
   },
   "devDependencies": {

@@ -4,13 +4,6 @@ import type { ClientPlugin, PluginItem, ReactResult } from "@allthethings/ui";
 import Bug from "./Bug";
 import { SettingSections } from "./Settings";
 
-export interface BugRecord {
-  accountId: string;
-  bugId: number;
-  summary: string;
-  url: string;
-}
-
 class BugzillaPlugin implements ClientPlugin {
   public readonly serverId = "@allthethings/bugzilla-server";
   public readonly name = "Bugzilla";

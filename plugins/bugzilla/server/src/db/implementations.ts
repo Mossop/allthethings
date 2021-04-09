@@ -4,8 +4,9 @@ import type { PluginContext, BasePluginItem, PluginTaskInfo } from "@allthething
 import type { Bug as BugzillaBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 
-import type { BugRecord } from "..";
 import type { BugzillaAccount, MutationCreateBugzillaAccountArgs } from "../schema";
+import type { BugRecord } from "../types";
+import { TaskType } from "../types";
 
 type Impl<T> = Omit<T, "__typename">;
 
@@ -124,13 +125,6 @@ export class Account implements Impl<BugzillaAccount> {
   }
 }
 
-enum TaskType {
-  None = "none",
-  Manual = "manual",
-  Search = "search",
-  Resolved = "resolved",
-}
-
 type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
   accountId: string;
   bugId: number;
@@ -175,6 +169,7 @@ export class Bug {
       bugId: this.record.bugId,
       summary: this.record.summary,
       url: new URL(`/show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
+      taskType: this.record.taskType,
     };
   }
 
