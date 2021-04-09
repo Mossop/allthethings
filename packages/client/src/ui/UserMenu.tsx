@@ -1,7 +1,6 @@
 import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo } from "@allthethings/ui";
-import { Avatar, IconButton, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
-import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
+import { ReactMemo, Menu, useMenuState, bindTrigger } from "@allthethings/ui";
+import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import md5 from "md5";
 import { useCallback } from "react";
 
@@ -39,19 +38,17 @@ export default ReactMemo(function UserMenu({
   let [logout] = useLogoutMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
-  let userMenuState = usePopupState({ variant: "popover", popupId: "user-menu" });
+  let userMenuState = useMenuState("user-menu");
 
   let doLogout = useCallback(async (): Promise<void> => {
-    userMenuState.close();
     void logout();
-  }, [logout, userMenuState]);
+  }, [logout]);
 
   let doSettings = useCallback((): void => {
-    userMenuState.close();
     pushView({
       type: ViewType.Settings,
     }, view);
-  }, [view, userMenuState]);
+  }, [view]);
 
   return <>
     <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
@@ -62,21 +59,13 @@ export default ReactMemo(function UserMenu({
       />
     </IconButton>
     <Menu
-      {...bindMenu(userMenuState)}
-      anchorOrigin={
+      state={userMenuState}
+      anchor={
         {
           vertical: "bottom",
           horizontal: "right",
         }
       }
-      transformOrigin={
-        {
-          vertical: "top",
-          horizontal: "right",
-        }
-      }
-      keepMounted={true}
-      getContentAnchorEl={null}
     >
       <MenuItem id="user-menu-settings" onClick={doSettings}>Settings</MenuItem>
       <MenuItem id="user-menu-logout" onClick={doLogout}>Logout</MenuItem>

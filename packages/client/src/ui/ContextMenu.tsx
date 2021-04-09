@@ -1,8 +1,15 @@
-import { Icons, Styles, ReactMemo, pushUrl } from "@allthethings/ui";
+import {
+  Icons,
+  Styles,
+  ReactMemo,
+  pushUrl,
+  Menu,
+  useMenuState,
+  bindTrigger,
+} from "@allthethings/ui";
 import type { ReactRef, ReactResult } from "@allthethings/ui";
-import { Button, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
+import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
-import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import { nameSorted } from "../utils/collections";
@@ -37,7 +44,6 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 interface ContextMenuItemProps {
-  onClick: () => void;
   name: string;
   target: ProjectRoot;
   selected: boolean;
@@ -45,7 +51,7 @@ interface ContextMenuItemProps {
 
 const ContextMenuItem = ReactMemo(
   forwardRef(function ContextMenuItem(
-    { target, name, selected, onClick }: ContextMenuItemProps,
+    { target, name, selected }: ContextMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
     let view = useView();
@@ -71,8 +77,7 @@ const ContextMenuItem = ReactMemo(
     let click = useCallback((event: React.MouseEvent) => {
       event.preventDefault();
       pushUrl(url);
-      onClick();
-    }, [onClick, url]);
+    }, [url]);
 
     return <MenuItem
       ref={ref}
@@ -90,21 +95,16 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
   let [showCreateDialog, setShowCreateDialog] = useState(false);
 
-  let contextMenuState = usePopupState({ variant: "popover", popupId: "context-menu" });
+  let contextMenuState = useMenuState("context-menu");
   let contexts = useContexts();
   let currentContext = useCurrentContext();
   let user = useUser();
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
 
-  let closeMenu = useCallback(() => {
-    contextMenuState.close();
-  }, [contextMenuState]);
-
   let openCreateDialog = useCallback(() => {
-    closeMenu();
     setShowCreateDialog(true);
-  }, [closeMenu]);
+  }, []);
 
   let closeCreateDialog = useCallback(() => {
     setShowCreateDialog(false);
@@ -126,28 +126,18 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       {currentContext && <div className={classes.context}>{currentContext.name}</div>}
     </Button>
     <Menu
-      {...bindMenu(contextMenuState)}
-      anchorOrigin={
+      state={contextMenuState}
+      anchor={
         {
           vertical: "bottom",
           horizontal: "right",
         }
       }
-      transformOrigin={
-        {
-          vertical: "top",
-          horizontal: "right",
-        }
-      }
-      keepMounted={true}
-      getContentAnchorEl={null}
-      variant="menu"
     >
       <ContextMenuItem
         name="No Context."
         selected={!currentContext}
         target={user}
-        onClick={closeMenu}
       />
       {
         sorted.map((context: Context) => <ContextMenuItem
@@ -155,7 +145,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
           name={context.name}
           target={context}
           selected={context.id == currentContext?.id}
-          onClick={closeMenu}
         />)
       }
       <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>

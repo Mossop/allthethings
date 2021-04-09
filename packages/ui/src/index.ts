@@ -5,6 +5,7 @@ export * from "./HiddenInput";
 export * from "./hooks";
 export * as Icons from "./Icons";
 export * from "./Loading";
+export * from "./Menu";
 export * from "./plugins";
 export * from "./schema";
 export * from "./SelectableListItem";

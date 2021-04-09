@@ -62,6 +62,7 @@ export default ReactMemo(function CreateContextDialog({
     onSubmit={createContext}
   >
     <TextFieldInput
+      autoFocus={true}
       id="name"
       label="Name:"
       state={state}
