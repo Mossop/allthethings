@@ -332,7 +332,9 @@ export function replaceView(
 }
 
 export function ViewListener({ children }: ReactChildren): ReactResult {
-  let { data } = useListContextStateQuery();
+  let { data } = useListContextStateQuery({
+    pollInterval: 30000,
+  });
   let [view, setView] = useState<View | null | undefined>(undefined);
 
   let navHandler = useMemo(() => new NavigationHandler(setView), []);

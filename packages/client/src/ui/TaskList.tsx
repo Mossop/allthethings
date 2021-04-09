@@ -166,6 +166,7 @@ export default ReactMemo(function TaskList({
     variables: {
       taskList: view.taskList.id,
     },
+    pollInterval: 30000,
   });
 
   let entries = useMemo(
