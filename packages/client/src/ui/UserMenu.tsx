@@ -1,10 +1,10 @@
 import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo } from "@allthethings/ui";
 import { Avatar, IconButton, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import md5 from "md5";
 import { useCallback } from "react";
 
-import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { useLogoutMutation } from "../schema/mutations";
 import { refetchListContextStateQuery } from "../schema/queries";
 import type { User } from "../utils/state";

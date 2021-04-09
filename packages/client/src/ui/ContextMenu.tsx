@@ -2,9 +2,9 @@ import { Icons, Styles, ReactMemo, pushUrl } from "@allthethings/ui";
 import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { Button, Menu, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
+import { bindMenu, bindTrigger, usePopupState } from "material-ui-popup-state/hooks";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
-import { bindMenu, bindTrigger, usePopupState } from "../popup-state/hooks";
 import { nameSorted } from "../utils/collections";
 import type { Context, ProjectRoot } from "../utils/state";
 import {
