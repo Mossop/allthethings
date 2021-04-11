@@ -14,6 +14,7 @@ import type {
   BasePluginItem,
   PluginTaskInfo,
 } from "@allthethings/server";
+import type { Bug as BugzillaBug } from "bugzilla";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 
@@ -22,6 +23,8 @@ import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
 export * from "./types";
+
+const UPDATE_DELAY = 60000;
 
 class BugzillaPlugin implements ServerPlugin {
   public readonly serverMiddleware: Koa.Middleware;
@@ -34,6 +37,32 @@ class BugzillaPlugin implements ServerPlugin {
     this.serverMiddleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
     });
+
+    server.taskManager.queueRecurringTask(async (): Promise<number> => {
+      try {
+        await this.server.withContext((context: PluginContext) => this.update(context));
+      } catch (e) {
+        console.log(e);
+      }
+      return UPDATE_DELAY;
+    }, UPDATE_DELAY);
+  }
+
+  public async update(context: PluginContext): Promise<void> {
+    for (let account of await Account.list(context)) {
+      let api = account.getAPI();
+      let bugs = await account.getBugs();
+      console.log(`Updating ${bugs.length} from ${account.url}`);
+      let bugMap = new Map(bugs.map((bug: Bug): [number, Bug] => [bug.bugId, bug]));
+
+      let results = await api.getBugs(Array.from(bugMap.keys()));
+
+      await Promise.all(
+        results.map(async (result: BugzillaBug): Promise<void> => {
+          await bugMap.get(result.id)?.update(result);
+        }),
+      );
+    }
   }
 
   public middleware(): Koa.Middleware {

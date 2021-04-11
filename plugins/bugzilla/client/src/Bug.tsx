@@ -36,8 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: "pointer",
     },
     iconContainer: {
-      paddingLeft: theme.spacing(1.5),
-      paddingRight: theme.spacing(1.5),
+      padding: theme.spacing(1.5),
       ...Styles.flexCentered,
     },
   }));
@@ -135,7 +134,7 @@ export default ReactMemo(function Bug({
   }), [item, bug]);
 
   return <>
-    <TaskDoneToggle item={item}/>
+    <TaskDoneToggle item={item} disabled={bug.taskType != TaskType.Manual}/>
     <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>
       <div className={classes.iconContainer}>
         <Icon/>

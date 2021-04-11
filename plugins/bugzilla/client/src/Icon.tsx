@@ -7,7 +7,6 @@ import BugIcon from "./Icon.svg";
 const useStyles = makeStyles(() =>
   createStyles({
     icon: {
-      marginBottom: "0.3em",
     },
   }));
 
@@ -16,7 +15,7 @@ export default function Icon(): ReactElement {
 
   return <SvgIcon
     component={BugIcon}
-    viewBox="0 0 95 125"
+    viewBox="0 9 95 134"
     className={classes.icon}
   />;
 }

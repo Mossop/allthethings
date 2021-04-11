@@ -1,6 +1,8 @@
 import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
 import { IconButton } from "@material-ui/core";
+import type { Theme } from "@material-ui/core/styles";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
@@ -11,17 +13,29 @@ import { refetchListContextStateQuery, refetchListTaskListQuery } from "./schema
 import type { ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    noTask: {
+      width: `calc(${theme.spacing(3)}px + 1.5rem)`,
+      height: `calc(${theme.spacing(3)}px + 1.5rem)`,
+    },
+  }));
+
 export type TaskItem = Overwrite<Item, {
   taskInfo: TaskInfo;
 }>;
 
 export interface TaskDoneToggleProps {
   item: Item;
+  disabled?: boolean;
 }
 
 export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
   item,
+  disabled = false,
 }: TaskDoneToggleProps): ReactResult {
+  let classes = useStyles();
+
   let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
   if (item.parent.__typename == "Section") {
     refetchQueries.push(refetchListTaskListQuery({
@@ -53,9 +67,11 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
     });
   }, [item, toggleDone]);
 
-  return item.taskInfo
-    ? <IconButton onClick={toggle}>
-      {item.taskInfo.done ? <Icons.Checked/> : <Icons.Unchecked/>}
-    </IconButton>
-    : null;
+  if (!item.taskInfo) {
+    return <div className={classes.noTask}/>;
+  }
+
+  return <IconButton onClick={toggle} disabled={disabled}>
+    {item.taskInfo.done ? <Icons.Checked/> : <Icons.Unchecked/>}
+  </IconButton>;
 });

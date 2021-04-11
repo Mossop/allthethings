@@ -28,22 +28,26 @@ function isDone(status: string): boolean {
 }
 
 export class Account implements Impl<BugzillaAccount> {
+  private api: BugzillaAPI | null = null;
+
   public constructor(
-    private readonly context: PluginContext,
+    public readonly context: PluginContext,
     private readonly record: BugzillaAccountRecord,
   ) {
   }
 
   public getAPI(): BugzillaAPI {
-    if (!this.username) {
-      return new BugzillaAPI(this.url);
+    if (!this.api) {
+      if (!this.username) {
+        this.api = new BugzillaAPI(this.url);
+      } else if (!this.record.password) {
+        this.api = new BugzillaAPI(this.url, this.username);
+      } else {
+        this.api = new BugzillaAPI(this.url, this.username, this.record.password);
+      }
     }
 
-    if (!this.record.password) {
-      return new BugzillaAPI(this.url, this.username);
-    }
-
-    return new BugzillaAPI(this.url, this.username, this.record.password);
+    return this.api;
   }
 
   public get id(): string {
@@ -64,6 +68,15 @@ export class Account implements Impl<BugzillaAccount> {
 
   public get username(): string | null {
     return this.record.username;
+  }
+
+  public async getBugs(): Promise<Bug[]> {
+    let records = await this.context
+      .table<BugzillaBugRecord>("Bug")
+      .where("accountId", this.id)
+      .select("*");
+
+    return records.map((record: BugzillaBugRecord): Bug => new Bug(this, record));
   }
 
   public async getBugFromURL(url: URL): Promise<Bug | null> {
@@ -129,8 +142,13 @@ export class Account implements Impl<BugzillaAccount> {
     return null;
   }
 
-  public static async list(context: PluginContext, user: string): Promise<Account[]> {
-    let records = await context.table<BugzillaAccountRecord>("Account").where("user", user);
+  public static async list(context: PluginContext, user: string | null = null): Promise<Account[]> {
+    let query = context.table<BugzillaAccountRecord>("Account");
+    if (user) {
+      query = query.where("user", user);
+    }
+
+    let records = await query;
     return records.map((record: BugzillaAccountRecord): Account => new Account(context, record));
   }
 
@@ -168,22 +186,17 @@ type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
 
 export class Bug {
   public constructor(
-    private readonly context: PluginContext,
+    private readonly account: Account,
     private readonly record: BugzillaBugRecord,
   ) {
   }
 
-  public async account(): Promise<Account> {
-    let account = await Account.get(this.context, this.record.accountId);
-    if (!account) {
-      throw new Error("Missing account record.");
-    }
-
-    return account;
+  private get context(): PluginContext {
+    return this.account.context;
   }
 
   public async getBug(): Promise<BugzillaBug> {
-    let account = await this.account();
+    let account = this.account;
     let api = account.getAPI();
     let bugs = await api.getBugs([this.bugId]);
 
@@ -204,6 +217,31 @@ export class Bug {
 
   public get taskType(): TaskType {
     return this.record.taskType;
+  }
+
+  public async update(record?: BugzillaBug): Promise<void> {
+    if (!record) {
+      let bugs = await this.account.getAPI().getBugs([this.bugId]);
+      if (!bugs.length) {
+        throw new Error("Unknown bug.");
+      }
+
+      record = bugs[0];
+    }
+
+    let item = await this.getItem();
+
+    if (this.taskType == TaskType.Resolved) {
+      let done = await this.account.doneForStatus(record);
+
+      let taskInfo = {
+        due: null,
+        ...item.taskInfo ?? {},
+        done,
+      };
+
+      await this.context.setItemTaskInfo(item.id, taskInfo);
+    }
   }
 
   public async setTaskType(taskType: TaskType): Promise<void> {
@@ -228,8 +266,7 @@ export class Bug {
         }
         break;
       case TaskType.Resolved: {
-        let account = await this.account();
-        let done = await account.doneForStatus(await this.getBug());
+        let done = await this.account.doneForStatus(await this.getBug());
 
         let taskInfo = {
           due: null,
@@ -250,8 +287,7 @@ export class Bug {
   }
 
   public async fields(): Promise<BugRecord> {
-    let account = await this.account();
-    let baseUrl = new URL(account.url);
+    let baseUrl = new URL(this.account.url);
 
     return {
       accountId: this.record.accountId,
@@ -348,13 +384,19 @@ export class Bug {
     };
 
     await context.table("Bug").insert(record);
-    return new Bug(context, record);
+    return new Bug(account, record);
   }
 
   public static async getForItem(context: PluginContext, itemId: string): Promise<Bug | null> {
-    let records = await context.table("Bug").where({ itemId }).select("*");
+    let records = await context.table<BugzillaBugRecord>("Bug").where({ itemId }).select("*");
     if (records.length == 1) {
-      return new Bug(context, records[0]);
+      let account = await Account.get(context, records[0].accountId);
+
+      if (!account) {
+        throw new Error("Missing account");
+      }
+
+      return new Bug(account, records[0]);
     }
     return null;
   }
@@ -364,13 +406,19 @@ export class Bug {
     accountId: string,
     bugId: number,
   ): Promise<Bug | null> {
+    let account = await Account.get(context, accountId);
+
+    if (!account) {
+      throw new Error("Missing account");
+    }
+
     let records = await context.table("Bug").where({
       accountId,
       bugId,
     }).select("*");
 
     if (records.length == 1) {
-      return new Bug(context, records[0]);
+      return new Bug(account, records[0]);
     }
 
     return null;

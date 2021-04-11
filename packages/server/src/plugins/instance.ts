@@ -18,6 +18,8 @@ import { call, isCallable, waitFor } from "../../../utils";
 import type { DatabaseConnection } from "../db/connection";
 import { buildDataSources } from "../db/datasources";
 import type { ServerPlugin } from "../types";
+import type { TaskManager } from "../utils/tasks";
+import taskManager from "../utils/tasks";
 import type { PluginDbMigration } from "./db";
 
 async function loadPlugin(
@@ -69,6 +71,10 @@ export default class PluginInstance implements PluginServer {
 
   public init(): Promise<void> {
     return this.pluginPromise;
+  }
+
+  public get taskManager(): TaskManager {
+    return taskManager;
   }
 
   public async withContext<T>(

@@ -13,6 +13,7 @@ import { id } from "../db/connection";
 import type { AppDataSources } from "../db/datasources";
 import { ItemType } from "../db/types";
 import type { ResolverContext } from "../schema/context";
+import type { TaskManager } from "../utils/tasks";
 import type { PluginDbMigration, PluginKnex, TableRef } from "./db";
 import { wrapKnex, getMigrationSource } from "./db";
 import PluginInstance from "./instance";
@@ -88,6 +89,7 @@ export interface ServerPlugin {
 
 export interface PluginServer {
   withContext: <T>(task: (context: PluginContext) => Promise<T>) => Promise<T>;
+  taskManager: TaskManager;
 }
 
 export type ServerPluginExport = MaybeCallable<
