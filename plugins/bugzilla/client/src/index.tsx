@@ -2,18 +2,18 @@ import { PluginManager } from "@allthethings/ui";
 import type { ClientPlugin, PluginItemProps, ReactResult } from "@allthethings/ui";
 
 import Bug from "./Bug";
-import { SettingsSections, SettingsSection } from "./Settings";
+import { SettingsPages, SettingsPage } from "./Settings";
 
 class BugzillaPlugin implements ClientPlugin {
   public readonly serverId = "@allthethings/bugzilla-server";
   public readonly name = "Bugzilla";
 
-  public renderPluginSettingsSections(): ReactResult {
-    return <SettingsSections/>;
+  public renderPluginSettingsPageList(): ReactResult {
+    return <SettingsPages/>;
   }
 
-  public renderPluginSettingsSection(section: string): ReactResult {
-    return <SettingsSection section={section}/>;
+  public renderPluginSettingsPage(page: string): ReactResult {
+    return <SettingsPage page={page}/>;
   }
 
   public renderItem(itemProps: PluginItemProps): ReactResult {

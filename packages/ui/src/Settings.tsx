@@ -25,7 +25,7 @@ export const useIconStyles = makeStyles(() =>
     },
   }));
 
-export const useSectionStyles = makeStyles((theme: Theme) =>
+export const useSidebarStyles = makeStyles((theme: Theme) =>
   createStyles({
     listitem: {
       ...flexRow,
@@ -43,27 +43,27 @@ export const useSectionStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-interface SectionContextProps {
-  setSection: (section: string, pluginId?: string) => void;
-  section: string;
+interface SettingsContextProps {
+  setPage: (page: string, pluginId?: string) => void;
+  page: string;
   pluginId?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const SectionContext = createContext<SectionContextProps>({
-  section: "general",
-  setSection: () => {
+export const SettingsContext = createContext<SettingsContextProps>({
+  page: "general",
+  setPage: () => {
     // no-op
   },
 });
 
-interface SettingSectionIconProps {
+interface SettingsPageIconProps {
   icon?: ReactElement | null | string | URL;
 }
 
-const SettingSectionIcon = ReactMemo(function SettingSectionIcon({
+const SettingsPageIcon = ReactMemo(function SettingsPageIcon({
   icon,
-}: SettingSectionIconProps): ReactResult {
+}: SettingsPageIconProps): ReactResult {
   let classes = useIconStyles();
 
   if (icon instanceof URL) {
@@ -79,8 +79,8 @@ const SettingSectionIcon = ReactMemo(function SettingSectionIcon({
   }
 });
 
-export interface SettingSectionProps {
-  sectionId?: string;
+export interface SettingsPageItemProps {
+  page?: string;
   pluginId?: string;
   icon?: ReactElement | null | string | URL;
   href?: string;
@@ -88,38 +88,38 @@ export interface SettingSectionProps {
   children: ReactNode;
 }
 
-export function SettingSection({
+export function SettingsPageItem({
   icon,
-  sectionId,
+  page,
   pluginId,
   href,
   onClick,
   children,
-}: SettingSectionProps): ReactResult {
-  let classes = useSectionStyles();
+}: SettingsPageItemProps): ReactResult {
+  let classes = useSidebarStyles();
   let {
-    section,
-    setSection,
-  } = useContext(SectionContext);
+    page: currentPage,
+    setPage,
+  } = useContext(SettingsContext);
 
   let click = useCallback(() => {
     if (onClick) {
       onClick();
     }
 
-    if (sectionId) {
-      setSection(sectionId, pluginId);
+    if (page) {
+      setPage(page, pluginId);
     }
-  }, [sectionId, pluginId, onClick, setSection]);
+  }, [page, pluginId, onClick, setPage]);
 
-  let selected = section == sectionId;
+  let selected = page == currentPage;
 
   return <SelectableListItem
     selected={selected}
     className={clsx(classes.listitem, selected && classes.selectedItem)}
     onClick={click}
     iconClassName={classes.icon}
-    icon={<SettingSectionIcon icon={icon}/>}
+    icon={<SettingsPageIcon icon={icon}/>}
     href={href}
   >
     {children}

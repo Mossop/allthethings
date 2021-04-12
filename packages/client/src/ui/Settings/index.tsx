@@ -1,7 +1,7 @@
 import type { ClientPlugin, ReactResult } from "@allthethings/ui";
 import {
-  SectionContext,
-  SettingSection,
+  SettingsContext,
+  SettingsPageItem,
   usePlugins,
   ReactMemo,
   Icons,
@@ -62,19 +62,19 @@ function SettingsSidebar(): ReactResult {
     square={true}
   >
     <List component="div" className={classes.list}>
-      <SettingSection
+      <SettingsPageItem
         href={taskLink.toString()}
         icon={<Icons.Back/>}
       >
         Back to Tasks
-      </SettingSection>
+      </SettingsPageItem>
       <Divider className={classes.divider}/>
-      <SettingSection
-        sectionId="general"
+      <SettingsPageItem
+        page="general"
         icon={<SettingsIcon/>}
       >
         General
-      </SettingSection>
+      </SettingsPageItem>
       {
         plugins.map((plugin: ClientPlugin) => <Fragment key={plugin.serverId}>
           <Divider className={classes.divider}/>
@@ -82,7 +82,7 @@ function SettingsSidebar(): ReactResult {
             <ListSubheader className={classes.pluginHeader}>
               {plugin.name}
             </ListSubheader>
-            {plugin.renderPluginSettingsSections()}
+            {plugin.renderPluginSettingsPageList()}
           </List>
         </Fragment>)
       }
@@ -91,12 +91,12 @@ function SettingsSidebar(): ReactResult {
 }
 
 interface SettingsPageProps {
-  section: string;
+  page: string;
   pluginId?: string;
 }
 
 const SettingsPage = ReactMemo(function SettingsPage({
-  section,
+  page,
   pluginId,
 }: SettingsPageProps): ReactResult {
   let plugins = usePlugins();
@@ -104,11 +104,11 @@ const SettingsPage = ReactMemo(function SettingsPage({
   if (pluginId) {
     for (let plugin of plugins) {
       if (plugin.serverId == pluginId) {
-        return plugin.renderPluginSettingsSection(section);
+        return plugin.renderPluginSettingsPage(page);
       }
     }
   } else {
-    switch (section) {
+    switch (page) {
       case "general":
         return <Text>General settings.</Text>;
     }
@@ -118,28 +118,28 @@ const SettingsPage = ReactMemo(function SettingsPage({
 });
 
 interface SectionState {
-  section: string;
+  page: string;
   pluginId?: string;
 }
 
 export default ReactMemo(function Settings(): ReactResult {
   let classes = useStyles();
-  let [{ section, pluginId }, setSection] = useState<SectionState>({
-    section: "general",
+  let [{ page, pluginId }, setSection] = useState<SectionState>({
+    page: "general",
   });
 
-  let updateSection = useCallback((section: string, pluginId?: string): void => {
+  let updateSection = useCallback((page: string, pluginId?: string): void => {
     setSection({
-      section,
+      page,
       pluginId,
     });
   }, []);
 
-  return <SectionContext.Provider value={{ section, setSection: updateSection }}>
+  return <SettingsContext.Provider value={{ page, setPage: updateSection }}>
     <Page sidebar={<SettingsSidebar/>}>
       <div className={classes.content}>
-        <SettingsPage section={section} pluginId={pluginId}/>
+        <SettingsPage page={page} pluginId={pluginId}/>
       </div>
     </Page>
-  </SectionContext.Provider>;
+  </SettingsContext.Provider>;
 });

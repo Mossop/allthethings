@@ -1,5 +1,5 @@
 import type { ReactResult } from "@allthethings/ui";
-import { useBoolState, SettingSection } from "@allthethings/ui";
+import { SettingsPageItem, useBoolState } from "@allthethings/ui";
 import { useCallback } from "react";
 
 import AccountDialog from "../AccountDialog";
@@ -8,7 +8,7 @@ import type { BugzillaAccount } from "../schema";
 import { useListBugzillaAccountsQuery } from "../schema";
 import AccountSettings from "./Account";
 
-export function SettingsSections(): ReactResult {
+export function SettingsPages(): ReactResult {
   let [
     showAccountDialog,
     openAccountDialog,
@@ -24,21 +24,21 @@ export function SettingsSections(): ReactResult {
 
   return <>
     {
-      accounts.map((account: Omit<BugzillaAccount, "username">) => <SettingSection
+      accounts.map((account: Omit<BugzillaAccount, "username">) => <SettingsPageItem
         key={account.id}
         pluginId="@allthethings/bugzilla-server"
-        sectionId={account.id}
+        page={account.id}
         icon={account.icon ?? <Icon/>}
       >
         {account.name}
-      </SettingSection>)
+      </SettingsPageItem>)
     }
-    <SettingSection
+    <SettingsPageItem
       icon={<Icon/>}
       onClick={openAccountDialog}
     >
       Add Account
-    </SettingSection>
+    </SettingsPageItem>
     {
       showAccountDialog && <AccountDialog
         onClosed={closeAccountDialog}
@@ -48,18 +48,18 @@ export function SettingsSections(): ReactResult {
   </>;
 }
 
-interface SettingsSectionProps {
-  section: string;
+interface SettingsPageProps {
+  page: string;
 }
 
-export function SettingsSection({
-  section,
-}: SettingsSectionProps): ReactResult {
+export function SettingsPage({
+  page,
+}: SettingsPageProps): ReactResult {
   let { data } = useListBugzillaAccountsQuery();
   let accounts = data?.user?.bugzillaAccounts ?? [];
 
   for (let account of accounts) {
-    if (account.id == section) {
+    if (account.id == page) {
       return <AccountSettings account={account}/>;
     }
   }
