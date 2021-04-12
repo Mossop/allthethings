@@ -18,11 +18,11 @@ import {
   List,
 } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { Fragment, useState } from "react";
+import { Fragment, useCallback, useState } from "react";
 
-import Page from "../components/Page";
-import { useProjectRoot } from "../utils/state";
-import { useUrl, ViewType } from "../utils/view";
+import Page from "../../components/Page";
+import { useProjectRoot } from "../../utils/state";
+import { useUrl, ViewType } from "../../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -82,7 +82,7 @@ function SettingsSidebar(): ReactResult {
             <ListSubheader className={classes.pluginHeader}>
               {plugin.name}
             </ListSubheader>
-            {plugin.renderPluginSections()}
+            {plugin.renderPluginSettingsSections()}
           </List>
         </Fragment>)
       }
@@ -90,14 +90,55 @@ function SettingsSidebar(): ReactResult {
   </Paper>;
 }
 
+interface SettingsPageProps {
+  section: string;
+  pluginId?: string;
+}
+
+const SettingsPage = ReactMemo(function SettingsPage({
+  section,
+  pluginId,
+}: SettingsPageProps): ReactResult {
+  let plugins = usePlugins();
+
+  if (pluginId) {
+    for (let plugin of plugins) {
+      if (plugin.serverId == pluginId) {
+        return plugin.renderPluginSettingsSection(section);
+      }
+    }
+  } else {
+    switch (section) {
+      case "general":
+        return <Text>General settings.</Text>;
+    }
+  }
+
+  return <Text>Unknown settings.</Text>;
+});
+
+interface SectionState {
+  section: string;
+  pluginId?: string;
+}
+
 export default ReactMemo(function Settings(): ReactResult {
   let classes = useStyles();
-  let [section, setSection] = useState<string>("general");
+  let [{ section, pluginId }, setSection] = useState<SectionState>({
+    section: "general",
+  });
 
-  return <SectionContext.Provider value={{ section, setSection }}>
+  let updateSection = useCallback((section: string, pluginId?: string): void => {
+    setSection({
+      section,
+      pluginId,
+    });
+  }, []);
+
+  return <SectionContext.Provider value={{ section, setSection: updateSection }}>
     <Page sidebar={<SettingsSidebar/>}>
       <div className={classes.content}>
-        <Text>Settings</Text>
+        <SettingsPage section={section} pluginId={pluginId}/>
       </div>
     </Page>
   </SectionContext.Provider>;

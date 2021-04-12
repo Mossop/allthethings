@@ -1,5 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { URL } from "url";
+
 import type { Resolver, GraphQLContext, User } from "@allthethings/server";
+import { bestIcon, loadPageInfo } from "@allthethings/server";
 import BugzillaAPI from "bugzilla";
 
 import { Account, Bug } from "./db/implementations";
@@ -34,21 +37,29 @@ const Resolvers: Resolver<GraphQLContext> = {
         throw new Error("Not authenticated.");
       }
 
+      let url = new URL(args.url);
+
+      let info = await loadPageInfo(url);
+      let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
+
       let api: BugzillaAPI;
       if (!args.username) {
-        api = new BugzillaAPI(args.url);
+        api = new BugzillaAPI(url);
         await api.version();
       } else {
         if (args.password) {
-          api = new BugzillaAPI(args.url, args.username, args.password);
+          api = new BugzillaAPI(url, args.username, args.password);
         } else {
-          api = new BugzillaAPI(args.url, args.username);
+          api = new BugzillaAPI(url, args.username);
         }
 
         await api.whoami();
       }
 
-      return Account.create(ctx, ctx.userId, args);
+      return Account.create(ctx, ctx.userId, {
+        ...args,
+        icon,
+      });
     },
 
     async setItemTaskType(

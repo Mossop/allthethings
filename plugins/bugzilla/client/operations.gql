@@ -2,15 +2,17 @@ query ListBugzillaAccounts {
   user {
     bugzillaAccounts {
       id
+      name
       icon
       url
     }
   }
 }
 
-mutation CreateBugzillaAccount($url: String!, $username: String!, $password: String) {
-  createBugzillaAccount(url: $url, username: $username, password: $password) {
+mutation CreateBugzillaAccount($name: String!, $url: String!, $username: String!, $password: String) {
+  createBugzillaAccount(name: $name, url: $url, username: $username, password: $password) {
     id
+    name
     icon
     url
   }

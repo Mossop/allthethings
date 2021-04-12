@@ -6,8 +6,7 @@ import type { User, Context, Project, Section, TaskList, Item } from "../db";
 import { PluginDetail } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
-import type { Icon } from "../utils/page";
-import { loadPageInfo } from "../utils/page";
+import { bestIcon, loadPageInfo } from "../utils/page";
 import type { AuthedParams, AuthedContext, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
@@ -278,23 +277,7 @@ const resolvers: MutationResolvers = {
     }, ItemType.Link);
 
     let icons = [...pageInfo.icons];
-    let icon: string | null = null;
-
-    if (icons.length) {
-      icons.sort((a: Icon, b: Icon): number => (a.size ?? 0) - (b.size ?? 0));
-      if (icons[0].size === null) {
-        icon = icons[0].url.toString();
-      } else if ((icons[icons.length - 1].size ?? 0) < 32) {
-        icon = icons[icons.length - 1].url.toString();
-      } else {
-        while (icons.length && icons[0].size < 32) {
-          icons.shift();
-        }
-        if (icons.length) {
-          icon = icons[0].url.toString();
-        }
-      }
-    }
+    let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
 
     await ctx.dataSources.linkDetail.create(item, {
       ...detail,

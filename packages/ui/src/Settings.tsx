@@ -1,12 +1,29 @@
 import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
-import type { ReactNode } from "react";
+import type { ReactElement, ReactNode } from "react";
 import { createContext, useCallback, useContext } from "react";
 
+import { Styles } from ".";
 import { SelectableListItem } from "./SelectableListItem";
 import { flexRow, flexCentered } from "./styles";
 import type { ReactResult } from "./types";
+import { ReactMemo } from "./types";
+
+export const useIconStyles = makeStyles(() =>
+  createStyles({
+    iconContainer: {
+      width: "1.5rem",
+      height: "1.5rem",
+      ...Styles.flexCentered,
+    },
+    icon: {
+      maxWidth: "100%",
+      maxHeight: "100%",
+      objectFit: "contain",
+      objectPosition: "center center",
+    },
+  }));
 
 export const useSectionStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,8 +44,9 @@ export const useSectionStyles = makeStyles((theme: Theme) =>
   }));
 
 interface SectionContextProps {
-  setSection: (section: string) => void;
+  setSection: (section: string, pluginId?: string) => void;
   section: string;
+  pluginId?: string;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -39,9 +57,32 @@ export const SectionContext = createContext<SectionContextProps>({
   },
 });
 
+interface SettingSectionIconProps {
+  icon?: ReactElement | null | string | URL;
+}
+
+const SettingSectionIcon = ReactMemo(function SettingSectionIcon({
+  icon,
+}: SettingSectionIconProps): ReactResult {
+  let classes = useIconStyles();
+
+  if (icon instanceof URL) {
+    icon = icon.toString();
+  }
+
+  if (typeof icon == "string") {
+    return <div className={classes.iconContainer}>
+      <img className={classes.icon} src={icon}/>
+    </div>;
+  } else {
+    return icon ?? null;
+  }
+});
+
 export interface SettingSectionProps {
   sectionId?: string;
-  icon?: ReactNode;
+  pluginId?: string;
+  icon?: ReactElement | null | string | URL;
   href?: string;
   onClick?: () => void;
   children: ReactNode;
@@ -50,6 +91,7 @@ export interface SettingSectionProps {
 export function SettingSection({
   icon,
   sectionId,
+  pluginId,
   href,
   onClick,
   children,
@@ -66,9 +108,9 @@ export function SettingSection({
     }
 
     if (sectionId) {
-      setSection(sectionId);
+      setSection(sectionId, pluginId);
     }
-  }, [sectionId, onClick, setSection]);
+  }, [sectionId, pluginId, onClick, setSection]);
 
   let selected = section == sectionId;
 
@@ -77,7 +119,7 @@ export function SettingSection({
     className={clsx(classes.listitem, selected && classes.selectedItem)}
     onClick={click}
     iconClassName={classes.icon}
-    icon={icon}
+    icon={<SettingSectionIcon icon={icon}/>}
     href={href}
   >
     {children}

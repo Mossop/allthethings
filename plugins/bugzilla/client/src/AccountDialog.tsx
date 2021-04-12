@@ -23,6 +23,7 @@ export default function AccountDialog({
   onClosed,
 }: AccountDialogProps): ReactElement {
   let [state, setState] = useState({
+    name: "",
     url: "",
     auth: AuthType.Password,
     username: "",
@@ -33,6 +34,7 @@ export default function AccountDialog({
 
   let [createAccount, { error }] = useCreateBugzillaAccountMutation({
     variables: {
+      name: state.name,
       url: state.url,
       username: state.auth == AuthType.Password ? state.username : state.key,
       password: state.auth == AuthType.Password ? state.password : null,
@@ -61,13 +63,22 @@ export default function AccountDialog({
     onSubmit={submit}
   >
     <TextFieldInput
+      id="name"
+      label="Name:"
+      state={state}
+      setState={setState}
+      stateKey="name"
+      required={true}
+      autoFocus={true}
+    />
+
+    <TextFieldInput
       id="url"
       label="Address:"
       state={state}
       setState={setState}
       stateKey="url"
       required={true}
-      autoFocus={true}
     />
 
     <RadioGroupInput

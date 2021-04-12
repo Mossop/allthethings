@@ -19,7 +19,8 @@ export interface ClientPlugin {
   readonly serverId: string;
   readonly name: string;
 
-  readonly renderPluginSections: () => ReactResult;
+  readonly renderPluginSettingsSections: () => ReactResult;
+  readonly renderPluginSettingsSection: (section: string) => ReactResult;
   readonly renderItem: (itemProps: PluginItemProps) => ReactResult;
 }
 

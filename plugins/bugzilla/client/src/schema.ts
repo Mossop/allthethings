@@ -20,6 +20,7 @@ export type Scalars = {
 export type BugzillaAccount = {
   readonly __typename?: 'BugzillaAccount';
   readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
   readonly icon: Maybe<Scalars['String']>;
   readonly url: Scalars['String'];
   readonly username: Maybe<Scalars['String']>;
@@ -119,6 +120,7 @@ export type Mutation = {
 
 
 export type MutationCreateBugzillaAccountArgs = {
+  name: Scalars['String'];
   url: Scalars['String'];
   username: Maybe<Scalars['String']>;
   password: Maybe<Scalars['String']>;
@@ -362,16 +364,17 @@ export type UserProjectByIdArgs = {
 export type ListBugzillaAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly icon: Maybe<string>, readonly url: string }> }> };
+export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string }> }> };
 
 export type CreateBugzillaAccountMutationVariables = Exact<{
+  name: Scalars['String'];
   url: Scalars['String'];
   username: Scalars['String'];
   password: Maybe<Scalars['String']>;
 }>;
 
 
-export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly icon: Maybe<string>, readonly url: string } };
+export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string } };
 
 export type SetItemTaskTypeMutationVariables = Exact<{
   item: Scalars['ID'];
@@ -387,6 +390,7 @@ export const ListBugzillaAccountsDocument = gql`
   user {
     bugzillaAccounts {
       id
+      name
       icon
       url
     }
@@ -424,9 +428,15 @@ export function refetchListBugzillaAccountsQuery(variables?: ListBugzillaAccount
       return { query: ListBugzillaAccountsDocument, variables: variables }
     }
 export const CreateBugzillaAccountDocument = gql`
-    mutation CreateBugzillaAccount($url: String!, $username: String!, $password: String) {
-  createBugzillaAccount(url: $url, username: $username, password: $password) {
+    mutation CreateBugzillaAccount($name: String!, $url: String!, $username: String!, $password: String) {
+  createBugzillaAccount(
+    name: $name
+    url: $url
+    username: $username
+    password: $password
+  ) {
     id
+    name
     icon
     url
   }
@@ -447,6 +457,7 @@ export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<CreateBugz
  * @example
  * const [createBugzillaAccountMutation, { data, loading, error }] = useCreateBugzillaAccountMutation({
  *   variables: {
+ *      name: // value for 'name'
  *      url: // value for 'url'
  *      username: // value for 'username'
  *      password: // value for 'password'

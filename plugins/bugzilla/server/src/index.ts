@@ -52,6 +52,10 @@ class BugzillaPlugin implements ServerPlugin {
     for (let account of await Account.list(context)) {
       let api = account.getAPI();
       let bugs = await account.getBugs();
+      if (bugs.length == 0) {
+        continue;
+      }
+
       console.log(`Updating ${bugs.length} from ${account.url}`);
       let bugMap = new Map(bugs.map((bug: Bug): [number, Bug] => [bug.bugId, bug]));
 

@@ -13,6 +13,8 @@ class BaseMigration implements PluginDbMigration {
 
       helper.userRef(table, "user")
         .notNullable();
+      table.text("name")
+        .notNullable();
       table.text("url")
         .notNullable();
       table.text("username")

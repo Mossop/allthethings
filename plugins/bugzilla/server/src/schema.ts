@@ -17,6 +17,7 @@ export type Scalars = {
 export type BugzillaAccount = {
   readonly __typename?: 'BugzillaAccount';
   readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
   readonly icon: Maybe<Scalars['String']>;
   readonly url: Scalars['String'];
   readonly username: Maybe<Scalars['String']>;
@@ -30,6 +31,7 @@ export type Mutation = {
 
 
 export type MutationCreateBugzillaAccountArgs = {
+  name: Scalars['String'];
   url: Scalars['String'];
   username: Maybe<Scalars['String']>;
   password: Maybe<Scalars['String']>;
@@ -145,6 +147,7 @@ export type ResolversParentTypes = ResolversObject<{
 
 export type BugzillaAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['BugzillaAccount'] = ResolversParentTypes['BugzillaAccount']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   icon: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   username: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
@@ -152,7 +155,7 @@ export type BugzillaAccountResolvers<ContextType = any, ParentType extends Resol
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
-  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'url'>>;
+  createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'name' | 'url'>>;
   setItemTaskType: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSetItemTaskTypeArgs, 'item' | 'taskType'>>;
 }>;
 

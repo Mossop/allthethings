@@ -16,6 +16,30 @@ export interface Icon {
   size: number | null;
 }
 
+export function bestIcon(icons: Icon[], size: number): Icon | null {
+  let icon: Icon | null = null;
+
+  if (icons.length) {
+    icons = [...icons];
+
+    icons.sort((a: Icon, b: Icon): number => (a.size ?? 0) - (b.size ?? 0));
+    if (icons[0].size === null) {
+      icon = icons[0];
+    } else if ((icons[icons.length - 1].size ?? 0) < size) {
+      icon = icons[icons.length - 1];
+    } else {
+      while (icons.length && icons[0].size < size) {
+        icons.shift();
+      }
+      if (icons.length) {
+        icon = icons[0];
+      }
+    }
+  }
+
+  return icon;
+}
+
 async function loadIcon(url: URL): Promise<Icon[]> {
   let response = await fetch(url);
   if (!response.ok) {

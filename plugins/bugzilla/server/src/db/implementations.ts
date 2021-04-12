@@ -54,6 +54,10 @@ export class Account implements Impl<BugzillaAccount> {
     return this.record.id;
   }
 
+  public get name(): string {
+    return this.record.name;
+  }
+
   public get icon(): string | null {
     return this.record.icon;
   }
@@ -158,13 +162,13 @@ export class Account implements Impl<BugzillaAccount> {
   public static async create(
     context: PluginContext,
     user: string,
-    args: MutationCreateBugzillaAccountArgs,
+    args: MutationCreateBugzillaAccountArgs & Pick<BugzillaAccount, "icon">,
   ): Promise<Account> {
     let record: BugzillaAccountRecord = {
       ...args,
       id: await context.id(),
       user,
-      icon: null,
+      icon: args.icon,
     };
 
     await context.table("Account").insert(record);

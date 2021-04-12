@@ -13,3 +13,4 @@ export {
   BasePluginItem,
   PluginTaskInfo,
 } from "./plugins";
+export * from "./utils/page";
