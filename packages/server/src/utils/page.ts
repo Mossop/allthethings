@@ -102,8 +102,10 @@ export async function loadPageInfo(pageUrl: URL): Promise<PageInfo> {
     icons = icons.concat(await loadIcon(url));
   }
 
-  let favicon = new URL("/favicon.ico", pageUrl);
-  icons = icons.concat(await loadIcon(favicon));
+  if (icons.length == 0) {
+    let favicon = new URL("/favicon.ico", pageUrl);
+    icons = icons.concat(await loadIcon(favicon));
+  }
 
   let title = root.querySelector("title");
 
