@@ -52,7 +52,7 @@ function MainContent(): ReactResult {
     case ViewType.NotFound:
       return <NotFound/>;
     case ViewType.Settings:
-      return <Settings/>;
+      return <Settings page={view.page} pluginId={view.pluginId}/>;
   }
 }
 

@@ -36,6 +36,8 @@ export interface TaskListView {
 
 export interface SettingsView {
   readonly type: ViewType.Settings;
+  readonly page: string;
+  readonly pluginId?: string;
 }
 
 export type View = BaseView & (LinkableView | NotFoundView);
@@ -91,8 +93,8 @@ function updateView(view: View, user: User): View {
     case ViewType.Inbox:
     case ViewType.Settings:
       return {
+        ...view,
         ...base,
-        type: view.type,
       };
     case ViewType.TaskList: {
       let taskList: TaskList;
@@ -155,6 +157,16 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
       break;
     case ViewType.Settings:
       path = "/settings";
+      if (!view.pluginId && view.page == "general") {
+        break;
+      }
+
+      if (view.pluginId) {
+        searchParams.set("plugin", view.pluginId);
+      }
+
+      path += `/${view.page}`;
+      break;
   }
 
   let url = new URL(`${path}`, document.URL);
@@ -207,15 +219,21 @@ export function urlToView(user: User, url: URL): View {
         user,
         context,
       };
-    case "settings":
-      if (pathParts.length) {
+    case "settings": {
+      if (pathParts.length > 1) {
         return notFound;
       }
+      let pluginId = url.searchParams.get("plugin") ?? undefined;
+      let page = pathParts.length ? pathParts[0] : "general";
+
       return {
         type: ViewType.Settings,
         user,
         context,
+        page,
+        pluginId,
       };
+    }
     case "project": {
       let taskList: TaskList = root;
       let part = pathParts.shift();

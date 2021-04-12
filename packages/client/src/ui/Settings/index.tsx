@@ -18,11 +18,11 @@ import {
   List,
 } from "@material-ui/core";
 import SettingsIcon from "@material-ui/icons/Settings";
-import { Fragment, useCallback, useState } from "react";
+import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
 import { useProjectRoot } from "../../utils/state";
-import { useUrl, ViewType } from "../../utils/view";
+import { pushView, useUrl, useView, ViewType } from "../../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -117,23 +117,25 @@ const SettingsPage = ReactMemo(function SettingsPage({
   return <Text>Unknown settings.</Text>;
 });
 
-interface SectionState {
+interface SettingsProps {
   page: string;
   pluginId?: string;
 }
 
-export default ReactMemo(function Settings(): ReactResult {
+export default ReactMemo(function Settings({
+  page,
+  pluginId,
+}: SettingsProps): ReactResult {
   let classes = useStyles();
-  let [{ page, pluginId }, setSection] = useState<SectionState>({
-    page: "general",
-  });
+  let view = useView();
 
   let updateSection = useCallback((page: string, pluginId?: string): void => {
-    setSection({
+    pushView({
+      type: ViewType.Settings,
       page,
       pluginId,
-    });
-  }, []);
+    }, view);
+  }, [view]);
 
   return <SettingsContext.Provider value={{ page, setPage: updateSection }}>
     <Page sidebar={<SettingsSidebar/>}>

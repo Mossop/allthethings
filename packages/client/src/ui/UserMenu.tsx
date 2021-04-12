@@ -47,6 +47,7 @@ export default ReactMemo(function UserMenu({
   let doSettings = useCallback((): void => {
     pushView({
       type: ViewType.Settings,
+      page: "general",
     }, view);
   }, [view]);
 
