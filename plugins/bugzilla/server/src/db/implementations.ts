@@ -79,7 +79,7 @@ export class Account implements Impl<BugzillaAccount> {
     return records.map((record: BugzillaBugRecord): Bug => new Bug(this, record));
   }
 
-  public async getBugFromURL(url: URL): Promise<Bug | null> {
+  public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
     let baseUrl = new URL(this.url);
     if (baseUrl.origin != url.origin || url.pathname != "/show_bug.cgi") {
       return null;
@@ -94,13 +94,16 @@ export class Account implements Impl<BugzillaAccount> {
     try {
       let bugs = await api.getBugs([id]);
       if (bugs.length) {
-        let type = TaskType.Resolved;
-        if (isDone(bugs[0].status)) {
-          // It doesn't make much sense to be creating a complete task so assume this is not a task.
-          type = TaskType.Manual;
+        let taskType = TaskType.None;
+        if (isTask) {
+          taskType = TaskType.Resolved;
+          if (isDone(bugs[0].status)) {
+            // It doesn't make much sense to be creating a complete task so assume this is manual.
+            taskType = TaskType.Manual;
+          }
         }
 
-        return await Bug.create(this.context, this, bugs[0], type);
+        return await Bug.create(this.context, this, bugs[0], taskType);
       }
 
       return null;

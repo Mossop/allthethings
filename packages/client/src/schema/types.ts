@@ -195,7 +195,7 @@ export type MutationCreateLinkArgs = {
   list?: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: LinkDetailParams;
-  taskInfo?: Maybe<TaskInfoParams>;
+  isTask: Scalars['Boolean'];
 };
 
 

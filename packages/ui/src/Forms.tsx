@@ -8,6 +8,7 @@ import {
   Radio,
   RadioGroup,
   OutlinedInput,
+  Checkbox,
 } from "@material-ui/core";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback } from "react";
@@ -136,5 +137,60 @@ export const RadioGroupInput = ReactMemo(
         }
       </RadioGroup>
     </FormControl>;
+  },
+);
+
+type CheckboxInputProps<T, K extends keyof T> = FieldProps<T, K> & {
+  label: string;
+  checkedValue: T[K];
+  uncheckedValue: T[K];
+};
+
+export const CheckboxInput = ReactMemo(
+  function CheckboxInput<T, K extends keyof T>({
+    label,
+    state,
+    setState,
+    stateKey,
+    checkedValue,
+    uncheckedValue,
+  }: CheckboxInputProps<T, K>): ReactElement {
+    let value = useMemo(() => state[stateKey], [state, stateKey]);
+
+    let onChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      setState((state: T): T => ({
+        ...state,
+        [stateKey]: event.target.checked ? checkedValue : uncheckedValue,
+      }));
+    }, [setState, stateKey, checkedValue, uncheckedValue]);
+
+    return <FormControlLabel
+      control={
+        <Checkbox
+          color="primary"
+          checked={value == checkedValue}
+          onChange={onChange}
+        />
+      }
+      label={label}
+    />;
+  },
+);
+
+type BooleanCheckboxState<T extends string> = {
+  [K in T]: boolean;
+};
+
+type BooleanCheckboxInputProps<
+  K extends string,
+  T extends BooleanCheckboxState<K>,
+> = Omit<CheckboxInputProps<T, K>, "checkedValue" | "uncheckedValue">;
+
+export const BooleanCheckboxInput = ReactMemo(
+  function BooleanCheckboxInput<K extends string, T extends BooleanCheckboxState<K>>(
+    props: BooleanCheckboxInputProps<K, T>,
+  ): ReactElement {
+    // @ts-ignore
+    return <CheckboxInput {...props} checkedValue={true} uncheckedValue={false}/>;
   },
 );

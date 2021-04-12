@@ -233,7 +233,7 @@ const resolvers: MutationResolvers = {
   }),
 
   createLink: authed(async ({
-    args: { detail, list: listId, ...args },
+    args: { detail, list: listId, isTask, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
     let url: URL;
@@ -252,7 +252,7 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    let item = await PluginManager.createItemFromURL(ctx, url);
+    let item = await PluginManager.createItemFromURL(ctx, url, isTask);
     if (item) {
       await item.move(list, null);
       return item;

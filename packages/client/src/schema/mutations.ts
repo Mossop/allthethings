@@ -120,7 +120,7 @@ export type CreateLinkMutationVariables = Types.Exact<{
   list: Types.Maybe<Types.Scalars['ID']>;
   item: Types.ItemParams;
   detail: Types.LinkDetailParams;
-  taskInfo: Types.Maybe<Types.TaskInfoParams>;
+  isTask: Types.Scalars['Boolean'];
 }>;
 
 
@@ -649,8 +649,8 @@ export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutati
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
 export const CreateLinkDocument = gql`
-    mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $taskInfo: TaskInfoParams) {
-  createLink(list: $list, item: $item, detail: $detail, taskInfo: $taskInfo) {
+    mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+  createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
     ...itemFields
   }
 }
@@ -673,7 +673,7 @@ export type CreateLinkMutationFn = Apollo.MutationFunction<CreateLinkMutation, C
  *      list: // value for 'list'
  *      item: // value for 'item'
  *      detail: // value for 'detail'
- *      taskInfo: // value for 'taskInfo'
+ *      isTask: // value for 'isTask'
  *   },
  * });
  */

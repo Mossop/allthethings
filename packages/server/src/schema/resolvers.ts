@@ -213,7 +213,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   deleteSection: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteSectionArgs, 'id'>>;
   createTask: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'item' | 'taskInfo'>>;
   createNote: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateNoteArgs, 'item' | 'detail'>>;
-  createLink: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateLinkArgs, 'item' | 'detail'>>;
+  createLink: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateLinkArgs, 'item' | 'detail' | 'isTask'>>;
   editItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditItemArgs, 'id' | 'item'>>;
   editTaskInfo: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditTaskInfoArgs, 'id'>>;
   moveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMoveItemArgs, 'id'>>;

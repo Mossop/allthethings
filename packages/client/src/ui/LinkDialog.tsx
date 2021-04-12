@@ -1,4 +1,10 @@
-import { TextFieldInput, ReactMemo, useBoolState, Dialog } from "@allthethings/ui";
+import {
+  TextFieldInput,
+  ReactMemo,
+  useBoolState,
+  Dialog,
+  BooleanCheckboxInput,
+} from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -18,7 +24,7 @@ export default ReactMemo(function LinkDialog({
 }: LinkDialogProps): ReactElement {
   let [state, setState] = useState({
     url: "",
-    isTask: false,
+    isTask: true,
   });
 
   let [isOpen,, close] = useBoolState(true);
@@ -44,12 +50,7 @@ export default ReactMemo(function LinkDialog({
         detail: {
           url: state.url,
         },
-        taskInfo: state.isTask
-          ? {
-            due: null,
-            done: null,
-          }
-          : null,
+        isTask: state.isTask,
       },
     });
 
@@ -74,6 +75,12 @@ export default ReactMemo(function LinkDialog({
       autoFocus={true}
       autoComplete="url"
       type="url"
+    />
+    <BooleanCheckboxInput
+      label="Create as task"
+      state={state}
+      setState={setState}
+      stateKey="isTask"
     />
   </Dialog>;
 });

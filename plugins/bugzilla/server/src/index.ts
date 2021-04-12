@@ -113,14 +113,18 @@ class BugzillaPlugin implements ServerPlugin {
     return bug.fields();
   }
 
-  public async createItemFromURL(context: GraphQLContext, url: URL): Promise<string | null> {
+  public async createItemFromURL(
+    context: GraphQLContext,
+    url: URL,
+    isTask: boolean,
+  ): Promise<string | null> {
     if (!context.userId) {
       return null;
     }
 
     let accounts = await Account.list(context, context.userId);
     for (let account of accounts) {
-      let bug = await account.getBugFromURL(url);
+      let bug = await account.getBugFromURL(url, isTask);
       if (bug) {
         return bug.itemId;
       }

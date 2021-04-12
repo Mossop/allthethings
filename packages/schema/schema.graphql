@@ -174,7 +174,7 @@ type Mutation {
 
   createTask(list: ID, item: ItemParams!, taskInfo: TaskInfoParams!): Item!
   createNote(list: ID, item: ItemParams!, detail: NoteDetailParams!, taskInfo: TaskInfoParams): Item!
-  createLink(list: ID, item: ItemParams!, detail: LinkDetailParams!, taskInfo: TaskInfoParams): Item!
+  createLink(list: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item

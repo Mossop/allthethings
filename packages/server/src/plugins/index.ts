@@ -76,7 +76,10 @@ export interface ServerPlugin {
     [context: PluginContext, item: BasePluginItem]
   >;
   readonly deleteItem?: PluginField<void, [context: PluginContext, item: BasePluginItem]>;
-  readonly createItemFromURL?: PluginField<string | null, [context: GraphQLContext, url: URL]>;
+  readonly createItemFromURL?: PluginField<
+    string | null,
+    [context: GraphQLContext, url: URL, isTask: boolean]
+  >;
   readonly editItem?: PluginField<
     void,
     [context: PluginContext, item: BasePluginItem, newItem: Omit<BasePluginItem, "id" | "taskInfo">]
@@ -347,9 +350,17 @@ class PluginManager {
     });
   }
 
-  public async createItemFromURL(context: ResolverContext, url: URL): Promise<Item | null> {
+  public async createItemFromURL(
+    context: ResolverContext,
+    url: URL,
+    isTask: boolean,
+  ): Promise<Item | null> {
     for (let plugin of this.plugins) {
-      let result = await plugin.createItemFromURL(wrapResolverContext(plugin, context), url);
+      let result = await plugin.createItemFromURL(
+        wrapResolverContext(plugin, context),
+        url,
+        isTask,
+      );
       if (result) {
         let item = await context.dataSources.items.getImpl(result);
         if (item) {

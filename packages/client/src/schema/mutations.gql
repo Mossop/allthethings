@@ -87,8 +87,8 @@ mutation CreateTask($list: ID, $item: ItemParams!, $taskInfo: TaskInfoParams!) {
   }
 }
 
-mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $taskInfo: TaskInfoParams) {
-  createLink(list: $list, item: $item, detail: $detail, taskInfo: $taskInfo) {
+mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+  createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
     ...itemFields
   }
 }
