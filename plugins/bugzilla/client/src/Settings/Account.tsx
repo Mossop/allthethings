@@ -3,19 +3,30 @@ import {
   ImageIcon,
   SettingsListSection,
   SettingsPage,
+  SettingsListItem,
   SubHeading,
+  Styles,
+  useBoolState,
 } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles } from "@material-ui/core";
+import { makeStyles, createStyles, IconButton } from "@material-ui/core";
+import AddCircleIcon from "@material-ui/icons/AddCircle";
 
 import Icon from "../Icon";
-import type { BugzillaAccount } from "../schema";
+import type { BugzillaAccount, BugzillaSearch } from "../schema";
+import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     headingText: {
       padding: theme.spacing(1) + 2,
+    },
+    actions: {
+      flex: 1,
+      ...Styles.flexRow,
+      justifyContent: "end",
+      alignItems: "center",
     },
   }));
 
@@ -27,6 +38,7 @@ export default function AccountSettings({
   account,
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
+  let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
 
   return <SettingsPage
     heading={
@@ -36,6 +48,30 @@ export default function AccountSettings({
       </>
     }
   >
-    <SettingsListSection heading={<SubHeading>Searches</SubHeading>}/>
+    <SettingsListSection
+      heading={
+        <>
+          <SubHeading>Searches</SubHeading>
+          <div className={classes.actions}>
+            <IconButton onClick={openSearchDialog}>
+              <AddCircleIcon/>
+            </IconButton>
+          </div>
+        </>
+      }
+    >
+      {account.searches.map((search: BugzillaSearch) => <SettingsListItem
+        key={search.id}
+      >
+        <div>{search.name}</div>
+      </SettingsListItem>)}
+    </SettingsListSection>
+    {
+      showSearchDialog && <SearchDialog
+        account={account}
+        onClosed={closeSearchDialog}
+        onSearchCreated={closeSearchDialog}
+      />
+    }
   </SettingsPage>;
 }

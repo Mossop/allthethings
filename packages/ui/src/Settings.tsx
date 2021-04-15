@@ -1,5 +1,5 @@
 import type { Theme } from "@material-ui/core";
-import { createStyles, makeStyles, List, ListSubheader } from "@material-ui/core";
+import { createStyles, makeStyles, List, ListSubheader, ListItem } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useCallback, useContext } from "react";
@@ -52,6 +52,15 @@ export const useSettingsPageStyles = makeStyles((theme: Theme) =>
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
+    },
+    listItem: {
+      ...Styles.flexRow,
+      "alignItems": "center",
+      "fontSize": "1.1rem",
+      "&:hover": {
+        backgroundColor: theme.palette.background.paper,
+        color: theme.palette.getContrastText(theme.palette.background.paper),
+      },
     },
   }));
 
@@ -115,6 +124,16 @@ export const SettingsListSection = ReactMemo(function SettingsListSection({
     </ListSubheader>
     {children}
   </List>;
+});
+
+export const SettingsListItem = ReactMemo(function SettingsListItem({
+  children,
+}: ReactChildren): ReactResult {
+  let classes = useSettingsPageStyles();
+
+  return <ListItem className={classes.listItem} disableGutters={true}>
+    {children}
+  </ListItem>;
 });
 
 export interface SettingsPageItemProps {
