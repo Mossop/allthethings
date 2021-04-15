@@ -28,6 +28,12 @@ const useStyles = makeStyles((theme: Theme) =>
       justifyContent: "end",
       alignItems: "center",
     },
+    searchName: {
+      padding: theme.spacing(1),
+    },
+    searchLink: {
+      cursor: "pointer",
+    },
   }));
 
 interface AccountSettingsProps {
@@ -63,7 +69,9 @@ export default function AccountSettings({
       {account.searches.map((search: BugzillaSearch) => <SettingsListItem
         key={search.id}
       >
-        <div>{search.name}</div>
+        <div className={classes.searchName}>
+          <a href={search.url} target="_blank" className={classes.searchLink}>{search.name}</a>
+        </div>
       </SettingsListItem>)}
     </SettingsListSection>
     {

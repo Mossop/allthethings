@@ -1,4 +1,4 @@
-import { URL } from "url";
+import { URL, URLSearchParams } from "url";
 
 import type { PluginContext, BasePluginItem, PluginTaskInfo } from "@allthethings/server";
 import type { Awaitable, MaybeCallable } from "@allthethings/utils";
@@ -12,8 +12,8 @@ import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
 } from "../schema";
-import type { BugRecord, SearchType } from "../types";
-import { TaskType } from "../types";
+import type { BugRecord } from "../types";
+import { TaskType, SearchType } from "../types";
 
 type Impl<T> = Omit<T, "__typename">;
 
@@ -206,6 +206,7 @@ type BugzillaSearchRecord = Omit<Impl<BugzillaSearch>, "url" | "type"> & {
 export class Search implements Impl<BugzillaSearch> {
   public constructor(
     public readonly context: PluginContext,
+    private readonly account: Account,
     private readonly record: BugzillaSearchRecord,
   ) {
   }
@@ -227,7 +228,17 @@ export class Search implements Impl<BugzillaSearch> {
   }
 
   public get url(): string {
-    return "";
+    let search = this.query;
+    if (this.type == SearchType.Quicksearch) {
+      let params = new URLSearchParams();
+      params.set("quicksearch", this.query);
+      search = params.toString();
+    }
+
+    let url = new URL("/buglist.cgi", this.account.url);
+    url.search = search;
+
+    return url.toString();
   }
 
   public static async create(
@@ -243,13 +254,15 @@ export class Search implements Impl<BugzillaSearch> {
     };
 
     await context.table("Search").insert(record);
-    return new Search(context, record);
+    return new Search(context, account, record);
   }
 
   public static async list(context: PluginContext, account: Account): Promise<Search[]> {
     let records = await context.table<BugzillaSearchRecord>("Search")
       .where("accountId", account.id);
-    return records.map((record: BugzillaSearchRecord): Search => new Search(context, record));
+    return records.map(
+      (record: BugzillaSearchRecord): Search => new Search(context, account, record),
+    );
   }
 }
 
