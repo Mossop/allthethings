@@ -4,6 +4,7 @@ export * from "./Forms";
 export * from "./HiddenInput";
 export * from "./hooks";
 export * as Icons from "./Icons";
+export * from "./ImageIcon";
 export * from "./Loading";
 export * from "./Menu";
 export * from "./plugins";

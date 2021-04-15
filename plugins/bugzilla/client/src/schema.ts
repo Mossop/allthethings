@@ -24,6 +24,29 @@ export type BugzillaAccount = {
   readonly icon: Maybe<Scalars['String']>;
   readonly url: Scalars['String'];
   readonly username: Maybe<Scalars['String']>;
+  readonly searches: ReadonlyArray<BugzillaSearch>;
+};
+
+export type BugzillaAccountParams = {
+  readonly name: Scalars['String'];
+  readonly url: Scalars['String'];
+  readonly username: Maybe<Scalars['String']>;
+  readonly password: Maybe<Scalars['String']>;
+};
+
+export type BugzillaSearch = {
+  readonly __typename?: 'BugzillaSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly type: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type BugzillaSearchParams = {
+  readonly name: Scalars['String'];
+  readonly type: Scalars['String'];
+  readonly query: Scalars['String'];
 };
 
 export type Context = ProjectRoot & TaskList & {
@@ -95,6 +118,7 @@ export type LinkDetailParams = {
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
+  readonly createBugzillaSearch: BugzillaSearch;
   readonly createContext: Context;
   readonly createLink: Item;
   readonly createNote: Item;
@@ -120,10 +144,13 @@ export type Mutation = {
 
 
 export type MutationCreateBugzillaAccountArgs = {
-  name: Scalars['String'];
-  url: Scalars['String'];
-  username: Maybe<Scalars['String']>;
-  password: Maybe<Scalars['String']>;
+  params: BugzillaAccountParams;
+};
+
+
+export type MutationCreateBugzillaSearchArgs = {
+  account: Scalars['ID'];
+  params: BugzillaSearchParams;
 };
 
 
@@ -364,17 +391,22 @@ export type UserProjectByIdArgs = {
 export type ListBugzillaAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string }> }> };
+export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> }> }> };
 
 export type CreateBugzillaAccountMutationVariables = Exact<{
-  name: Scalars['String'];
-  url: Scalars['String'];
-  username: Scalars['String'];
-  password: Maybe<Scalars['String']>;
+  params: BugzillaAccountParams;
 }>;
 
 
-export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string } };
+export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> } };
+
+export type CreateBugzillaSearchMutationVariables = Exact<{
+  account: Scalars['ID'];
+  params: BugzillaSearchParams;
+}>;
+
+
+export type CreateBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly createBugzillaSearch: { readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string } };
 
 export type SetItemTaskTypeMutationVariables = Exact<{
   item: Scalars['ID'];
@@ -393,6 +425,13 @@ export const ListBugzillaAccountsDocument = gql`
       name
       icon
       url
+      searches {
+        id
+        name
+        type
+        query
+        url
+      }
     }
   }
 }
@@ -428,17 +467,19 @@ export function refetchListBugzillaAccountsQuery(variables?: ListBugzillaAccount
       return { query: ListBugzillaAccountsDocument, variables: variables }
     }
 export const CreateBugzillaAccountDocument = gql`
-    mutation CreateBugzillaAccount($name: String!, $url: String!, $username: String!, $password: String) {
-  createBugzillaAccount(
-    name: $name
-    url: $url
-    username: $username
-    password: $password
-  ) {
+    mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
+  createBugzillaAccount(params: $params) {
     id
     name
     icon
     url
+    searches {
+      id
+      name
+      type
+      query
+      url
+    }
   }
 }
     `;
@@ -457,10 +498,7 @@ export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<CreateBugz
  * @example
  * const [createBugzillaAccountMutation, { data, loading, error }] = useCreateBugzillaAccountMutation({
  *   variables: {
- *      name: // value for 'name'
- *      url: // value for 'url'
- *      username: // value for 'username'
- *      password: // value for 'password'
+ *      params: // value for 'params'
  *   },
  * });
  */
@@ -471,6 +509,44 @@ export function useCreateBugzillaAccountMutation(baseOptions?: Apollo.MutationHo
 export type CreateBugzillaAccountMutationHookResult = ReturnType<typeof useCreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationResult = Apollo.MutationResult<CreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>;
+export const CreateBugzillaSearchDocument = gql`
+    mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
+  createBugzillaSearch(account: $account, params: $params) {
+    id
+    name
+    type
+    query
+    url
+  }
+}
+    `;
+export type CreateBugzillaSearchMutationFn = Apollo.MutationFunction<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
+
+/**
+ * __useCreateBugzillaSearchMutation__
+ *
+ * To run a mutation, you first call `useCreateBugzillaSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateBugzillaSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createBugzillaSearchMutation, { data, loading, error }] = useCreateBugzillaSearchMutation({
+ *   variables: {
+ *      account: // value for 'account'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateBugzillaSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>(CreateBugzillaSearchDocument, options);
+      }
+export type CreateBugzillaSearchMutationHookResult = ReturnType<typeof useCreateBugzillaSearchMutation>;
+export type CreateBugzillaSearchMutationResult = Apollo.MutationResult<CreateBugzillaSearchMutation>;
+export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
 export const SetItemTaskTypeDocument = gql`
     mutation SetItemTaskType($item: ID!, $taskType: String!) {
   setItemTaskType(item: $item, taskType: $taskType)

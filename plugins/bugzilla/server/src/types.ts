@@ -1,3 +1,8 @@
+export const enum SearchType {
+  Quicksearch = "quick",
+  Advanced = "advanced",
+}
+
 export const enum TaskType {
   None = "none",
   Manual = "manual",

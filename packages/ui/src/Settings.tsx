@@ -1,29 +1,15 @@
 import type { Theme } from "@material-ui/core";
-import { createStyles, makeStyles } from "@material-ui/core";
+import { createStyles, makeStyles, List, ListSubheader } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useCallback, useContext } from "react";
 
 import { Styles } from ".";
+import { ImageIcon } from "./ImageIcon";
 import { SelectableListItem } from "./SelectableListItem";
 import { flexRow, flexCentered } from "./styles";
-import type { ReactResult } from "./types";
+import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";
-
-export const useIconStyles = makeStyles(() =>
-  createStyles({
-    iconContainer: {
-      width: "1.5rem",
-      height: "1.5rem",
-      ...Styles.flexCentered,
-    },
-    icon: {
-      maxWidth: "100%",
-      maxHeight: "100%",
-      objectFit: "contain",
-      objectPosition: "center center",
-    },
-  }));
 
 export const useSidebarStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -43,8 +29,36 @@ export const useSidebarStyles = makeStyles((theme: Theme) =>
     },
   }));
 
+export const useSettingsPageStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    page: Styles.flexColumn,
+    heading: {
+      ...Styles.flexRow,
+      alignItems: "center",
+      paddingBottom: theme.spacing(1),
+      borderBottomWidth: 1,
+      borderBottomColor: theme.palette.divider,
+      borderBottomStyle: "solid",
+    },
+    section: {
+      paddingLeft: theme.spacing(2),
+    },
+    sectionHeading: {
+      ...Styles.flexRow,
+      alignItems: "center",
+      color: theme.palette.text.primary,
+      paddingBottom: theme.spacing(1),
+      paddingTop: theme.spacing(1),
+      borderBottomWidth: 1,
+      borderBottomColor: theme.palette.divider,
+      borderBottomStyle: "solid",
+    },
+  }));
+
+type SetSettingsPage = (page: string, pluginId?: string) => void;
+
 interface SettingsContextProps {
-  setPage: (page: string, pluginId?: string) => void;
+  setPage: SetSettingsPage;
   page: string;
   pluginId?: string;
 }
@@ -57,26 +71,50 @@ export const SettingsContext = createContext<SettingsContextProps>({
   },
 });
 
-interface SettingsPageIconProps {
-  icon?: ReactElement | null | string | URL;
+export function useSetSettingsPage(): SetSettingsPage {
+  let {
+    setPage,
+  } = useContext(SettingsContext);
+
+  return setPage;
 }
 
-const SettingsPageIcon = ReactMemo(function SettingsPageIcon({
-  icon,
-}: SettingsPageIconProps): ReactResult {
-  let classes = useIconStyles();
+export interface SettingsPageProps {
+  heading: ReactNode;
+}
 
-  if (icon instanceof URL) {
-    icon = icon.toString();
-  }
+export const SettingsPage = ReactMemo(function SettingsPage({
+  heading,
+  children,
+}: SettingsPageProps & ReactChildren): ReactResult {
+  let classes = useSettingsPageStyles();
 
-  if (typeof icon == "string") {
-    return <div className={classes.iconContainer}>
-      <img className={classes.icon} src={icon}/>
-    </div>;
-  } else {
-    return icon ?? null;
-  }
+  return <div className={classes.page}>
+    <div className={classes.heading}>
+      {heading}
+    </div>
+    <List disablePadding={true}>
+      {children}
+    </List>
+  </div>;
+});
+
+export interface SettingsListSectionProps {
+  heading: ReactNode;
+}
+
+export const SettingsListSection = ReactMemo(function SettingsListSection({
+  heading,
+  children,
+}: SettingsListSectionProps & ReactChildren): ReactResult {
+  let classes = useSettingsPageStyles();
+
+  return <List disablePadding={true} className={classes.section}>
+    <ListSubheader disableGutters={true} className={classes.sectionHeading}>
+      {heading}
+    </ListSubheader>
+    {children}
+  </List>;
 });
 
 export interface SettingsPageItemProps {
@@ -88,7 +126,7 @@ export interface SettingsPageItemProps {
   children: ReactNode;
 }
 
-export function SettingsPageItem({
+export const SettingsPageItem = ReactMemo(function SettingsPageItem({
   icon,
   page,
   pluginId,
@@ -119,9 +157,9 @@ export function SettingsPageItem({
     className={clsx(classes.listitem, selected && classes.selectedItem)}
     onClick={click}
     iconClassName={classes.icon}
-    icon={<SettingsPageIcon icon={icon}/>}
+    icon={icon && <ImageIcon icon={icon}/>}
     href={href}
   >
     {children}
   </SelectableListItem>;
-}
+});

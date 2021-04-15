@@ -5,15 +5,39 @@ query ListBugzillaAccounts {
       name
       icon
       url
+      searches {
+        id
+        name
+        type
+        query
+        url
+      }
     }
   }
 }
 
-mutation CreateBugzillaAccount($name: String!, $url: String!, $username: String!, $password: String) {
-  createBugzillaAccount(name: $name, url: $url, username: $username, password: $password) {
+mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
+  createBugzillaAccount(params: $params) {
     id
     name
     icon
+    url
+    searches {
+      id
+      name
+      type
+      query
+      url
+    }
+  }
+}
+
+mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
+  createBugzillaSearch(account: $account, params: $params) {
+    id
+    name
+    type
+    query
     url
   }
 }

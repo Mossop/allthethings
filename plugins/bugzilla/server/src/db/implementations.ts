@@ -1,17 +1,27 @@
 import { URL } from "url";
 
 import type { PluginContext, BasePluginItem, PluginTaskInfo } from "@allthethings/server";
+import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Bug as BugzillaBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
-import type { BugzillaAccount, MutationCreateBugzillaAccountArgs } from "../schema";
-import type { BugRecord } from "../types";
+import type {
+  BugzillaAccount,
+  BugzillaSearch,
+  MutationCreateBugzillaAccountArgs,
+  MutationCreateBugzillaSearchArgs,
+} from "../schema";
+import type { BugRecord, SearchType } from "../types";
 import { TaskType } from "../types";
 
 type Impl<T> = Omit<T, "__typename">;
 
-type BugzillaAccountRecord = Impl<BugzillaAccount> & {
+type Resolver<T> = {
+  readonly [K in keyof Impl<T>]: MaybeCallable<Awaitable<T[K]>>;
+};
+
+type BugzillaAccountRecord = Omit<Impl<BugzillaAccount>, "searches"> & {
   user: string;
   password: string | null;
 };
@@ -27,7 +37,7 @@ function isDone(status: string): boolean {
   }
 }
 
-export class Account implements Impl<BugzillaAccount> {
+export class Account implements Resolver<BugzillaAccount> {
   private api: BugzillaAPI | null = null;
 
   public constructor(
@@ -72,6 +82,10 @@ export class Account implements Impl<BugzillaAccount> {
 
   public get username(): string | null {
     return this.record.username;
+  }
+
+  public async searches(): Promise<BugzillaSearch[]> {
+    return Search.list(this.context, this);
   }
 
   public async getBugs(): Promise<Bug[]> {
@@ -162,7 +176,7 @@ export class Account implements Impl<BugzillaAccount> {
   public static async create(
     context: PluginContext,
     user: string,
-    args: MutationCreateBugzillaAccountArgs & Pick<BugzillaAccount, "icon">,
+    args: MutationCreateBugzillaAccountArgs["params"] & Pick<BugzillaAccount, "icon">,
   ): Promise<Account> {
     let record: BugzillaAccountRecord = {
       ...args,
@@ -181,6 +195,61 @@ export class Account implements Impl<BugzillaAccount> {
       return new Account(context, records[0]);
     }
     return null;
+  }
+}
+
+type BugzillaSearchRecord = Omit<Impl<BugzillaSearch>, "url" | "type"> & {
+  accountId: string;
+  type: SearchType;
+};
+
+export class Search implements Impl<BugzillaSearch> {
+  public constructor(
+    public readonly context: PluginContext,
+    private readonly record: BugzillaSearchRecord,
+  ) {
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
+  public get name(): string {
+    return this.record.name;
+  }
+
+  public get type(): SearchType {
+    return this.record.type;
+  }
+
+  public get query(): string {
+    return this.record.query;
+  }
+
+  public get url(): string {
+    return "";
+  }
+
+  public static async create(
+    context: PluginContext,
+    account: Account,
+    args: MutationCreateBugzillaSearchArgs["params"],
+  ): Promise<Search> {
+    let record: BugzillaSearchRecord = {
+      ...args,
+      id: await context.id(),
+      accountId: account.id,
+      type: args.type as SearchType,
+    };
+
+    await context.table("Search").insert(record);
+    return new Search(context, record);
+  }
+
+  public static async list(context: PluginContext, account: Account): Promise<Search[]> {
+    let records = await context.table<BugzillaSearchRecord>("Search")
+      .where("accountId", account.id);
+    return records.map((record: BugzillaSearchRecord): Search => new Search(context, record));
   }
 }
 

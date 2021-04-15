@@ -1,12 +1,12 @@
 import type { ReactResult } from "@allthethings/ui";
-import { SettingsPageItem, useBoolState } from "@allthethings/ui";
+import { useSetSettingsPage, SettingsPageItem, useBoolState } from "@allthethings/ui";
 import { useCallback } from "react";
 
-import AccountDialog from "../AccountDialog";
 import Icon from "../Icon";
 import type { BugzillaAccount } from "../schema";
 import { useListBugzillaAccountsQuery } from "../schema";
 import AccountSettings from "./Account";
+import AccountDialog from "./AccountDialog";
 
 export function SettingsPages(): ReactResult {
   let [
@@ -15,8 +15,11 @@ export function SettingsPages(): ReactResult {
     closeAccountDialog,
   ] = useBoolState(false);
 
-  let onAccountCreated = useCallback(() => {
+  let setSettingsPage = useSetSettingsPage();
+
+  let onAccountCreated = useCallback((account: Omit<BugzillaAccount, "username">) => {
     closeAccountDialog();
+    setSettingsPage(account.id, "@allthethings/bugzilla-server");
   }, []);
 
   let { data } = useListBugzillaAccountsQuery();

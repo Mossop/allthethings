@@ -2,10 +2,11 @@ import { RadioGroupInput, TextFieldInput, Dialog, useBoolState } from "@alltheth
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { BugzillaAccount } from "../schema";
 import {
   refetchListBugzillaAccountsQuery,
   useCreateBugzillaAccountMutation,
-} from "./schema";
+} from "../schema";
 
 enum AuthType {
   Public = "public",
@@ -14,7 +15,7 @@ enum AuthType {
 }
 
 interface AccountDialogProps {
-  onAccountCreated: (section: string) => void;
+  onAccountCreated: (account: Omit<BugzillaAccount, "username">) => void;
   onClosed: () => void;
 }
 
@@ -34,10 +35,12 @@ export default function AccountDialog({
 
   let [createAccount, { error }] = useCreateBugzillaAccountMutation({
     variables: {
-      name: state.name,
-      url: state.url,
-      username: state.auth == AuthType.Password ? state.username : state.key,
-      password: state.auth == AuthType.Password ? state.password : null,
+      params: {
+        name: state.name,
+        url: state.url,
+        username: state.auth == AuthType.Password ? state.username : state.key,
+        password: state.auth == AuthType.Password ? state.password : null,
+      },
     },
     refetchQueries: [
       refetchListBugzillaAccountsQuery(),
@@ -50,7 +53,7 @@ export default function AccountDialog({
       return;
     }
 
-    onAccountCreated(account.createBugzillaAccount.id);
+    onAccountCreated(account.createBugzillaAccount);
   }, []);
 
   return <Dialog

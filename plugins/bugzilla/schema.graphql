@@ -1,9 +1,31 @@
+type BugzillaSearch {
+  id: ID!
+  name: String!
+  type: String!
+  query: String!
+  url: String!
+}
+
+input BugzillaSearchParams {
+  name: String!
+  type: String!
+  query: String!
+}
+
 type BugzillaAccount {
   id: ID!
   name: String!
   icon: String
   url: String!
   username: String
+  searches: [BugzillaSearch!]!
+}
+
+input BugzillaAccountParams {
+  name: String!
+  url: String!,
+  username: String
+  password: String
 }
 
 type User {
@@ -11,6 +33,7 @@ type User {
 }
 
 type Mutation {
-  createBugzillaAccount(name: String!, url: String!, username: String, password: String): BugzillaAccount!
+  createBugzillaAccount(params: BugzillaAccountParams!): BugzillaAccount!
+  createBugzillaSearch(account: ID!, params: BugzillaSearchParams!): BugzillaSearch!
   setItemTaskType(item: ID!, taskType: String!): Boolean!
 }

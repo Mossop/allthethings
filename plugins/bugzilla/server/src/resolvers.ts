@@ -5,8 +5,12 @@ import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import { bestIcon, loadPageInfo } from "@allthethings/server";
 import BugzillaAPI from "bugzilla";
 
-import { Account, Bug } from "./db/implementations";
-import type { MutationCreateBugzillaAccountArgs, MutationSetItemTaskTypeArgs } from "./schema";
+import { Search, Account, Bug } from "./db/implementations";
+import type {
+  MutationCreateBugzillaAccountArgs,
+  MutationCreateBugzillaSearchArgs,
+  MutationSetItemTaskTypeArgs,
+} from "./schema";
 import { TaskType } from "./types";
 
 const TaskTypes: string[] = [
@@ -30,36 +34,54 @@ const Resolvers: Resolver<GraphQLContext> = {
   Mutation: {
     async createBugzillaAccount(
       outer: unknown,
-      args: MutationCreateBugzillaAccountArgs,
+      { params: { url, name, username, password } }: MutationCreateBugzillaAccountArgs,
       ctx: GraphQLContext,
     ): Promise<Account> {
       if (!ctx.userId) {
         throw new Error("Not authenticated.");
       }
 
-      let url = new URL(args.url);
-
-      let info = await loadPageInfo(url);
+      let info = await loadPageInfo(new URL(url));
       let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
       let api: BugzillaAPI;
-      if (!args.username) {
+      if (!username) {
         api = new BugzillaAPI(url);
         await api.version();
       } else {
-        if (args.password) {
-          api = new BugzillaAPI(url, args.username, args.password);
+        if (password) {
+          api = new BugzillaAPI(url, username, password);
         } else {
-          api = new BugzillaAPI(url, args.username);
+          api = new BugzillaAPI(url, username);
         }
 
         await api.whoami();
       }
 
       return Account.create(ctx, ctx.userId, {
-        ...args,
+        url,
+        name,
+        username,
+        password,
         icon,
       });
+    },
+
+    async createBugzillaSearch(
+      outer: unknown,
+      { account: accountId, params }: MutationCreateBugzillaSearchArgs,
+      ctx: GraphQLContext,
+    ): Promise<Search> {
+      if (!ctx.userId) {
+        throw new Error("Not authenticated.");
+      }
+
+      let account = await Account.get(ctx, accountId);
+      if (!account) {
+        throw new Error("Unknown account.");
+      }
+
+      return Search.create(ctx, account, params);
     },
 
     async setItemTaskType(

@@ -1,13 +1,22 @@
-import { Heading, Styles } from "@allthethings/ui";
+import {
+  Heading,
+  ImageIcon,
+  SettingsListSection,
+  SettingsPage,
+  SubHeading,
+} from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
+import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
+import Icon from "../Icon";
 import type { BugzillaAccount } from "../schema";
 
-const useStyles = makeStyles(() =>
+const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    settings: Styles.flexColumn,
-    header: Styles.flexRow,
+    headingText: {
+      padding: theme.spacing(1) + 2,
+    },
   }));
 
 interface AccountSettingsProps {
@@ -19,9 +28,14 @@ export default function AccountSettings({
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
 
-  return <div className={classes.settings}>
-    <div className={classes.header}>
-      <Heading>Settings for {account.name}</Heading>
-    </div>
-  </div>;
+  return <SettingsPage
+    heading={
+      <>
+        <ImageIcon icon={account.icon ?? <Icon/>}/>
+        <Heading className={classes.headingText}>Settings for {account.name}</Heading>
+      </>
+    }
+  >
+    <SettingsListSection heading={<SubHeading>Searches</SubHeading>}/>
+  </SettingsPage>;
 }
