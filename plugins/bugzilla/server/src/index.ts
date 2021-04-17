@@ -14,11 +14,10 @@ import type {
   BasePluginItem,
   PluginTaskInfo,
 } from "@allthethings/server";
-import type { Bug as BugzillaBug } from "bugzilla";
 import type Koa from "koa";
 import koaStatic from "koa-static";
 
-import { Account, Bug } from "./db/implementations";
+import { Account, Bug, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -51,21 +50,42 @@ class BugzillaPlugin implements ServerPlugin {
   public async update(context: PluginContext): Promise<void> {
     for (let account of await Account.list(context)) {
       let api = account.getAPI();
-      let bugs = await account.getBugs();
-      if (bugs.length == 0) {
-        continue;
+
+      // All the bugs that potentially need their search status updating.
+      let changedIds = new Set<number>();
+      // All the bugs that were present in at least one search.
+      let presentBugs = new Set<number>();
+
+      let searches = await Search.list(account);
+      for (let search of searches) {
+        let results = await search.update();
+        for (let id of results.changedIds) {
+          changedIds.add(id);
+        }
+        for (let bug of results.presentBugs) {
+          presentBugs.add(bug.id);
+        }
       }
 
-      console.log(`Updating ${bugs.length} from ${account.url}`);
-      let bugMap = new Map(bugs.map((bug: Bug): [number, Bug] => [bug.bugId, bug]));
+      let bugs = await account.getBugs();
 
-      let results = await api.getBugs(Array.from(bugMap.keys()));
+      let toUpdate = bugs.filter((bug: Bug) => !presentBugs.has(bug.id));
+      let searchUpdate = bugs.filter((bug: Bug) => changedIds.has(bug.id));
 
-      await Promise.all(
-        results.map(async (result: BugzillaBug): Promise<void> => {
-          await bugMap.get(result.id)?.update(result);
-        }),
-      );
+      if (toUpdate.length) {
+        let updateIds = toUpdate.map((bug: Bug): number => bug.id);
+        let remotes = await api.getBugs(updateIds);
+
+        for (let bug of remotes) {
+          // This should be cached from above.
+          let local = await Bug.get(account, bug.id);
+          await local?.update(bug);
+        }
+      }
+
+      for (let bug of searchUpdate) {
+        await bug.updateSearchStatus();
+      }
     }
   }
 

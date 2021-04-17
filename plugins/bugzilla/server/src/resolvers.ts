@@ -3,15 +3,15 @@ import { URL } from "url";
 
 import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import { bestIcon, loadPageInfo } from "@allthethings/server";
-import BugzillaAPI from "bugzilla";
 
+import type { BugzillaAccountRecord } from "./db/implementations";
 import { Search, Account, Bug } from "./db/implementations";
 import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
   MutationSetItemTaskTypeArgs,
 } from "./schema";
-import { TaskType } from "./types";
+import { SearchType, TaskType } from "./types";
 
 const TaskTypes: string[] = [
   TaskType.None,
@@ -41,28 +41,25 @@ const Resolvers: Resolver<GraphQLContext> = {
         throw new Error("Not authenticated.");
       }
 
-      let info = await loadPageInfo(new URL(url));
-      let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
-
-      let api: BugzillaAPI;
-      if (!username) {
-        api = new BugzillaAPI(url);
-        await api.version();
-      } else {
-        if (password) {
-          api = new BugzillaAPI(url, username, password);
-        } else {
-          api = new BugzillaAPI(url, username);
-        }
-
-        await api.whoami();
-      }
-
-      return Account.create(ctx, ctx.userId, {
+      let record: Omit<BugzillaAccountRecord, "id" | "icon" | "user"> = {
         url,
         name,
         username,
         password,
+      };
+
+      let api = Account.buildAPI(record);
+      if (username) {
+        await api.whoami();
+      } else {
+        await api.version();
+      }
+
+      let info = await loadPageInfo(new URL(url));
+      let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
+
+      return Account.create(ctx, ctx.userId, {
+        ...record,
         icon,
       });
     },
@@ -81,7 +78,32 @@ const Resolvers: Resolver<GraphQLContext> = {
         throw new Error("Unknown account.");
       }
 
-      return Search.create(ctx, account, params);
+      let searchType = params.type as SearchType;
+      let query = account.normalizeQuery(params.query);
+      let queryStr: string;
+      let entries = [...query.entries()];
+      if (entries.length == 1 && entries[0][0] == "quicksearch") {
+        queryStr = entries[0][1];
+        searchType = SearchType.Quicksearch;
+      } else {
+        queryStr = query.toString();
+      }
+
+      let bugs = await Search.getBugs(account.getAPI(), {
+        type: searchType,
+        query: queryStr,
+      });
+
+      let search = await Search.create(ctx, account, params);
+      let { changedIds } = await search.update(bugs);
+      for (let id of changedIds) {
+        let bug = await Bug.get(account, id);
+        if (bug) {
+          await bug.updateSearchStatus();
+        }
+      }
+
+      return search;
     },
 
     async setItemTaskType(

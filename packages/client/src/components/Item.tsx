@@ -240,14 +240,17 @@ export default ReactMemo(function Item({
           }
         </div>
       </div>
-      <div className={classes.actions}>
-        <IconButton onClick={openEditDialog}>
-          <Icons.Edit/>
-        </IconButton>
-        <IconButton onClick={deleteItem}>
-          <Icons.Delete/>
-        </IconButton>
-      </div>
+      {
+        !isPluginItem(item) &&
+          <div className={classes.actions}>
+            <IconButton onClick={openEditDialog}>
+              <Icons.Edit/>
+            </IconButton>
+            <IconButton onClick={deleteItem}>
+              <Icons.Delete/>
+            </IconButton>
+          </div>
+      }
     </ListItem>
     {editDialogOpen && renderEditDialog(item, closeEditDialog)}
   </>;

@@ -325,6 +325,7 @@ const resolvers: MutationResolvers = {
         ...params,
         archived: params.archived ?? null,
         snoozed: params.snoozed ?? null,
+        created: await item.created(),
       });
     }
 

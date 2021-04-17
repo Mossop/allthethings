@@ -31,8 +31,11 @@ export interface BasePluginItem {
   summary: string;
   archived: DateTime | null;
   snoozed: DateTime | null;
+  created: DateTime;
   taskInfo: PluginTaskInfo | null;
 }
+
+export type CreateBasePluginItem = Omit<BasePluginItem, "id">;
 
 export interface PluginTaskInfo {
   due: DateTime | null;
@@ -46,7 +49,7 @@ export interface PluginContext {
   tableRef(name: string): TableRef;
   // eslint-disable-next-line @typescript-eslint/ban-types
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
-  createItem(user: string, props: Omit<BasePluginItem, "id">): Promise<BasePluginItem>;
+  createItem(user: string, props: CreateBasePluginItem): Promise<BasePluginItem>;
   getItem(id: string): Promise<BasePluginItem | null>;
   setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void>
 }
@@ -128,7 +131,7 @@ export function buildContext(
       return this.knex.table(this.tableRef(name));
     },
 
-    async createItem(userId: string, item: Omit<BasePluginItem, "id">): Promise<BasePluginItem> {
+    async createItem(userId: string, item: CreateBasePluginItem): Promise<BasePluginItem> {
       let user = await dataSources.users.getImpl(userId);
       if (!user) {
         throw new Error("Unknown user.");
@@ -139,7 +142,9 @@ export function buildContext(
         ...itemInfo
       } = item;
 
-      let itemImpl = await dataSources.items.create(user, {
+      let inbox = await user.inbox();
+
+      let itemImpl = await dataSources.items.create(inbox, {
         ...itemInfo,
         type: ItemType.Plugin,
       });

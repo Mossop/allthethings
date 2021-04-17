@@ -495,7 +495,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   protected builder = classBuilder<Impl.Item, Db.ItemDbTable>(Impl.Item);
 
   public async create(
-    owner: Impl.TaskList | Impl.Section,
+    owner: Impl.TaskList | Impl.Section | Impl.Inbox,
     params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index">,
   ): Promise<Impl.Item> {
     return this.build(this.insert({
