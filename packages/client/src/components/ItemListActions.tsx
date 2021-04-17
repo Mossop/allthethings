@@ -1,6 +1,6 @@
 import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
-import { IconButton, createStyles, makeStyles } from "@material-ui/core";
+import { IconButton, createStyles, makeStyles, Tooltip } from "@material-ui/core";
 import { useMemo } from "react";
 
 import {
@@ -111,10 +111,24 @@ export default ReactMemo(function ItemListActions({
 
   return <>
     <div className={classes.actions}>
-      <IconButton onClick={openAddTask}><Icons.Checked/></IconButton>
-      <IconButton onClick={openAddLink}><Icons.Link/></IconButton>
-      {isTaskList(list) && <IconButton onClick={openAddSection}><Icons.Section/></IconButton>}
-      {deleteList && <IconButton onClick={deleteList}><Icons.Delete/></IconButton>}
+      <Tooltip title="Add task">
+        <IconButton onClick={openAddTask}><Icons.Checked/></IconButton>
+      </Tooltip>
+      <Tooltip title="Add link">
+        <IconButton onClick={openAddLink}><Icons.Link/></IconButton>
+      </Tooltip>
+      {
+        isTaskList(list) &&
+        <Tooltip title="Add section">
+          <IconButton onClick={openAddSection}><Icons.Section/></IconButton>
+        </Tooltip>
+      }
+      {
+        deleteList &&
+        <Tooltip title="Delete">
+          <IconButton onClick={deleteList}><Icons.Delete/></IconButton>
+        </Tooltip>
+      }
     </div>
     {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
     {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink}/>}

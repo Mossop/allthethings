@@ -1,7 +1,7 @@
 import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { PureQueryOptions } from "@apollo/client";
-import { IconButton, ListItem, createStyles, makeStyles } from "@material-ui/core";
+import { IconButton, ListItem, createStyles, makeStyles, Tooltip } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import { useCallback, useRef } from "react";
@@ -243,12 +243,16 @@ export default ReactMemo(function Item({
       {
         !isPluginItem(item) &&
           <div className={classes.actions}>
-            <IconButton onClick={openEditDialog}>
-              <Icons.Edit/>
-            </IconButton>
-            <IconButton onClick={deleteItem}>
-              <Icons.Delete/>
-            </IconButton>
+            <Tooltip title="Edit">
+              <IconButton onClick={openEditDialog}>
+                <Icons.Edit/>
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete">
+              <IconButton onClick={deleteItem}>
+                <Icons.Delete/>
+              </IconButton>
+            </Tooltip>
           </div>
       }
     </ListItem>

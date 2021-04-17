@@ -17,6 +17,7 @@ import {
   MenuItem,
   ListItemIcon,
   ListItemText,
+  Tooltip,
 } from "@material-ui/core";
 import CloudIcon from "@material-ui/icons/Cloud";
 import DescriptionIcon from "@material-ui/icons/Description";
@@ -141,9 +142,11 @@ export default ReactMemo(function Bug({
       </div>
       <div>{bug.summary}</div>
     </a>
-    <IconButton {...bindTrigger(typeMenuState)} title={titleForType(bug.taskType)}>
-      <TypeIcon taskType={bug.taskType}/>
-    </IconButton>
+    <Tooltip title="Resolves by...">
+      <IconButton {...bindTrigger(typeMenuState)} title={titleForType(bug.taskType)}>
+        <TypeIcon taskType={bug.taskType}/>
+      </IconButton>
+    </Tooltip>
     <Menu
       state={typeMenuState}
       anchor={
