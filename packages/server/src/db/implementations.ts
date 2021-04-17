@@ -258,6 +258,10 @@ abstract class SpecialSection {
     return this.dbObject.id;
   }
 
+  public async remainingTasks(): Promise<number> {
+    return this.dataSources.taskInfo.sectionTaskCount(this.id());
+  }
+
   public async items(): Promise<Item[]> {
     return this.dataSources.items.find({
       ownerId: this.id(),

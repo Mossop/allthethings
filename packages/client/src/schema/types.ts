@@ -49,6 +49,7 @@ export type FileDetail = {
 export type Inbox = {
   readonly __typename: 'Inbox';
   readonly id: Scalars['ID'];
+  readonly remainingTasks: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
 };
 
@@ -352,9 +353,10 @@ export type FileDetailFieldPolicy = {
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type InboxKeySpecifier = ('id' | 'items' | InboxKeySpecifier)[];
+export type InboxKeySpecifier = ('id' | 'remainingTasks' | 'items' | InboxKeySpecifier)[];
 export type InboxFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ItemKeySpecifier = ('id' | 'summary' | 'created' | 'archived' | 'snoozed' | 'taskInfo' | 'detail' | ItemKeySpecifier)[];

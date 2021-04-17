@@ -302,7 +302,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
   });
 
   let inboxLabel = useMemo(() => {
-    return view.user.inbox.items.length ? `Inbox (${view.user.inbox.items.length})` : "Inbox";
+    return view.user.inbox.items.length ? `Inbox (${view.user.inbox.remainingTasks})` : "Inbox";
   }, [view]);
 
   let {

@@ -113,6 +113,7 @@ type Section {
 
 type Inbox {
   id: ID!
+  remainingTasks: Int!
   items: [Item!]!
 }
 

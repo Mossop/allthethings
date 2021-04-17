@@ -83,6 +83,7 @@ export type FileDetail = {
 export type Inbox = {
   readonly __typename?: 'Inbox';
   readonly id: Scalars['ID'];
+  readonly remainingTasks: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
 };
 

@@ -5,6 +5,7 @@ query ListContextState {
 
     inbox {
       id
+      remainingTasks
       items {
         ...itemFields
       }

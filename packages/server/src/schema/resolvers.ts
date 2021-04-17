@@ -172,6 +172,7 @@ export type FileDetailResolvers<ContextType = ResolverContext, ParentType extend
 
 export type InboxResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Inbox'] = ResolversParentTypes['Inbox']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  remainingTasks: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
