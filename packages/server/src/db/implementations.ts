@@ -1,3 +1,5 @@
+import type { DateTime } from "luxon";
+
 import PluginManager from "../plugins";
 import type { User as PluginUser, PluginTaskInfo, BasePluginItem } from "../plugins";
 import type * as Rslv from "../schema/resolvers";
@@ -264,6 +266,17 @@ abstract class SpecialSection {
 }
 
 export class Inbox extends SpecialSection implements Rslv.InboxResolvers {
+  public async items(): Promise<Item[]> {
+    let items = await super.items();
+    let created = new Map<Item, DateTime>();
+    await Promise.all(items.map(async (item: Item): Promise<void> => {
+      created.set(item, await item.created());
+    }));
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    items.sort((a: Item, b: Item): number => created.get(a)!.valueOf() - created.get(b)!.valueOf());
+    return items;
+  }
 }
 
 export class Section extends BaseImpl<Db.SectionDbTable>
