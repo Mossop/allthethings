@@ -16,4 +16,5 @@ export interface BugRecord {
   summary: string;
   url: string;
   taskType: TaskType;
+  icon: string | null;
 }

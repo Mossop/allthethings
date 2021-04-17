@@ -639,11 +639,12 @@ export class Bug {
     let baseUrl = new URL(this.account.url);
 
     return {
-      accountId: this.record.accountId,
+      accountId: this.account.id,
       bugId: this.record.bugId,
       summary: this.record.summary,
       url: new URL(`/show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
       taskType: this.record.taskType,
+      icon: this.account.icon,
     };
   }
 
@@ -683,7 +684,6 @@ export class Bug {
     taskType: TaskType,
   ): Promise<Bug> {
     let taskInfo: PluginTaskInfo | null;
-    let created: DateTime | undefined = undefined;
 
     switch (taskType) {
       case TaskType.None:
@@ -719,7 +719,6 @@ export class Bug {
       archived: null,
       snoozed: null,
       taskInfo,
-      created,
     });
 
     let record: BugzillaBugRecord = {

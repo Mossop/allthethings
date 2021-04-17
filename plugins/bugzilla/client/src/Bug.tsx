@@ -2,6 +2,7 @@ import type { BugRecord } from "@allthethings/bugzilla-server";
 import { TaskType } from "@allthethings/bugzilla-server";
 import type { PluginItem, PluginItemProps, ReactRef, ReactResult } from "@allthethings/ui";
 import {
+  ImageIcon,
   useMenuState,
   bindTrigger,
   Menu,
@@ -138,12 +139,12 @@ export default ReactMemo(function Bug({
     <TaskDoneToggle item={item} disabled={bug.taskType != TaskType.Manual}/>
     <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>
       <div className={classes.iconContainer}>
-        <Icon/>
+        <ImageIcon icon={bug.icon ?? <Icon/>}/>
       </div>
       <div>{bug.summary}</div>
     </a>
-    <Tooltip title="Resolves by...">
-      <IconButton {...bindTrigger(typeMenuState)} title={titleForType(bug.taskType)}>
+    <Tooltip title={titleForType(bug.taskType)}>
+      <IconButton {...bindTrigger(typeMenuState)}>
         <TypeIcon taskType={bug.taskType}/>
       </IconButton>
     </Tooltip>

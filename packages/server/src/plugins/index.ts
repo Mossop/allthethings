@@ -31,7 +31,6 @@ export interface BasePluginItem {
   summary: string;
   archived: DateTime | null;
   snoozed: DateTime | null;
-  created: DateTime;
   taskInfo: PluginTaskInfo | null;
 }
 

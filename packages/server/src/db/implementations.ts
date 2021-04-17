@@ -349,7 +349,6 @@ export class Item extends BaseImpl<Db.ItemDbTable>
       summary: await this.summary(),
       archived: await this.archived(),
       snoozed: await this.snoozed(),
-      created: await this.created(),
 
       taskInfo: taskInfo ? await taskInfo.forPlugin() : null,
     };
