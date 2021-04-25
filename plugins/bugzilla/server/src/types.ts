@@ -10,6 +10,11 @@ export const enum TaskType {
   Resolved = "resolved",
 }
 
+export interface SearchPresence {
+  search: string;
+  present: boolean;
+}
+
 export interface BugRecord {
   accountId: string;
   bugId: number;
@@ -17,4 +22,5 @@ export interface BugRecord {
   url: string;
   taskType: TaskType;
   icon: string | null;
+  searches: SearchPresence[];
 }

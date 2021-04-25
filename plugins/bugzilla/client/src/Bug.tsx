@@ -1,7 +1,8 @@
-import type { BugRecord } from "@allthethings/bugzilla-server";
+import type { BugRecord, SearchPresence } from "@allthethings/bugzilla-server";
 import { TaskType } from "@allthethings/bugzilla-server";
 import type { PluginItem, PluginItemProps, ReactRef, ReactResult } from "@allthethings/ui";
 import {
+  Icons,
   ImageIcon,
   useMenuState,
   bindTrigger,
@@ -27,7 +28,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import { useMemo, useCallback, forwardRef } from "react";
 
 import Icon from "./Icon";
-import { useSetItemTaskTypeMutation } from "./schema";
+import { useDeleteItemMutation, useSetItemTaskTypeMutation } from "./schema";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -79,6 +80,7 @@ type TypeMenuItemProps = PluginItemProps & {
   item: PluginItem;
   taskType: TaskType;
   selectedType: TaskType;
+  disabled?: boolean;
 };
 
 const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
@@ -86,6 +88,7 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
   refetchQueries,
   taskType,
   selectedType,
+  disabled = false,
 }: TypeMenuItemProps, ref: ReactRef | null): ReactResult {
   let [mutate, { error }] = useSetItemTaskTypeMutation({
     variables: {
@@ -110,7 +113,7 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
   return <MenuItem
     ref={ref}
     selected={taskType == selectedType}
-    disabled={taskType == selectedType}
+    disabled={disabled || taskType == selectedType}
     onClick={click}
   >
     <ListItemIcon>
@@ -134,6 +137,20 @@ export default ReactMemo(function Bug({
     refetchQueries,
     selectedType: bug.taskType,
   }), [item, bug]);
+
+  let [deleteItemMutation] = useDeleteItemMutation({
+    variables: {
+      id: item.id,
+    },
+    refetchQueries,
+  });
+
+  let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
+
+  let isInSearch = useMemo(
+    () => !bug.searches.every((presence: SearchPresence): boolean => !presence.present),
+    [bug],
+  );
 
   return <>
     <TaskDoneToggle item={item} disabled={bug.taskType != TaskType.Manual}/>
@@ -160,7 +177,12 @@ export default ReactMemo(function Bug({
       <TypeMenuItem {...baseProps} taskType={TaskType.None}/>
       <TypeMenuItem {...baseProps} taskType={TaskType.Manual}/>
       <TypeMenuItem {...baseProps} taskType={TaskType.Resolved}/>
-      <TypeMenuItem {...baseProps} taskType={TaskType.Search}/>
+      {isInSearch && <TypeMenuItem {...baseProps} taskType={TaskType.Search}/>}
     </Menu>
+    <Tooltip title="Delete">
+      <IconButton onClick={deleteItem} disabled={isInSearch}>
+        <Icons.Delete/>
+      </IconButton>
+    </Tooltip>
   </>;
 });

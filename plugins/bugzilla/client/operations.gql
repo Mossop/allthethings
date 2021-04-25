@@ -45,3 +45,7 @@ mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
 mutation SetItemTaskType($item: ID!, $taskType: String!) {
   setItemTaskType(item: $item, taskType: $taskType)
 }
+
+mutation DeleteItem($id: ID!) {
+  deleteItem(id: $id)
+}

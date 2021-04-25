@@ -13,7 +13,7 @@ import type {
   BugzillaSearch,
   BugzillaSearchParams,
 } from "../schema";
-import type { BugRecord } from "../types";
+import type { BugRecord, SearchPresence } from "../types";
 import { TaskType, SearchType } from "../types";
 
 type Impl<T> = Omit<T, "__typename">;
@@ -539,6 +539,20 @@ export class Bug {
     return this.record.taskType;
   }
 
+  public async searches(): Promise<SearchPresence[]> {
+    let searches = await this.context.table<BugzillaSearchBugsRecord>("SearchBugs")
+      .where({
+        bugId: this.id,
+        accountId: this.account.id,
+      })
+      .select("*");
+
+    return searches.map((record: BugzillaSearchBugsRecord): SearchPresence => ({
+      search: record.searchId,
+      present: record.present,
+    }));
+  }
+
   public async updateSearchStatus(): Promise<void> {
     if (this.taskType != TaskType.Search) {
       return;
@@ -645,6 +659,7 @@ export class Bug {
       url: new URL(`/show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
       taskType: this.record.taskType,
       icon: this.account.icon,
+      searches: await this.searches(),
     };
   }
 
