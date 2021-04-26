@@ -7,3 +7,4 @@
 /.vscode
 .*
 *.tsbuildinfo
+/testing/config.json
