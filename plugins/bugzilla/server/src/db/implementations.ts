@@ -506,6 +506,17 @@ type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
   resolution: string | null;
 };
 
+type FixedFields = "accountId" | "itemId" | "taskType";
+
+function recordFromBug(bug: BugzillaBug): Omit<BugzillaBugRecord, FixedFields> {
+  return {
+    bugId: bug.id,
+    summary: bug.summary,
+    status: bug.status,
+    resolution: bug.resolution || null,
+  };
+}
+
 export class Bug {
   public constructor(
     private readonly account: Account,
@@ -593,6 +604,12 @@ export class Bug {
 
       record = bugs[0];
     }
+
+    await this.context.table("Bug")
+      .where({
+        itemId: this.itemId,
+      })
+      .update(recordFromBug(record));
 
     let item = await this.getItem();
 
@@ -753,11 +770,8 @@ export class Bug {
 
     let record: BugzillaBugRecord = {
       accountId: account.id,
-      bugId: bug.id,
       itemId: item.id,
-      summary: bug.summary,
-      status: bug.status,
-      resolution: bug.resolution || null,
+      ...recordFromBug(bug),
       taskType,
     };
 
