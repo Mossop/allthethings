@@ -14,6 +14,7 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       flex: 1,
       cursor: "pointer",
+      overflow: "hidden",
     },
     iconContainer: {
       paddingLeft: theme.spacing(1.5),
@@ -23,6 +24,12 @@ const useStyles = makeStyles((theme: Theme) =>
     favicon: {
       width: "1.5rem",
       height: "1.5rem",
+    },
+    summary: {
+      flex: 1,
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
     },
   }));
 
@@ -45,7 +52,7 @@ export default ReactMemo(function LinkItem({
             : <Icons.Link/>
         }
       </div>
-      <div>{item.summary}</div>
+      <div className={classes.summary}>{item.summary}</div>
     </a>
   </>;
 });

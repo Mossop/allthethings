@@ -58,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       ...Styles.flexRow,
       alignItems: "center",
+      overflow: "hidden",
     },
     hidden: {
       display: "none",
@@ -75,6 +76,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       ...Styles.flexRow,
       alignItems: "center",
+      overflow: "hidden",
     },
     actions: {
       ...Styles.flexRow,

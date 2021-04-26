@@ -74,6 +74,12 @@ class BaseMigration implements PluginDbMigration {
       table.text("summary")
         .notNullable();
 
+      table.text("status")
+        .notNullable();
+
+      table.text("resolution")
+        .nullable();
+
       table.text("taskType")
         .notNullable();
 

@@ -83,7 +83,6 @@ export type FileDetail = {
 export type Inbox = {
   readonly __typename?: 'Inbox';
   readonly id: Scalars['ID'];
-  readonly remainingTasks: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
 };
 
@@ -118,6 +117,7 @@ export type LinkDetailParams = {
 
 export type Mutation = {
   readonly __typename?: 'Mutation';
+  readonly archiveItem: Maybe<Item>;
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
   readonly createContext: Context;
@@ -141,6 +141,13 @@ export type Mutation = {
   readonly moveProject: Maybe<Project>;
   readonly moveSection: Maybe<Section>;
   readonly setItemTaskType: Scalars['Boolean'];
+  readonly snoozeItem: Maybe<Item>;
+};
+
+
+export type MutationArchiveItemArgs = {
+  id: Scalars['ID'];
+  archived: Maybe<Scalars['DateTime']>;
 };
 
 
@@ -275,6 +282,12 @@ export type MutationMoveSectionArgs = {
 export type MutationSetItemTaskTypeArgs = {
   item: Scalars['ID'];
   taskType: Scalars['String'];
+};
+
+
+export type MutationSnoozeItemArgs = {
+  id: Scalars['ID'];
+  snoozed: Maybe<Scalars['DateTime']>;
 };
 
 export type NoteDetail = {

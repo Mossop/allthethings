@@ -22,5 +22,7 @@ export interface BugRecord {
   url: string;
   taskType: TaskType;
   icon: string | null;
+  status: string;
+  resolution: string | null;
   searches: SearchPresence[];
 }

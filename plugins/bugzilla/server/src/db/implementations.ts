@@ -502,6 +502,8 @@ type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
   bugId: number;
   itemId: string;
   taskType: TaskType;
+  status: string;
+  resolution: string | null;
 };
 
 export class Bug {
@@ -660,6 +662,8 @@ export class Bug {
       taskType: this.record.taskType,
       icon: this.account.icon,
       searches: await this.searches(),
+      status: this.record.status,
+      resolution: this.record.resolution,
     };
   }
 
@@ -741,6 +745,8 @@ export class Bug {
       bugId: bug.id,
       itemId: item.id,
       summary: bug.summary,
+      status: bug.status,
+      resolution: bug.resolution || null,
       taskType,
     };
 

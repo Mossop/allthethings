@@ -37,10 +37,27 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       flex: 1,
       cursor: "pointer",
+      overflow: "hidden",
     },
     iconContainer: {
       padding: theme.spacing(1.5),
       ...Styles.flexCentered,
+    },
+    summary: {
+      flex: 1,
+      textOverflow: "ellipsis",
+      whiteSpace: "nowrap",
+      overflow: "hidden",
+    },
+    status: {
+      paddingLeft: theme.spacing(1),
+      textTransform: "uppercase",
+      fontSize: "0.7rem",
+    },
+    resolution: {
+      paddingLeft: "0.5em",
+      textTransform: "uppercase",
+      fontSize: "0.7rem",
     },
   }));
 
@@ -158,7 +175,9 @@ export default ReactMemo(function Bug({
       <div className={classes.iconContainer}>
         <ImageIcon icon={bug.icon ?? <Icon/>}/>
       </div>
-      <div>{bug.summary}</div>
+      <div className={classes.summary}>{bug.summary}</div>
+      <div className={classes.status}>{bug.status}</div>
+      {bug.resolution && <div className={classes.resolution}>{bug.resolution}</div>}
     </a>
     <Tooltip title={titleForType(bug.taskType)}>
       <IconButton {...bindTrigger(typeMenuState)}>
