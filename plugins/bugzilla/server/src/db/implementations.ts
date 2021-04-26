@@ -620,8 +620,19 @@ export class Bug {
       case TaskType.None:
         await this.context.setItemTaskInfo(item.id, null);
         break;
-      // The next search will update this.
-      case TaskType.Search:
+      case TaskType.Search: {
+        let searches = await this.searches();
+        let isDone = searches.every((presence: SearchPresence): boolean => !presence.present);
+
+        let taskInfo = {
+          due: null,
+          ...item.taskInfo ?? {},
+          done: isDone ? DateTime.now() : null,
+        };
+
+        await this.context.setItemTaskInfo(item.id, taskInfo);
+        break;
+      }
       case TaskType.Manual:
         if (!item.taskInfo) {
           await this.context.setItemTaskInfo(item.id, {
