@@ -376,6 +376,16 @@ class PluginManager {
     return null;
   }
 
+  private async loadPlugin(db: DatabaseConnection, spec: string, config: any): Promise<void> {
+    let instance = new PluginInstance(spec, db, config);
+    try {
+      await instance.init();
+      this.plugins.add(instance);
+    } catch (e) {
+      console.error(`Failed to initialize plugin ${spec}`);
+    }
+  }
+
   public async loadPlugins(
     db: DatabaseConnection,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -384,9 +394,7 @@ class PluginManager {
     let startupPromises: Promise<void>[] = [];
 
     for (let [spec, config] of Object.entries(pluginConfig)) {
-      let instance = new PluginInstance(spec, db, config);
-      this.plugins.add(instance);
-      startupPromises.push(instance.init());
+      startupPromises.push(this.loadPlugin(db, spec, config));
     }
 
     await Promise.all(startupPromises);
