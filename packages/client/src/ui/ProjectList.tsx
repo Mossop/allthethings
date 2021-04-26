@@ -24,9 +24,9 @@ import type {
   SectionDragResult,
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
-import type { Project, TaskList } from "../utils/state";
+import type { Project, TaskList, Item } from "../utils/state";
 import { useCurrentContext, useProjectRoot } from "../utils/state";
-import { useUrl, useView, ViewType } from "../utils/view";
+import { isVisible, ListFilter, useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -75,7 +75,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-type ItemProps = {
+type TreeItemProps = {
   selected?: boolean;
   label: string;
   icon: ReactElement;
@@ -90,7 +90,7 @@ type ItemProps = {
   url?: URL;
 });
 
-const Item = ReactMemo(forwardRef(function Item({
+const TreeItem = ReactMemo(forwardRef(function TreeItem({
   selected,
   url,
   onClick,
@@ -99,7 +99,7 @@ const Item = ReactMemo(forwardRef(function Item({
   depth,
   className: providedClass,
   taskCount,
-}: ItemProps, ref: ReactRef | null): ReactResult {
+}: TreeItemProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles({ depth });
   let displaySelected = !useDragItem() && selected;
 
@@ -207,7 +207,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
   let classes = useStyles({ depth });
 
   return <>
-    <Item
+    <TreeItem
       ref={ref}
       url={url}
       label={project.name}
@@ -302,7 +302,11 @@ export default ReactMemo(function ProjectList(): ReactResult {
   });
 
   let inboxLabel = useMemo(() => {
-    return view.user.inbox.items.length ? `Inbox (${view.user.inbox.remainingTasks})` : "Inbox";
+    let items = view.user.inbox.items.filter(
+      (item: Item): boolean => isVisible(item, ListFilter.Normal),
+    );
+
+    return items.length ? `Inbox (${items.length})` : "Inbox";
   }, [view]);
 
   let {
@@ -334,7 +338,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
     ref={dropRef}
   >
     <List component="div" className={classes.list}>
-      <Item
+      <TreeItem
         url={inboxUrl}
         icon={<Icons.Inbox/>}
         selected={view.type == ViewType.Inbox}
@@ -343,7 +347,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
         depth={0}
         ref={inboxDropRef}
       />
-      <Item
+      <TreeItem
         url={tasksUrl}
         icon={<Icons.Project/>}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
@@ -360,7 +364,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
           depth={0}
         />)
       }
-      <Item
+      <TreeItem
         onClick={openCreateProjectDialog}
         icon={<Icons.AddProject/>}
         label="Add Project..."

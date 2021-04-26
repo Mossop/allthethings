@@ -3,7 +3,7 @@ import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@
 import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
-import type { ReactElement } from "react";
+import type { Dispatch, ReactElement, SetStateAction } from "react";
 import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
@@ -13,6 +13,8 @@ import { indexOf, item } from "../utils/collections";
 import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
 import type { Item, Section, TaskList } from "../utils/state";
+import type { ListFilter } from "../utils/view";
+import { isVisible } from "../utils/view";
 import ItemDisplay, { ItemDragMarker } from "./Item";
 import ItemListActions from "./ItemListActions";
 
@@ -56,6 +58,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export interface ItemListProps {
   taskList: TaskList | null;
   section: Section | null;
+  filter: ListFilter;
   items: Item[];
 }
 
@@ -63,21 +66,24 @@ export const ItemList = ReactMemo(function ItemList({
   items,
   section,
   taskList,
+  filter,
 }: ItemListProps): ReactResult {
   let dragItem = useDragItem(DragType.Item);
   let dragResult = useDragResult(DragType.Item);
 
   let displayItems = useMemo(() => {
-    let displayItems = items.map(
-      (item: Item, index: number): ReactElement => <ItemDisplay
-        key={item.id}
-        taskList={taskList}
-        section={section}
-        item={item}
-        items={items}
-        index={index}
-      />,
-    );
+    let displayItems = items
+      .filter((item: Item): boolean => isVisible(item, filter))
+      .map(
+        (item: Item, index: number): ReactElement => <ItemDisplay
+          key={item.id}
+          taskList={taskList}
+          section={section}
+          item={item}
+          items={items}
+          index={index}
+        />,
+      );
 
     if (dragItem && (dragResult?.target ?? dragItem.item.parent) == (section ?? taskList)) {
       let before = dragResult ? dragResult.before : dragItem.item;
@@ -91,7 +97,7 @@ export const ItemList = ReactMemo(function ItemList({
     }
 
     return displayItems;
-  }, [dragItem, dragResult, items, section, taskList]);
+  }, [dragItem, dragResult, items, section, taskList, filter]);
 
   // @ts-ignore
   return displayItems;
@@ -101,6 +107,8 @@ interface SectionListProps {
   section: Section;
   index: number;
   sections: Section[];
+  filter: ListFilter;
+  setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 export function SectionDragMarker({
@@ -142,6 +150,8 @@ export default ReactMemo(function SectionList({
   section,
   index,
   sections,
+  filter,
+  setFilter,
 }: SectionListProps): ReactResult {
   let classes = useStyles();
 
@@ -242,9 +252,9 @@ export default ReactMemo(function SectionList({
           onSubmit={changeSectionName}
         />
       </div>
-      <ItemListActions list={section}/>
+      <ItemListActions list={section} filter={filter} setFilter={setFilter}/>
     </ListSubheader>
     {section.items.length > 0 && <Divider/>}
-    <ItemList items={section.items} section={section} taskList={section.taskList}/>
+    <ItemList items={section.items} section={section} taskList={section.taskList} filter={filter}/>
   </List>;
 });

@@ -1,13 +1,44 @@
 import type { ReactChildren, ReactResult } from "@allthethings/ui";
 import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 import type { Location, Update } from "history";
+import { DateTime } from "luxon";
 import { useState, useMemo, useEffect, createContext, useContext } from "react";
 
 import { useListContextStateQuery } from "../schema/queries";
-import type { Context, Inbox, Project, ProjectRoot, TaskList, User } from "./state";
+import type { Context, Inbox, Project, ProjectRoot, TaskList, User, Item } from "./state";
 import { buildItems, buildProjects, isContext, isUser, isProject } from "./state";
 
 const ViewContext = createContext<View | null | undefined>(undefined);
+
+export enum ListFilter {
+  Normal,
+  Snoozed,
+  Archived,
+  Incomplete,
+  Complete,
+}
+
+export function isVisible(item: Item, filter: ListFilter): boolean {
+  console.log(item, filter);
+
+  if (item.taskInfo?.done) {
+    return filter == ListFilter.Complete;
+  }
+
+  if (filter == ListFilter.Incomplete) {
+    return !!item.taskInfo;
+  }
+
+  if (item.archived) {
+    return filter == ListFilter.Archived;
+  }
+
+  if (item.snoozed && item.snoozed > DateTime.now()) {
+    return filter == ListFilter.Snoozed;
+  }
+
+  return filter == ListFilter.Normal;
+}
 
 export enum ViewType {
   TaskList = "tasklist",

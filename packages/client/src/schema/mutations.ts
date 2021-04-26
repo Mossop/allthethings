@@ -170,6 +170,28 @@ export type DeleteItemMutationVariables = Types.Exact<{
 
 export type DeleteItemMutation = { readonly __typename: 'Mutation', readonly deleteItem: boolean };
 
+export type ArchiveItemMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  archived: Types.Maybe<Types.Scalars['DateTime']>;
+}>;
+
+
+export type ArchiveItemMutation = { readonly __typename: 'Mutation', readonly archiveItem: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
+  )> };
+
+export type SnoozeItemMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  snoozed: Types.Maybe<Types.Scalars['DateTime']>;
+}>;
+
+
+export type SnoozeItemMutation = { readonly __typename: 'Mutation', readonly snoozeItem: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
+  )> };
+
 
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
@@ -818,3 +840,71 @@ export function useDeleteItemMutation(baseOptions?: Apollo.MutationHookOptions<D
 export type DeleteItemMutationHookResult = ReturnType<typeof useDeleteItemMutation>;
 export type DeleteItemMutationResult = Apollo.MutationResult<DeleteItemMutation>;
 export type DeleteItemMutationOptions = Apollo.BaseMutationOptions<DeleteItemMutation, DeleteItemMutationVariables>;
+export const ArchiveItemDocument = gql`
+    mutation ArchiveItem($id: ID!, $archived: DateTime) {
+  archiveItem(id: $id, archived: $archived) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type ArchiveItemMutationFn = Apollo.MutationFunction<ArchiveItemMutation, ArchiveItemMutationVariables>;
+
+/**
+ * __useArchiveItemMutation__
+ *
+ * To run a mutation, you first call `useArchiveItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useArchiveItemMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [archiveItemMutation, { data, loading, error }] = useArchiveItemMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      archived: // value for 'archived'
+ *   },
+ * });
+ */
+export function useArchiveItemMutation(baseOptions?: Apollo.MutationHookOptions<ArchiveItemMutation, ArchiveItemMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<ArchiveItemMutation, ArchiveItemMutationVariables>(ArchiveItemDocument, options);
+      }
+export type ArchiveItemMutationHookResult = ReturnType<typeof useArchiveItemMutation>;
+export type ArchiveItemMutationResult = Apollo.MutationResult<ArchiveItemMutation>;
+export type ArchiveItemMutationOptions = Apollo.BaseMutationOptions<ArchiveItemMutation, ArchiveItemMutationVariables>;
+export const SnoozeItemDocument = gql`
+    mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
+  snoozeItem(id: $id, snoozed: $snoozed) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type SnoozeItemMutationFn = Apollo.MutationFunction<SnoozeItemMutation, SnoozeItemMutationVariables>;
+
+/**
+ * __useSnoozeItemMutation__
+ *
+ * To run a mutation, you first call `useSnoozeItemMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSnoozeItemMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [snoozeItemMutation, { data, loading, error }] = useSnoozeItemMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      snoozed: // value for 'snoozed'
+ *   },
+ * });
+ */
+export function useSnoozeItemMutation(baseOptions?: Apollo.MutationHookOptions<SnoozeItemMutation, SnoozeItemMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<SnoozeItemMutation, SnoozeItemMutationVariables>(SnoozeItemDocument, options);
+      }
+export type SnoozeItemMutationHookResult = ReturnType<typeof useSnoozeItemMutation>;
+export type SnoozeItemMutationResult = Apollo.MutationResult<SnoozeItemMutation>;
+export type SnoozeItemMutationOptions = Apollo.BaseMutationOptions<SnoozeItemMutation, SnoozeItemMutationVariables>;

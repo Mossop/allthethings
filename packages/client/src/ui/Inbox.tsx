@@ -2,11 +2,13 @@ import type { ReactResult } from "@allthethings/ui";
 import { ReactMemo, Icons, Styles, Heading } from "@allthethings/ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
+import { useState } from "react";
 
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
 import { useUser } from "../utils/state";
+import { ListFilter } from "../utils/view";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -39,15 +41,17 @@ export default ReactMemo(function Inbox(): ReactResult {
   let user = useUser();
   let items = user.inbox.items;
 
+  let [filter, setFilter] = useState(() => ListFilter.Normal);
+
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
       <div className={classes.heading}>
         <Icons.Inbox/>
         <Heading className={classes.headingText}>Inbox</Heading>
-        <ItemListActions list={user.inbox}/>
+        <ItemListActions list={user.inbox} filter={filter} setFilter={setFilter}/>
       </div>
       <List disablePadding={true}>
-        <ItemList items={items} taskList={null} section={null}/>
+        <ItemList items={items} taskList={null} section={null} filter={filter}/>
       </List>
     </div>
   </Page>;

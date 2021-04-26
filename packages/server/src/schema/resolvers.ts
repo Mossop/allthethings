@@ -219,6 +219,8 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   editTaskInfo: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditTaskInfoArgs, 'id'>>;
   moveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMoveItemArgs, 'id'>>;
   deleteItem: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteItemArgs, 'id'>>;
+  archiveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationArchiveItemArgs, 'id'>>;
+  snoozeItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationSnoozeItemArgs, 'id'>>;
 }>;
 
 export type NoteDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NoteDetail'] = ResolversParentTypes['NoteDetail']> = ResolversObject<{

@@ -104,6 +104,8 @@ export type Mutation = {
   readonly editTaskInfo?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
   readonly deleteItem: Scalars['Boolean'];
+  readonly archiveItem?: Maybe<Item>;
+  readonly snoozeItem?: Maybe<Item>;
 };
 
 
@@ -221,6 +223,18 @@ export type MutationMoveItemArgs = {
 
 export type MutationDeleteItemArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationArchiveItemArgs = {
+  id: Scalars['ID'];
+  archived?: Maybe<Scalars['DateTime']>;
+};
+
+
+export type MutationSnoozeItemArgs = {
+  id: Scalars['ID'];
+  snoozed?: Maybe<Scalars['DateTime']>;
 };
 
 export type NoteDetail = {
@@ -374,7 +388,7 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'moveItem' | 'deleteItem' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -395,7 +409,9 @@ export type MutationFieldPolicy = {
 	editItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	editTaskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>
+	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {

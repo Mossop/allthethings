@@ -374,7 +374,7 @@ export class Item extends BaseImpl<Db.ItemDbTable>
   public readonly type = fields<Db.ItemDbTable>()("type");
   public readonly created = fields<Db.ItemDbTable>()("created");
   public readonly archived = fields<Db.ItemDbTable>()("archived");
-  public readonly snoozed = fields<Db.ItemDbTable>()("archived");
+  public readonly snoozed = fields<Db.ItemDbTable>()("snoozed");
   public readonly summary = fields<Db.ItemDbTable>()("summary");
 }
 

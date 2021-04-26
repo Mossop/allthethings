@@ -114,3 +114,15 @@ mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
 mutation DeleteItem($id: ID!) {
   deleteItem(id: $id)
 }
+
+mutation ArchiveItem($id: ID!, $archived: DateTime) {
+  archiveItem(id: $id, archived: $archived) {
+    ...itemFields
+  }
+}
+
+mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
+  snoozeItem(id: $id, snoozed: $snoozed) {
+    ...itemFields
+  }
+}

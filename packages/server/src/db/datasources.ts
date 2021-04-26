@@ -558,6 +558,8 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
         .join("Section", "Section.id", "Item.ownerId")
         .where({
           [this.ref("done")]: null,
+          ["Item.snoozed"]: null,
+          ["Item.archived"]: null,
           ["Section.ownerId"]: taskList,
         })
         .andWhere("Section.index", ">=", SectionIndex.Anonymous),
@@ -571,6 +573,8 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
         .join("Item", "Item.id", this.ref("id"))
         .where({
           [this.ref("done")]: null,
+          ["Item.snoozed"]: null,
+          ["Item.archived"]: null,
           ["Item.ownerId"]: section,
         }),
     );

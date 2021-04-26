@@ -8,7 +8,6 @@ import type { ValueNode } from "graphql";
 import { DateTime } from "luxon";
 
 import * as Db from "../db";
-import type { DatabaseConnection } from "../db/connection";
 import PluginManager from "../plugins";
 import { buildContext } from "./context";
 import MutationResolvers from "./mutations";

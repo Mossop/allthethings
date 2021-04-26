@@ -1,14 +1,35 @@
-import { useBoolState, Icons, Styles, ReactMemo } from "@allthethings/ui";
+import {
+  useBoolState,
+  Icons,
+  Styles,
+  ReactMemo,
+  useMenuState,
+  bindTrigger,
+  Menu,
+} from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { PureQueryOptions } from "@apollo/client";
-import { IconButton, ListItem, createStyles, makeStyles, Tooltip } from "@material-ui/core";
+import {
+  IconButton,
+  ListItem,
+  createStyles,
+  makeStyles,
+  Tooltip,
+  MenuItem,
+  ListItemText,
+} from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
+import { DateTime } from "luxon";
 import { useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
-import { useDeleteItemMutation } from "../schema/mutations";
+import {
+  useArchiveItemMutation,
+  useDeleteItemMutation,
+  useSnoozeItemMutation,
+} from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
@@ -174,6 +195,63 @@ export default ReactMemo(function Item({
 
   let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
 
+  let [archiveItemMutation] = useArchiveItemMutation({
+    refetchQueries,
+  });
+
+  let archiveItem = useCallback(() => {
+    if (item.archived) {
+      return archiveItemMutation({
+        variables: {
+          id: item.id,
+          archived: null,
+        },
+      });
+    } else {
+      return archiveItemMutation({
+        variables: {
+          id: item.id,
+          archived: DateTime.now(),
+        },
+      });
+    }
+  }, [item, archiveItemMutation]);
+
+  let [snoozeItemMutation] = useSnoozeItemMutation({
+    refetchQueries,
+  });
+
+  let wakeUp = useCallback(() => {
+    return snoozeItemMutation({
+      variables: {
+        id: item.id,
+        snoozed: null,
+      },
+    });
+  }, [item.id, snoozeItemMutation]);
+
+  let snoozeTomorrow = useCallback(() => {
+    let tomorrow = DateTime.now().plus({ days: 1 }).set({ hour: 8 }).startOf("hour");
+    return snoozeItemMutation({
+      variables: {
+        id: item.id,
+        snoozed: tomorrow,
+      },
+    });
+  }, [item.id, snoozeItemMutation]);
+
+  let snoozeNextWeek = useCallback(() => {
+    let tomorrow = DateTime.now().plus({ weeks: 1 }).startOf("week").set({ hour: 8 });
+    return snoozeItemMutation({
+      variables: {
+        id: item.id,
+        snoozed: tomorrow,
+      },
+    });
+  }, [item.id, snoozeItemMutation]);
+
+  let snoozeMenuState = useMenuState("filter");
+
   let {
     dragRef,
     previewRef,
@@ -240,9 +318,48 @@ export default ReactMemo(function Item({
           }
         </div>
       </div>
-      {
-        !isPluginItem(item) &&
-          <div className={classes.actions}>
+      <div className={classes.actions}>
+        <Tooltip title="Snooze">
+          <IconButton {...bindTrigger(snoozeMenuState)}>
+            <Icons.Snooze/>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          state={snoozeMenuState}
+          anchor={
+            {
+              vertical: "bottom",
+              horizontal: "right",
+            }
+          }
+        >
+          {
+            item.snoozed && <MenuItem onClick={wakeUp}>
+              <ListItemText>Wake up</ListItemText>
+            </MenuItem>
+          }
+          <MenuItem onClick={snoozeTomorrow}>
+            <ListItemText>Tomorrow</ListItemText>
+          </MenuItem>
+          <MenuItem onClick={snoozeNextWeek}>
+            <ListItemText>Next Week</ListItemText>
+          </MenuItem>
+        </Menu>
+        {
+          item.archived
+            ? <Tooltip title="Unarchive">
+              <IconButton onClick={archiveItem}>
+                <Icons.Unarchive/>
+              </IconButton>
+            </Tooltip>
+            : <Tooltip title="Archive">
+              <IconButton onClick={archiveItem}>
+                <Icons.Archive/>
+              </IconButton>
+            </Tooltip>
+        }
+        {
+          !isPluginItem(item) && <>
             <Tooltip title="Edit">
               <IconButton onClick={openEditDialog}>
                 <Icons.Edit/>
@@ -253,8 +370,9 @@ export default ReactMemo(function Item({
                 <Icons.Delete/>
               </IconButton>
             </Tooltip>
-          </div>
-      }
+          </>
+        }
+      </div>
     </ListItem>
     {editDialogOpen && renderEditDialog(item, closeEditDialog)}
   </>;

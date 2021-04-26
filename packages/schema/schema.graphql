@@ -182,4 +182,7 @@ type Mutation {
 
   moveItem(id: ID!, parent: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!
+
+  archiveItem(id: ID!, archived: DateTime): Item
+  snoozeItem(id: ID!, snoozed: DateTime): Item
 }

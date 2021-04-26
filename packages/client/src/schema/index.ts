@@ -1,57 +1,61 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ApolloClient, createHttpLink, InMemoryCache, ApolloLink } from "@apollo/client";
+import { DateTime } from "luxon";
 
 import link from "./link";
 import introspection from "./types";
 import type { TypedTypePolicies } from "./types";
 
-const merge = (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming;
+const ArrayField = {
+  merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
+};
+
+const DateField = {
+  read: (existing: string) => DateTime.fromISO(existing),
+};
+
+const OptionalDateField = {
+  read: (existing: string | null | undefined) => existing ? DateTime.fromISO(existing) : null,
+};
 
 let typePolicies: TypedTypePolicies = {
+  Item: {
+    fields: {
+      created: DateField,
+      archived: OptionalDateField,
+      snoozed: OptionalDateField,
+    },
+  },
+  TaskInfo: {
+    fields: {
+      due: OptionalDateField,
+      done: OptionalDateField,
+    },
+  },
   Section: {
     fields: {
-      items: {
-        merge,
-      },
+      items: ArrayField,
     },
   },
   Project: {
     fields: {
-      subprojects: {
-        merge,
-      },
-      items: {
-        merge,
-      },
-      sections: {
-        merge,
-      },
+      subprojects: ArrayField,
+      items: ArrayField,
+      sections: ArrayField,
     },
   },
   Context: {
     fields: {
-      subprojects: {
-        merge,
-      },
-      items: {
-        merge,
-      },
-      sections: {
-        merge,
-      },
+      subprojects: ArrayField,
+      items: ArrayField,
+      sections: ArrayField,
     },
   },
   User: {
     fields: {
-      subprojects: {
-        merge,
-      },
-      items: {
-        merge,
-      },
-      sections: {
-        merge,
-      },
+      subprojects: ArrayField,
+      items: ArrayField,
+      sections: ArrayField,
     },
   },
 };

@@ -13,3 +13,7 @@ export { default as Drag } from "@material-ui/icons/DragIndicator";
 export { default as Edit } from "@material-ui/icons/Edit";
 export { default as Back } from "@material-ui/icons/ArrowBack";
 export { default as Link } from "@material-ui/icons/Link";
+export { default as Filter } from "@material-ui/icons/FilterList";
+export { default as Archive } from "@material-ui/icons/Archive";
+export { default as Unarchive } from "@material-ui/icons/Unarchive";
+export { default as Snooze } from "@material-ui/icons/Snooze";

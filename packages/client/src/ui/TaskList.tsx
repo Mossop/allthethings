@@ -3,8 +3,8 @@ import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
-import type { ReactElement } from "react";
-import { forwardRef, useCallback, useMemo } from "react";
+import type { Dispatch, ReactElement, SetStateAction } from "react";
+import { useState, forwardRef, useCallback, useMemo } from "react";
 
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
@@ -24,6 +24,7 @@ import type {
   User,
 } from "../utils/state";
 import { isUser, buildEntries, isProject } from "../utils/state";
+import { ListFilter } from "../utils/view";
 import type { TaskListView } from "../utils/view";
 import ProjectList from "./ProjectList";
 
@@ -62,10 +63,14 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface UserHeaderProps {
   user: User;
+  filter: ListFilter;
+  setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 const UserHeader = ReactMemo(forwardRef(function TasksHeader({
   user,
+  filter,
+  setFilter,
 }: UserHeaderProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
 
@@ -74,16 +79,20 @@ const UserHeader = ReactMemo(forwardRef(function TasksHeader({
       <Icons.Project/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <ItemListActions list={user}/>
+    <ItemListActions list={user} filter={filter} setFilter={setFilter}/>
   </div>;
 }));
 
 interface ContextHeaderProps {
   context: Context;
+  filter: ListFilter;
+  setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
   context,
+  filter,
+  setFilter,
 }: ContextHeaderProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
 
@@ -109,16 +118,20 @@ const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
       initialValue={context.name}
       onSubmit={changeContextName}
     />
-    <ItemListActions list={context}/>
+    <ItemListActions list={context} filter={filter} setFilter={setFilter}/>
   </div>;
 }));
 
 interface ProjectHeaderProps {
   project: Project;
+  filter: ListFilter;
+  setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
   project,
+  filter,
+  setFilter,
 }: ProjectHeaderProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
   let [editProject] = useEditProjectMutation();
@@ -150,7 +163,7 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
         onSubmit={changeTaskListName}
       />
     </div>
-    <ItemListActions list={project}/>
+    <ItemListActions list={project} filter={filter} setFilter={setFilter}/>
   </div>;
 }));
 
@@ -173,6 +186,8 @@ export default ReactMemo(function TaskList({
     () => buildEntries(view.taskList, data),
     [data, view],
   );
+
+  let [filter, setFilter] = useState(() => ListFilter.Normal);
 
   let {
     dropRef: headingDropRef,
@@ -229,11 +244,26 @@ export default ReactMemo(function TaskList({
 
   let header: ReactResult;
   if (isUser(view.taskList)) {
-    header = <UserHeader ref={headingDropRef} user={view.taskList}/>;
+    header = <UserHeader
+      ref={headingDropRef}
+      user={view.taskList}
+      filter={filter}
+      setFilter={setFilter}
+    />;
   } else if (isProject(view.taskList)) {
-    header = <ProjectHeader ref={headingDropRef} project={view.taskList}/>;
+    header = <ProjectHeader
+      ref={headingDropRef}
+      project={view.taskList}
+      filter={filter}
+      setFilter={setFilter}
+    />;
   } else {
-    header = <ContextHeader ref={headingDropRef} context={view.taskList}/>;
+    header = <ContextHeader
+      ref={headingDropRef}
+      context={view.taskList}
+      filter={filter}
+      setFilter={setFilter}
+    />;
   }
 
   let sections = useMemo(() => {
@@ -243,6 +273,8 @@ export default ReactMemo(function TaskList({
         section={section}
         index={index}
         sections={entries.sections}
+        filter={filter}
+        setFilter={setFilter}
       />,
     );
 
@@ -256,14 +288,14 @@ export default ReactMemo(function TaskList({
     }
 
     return sections;
-  }, [dragItem, dragResult, entries.sections, view.taskList]);
+  }, [dragItem, dragResult, entries.sections, view.taskList, filter]);
 
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
       {header}
       <List disablePadding={true}>
         <List disablePadding={true} ref={itemsDropRef}>
-          <ItemList items={entries.items} taskList={view.taskList} section={null}/>
+          <ItemList items={entries.items} taskList={view.taskList} section={null} filter={filter}/>
         </List>
         <List disablePadding={true}>
           {sections}

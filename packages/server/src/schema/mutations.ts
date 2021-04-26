@@ -425,6 +425,42 @@ const resolvers: MutationResolvers = {
     await item.delete();
     return true;
   }),
+
+  archiveItem: authed(async ({
+    args: { id, archived },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationArchiveItemArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getImpl(id);
+
+    if (!item) {
+      return null;
+    }
+
+    await ctx.dataSources.items.updateOne(id, {
+      archived: archived ?? null,
+      snoozed: null,
+    });
+
+    return ctx.dataSources.items.getImpl(id);
+  }),
+
+  snoozeItem: authed(async ({
+    args: { id, snoozed },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationSnoozeItemArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getImpl(id);
+
+    if (!item) {
+      return null;
+    }
+
+    await ctx.dataSources.items.updateOne(id, {
+      archived: null,
+      snoozed: snoozed ?? null,
+    });
+
+    return ctx.dataSources.items.getImpl(id);
+  }),
 };
 
 export default {
