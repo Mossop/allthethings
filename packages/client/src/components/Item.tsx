@@ -167,7 +167,7 @@ export const ItemDragMarker = ReactMemo(function ItemDragMarker({
   </ListItem>;
 });
 
-export default ReactMemo(function Item({
+export default ReactMemo(function ItemDisplay({
   item,
   section,
   taskList,

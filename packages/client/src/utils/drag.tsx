@@ -162,11 +162,11 @@ function useDragBase(
 
     collect: useCallback(
       (monitor: DragSourceMonitor<DraggedObject, DragResult>): void => {
-        if (monitor.isDragging()) {
+        if (monitor.isDragging() && dragItem !== item) {
           setDragItem(item);
         }
       },
-      [setDragItem, item],
+      [setDragItem, dragItem, item],
     ),
   });
 

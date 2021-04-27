@@ -199,9 +199,11 @@ export default ReactMemo(function Bug({
       {isInSearch && <TypeMenuItem {...baseProps} taskType={TaskType.Search}/>}
     </Menu>
     <Tooltip title="Delete">
-      <IconButton onClick={deleteItem} disabled={isInSearch}>
-        <Icons.Delete/>
-      </IconButton>
+      <span>
+        <IconButton onClick={deleteItem} disabled={isInSearch}>
+          <Icons.Delete/>
+        </IconButton>
+      </span>
     </Tooltip>
   </>;
 });

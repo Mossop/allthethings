@@ -13,6 +13,7 @@ import { indexOf, item } from "../utils/collections";
 import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
 import type { Item, Section, TaskList } from "../utils/state";
+import { useUser } from "../utils/state";
 import type { ListFilter } from "../utils/view";
 import { isVisible } from "../utils/view";
 import ItemDisplay, { ItemDragMarker } from "./Item";
@@ -71,6 +72,9 @@ export const ItemList = ReactMemo(function ItemList({
   let dragItem = useDragItem(DragType.Item);
   let dragResult = useDragResult(DragType.Item);
 
+  let user = useUser();
+  let list = section ?? taskList ?? user.inbox;
+
   let displayItems = useMemo(() => {
     let displayItems = items
       .filter((item: Item): boolean => isVisible(item, filter))
@@ -85,7 +89,7 @@ export const ItemList = ReactMemo(function ItemList({
         />,
       );
 
-    if (dragItem && (dragResult?.target ?? dragItem.item.parent) == (section ?? taskList)) {
+    if (dragItem && (dragResult?.target ?? dragItem.item.parent) == list) {
       let before = dragResult ? dragResult.before : dragItem.item;
       let index = before ? indexOf(items, before) ?? items.length : items.length;
       displayItems.splice(index, 0, <ItemDragMarker
@@ -97,7 +101,7 @@ export const ItemList = ReactMemo(function ItemList({
     }
 
     return displayItems;
-  }, [dragItem, dragResult, items, section, taskList, filter]);
+  }, [dragItem, dragResult, items, section, taskList, filter, list]);
 
   // @ts-ignore
   return displayItems;

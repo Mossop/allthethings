@@ -19,8 +19,6 @@ export enum ListFilter {
 }
 
 export function isVisible(item: Item, filter: ListFilter): boolean {
-  console.log(item, filter);
-
   if (item.taskInfo?.done) {
     return filter == ListFilter.Complete;
   }
