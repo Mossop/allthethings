@@ -50,7 +50,8 @@ export interface PluginContext {
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
   createItem(user: string, props: CreateBasePluginItem): Promise<BasePluginItem>;
   getItem(id: string): Promise<BasePluginItem | null>;
-  setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void>
+  setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void>;
+  deleteUnreferencedItems(ids: string[]): Promise<void>;
 }
 
 export interface GraphQLContext extends PluginContext {
@@ -173,6 +174,10 @@ export function buildContext(
       }
 
       return dataSources.taskInfo.setItemTaskInfo(item, taskInfo);
+    },
+
+    async deleteUnreferencedItems(ids: string[]): Promise<void> {
+      return dataSources.items.deleteUnreferenced(plugin.id, ids);
     },
   };
 }

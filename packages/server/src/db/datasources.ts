@@ -506,6 +506,18 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }));
   }
 
+  public async deleteUnreferenced(pluginId: string, ids: string[]): Promise<void> {
+    let itemsInInboxes = this.records
+      .join("Section", "Section.id", "Item.ownerId")
+      .join("PluginDetail", "Item.id", "PluginDetail.id")
+      .whereIn("Item.id", ids)
+      .andWhere("Section.index", SectionIndex.Inbox)
+      .andWhere("PluginDetail.pluginId", pluginId)
+      .select("Item.id");
+
+    await this.records.whereIn("id", itemsInInboxes).delete();
+  }
+
   public listSpecialSection(
     owner: string,
     type: SectionIndex,

@@ -566,11 +566,7 @@ export class Bug {
     }));
   }
 
-  public async updateSearchStatus(): Promise<void> {
-    if (this.taskType != TaskType.Search) {
-      return;
-    }
-
+  public async updateSearchStatus(): Promise<number> {
     let item = await this.getItem();
 
     let presentSearches = await this.context.table<BugzillaSearchBugsRecord>("SearchBugs")
@@ -581,18 +577,24 @@ export class Bug {
       })
       .pluck("searchId");
 
+    if (this.taskType != TaskType.Search) {
+      return presentSearches.length;
+    }
+
     let taskInfo = item.taskInfo;
     if (presentSearches.length == 0 && taskInfo?.done) {
-      return;
+      return presentSearches.length;
     }
     if (presentSearches.length > 0 && taskInfo && !taskInfo.done) {
-      return;
+      return presentSearches.length;
     }
 
     await this.context.setItemTaskInfo(item.id, {
       due: taskInfo?.due ?? null,
       done: presentSearches.length ? null : DateTime.utc(),
     });
+
+    return presentSearches.length;
   }
 
   public async update(record?: BugzillaBug): Promise<void> {

@@ -20,6 +20,7 @@ import koaStatic from "koa-static";
 import { Account, Bug, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
+import { TaskType } from "./types";
 
 export * from "./types";
 
@@ -48,6 +49,8 @@ class BugzillaPlugin implements ServerPlugin {
   }
 
   public async update(context: PluginContext): Promise<void> {
+    let unreferenced: string[] = [];
+
     for (let account of await Account.list(context)) {
       let api = account.getAPI();
 
@@ -84,9 +87,16 @@ class BugzillaPlugin implements ServerPlugin {
       }
 
       for (let bug of searchUpdate) {
-        await bug.updateSearchStatus();
+        if (bug.taskType == TaskType.Search) {
+          let searches = await bug.updateSearchStatus();
+          if (searches == 0) {
+            unreferenced.push(bug.itemId);
+          }
+        }
       }
     }
+
+    await context.deleteUnreferencedItems(unreferenced);
   }
 
   public middleware(): Koa.Middleware {
