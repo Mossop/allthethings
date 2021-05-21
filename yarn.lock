@@ -3887,10 +3887,10 @@ buffer@^5.1.0, buffer@^5.7.0:
     base64-js "^1.3.1"
     ieee754 "^1.1.13"
 
-bugzilla@^1.1.3:
-  version "1.1.3"
-  resolved "https://registry.yarnpkg.com/bugzilla/-/bugzilla-1.1.3.tgz#2cd10987cf18b83f92238bfc78d042bc6ed89106"
-  integrity sha512-g4rezAAlfANh5FibON0la2HBNo+m/XXSYEQFt16l4MC6lETo2f71ivxAgCAsI0KvEh5Uv2B0iqO+2bGOODJwDQ==
+bugzilla@^1.1.6:
+  version "1.1.6"
+  resolved "https://registry.yarnpkg.com/bugzilla/-/bugzilla-1.1.6.tgz#7eeebf1c3e616dacaff0222a18c158f1054bd2d8"
+  integrity sha512-BXEUV6F37xOQmo7QHG/ypQICBb6saT5MF0f32husD52bk4kFiPLyoN2ZA7tGsc1EIWhqtAwE0eSY9/GxHa3hxg==
   dependencies:
     luxon "^1.26.0"
     node-fetch "^2.6.1"

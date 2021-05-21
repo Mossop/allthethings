@@ -4,5 +4,12 @@
   "description": "AllTheThings GraphQL schema.",
   "repository": "Mossop/allthethings",
   "license": "MIT",
-  "author": "Dave Townsend <dtownsend@oxymoronical.com>"
+  "author": "Dave Townsend <dtownsend@oxymoronical.com>",
+  "main": "dist/index",
+  "types": "dist/index",
+  "scripts": {
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build": "tsc -b",
+    "watch": "tsc -b -w"
+  }
 }

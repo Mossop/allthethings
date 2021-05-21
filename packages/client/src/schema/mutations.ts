@@ -107,7 +107,6 @@ export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly 
 export type CreateTaskMutationVariables = Types.Exact<{
   list: Types.Maybe<Types.Scalars['ID']>;
   item: Types.ItemParams;
-  taskInfo: Types.TaskInfoParams;
 }>;
 
 
@@ -147,6 +146,17 @@ export type EditTaskInfoMutationVariables = Types.Exact<{
 
 
 export type EditTaskInfoMutation = { readonly __typename: 'Mutation', readonly editTaskInfo: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ItemFieldsFragment
+  )> };
+
+export type EditTaskControllerMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  controller: Types.Maybe<Types.Scalars['String']>;
+}>;
+
+
+export type EditTaskControllerMutation = { readonly __typename: 'Mutation', readonly editTaskController: Types.Maybe<(
     { readonly __typename: 'Item' }
     & ItemFieldsFragment
   )> };
@@ -636,8 +646,8 @@ export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProject
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const CreateTaskDocument = gql`
-    mutation CreateTask($list: ID, $item: ItemParams!, $taskInfo: TaskInfoParams!) {
-  createTask(list: $list, item: $item, taskInfo: $taskInfo) {
+    mutation CreateTask($list: ID, $item: ItemParams!) {
+  createTask(list: $list, item: $item) {
     ...itemFields
   }
 }
@@ -659,7 +669,6 @@ export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, C
  *   variables: {
  *      list: // value for 'list'
  *      item: // value for 'item'
- *      taskInfo: // value for 'taskInfo'
  *   },
  * });
  */
@@ -774,6 +783,40 @@ export function useEditTaskInfoMutation(baseOptions?: Apollo.MutationHookOptions
 export type EditTaskInfoMutationHookResult = ReturnType<typeof useEditTaskInfoMutation>;
 export type EditTaskInfoMutationResult = Apollo.MutationResult<EditTaskInfoMutation>;
 export type EditTaskInfoMutationOptions = Apollo.BaseMutationOptions<EditTaskInfoMutation, EditTaskInfoMutationVariables>;
+export const EditTaskControllerDocument = gql`
+    mutation EditTaskController($id: ID!, $controller: String) {
+  editTaskController(id: $id, controller: $controller) {
+    ...itemFields
+  }
+}
+    ${ItemFieldsFragmentDoc}`;
+export type EditTaskControllerMutationFn = Apollo.MutationFunction<EditTaskControllerMutation, EditTaskControllerMutationVariables>;
+
+/**
+ * __useEditTaskControllerMutation__
+ *
+ * To run a mutation, you first call `useEditTaskControllerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditTaskControllerMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editTaskControllerMutation, { data, loading, error }] = useEditTaskControllerMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      controller: // value for 'controller'
+ *   },
+ * });
+ */
+export function useEditTaskControllerMutation(baseOptions?: Apollo.MutationHookOptions<EditTaskControllerMutation, EditTaskControllerMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<EditTaskControllerMutation, EditTaskControllerMutationVariables>(EditTaskControllerDocument, options);
+      }
+export type EditTaskControllerMutationHookResult = ReturnType<typeof useEditTaskControllerMutation>;
+export type EditTaskControllerMutationResult = Apollo.MutationResult<EditTaskControllerMutation>;
+export type EditTaskControllerMutationOptions = Apollo.BaseMutationOptions<EditTaskControllerMutation, EditTaskControllerMutationVariables>;
 export const MoveItemDocument = gql`
     mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
   moveItem(id: $id, parent: $parent, before: $before) {

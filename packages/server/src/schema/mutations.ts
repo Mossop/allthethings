@@ -1,6 +1,8 @@
 import { URL } from "url";
 
+import { TaskController } from "@allthethings/schema";
 import type { Overwrite } from "@allthethings/utils";
+import { DateTime } from "luxon";
 
 import type { User, Context, Project, Section, TaskList, Item } from "../db";
 import { PluginDetail } from "../db";
@@ -34,6 +36,7 @@ async function baseCreateItem(
       ...taskInfo,
       due: taskInfo.due ?? null,
       done: taskInfo.done ?? null,
+      controller: TaskController.Manual,
     });
   }
 
@@ -228,7 +231,14 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    return baseCreateItem(ctx, { list, ...args }, null);
+    return baseCreateItem(ctx, {
+      list,
+      ...args,
+      taskInfo: {
+        due: null,
+        done: null,
+      },
+    }, null);
   }),
 
   createLink: authed(async ({
@@ -274,6 +284,7 @@ const resolvers: MutationResolvers = {
         ...args.item,
         summary,
       },
+      taskInfo: isTask ? { due: null, done: null } : null,
     }, ItemType.Link);
 
     let icons = [...pageInfo.icons];
@@ -338,7 +349,7 @@ const resolvers: MutationResolvers = {
   }),
 
   editTaskInfo: authed(async ({
-    args: { id, taskInfo },
+    args: { id, taskInfo: taskInfoParams },
     ctx,
   }: AuthedParams<unknown, Types.MutationEditTaskInfoArgs>): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
@@ -347,41 +358,95 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
+    let existing = await item.taskInfo();
+    if (existing && await existing.controller() != TaskController.Manual) {
+      return item;
+    }
+
+    let taskInfo = taskInfoParams
+      ? {
+        ...taskInfoParams,
+        due: taskInfoParams.due ?? null,
+        done: taskInfoParams.done ?? null,
+      }
+      : null;
+
     let detail = await item.detail();
     if (detail instanceof PluginDetail) {
-      await detail.editTaskInfo(
-        taskInfo
-          ? {
-            ...taskInfo,
-            due: taskInfo.due ?? null,
-            done: taskInfo.done ?? null,
-          }
-          : null,
-      );
+      await detail.editTaskInfo(taskInfo);
     }
 
     await ctx.dataSources.taskInfo.setItemTaskInfo(
       item,
-      taskInfo ?? null,
+      taskInfo
+        ? {
+          ...taskInfo,
+          controller: TaskController.Manual,
+        }
+        : null,
     );
 
-    if (taskInfo) {
-      let currentTaskInfo = await ctx.dataSources.taskInfo.getRecord(id);
-      if (currentTaskInfo) {
-        await ctx.dataSources.taskInfo.updateOne(id, {
-          ...taskInfo,
-          due: taskInfo.due ?? null,
-          done: taskInfo.done ?? null,
-        });
-      } else {
-        await ctx.dataSources.taskInfo.create(item, {
-          ...taskInfo,
-          due: taskInfo.due ?? null,
-          done: taskInfo.done ?? null,
-        });
-      }
+    return item;
+  }),
+
+  editTaskController: authed(async ({
+    args: { id, controller },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationEditTaskControllerArgs>): Promise<Item | null> => {
+    let item = await ctx.dataSources.items.getImpl(id);
+
+    if (!item) {
+      return null;
+    }
+
+    let existing = await item.taskInfo();
+    let existingController = await existing?.controller() ?? null;
+    if (existingController == controller) {
+      return item;
+    }
+
+    if (!controller) {
+      await ctx.dataSources.taskInfo.setItemTaskInfo(item, null);
     } else {
-      await ctx.dataSources.taskInfo.delete(id);
+      let taskInfo = {
+        due: existing ? await existing.due() : null,
+        done: existing ? await existing.done() : null,
+        controller: controller as TaskController,
+      };
+      let detail = await item.detail();
+
+      if (controller != TaskController.Manual) {
+        if (!(detail instanceof PluginDetail)) {
+          throw new Error("Unsupported task controller.");
+        }
+
+        switch (controller) {
+          case TaskController.PluginList: {
+            let wasListed = await ctx.dataSources.pluginList.wasItemEverListed(item.id());
+            if (!wasListed) {
+              throw new Error("Unsupported task controller.");
+            }
+
+            let isListed = await ctx.dataSources.pluginList.isItemCurrentlyListed(item.id());
+            if (isListed) {
+              taskInfo.done = null;
+            } else if (!taskInfo.done) {
+              taskInfo.done = DateTime.now();
+            }
+            break;
+          }
+          case TaskController.Plugin: {
+            if (!await detail.hasTaskState()) {
+              throw new Error("Unsupported task controller.");
+            }
+
+            taskInfo.done = await detail.taskDone();
+            break;
+          }
+        }
+      }
+
+      await ctx.dataSources.taskInfo.setItemTaskInfo(item, taskInfo);
     }
 
     return item;

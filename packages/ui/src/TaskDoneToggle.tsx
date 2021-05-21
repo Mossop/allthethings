@@ -1,3 +1,4 @@
+import { TaskController } from "@allthethings/schema";
 import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
 import { IconButton } from "@material-ui/core";
@@ -71,7 +72,10 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
     return <div className={classes.noTask}/>;
   }
 
-  return <IconButton onClick={toggle} disabled={disabled}>
+  return <IconButton
+    onClick={toggle}
+    disabled={disabled || item.taskInfo.controller != TaskController.Manual}
+  >
     {item.taskInfo.done ? <Icons.Checked/> : <Icons.Unchecked/>}
   </IconButton>;
 });

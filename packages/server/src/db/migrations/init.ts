@@ -211,6 +211,8 @@ export async function up(knex: Knex): Promise<void> {
       .nullable();
     table.timestamp("done", { useTz: true })
       .nullable();
+    table.text("controller")
+      .notNullable();
   });
 
   await knex.schema.createTable("LinkDetail", (table: Knex.CreateTableBuilder): void => {
@@ -247,16 +249,56 @@ export async function up(knex: Knex): Promise<void> {
 
     table.text("pluginId")
       .notNullable();
+    table.boolean("hasTaskState")
+      .notNullable();
+    table.timestamp("taskDone", { useTz: true })
+      .nullable();
+
+    table.unique(["id", "pluginId"]);
+  });
+
+  await knex.schema.createTable("PluginList", (table: Knex.CreateTableBuilder): void => {
+    id(table);
+
+    table.text("pluginId")
+      .notNullable();
+    table.text("name")
+      .notNullable();
+    table.text("url")
+      .nullable();
+
+    table.unique(["id", "pluginId"]);
+  });
+
+  await knex.schema.createTable("PluginListItems", (table: Knex.CreateTableBuilder): void => {
+    table.text("pluginId")
+      .notNullable();
+    table.text("itemId")
+      .notNullable();
+    table.text("listId")
+      .notNullable();
+    table.boolean("present")
+      .notNullable();
+
+    table.unique(["itemId", "listId"]);
+
+    table.foreign(["pluginId", "itemId"])
+      .references(["pluginId", "id"])
+      .inTable("PluginDetail")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+
+    table.foreign(["pluginId", "listId"])
+      .references(["pluginId", "id"])
+      .inTable("PluginList")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
   });
 }
 
 export async function down(knex: Knex): Promise<void> {
-  await knex.schema.dropTableIfExists("SectionItem");
-  await knex.schema.dropTableIfExists("PluginItem");
-  await knex.schema.dropTableIfExists("FileItem");
-  await knex.schema.dropTableIfExists("NoteItem");
-  await knex.schema.dropTableIfExists("LinkItem");
-  await knex.schema.dropTableIfExists("TaskItem");
+  await knex.schema.dropTableIfExists("PluginListItems");
+  await knex.schema.dropTableIfExists("PluginList");
   await knex.schema.dropTableIfExists("PluginDetail");
   await knex.schema.dropTableIfExists("FileDetail");
   await knex.schema.dropTableIfExists("NoteDetail");

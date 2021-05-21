@@ -1,3 +1,4 @@
+import { TaskController } from "@allthethings/schema";
 import {
   useBoolState,
   Icons,
@@ -7,7 +8,10 @@ import {
   bindTrigger,
   Menu,
 } from "@allthethings/ui";
-import type { ReactResult } from "@allthethings/ui";
+import type {
+  ReactResult,
+  ReactRef,
+} from "@allthethings/ui";
 import type { PureQueryOptions } from "@apollo/client";
 import {
   IconButton,
@@ -17,17 +21,19 @@ import {
   Tooltip,
   MenuItem,
   ListItemText,
+  ListItemIcon,
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import { DateTime } from "luxon";
-import { useCallback, useRef } from "react";
+import { forwardRef, useCallback, useMemo, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
 import {
   useArchiveItemMutation,
   useDeleteItemMutation,
+  useEditTaskControllerMutation,
   useSnoozeItemMutation,
 } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
@@ -82,6 +88,7 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexRow,
       alignItems: "center",
       justifyContent: "end",
+      paddingLeft: theme.spacing(1),
     },
   }));
 
@@ -113,6 +120,84 @@ function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
     throw new Error("Cannot edit plugin items.");
   return <TaskDialog task={item} onClosed={onClosed}/>;
 }
+
+interface TypeIconProps {
+  controller: TaskController | null;
+}
+
+const TypeIcon = ReactMemo(function TypeIcon({
+  controller,
+}: TypeIconProps): ReactResult {
+  switch (controller) {
+    case null:
+      return <Icons.NoTask/>;
+    case TaskController.Manual:
+      return <Icons.ManualTask/>;
+    case TaskController.Plugin:
+      return <Icons.PluginTask/>;
+    case TaskController.PluginList:
+      return <Icons.ListTask/>;
+  }
+});
+
+function titleForType(type: TaskController | null): string {
+  switch (type) {
+    case null:
+      return "Not a task";
+    case TaskController.Manual:
+      return "Manually controlled";
+    case TaskController.Plugin:
+      return "Plugin controlled";
+    case TaskController.PluginList:
+      return "Controlled by plugin lists";
+  }
+}
+
+interface TypeMenuItemProps {
+  item: Item;
+  refetchQueries: PureQueryOptions[];
+  controller: TaskController | null;
+  selectedController: TaskController | null;
+}
+
+const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
+  item,
+  refetchQueries,
+  controller,
+  selectedController,
+}: TypeMenuItemProps, ref: ReactRef | null): ReactResult {
+  let [mutate, { error }] = useEditTaskControllerMutation({
+    variables: {
+      id: item.id,
+      controller,
+    },
+    refetchQueries,
+  });
+
+  if (error) {
+    console.log(error);
+  }
+
+  let click = useCallback(() => {
+    if (controller == selectedController) {
+      return;
+    }
+
+    void mutate();
+  }, [controller, selectedController, mutate]);
+
+  return <MenuItem
+    ref={ref}
+    selected={controller == selectedController}
+    disabled={controller == selectedController}
+    onClick={click}
+  >
+    <ListItemIcon>
+      <TypeIcon controller={controller}/>
+    </ListItemIcon>
+    <ListItemText>{titleForType(controller)}</ListItemText>
+  </MenuItem>;
+}));
 
 interface ItemProps {
   taskList: TaskList | null;
@@ -175,6 +260,28 @@ export default ReactMemo(function ItemDisplay({
   index,
 }: ItemProps): ReactResult {
   let classes = useStyles();
+
+  let typeMenuState = useMenuState("task-type");
+
+  let { wasEverListed, isCurrentlyListed, hasTaskState, taskController } = useMemo(() => {
+    let taskController = item.taskInfo?.controller ?? null;
+
+    if (isPluginItem(item)) {
+      return {
+        taskController,
+        isCurrentlyListed: item.detail.isCurrentlyListed,
+        wasEverListed: item.detail.wasEverListed,
+        hasTaskState: item.detail.hasTaskState,
+      };
+    }
+
+    return {
+      taskController,
+      isCurrentlyListed: false,
+      wasEverListed: false,
+      hasTaskState: false,
+    };
+  }, [item]);
 
   let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
 
@@ -299,6 +406,12 @@ export default ReactMemo(function ItemDisplay({
 
   let itemRef = mergeRefs([dropRef, elementRef]);
 
+  let typeMenuItemProps: Omit<TypeMenuItemProps, "controller"> = {
+    refetchQueries,
+    selectedController: taskController,
+    item,
+  };
+
   return <>
     <ListItem
       className={clsx(classes.item, isDragging && classes.hidden)}
@@ -321,6 +434,35 @@ export default ReactMemo(function ItemDisplay({
         </div>
       </div>
       <div className={classes.actions}>
+        <Tooltip title={titleForType(taskController)}>
+          <IconButton {...bindTrigger(typeMenuState)}>
+            <TypeIcon controller={taskController}/>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          state={typeMenuState}
+          anchor={
+            {
+              vertical: "bottom",
+              horizontal: "right",
+            }
+          }
+        >
+          <TypeMenuItem {...typeMenuItemProps} controller={null}/>
+          <TypeMenuItem {...typeMenuItemProps} controller={TaskController.Manual}/>
+          {
+            hasTaskState && <TypeMenuItem
+              {...typeMenuItemProps}
+              controller={TaskController.Plugin}
+            />
+          }
+          {
+            wasEverListed && <TypeMenuItem
+              {...typeMenuItemProps}
+              controller={TaskController.PluginList}
+            />
+          }
+        </Menu>
         <Tooltip title="Snooze">
           <IconButton {...bindTrigger(snoozeMenuState)}>
             <Icons.Snooze/>
@@ -361,18 +503,18 @@ export default ReactMemo(function ItemDisplay({
             </Tooltip>
         }
         {
-          !isPluginItem(item) && <>
-            <Tooltip title="Edit">
-              <IconButton onClick={openEditDialog}>
-                <Icons.Edit/>
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete">
-              <IconButton onClick={deleteItem}>
-                <Icons.Delete/>
-              </IconButton>
-            </Tooltip>
-          </>
+          !isPluginItem(item) && <Tooltip title="Edit">
+            <IconButton onClick={openEditDialog}>
+              <Icons.Edit/>
+            </IconButton>
+          </Tooltip>
+        }
+        {
+          !isCurrentlyListed && <Tooltip title="Delete">
+            <IconButton onClick={deleteItem}>
+              <Icons.Delete/>
+            </IconButton>
+          </Tooltip>
         }
       </div>
     </ListItem>

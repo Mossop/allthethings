@@ -134,13 +134,13 @@ export type Mutation = {
   readonly editItem: Maybe<Item>;
   readonly editProject: Maybe<Project>;
   readonly editSection: Maybe<Section>;
+  readonly editTaskController: Maybe<Item>;
   readonly editTaskInfo: Maybe<Item>;
   readonly login: Maybe<User>;
   readonly logout: Maybe<Scalars['Boolean']>;
   readonly moveItem: Maybe<Item>;
   readonly moveProject: Maybe<Project>;
   readonly moveSection: Maybe<Section>;
-  readonly setItemTaskType: Scalars['Boolean'];
   readonly snoozeItem: Maybe<Item>;
 };
 
@@ -179,7 +179,7 @@ export type MutationCreateNoteArgs = {
   list: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: NoteDetailParams;
-  taskInfo: Maybe<TaskInfoParams>;
+  isTask: Scalars['Boolean'];
 };
 
 
@@ -199,7 +199,6 @@ export type MutationCreateSectionArgs = {
 export type MutationCreateTaskArgs = {
   list: Maybe<Scalars['ID']>;
   item: ItemParams;
-  taskInfo: TaskInfoParams;
 };
 
 
@@ -247,6 +246,12 @@ export type MutationEditSectionArgs = {
 };
 
 
+export type MutationEditTaskControllerArgs = {
+  id: Scalars['ID'];
+  controller: Maybe<Scalars['String']>;
+};
+
+
 export type MutationEditTaskInfoArgs = {
   id: Scalars['ID'];
   taskInfo: Maybe<TaskInfoParams>;
@@ -279,12 +284,6 @@ export type MutationMoveSectionArgs = {
 };
 
 
-export type MutationSetItemTaskTypeArgs = {
-  item: Scalars['ID'];
-  taskType: Scalars['String'];
-};
-
-
 export type MutationSnoozeItemArgs = {
   id: Scalars['ID'];
   snoozed: Maybe<Scalars['DateTime']>;
@@ -302,6 +301,9 @@ export type NoteDetailParams = {
 export type PluginDetail = {
   readonly __typename?: 'PluginDetail';
   readonly pluginId: Scalars['String'];
+  readonly hasTaskState: Scalars['Boolean'];
+  readonly wasEverListed: Scalars['Boolean'];
+  readonly isCurrentlyListed: Scalars['Boolean'];
   readonly fields: Scalars['String'];
 };
 
@@ -368,6 +370,7 @@ export type TaskInfo = {
   readonly __typename?: 'TaskInfo';
   readonly due: Maybe<Scalars['DateTime']>;
   readonly done: Maybe<Scalars['DateTime']>;
+  readonly controller: Scalars['String'];
 };
 
 export type TaskInfoParams = {
@@ -421,21 +424,6 @@ export type CreateBugzillaSearchMutationVariables = Exact<{
 
 
 export type CreateBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly createBugzillaSearch: { readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string } };
-
-export type SetItemTaskTypeMutationVariables = Exact<{
-  item: Scalars['ID'];
-  taskType: Scalars['String'];
-}>;
-
-
-export type SetItemTaskTypeMutation = { readonly __typename: 'Mutation', readonly setItemTaskType: boolean };
-
-export type DeleteItemMutationVariables = Exact<{
-  id: Scalars['ID'];
-}>;
-
-
-export type DeleteItemMutation = { readonly __typename: 'Mutation', readonly deleteItem: boolean };
 
 
 export const ListBugzillaAccountsDocument = gql`
@@ -568,66 +556,3 @@ export function useCreateBugzillaSearchMutation(baseOptions?: Apollo.MutationHoo
 export type CreateBugzillaSearchMutationHookResult = ReturnType<typeof useCreateBugzillaSearchMutation>;
 export type CreateBugzillaSearchMutationResult = Apollo.MutationResult<CreateBugzillaSearchMutation>;
 export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
-export const SetItemTaskTypeDocument = gql`
-    mutation SetItemTaskType($item: ID!, $taskType: String!) {
-  setItemTaskType(item: $item, taskType: $taskType)
-}
-    `;
-export type SetItemTaskTypeMutationFn = Apollo.MutationFunction<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>;
-
-/**
- * __useSetItemTaskTypeMutation__
- *
- * To run a mutation, you first call `useSetItemTaskTypeMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useSetItemTaskTypeMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [setItemTaskTypeMutation, { data, loading, error }] = useSetItemTaskTypeMutation({
- *   variables: {
- *      item: // value for 'item'
- *      taskType: // value for 'taskType'
- *   },
- * });
- */
-export function useSetItemTaskTypeMutation(baseOptions?: Apollo.MutationHookOptions<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>(SetItemTaskTypeDocument, options);
-      }
-export type SetItemTaskTypeMutationHookResult = ReturnType<typeof useSetItemTaskTypeMutation>;
-export type SetItemTaskTypeMutationResult = Apollo.MutationResult<SetItemTaskTypeMutation>;
-export type SetItemTaskTypeMutationOptions = Apollo.BaseMutationOptions<SetItemTaskTypeMutation, SetItemTaskTypeMutationVariables>;
-export const DeleteItemDocument = gql`
-    mutation DeleteItem($id: ID!) {
-  deleteItem(id: $id)
-}
-    `;
-export type DeleteItemMutationFn = Apollo.MutationFunction<DeleteItemMutation, DeleteItemMutationVariables>;
-
-/**
- * __useDeleteItemMutation__
- *
- * To run a mutation, you first call `useDeleteItemMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useDeleteItemMutation` returns a tuple that includes:
- * - A mutate function that you can call at any time to execute the mutation
- * - An object with fields that represent the current status of the mutation's execution
- *
- * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
- *
- * @example
- * const [deleteItemMutation, { data, loading, error }] = useDeleteItemMutation({
- *   variables: {
- *      id: // value for 'id'
- *   },
- * });
- */
-export function useDeleteItemMutation(baseOptions?: Apollo.MutationHookOptions<DeleteItemMutation, DeleteItemMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteItemMutation, DeleteItemMutationVariables>(DeleteItemDocument, options);
-      }
-export type DeleteItemMutationHookResult = ReturnType<typeof useDeleteItemMutation>;
-export type DeleteItemMutationResult = Apollo.MutationResult<DeleteItemMutation>;
-export type DeleteItemMutationOptions = Apollo.BaseMutationOptions<DeleteItemMutation, DeleteItemMutationVariables>;

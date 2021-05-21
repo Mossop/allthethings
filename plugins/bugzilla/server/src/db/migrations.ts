@@ -31,7 +31,7 @@ class BaseMigration implements PluginDbMigration {
     });
 
     await knex.schema.createTable("Search", (table: Knex.CreateTableBuilder): void => {
-      helper.idColumn(table, "id")
+      helper.listRef(table, "id")
         .notNullable()
         .unique()
         .primary();
@@ -51,8 +51,6 @@ class BaseMigration implements PluginDbMigration {
 
       table.text("query")
         .notNullable();
-
-      table.unique(["accountId", "id"]);
     });
 
     await knex.schema.createTable("Bug", (table: Knex.CreateTableBuilder): void => {
@@ -80,42 +78,7 @@ class BaseMigration implements PluginDbMigration {
       table.text("resolution")
         .nullable();
 
-      table.text("taskType")
-        .notNullable();
-
       table.unique(["accountId", "bugId"]);
-    });
-
-    await knex.schema.createTable("SearchBugs", (table: Knex.CreateTableBuilder): void => {
-      helper.idColumn(table, "accountId")
-        .notNullable()
-        .references("id")
-        .inTable(helper.tableName("Account"))
-        .onDelete("CASCADE")
-        .onUpdate("CASCADE");
-
-      helper.idColumn(table, "searchId")
-        .notNullable();
-
-      table.integer("bugId")
-        .notNullable();
-
-      table.boolean("present")
-        .notNullable();
-
-      table.unique(["searchId", "bugId"]);
-
-      table.foreign(["accountId", "searchId"])
-        .references(["accountId", "id"])
-        .inTable(helper.tableName("Search"))
-        .onDelete("CASCADE")
-        .onUpdate("CASCADE");
-
-      table.foreign(["accountId", "bugId"])
-        .references(["accountId", "bugId"])
-        .inTable(helper.tableName("Bug"))
-        .onDelete("CASCADE")
-        .onUpdate("CASCADE");
     });
   }
 

@@ -1,3 +1,5 @@
+import type { Awaitable } from "@allthethings/utils";
+import { waitFor } from "@allthethings/utils";
 import type { Knex } from "knex";
 import { knex } from "knex";
 import { DateTime } from "luxon";
@@ -19,12 +21,24 @@ const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz
 
 export const id = customAlphabet(ALPHABET, 28);
 
+type Callback = () => Awaitable<void>;
+
 export class DatabaseConnection {
   private _transaction: Knex.Transaction | null = null;
+  private _commitListeners: Callback[];
 
   private constructor(
     private readonly _baseKnex: Knex,
   ) {
+    this._commitListeners = [];
+  }
+
+  public onCommit(callback: Callback): void {
+    if (!this._transaction) {
+      throw new Error("There is no current transaction.");
+    }
+
+    this._commitListeners.push(callback);
   }
 
   public get knex(): Knex {
@@ -84,6 +98,10 @@ export class DatabaseConnection {
   public async commitTransaction(): Promise<void> {
     if (!this._transaction) {
       throw new Error("There is no current transaction.");
+    }
+
+    for (let callback of this._commitListeners) {
+      await waitFor(callback());
     }
 
     try {

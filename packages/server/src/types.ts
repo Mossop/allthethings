@@ -12,5 +12,6 @@ export {
   PluginServer,
   BasePluginItem,
   PluginTaskInfo,
+  CreatePluginTaskInfo,
 } from "./plugins";
 export * from "./utils/page";

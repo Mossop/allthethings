@@ -35,5 +35,4 @@ type User {
 type Mutation {
   createBugzillaAccount(params: BugzillaAccountParams!): BugzillaAccount!
   createBugzillaSearch(account: ID!, params: BugzillaSearchParams!): BugzillaSearch!
-  setItemTaskType(item: ID!, taskType: String!): Boolean!
 }

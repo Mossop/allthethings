@@ -386,6 +386,7 @@ export class TaskInfo extends BaseImpl<Db.TaskInfoDbTable>
 
   public readonly due = fields<Db.TaskInfoDbTable>()("due");
   public readonly done = fields<Db.TaskInfoDbTable>()("done");
+  public readonly controller = fields<Db.TaskInfoDbTable>()("controller");
 
   public async forPlugin(): Promise<PluginTaskInfo> {
     return {
@@ -466,5 +467,25 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
     return JSON.stringify(fields);
   }
 
+  public async wasEverListed(): Promise<boolean> {
+    return this.dataSources.pluginList.wasItemEverListed(this.id());
+  }
+
+  public async isCurrentlyListed(): Promise<boolean> {
+    return this.dataSources.pluginList.isItemCurrentlyListed(this.id());
+  }
+
   public readonly pluginId = fields<Db.PluginDetailDbTable>()("pluginId");
+  public readonly hasTaskState = fields<Db.PluginDetailDbTable>()("hasTaskState");
+  public readonly taskDone = fields<Db.PluginDetailDbTable>()("taskDone");
+}
+
+export class PluginList extends BaseImpl<Db.PluginListDbTable> {
+  protected get dbObjectDataSource(): Src.PluginListSource {
+    return this.dataSources.pluginList;
+  }
+
+  public readonly pluginId = fields<Db.PluginListDbTable>()("pluginId");
+  public readonly name = fields<Db.PluginListDbTable>()("name");
+  public readonly url = fields<Db.PluginListDbTable>()("url");
 }

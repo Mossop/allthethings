@@ -13,6 +13,7 @@ export interface DbMigrationHelper {
   readonly idColumn: CreateColumn;
   readonly userRef: CreateColumn;
   readonly itemRef: CreateColumn;
+  readonly listRef: CreateColumn;
   readonly tableName: (name: string) => string;
 }
 
@@ -49,6 +50,17 @@ class MigrationHelper implements DbMigrationHelper {
     return table.text(column)
       .references("id")
       .inTable("public.Item")
+      .onDelete("CASCADE")
+      .onUpdate("CASCADE");
+  }
+
+  public listRef(
+    table: Knex.CreateTableBuilder,
+    column: string,
+  ): Knex.ColumnBuilder {
+    return table.text(column)
+      .references("id")
+      .inTable("public.PluginList")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   }

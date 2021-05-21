@@ -100,6 +100,7 @@ export type Mutation = {
   readonly createLink: Item;
   readonly editItem?: Maybe<Item>;
   readonly editTaskInfo?: Maybe<Item>;
+  readonly editTaskController?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
   readonly deleteItem: Scalars['Boolean'];
   readonly archiveItem?: Maybe<Item>;
@@ -180,7 +181,6 @@ export type MutationDeleteSectionArgs = {
 export type MutationCreateTaskArgs = {
   list?: Maybe<Scalars['ID']>;
   item: ItemParams;
-  taskInfo: TaskInfoParams;
 };
 
 
@@ -188,7 +188,7 @@ export type MutationCreateNoteArgs = {
   list?: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: NoteDetailParams;
-  taskInfo?: Maybe<TaskInfoParams>;
+  isTask: Scalars['Boolean'];
 };
 
 
@@ -209,6 +209,12 @@ export type MutationEditItemArgs = {
 export type MutationEditTaskInfoArgs = {
   id: Scalars['ID'];
   taskInfo?: Maybe<TaskInfoParams>;
+};
+
+
+export type MutationEditTaskControllerArgs = {
+  id: Scalars['ID'];
+  controller?: Maybe<Scalars['String']>;
 };
 
 
@@ -247,6 +253,9 @@ export type NoteDetailParams = {
 export type PluginDetail = {
   readonly __typename?: 'PluginDetail';
   readonly pluginId: Scalars['String'];
+  readonly hasTaskState: Scalars['Boolean'];
+  readonly wasEverListed: Scalars['Boolean'];
+  readonly isCurrentlyListed: Scalars['Boolean'];
   readonly fields: Scalars['String'];
 };
 
@@ -313,6 +322,7 @@ export type TaskInfo = {
   readonly __typename?: 'TaskInfo';
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
+  readonly controller: Scalars['String'];
 };
 
 export type TaskInfoParams = {

@@ -17,3 +17,7 @@ export { default as Filter } from "@material-ui/icons/FilterList";
 export { default as Archive } from "@material-ui/icons/Archive";
 export { default as Unarchive } from "@material-ui/icons/Unarchive";
 export { default as Snooze } from "@material-ui/icons/Snooze";
+export { default as PluginTask } from "@material-ui/icons/Cloud";
+export { default as NoTask } from "@material-ui/icons/Description";
+export { default as ManualTask } from "@material-ui/icons/Person";
+export { default as ListTask } from "@material-ui/icons/Search";

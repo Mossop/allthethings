@@ -1,5 +1,6 @@
 import type { Overwrite } from "@allthethings/utils";
 
+import type { TaskController } from "../../../schema/dist";
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import { useView } from "./view";
@@ -47,26 +48,34 @@ interface BaseItem {
   parent: Inbox | TaskList | Section;
 }
 
+export type TaskInfo = Overwrite<Schema.TaskInfo, {
+  controller: TaskController;
+}>;
+
 export type PluginItem = State<Schema.Item, BaseItem & {
   detail: Schema.PluginDetail;
+  taskInfo: TaskInfo | null;
 }>;
 export type NoteItem = State<Schema.Item, BaseItem & {
   detail: Schema.NoteDetail;
+  taskInfo: TaskInfo | null;
 }>;
 export type FileItem = State<Schema.Item, BaseItem & {
   detail: Schema.FileDetail;
+  taskInfo: TaskInfo | null;
 }>;
 export type LinkItem = State<Schema.Item, BaseItem & {
   detail: Schema.LinkDetail;
+  taskInfo: TaskInfo | null;
 }>;
 export type TaskItem = State<Schema.Item, BaseItem & {
-  taskInfo: Schema.TaskInfo;
+  taskInfo: TaskInfo;
   detail: null;
 }>;
 export type Item = TaskItem | LinkItem | NoteItem | FileItem | PluginItem;
 
 export type WithTask<T extends Item> = Overwrite<T, {
-  taskInfo: Schema.TaskInfo;
+  taskInfo: TaskInfo;
 }>;
 
 export type TaskList = User | Project | Context;
@@ -202,22 +211,24 @@ export function buildItems(
   items: readonly Schema.Item[],
 ): Item[] {
   return items.map((item: Schema.Item): Item => {
+    let taskInfo = item.taskInfo ? item.taskInfo as TaskInfo : null;
+
     if (item.detail) {
       return {
         ...item,
-        taskInfo: item.taskInfo ?? null,
+        taskInfo,
         detail: item.detail,
         parent,
       };
     }
 
-    if (!item.taskInfo) {
+    if (!taskInfo) {
       throw new Error("Basic item is missing task info.");
     }
 
     return {
       ...item,
-      taskInfo: item.taskInfo,
+      taskInfo,
       detail: null,
       parent,
     };

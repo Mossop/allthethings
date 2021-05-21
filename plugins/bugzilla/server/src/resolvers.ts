@@ -5,20 +5,12 @@ import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import { bestIcon, loadPageInfo } from "@allthethings/server";
 
 import type { BugzillaAccountRecord } from "./db/implementations";
-import { Search, Account, Bug } from "./db/implementations";
+import { Search, Account } from "./db/implementations";
 import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
-  MutationSetItemTaskTypeArgs,
 } from "./schema";
-import { SearchType, TaskType } from "./types";
-
-const TaskTypes: string[] = [
-  TaskType.None,
-  TaskType.Manual,
-  TaskType.Resolved,
-  TaskType.Search,
-];
+import { SearchType } from "./types";
 
 const Resolvers: Resolver<GraphQLContext> = {
   User: {
@@ -89,40 +81,11 @@ const Resolvers: Resolver<GraphQLContext> = {
         queryStr = query.toString();
       }
 
-      let bugs = await Search.getBugs(account.getAPI(), {
-        type: searchType,
+      return Search.create(ctx, account, {
+        name: params.name,
         query: queryStr,
+        type: searchType,
       });
-
-      let search = await Search.create(ctx, account, params);
-      let { changedIds } = await search.update(bugs);
-      for (let id of changedIds) {
-        let bug = await Bug.get(account, id);
-        if (bug) {
-          await bug.updateSearchStatus();
-        }
-      }
-
-      return search;
-    },
-
-    async setItemTaskType(
-      outer: unknown,
-      { item, taskType }: MutationSetItemTaskTypeArgs,
-      ctx: GraphQLContext,
-    ): Promise<boolean> {
-      let bug = await Bug.getForItem(ctx, item);
-      if (!bug) {
-        throw new Error("Unknown bug.");
-      }
-
-      if (!TaskTypes.includes(taskType)) {
-        throw new Error(`Unknown task type ${taskType}`);
-      }
-
-      await bug.setTaskType(taskType as TaskType);
-
-      return true;
     },
   },
 };

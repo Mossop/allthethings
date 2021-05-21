@@ -24,6 +24,7 @@ fragment itemFields on Item {
   taskInfo {
     due
     done
+    controller
   }
 
   detail {
@@ -44,6 +45,9 @@ fragment itemFields on Item {
 
     ... on PluginDetail {
       pluginId
+      hasTaskState
+      wasEverListed
+      isCurrentlyListed
       fields
     }
   }

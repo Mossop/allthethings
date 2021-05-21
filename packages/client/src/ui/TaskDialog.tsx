@@ -74,10 +74,6 @@ export default ReactMemo(function TaskDialog({
             archived: null,
             snoozed: null,
           },
-          taskInfo: {
-            due: null,
-            done: null,
-          },
         },
       });
     }

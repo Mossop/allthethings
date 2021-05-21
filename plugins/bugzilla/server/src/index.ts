@@ -12,7 +12,6 @@ import type {
   PluginServer,
   PluginContext,
   BasePluginItem,
-  PluginTaskInfo,
 } from "@allthethings/server";
 import type Koa from "koa";
 import koaStatic from "koa-static";
@@ -20,7 +19,6 @@ import koaStatic from "koa-static";
 import { Account, Bug, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
-import { TaskType } from "./types";
 
 export * from "./types";
 
@@ -49,54 +47,17 @@ class BugzillaPlugin implements ServerPlugin {
   }
 
   public async update(context: PluginContext): Promise<void> {
-    let unreferenced: string[] = [];
-
     for (let account of await Account.list(context)) {
-      let api = account.getAPI();
-
-      // All the bugs that potentially need their search status updating.
-      let changedIds = new Set<number>();
-      // All the bugs that were present in at least one search.
-      let presentBugs = new Set<number>();
-
       let searches = await Search.list(account);
       for (let search of searches) {
-        let results = await search.update();
-        for (let id of results.changedIds) {
-          changedIds.add(id);
-        }
-        for (let bug of results.presentBugs) {
-          presentBugs.add(bug.id);
-        }
+        await search.updateBugs();
       }
 
-      let bugs = await account.getBugs();
-
-      let toUpdate = bugs.filter((bug: Bug) => !presentBugs.has(bug.id));
-      let searchUpdate = bugs.filter((bug: Bug) => changedIds.has(bug.id));
-
-      if (toUpdate.length) {
-        let updateIds = toUpdate.map((bug: Bug): number => bug.id);
-        let remotes = await api.getBugs(updateIds);
-
-        for (let bug of remotes) {
-          // This should be cached from above.
-          let local = await Bug.get(account, bug.id);
-          await local?.update(bug);
-        }
-      }
-
-      for (let bug of searchUpdate) {
-        if (bug.taskType == TaskType.Search) {
-          let searches = await bug.updateSearchStatus();
-          if (searches == 0) {
-            unreferenced.push(bug.itemId);
-          }
-        }
+      let bugs = await Bug.list(account);
+      for (let bug of bugs) {
+        await bug.update();
       }
     }
-
-    await context.deleteUnreferencedItems(unreferenced);
   }
 
   public middleware(): Koa.Middleware {
@@ -120,19 +81,6 @@ class BugzillaPlugin implements ServerPlugin {
 
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
-  }
-
-  public async editTaskInfo(
-    context: PluginContext,
-    item: BasePluginItem,
-    taskInfo: PluginTaskInfo | null,
-  ): Promise<void> {
-    let bug = await Bug.getForItem(context, item.id);
-    if (!bug) {
-      throw new Error("Missing bug record.");
-    }
-
-    return bug.editTaskInfo(taskInfo);
   }
 
   public async getItemFields(

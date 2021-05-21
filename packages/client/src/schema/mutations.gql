@@ -81,8 +81,8 @@ mutation DeleteProject($id: ID!) {
   deleteProject(id: $id)
 }
 
-mutation CreateTask($list: ID, $item: ItemParams!, $taskInfo: TaskInfoParams!) {
-  createTask(list: $list, item: $item, taskInfo: $taskInfo) {
+mutation CreateTask($list: ID, $item: ItemParams!) {
+  createTask(list: $list, item: $item) {
     ...itemFields
   }
 }
@@ -101,6 +101,12 @@ mutation EditItem($id: ID!, $item: ItemParams!) {
 
 mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
   editTaskInfo(id: $id, taskInfo: $taskInfo) {
+    ...itemFields
+  }
+}
+
+mutation EditTaskController($id: ID!, $controller: String) {
+  editTaskController(id: $id, controller: $controller) {
     ...itemFields
   }
 }

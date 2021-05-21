@@ -1,3 +1,4 @@
+import type { TaskController } from "@allthethings/schema";
 import type { Knex } from "knex";
 import type { DateTime } from "luxon";
 
@@ -100,6 +101,7 @@ export type ItemDbTable = DbTable<IndexedDbEntity & {
 export type TaskInfoDbTable = DbTable<{
   due: DateTime | null;
   done: DateTime | null;
+  controller: TaskController;
 }>;
 
 // Data for a link. id is a foreign key to ItemDbTable.id.
@@ -124,4 +126,24 @@ export type FileDetailDbTable = DbTable<{
 // Data for a plugin item. id is a foreign key to ItemDbTable.id.
 export type PluginDetailDbTable = DbTable<{
   pluginId: string;
+  hasTaskState: boolean;
+  taskDone: DateTime | null;
 }>;
+
+// Data for a plugin list.
+export type PluginListDbTable = DbTable<{
+  pluginId: string;
+  name: string;
+  url: string;
+}>;
+
+export interface PluginListItem {
+  pluginId: string;
+  listId: string;
+  itemId: string;
+  present: boolean;
+}
+
+export type PluginListItemsDbTable = Knex.CompositeTableType<
+  PluginListItem
+>;

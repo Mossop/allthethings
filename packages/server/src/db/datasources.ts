@@ -1,8 +1,12 @@
+import { TaskController } from "@allthethings/schema";
+import type { MakeRequired } from "@allthethings/utils";
 import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type { Knex } from "knex";
+import { DateTime } from "luxon";
 
+import type { PluginList } from "../plugins";
 import type { ResolverContext } from "../schema/context";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";
@@ -506,16 +510,16 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }));
   }
 
-  public async deleteUnreferenced(pluginId: string, ids: string[]): Promise<void> {
-    let itemsInInboxes = this.records
-      .join("Section", "Section.id", "Item.ownerId")
-      .join("PluginDetail", "Item.id", "PluginDetail.id")
-      .whereIn("Item.id", ids)
-      .andWhere("Section.index", SectionIndex.Inbox)
-      .andWhere("PluginDetail.pluginId", pluginId)
-      .select("Item.id");
+  public async deleteUnreferenced(_pluginId: string): Promise<void> {
+    let items = await this.select(this.records
+      .join("TaskInfo", "TaskInfo.id", this.ref("id"))
+      .join("Section", this.ref("ownerId"), "Section.id")
+      .whereNotNull("TaskInfo.done")
+      .where("Section.index", SectionIndex.Inbox));
 
-    await this.records.whereIn("id", itemsInInboxes).delete();
+    for (let item of items) {
+      await this.delete(item.id);
+    }
   }
 
   public listSpecialSection(
@@ -546,7 +550,7 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
 
   public async setItemTaskInfo(
     item: Impl.Item,
-    taskInfo: DbUpdateObject<Db.TaskInfoDbTable> | null,
+    taskInfo: MakeRequired<DbUpdateObject<Db.TaskInfoDbTable>, "controller"> | null,
   ): Promise<void> {
     if (!taskInfo) {
       return this.delete(item.id());
@@ -674,6 +678,164 @@ export class PluginDetailSource extends DbDataSource<Impl.PluginDetail, Db.Plugi
   }
 }
 
+export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginListDbTable> {
+  public tableName = "PluginList";
+  protected builder = classBuilder<Impl.PluginList, Db.PluginListDbTable>(Impl.PluginList);
+
+  public async wasItemEverListed(id: string): Promise<boolean> {
+    return await count(this.knex
+      .from("PluginListItems")
+      .where("itemId", id))
+      ? true
+      : false;
+  }
+
+  public async isItemCurrentlyListed(id: string): Promise<boolean> {
+    return await count(this.knex
+      .from("PluginListItems")
+      .where("itemId", id)
+      .where("present", true))
+      ? true
+      : false;
+  }
+
+  public async addList(pluginId: string, list: PluginList): Promise<string> {
+    let listId = await id();
+
+    await this.insert({
+      id: listId,
+      pluginId,
+      name: list.name,
+      url: list.url,
+    });
+
+    if (list.items) {
+      let records = list.items.map((itemId: string): Db.PluginListItem => ({
+        pluginId,
+        listId,
+        itemId,
+        present: true,
+      }));
+
+      await this.knex
+        .into("PluginListItems")
+        .insert(records);
+
+      await this.knex
+        .into("TaskInfo")
+        .whereIn("id", list.items)
+        .where("controller", TaskController.PluginList)
+        .whereNotNull("done")
+        .update({
+          done: null,
+        });
+    }
+
+    return listId;
+  }
+
+  public async updateList(pluginId: string, id: string, list: Partial<PluginList>): Promise<void> {
+    if (list.name || list.url) {
+      await this.table
+        .where({
+          [this.ref("id")]: id,
+          [this.ref("pluginId")]: pluginId,
+        })
+        .update({
+          name: list.name,
+          url: list.url,
+        });
+    }
+
+    if (list.items) {
+      let present = await this.knex
+        .into<Db.PluginListItemsDbTable>("PluginListItems")
+        .whereIn("itemId", list.items)
+        .andWhere({
+          pluginId,
+          listId: id,
+        })
+        .update({
+          present: true,
+        })
+        .returning("itemId");
+
+      let newItems = list.items.filter((id: string): boolean => !present.includes(id));
+      if (newItems.length) {
+        let records = newItems.map((itemId: string): Db.PluginListItem => ({
+          pluginId,
+          listId: id,
+          itemId,
+          present: true,
+        }));
+
+        await this.knex
+          .into("PluginListItems")
+          .insert(records);
+      }
+
+      await this.knex
+        .into("PluginListItems")
+        .whereNotIn("itemId", list.items)
+        .andWhere({
+          pluginId,
+          listId: id,
+        })
+        .update({
+          present: false,
+        });
+
+      await this.knex
+        .into("TaskInfo")
+        .whereIn("id", list.items)
+        .where("controller", TaskController.PluginList)
+        .whereNotNull("done")
+        .update({
+          done: null,
+        });
+
+      let presentIds = this.knex
+        .from("PluginListItems")
+        .where("present", true)
+        .distinct("itemId");
+
+      let done = DateTime.now();
+      await this.knex
+        .into("TaskInfo")
+        .whereNotIn("id", presentIds)
+        .where("controller", TaskController.PluginList)
+        .whereNull("done")
+        .update({
+          done,
+        });
+    }
+  }
+
+  public async deleteList(pluginId: string, id: string): Promise<void> {
+    await this.table
+      .where({
+        [this.ref("id")]: id,
+        [this.ref("pluginId")]: pluginId,
+      })
+      .delete();
+
+    let presentIds = this.knex
+      .from("PluginListItems")
+      .where("present", true)
+      .distinct("itemId");
+
+    let done = DateTime.now();
+    await this.knex
+      .into("TaskInfo")
+      .whereNotIn("id", presentIds)
+      .where("controller", TaskController.PluginList)
+      .whereNull("done")
+      .update({
+        done,
+      });
+  }
+}
+
 export interface AppDataSources {
   users: UserDataSource,
   contexts: ContextDataSource;
@@ -685,6 +847,7 @@ export interface AppDataSources {
   pluginDetail: PluginDetailSource;
   noteDetail: NoteDetailSource;
   linkDetail: LinkDetailSource;
+  pluginList: PluginListSource;
 }
 
 export function dataSources(): AppDataSources {
@@ -699,6 +862,7 @@ export function dataSources(): AppDataSources {
     pluginDetail: new PluginDetailSource(),
     noteDetail: new NoteDetailSource(),
     linkDetail: new LinkDetailSource(),
+    pluginList: new PluginListSource(),
   };
 }
 

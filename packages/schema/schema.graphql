@@ -3,10 +3,14 @@ scalar DateTime
 type TaskInfo {
   due: DateTime
   done: DateTime
+  controller: String!
 }
 
 type PluginDetail {
   pluginId: String!
+  hasTaskState: Boolean!
+  wasEverListed: Boolean!
+  isCurrentlyListed: Boolean!
   fields: String!
 }
 
@@ -172,12 +176,13 @@ type Mutation {
   editSection(id: ID!, params: SectionParams!): Section
   deleteSection(id: ID!): Boolean!
 
-  createTask(list: ID, item: ItemParams!, taskInfo: TaskInfoParams!): Item!
-  createNote(list: ID, item: ItemParams!, detail: NoteDetailParams!, taskInfo: TaskInfoParams): Item!
+  createTask(list: ID, item: ItemParams!): Item!
+  createNote(list: ID, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
   createLink(list: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
+  editTaskController(id: ID!, controller: String): Item
 
   moveItem(id: ID!, parent: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!

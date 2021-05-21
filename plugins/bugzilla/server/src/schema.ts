@@ -50,7 +50,6 @@ export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
-  readonly setItemTaskType: Scalars['Boolean'];
 };
 
 
@@ -62,12 +61,6 @@ export type MutationCreateBugzillaAccountArgs = {
 export type MutationCreateBugzillaSearchArgs = {
   account: Scalars['ID'];
   params: BugzillaSearchParams;
-};
-
-
-export type MutationSetItemTaskTypeArgs = {
-  item: Scalars['ID'];
-  taskType: Scalars['String'];
 };
 
 export type User = {
@@ -161,8 +154,8 @@ export type ResolversTypes = ResolversObject<{
   BugzillaSearch: ResolverTypeWrapper<BugzillaSearch>;
   BugzillaSearchParams: BugzillaSearchParams;
   Mutation: ResolverTypeWrapper<{}>;
-  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   User: ResolverTypeWrapper<User>;
+  Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -174,8 +167,8 @@ export type ResolversParentTypes = ResolversObject<{
   BugzillaSearch: BugzillaSearch;
   BugzillaSearchParams: BugzillaSearchParams;
   Mutation: {};
-  Boolean: Scalars['Boolean'];
   User: User;
+  Boolean: Scalars['Boolean'];
 }>;
 
 export type BugzillaAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['BugzillaAccount'] = ResolversParentTypes['BugzillaAccount']> = ResolversObject<{
@@ -200,7 +193,6 @@ export type BugzillaSearchResolvers<ContextType = any, ParentType extends Resolv
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'params'>>;
   createBugzillaSearch: Resolver<ResolversTypes['BugzillaSearch'], ParentType, ContextType, RequireFields<MutationCreateBugzillaSearchArgs, 'account' | 'params'>>;
-  setItemTaskType: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<MutationSetItemTaskTypeArgs, 'item' | 'taskType'>>;
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{

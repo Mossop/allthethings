@@ -1,13 +1,15 @@
 import type { URL } from "url";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import type { Awaitable, MaybeCallable } from "@allthethings/utils";
+import { TaskController } from "@allthethings/schema";
+import type { Awaitable, MaybeCallable, Overwrite } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import type { DateTime } from "luxon";
 
 import type { Item } from "../db";
+import { PluginDetail } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import { id } from "../db/connection";
 import type { AppDataSources } from "../db/datasources";
@@ -34,11 +36,24 @@ export interface BasePluginItem {
   taskInfo: PluginTaskInfo | null;
 }
 
-export type CreateBasePluginItem = Omit<BasePluginItem, "id">;
+export type CreatePluginTaskInfo = PluginTaskInfo & {
+  controller: TaskController;
+};
+
+export type CreateBasePluginItem = Overwrite<Omit<BasePluginItem, "id">, {
+  hasTaskState: boolean;
+  taskInfo: CreatePluginTaskInfo | null;
+}>;
 
 export interface PluginTaskInfo {
   due: DateTime | null;
   done: DateTime | null;
+}
+
+export interface PluginList {
+  name: string;
+  url: string;
+  items?: string[];
 }
 
 export interface PluginContext {
@@ -50,8 +65,11 @@ export interface PluginContext {
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
   createItem(user: string, props: CreateBasePluginItem): Promise<BasePluginItem>;
   getItem(id: string): Promise<BasePluginItem | null>;
-  setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void>;
-  deleteUnreferencedItems(ids: string[]): Promise<void>;
+  setItemTaskDone(id: string, done: DateTime | null): Promise<void>;
+
+  addList(list: PluginList): Promise<string>;
+  updateList(id: string, list: Partial<PluginList>): Promise<void>;
+  deleteList(id: string): Promise<void>;
 }
 
 export interface GraphQLContext extends PluginContext {
@@ -108,6 +126,13 @@ export function buildContext(
   dataSources: AppDataSources,
 ): PluginContext {
   let db = dataSources.users.connection;
+  let dirty = false;
+
+  db.onCommit(async () => {
+    if (dirty) {
+      await dataSources.items.deleteUnreferenced(plugin.id);
+    }
+  });
 
   return {
     get knex(): PluginKnex {
@@ -131,7 +156,10 @@ export function buildContext(
       return this.knex.table(this.tableRef(name));
     },
 
-    async createItem(userId: string, item: CreateBasePluginItem): Promise<BasePluginItem> {
+    async createItem(
+      userId: string,
+      { hasTaskState, ...item }: CreateBasePluginItem,
+    ): Promise<BasePluginItem> {
       let user = await dataSources.users.getImpl(userId);
       if (!user) {
         throw new Error("Unknown user.");
@@ -149,7 +177,7 @@ export function buildContext(
         type: ItemType.Plugin,
       });
 
-      if (taskInfo) {
+      if (taskInfo && hasTaskState) {
         await dataSources.taskInfo.create(itemImpl, {
           ...taskInfo,
         });
@@ -157,6 +185,8 @@ export function buildContext(
 
       await dataSources.pluginDetail.create(itemImpl, {
         pluginId: plugin.id,
+        hasTaskState: hasTaskState,
+        taskDone: taskInfo?.done ?? null,
       });
 
       return itemImpl.forPlugin();
@@ -167,17 +197,48 @@ export function buildContext(
       return item?.forPlugin() ?? null;
     },
 
-    async setItemTaskInfo(id: string, taskInfo: PluginTaskInfo | null): Promise<void> {
+    async setItemTaskDone(id: string, done: DateTime | null): Promise<void> {
       let item = await dataSources.items.getImpl(id);
       if (!item) {
         throw new Error("Unknown item.");
       }
 
-      return dataSources.taskInfo.setItemTaskInfo(item, taskInfo);
+      let detail = await item.detail();
+      if (!(detail instanceof PluginDetail)) {
+        throw new Error("Unknown item.");
+      }
+
+      if (!await detail.hasTaskState()) {
+        return;
+      }
+
+      await dataSources.pluginDetail.updateOne(id, {
+        taskDone: done,
+      });
+
+      let existing = await item.taskInfo();
+      if (!existing || await existing.controller() != TaskController.Plugin) {
+        return;
+      }
+
+      return dataSources.taskInfo.setItemTaskInfo(item, {
+        done,
+        controller: TaskController.Plugin,
+      });
     },
 
-    async deleteUnreferencedItems(ids: string[]): Promise<void> {
-      return dataSources.items.deleteUnreferenced(plugin.id, ids);
+    async addList(list: PluginList): Promise<string> {
+      return dataSources.pluginList.addList(plugin.id, list);
+    },
+
+    async updateList(id: string, list: Partial<PluginList>): Promise<void> {
+      dirty = true;
+      return dataSources.pluginList.updateList(plugin.id, id, list);
+    },
+
+    async deleteList(id: string): Promise<void> {
+      dirty = true;
+      return dataSources.pluginList.deleteList(plugin.id, id);
     },
   };
 }

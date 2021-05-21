@@ -8,7 +8,7 @@ export type RootFields_User_Fragment = { readonly __typename: 'User', readonly r
 
 export type RootFieldsFragment = RootFields_Context_Fragment | RootFields_User_Fragment;
 
-export type ItemFieldsFragment = { readonly __typename: 'Item', readonly id: string, readonly summary: string, readonly archived: Types.Maybe<any>, readonly snoozed: Types.Maybe<any>, readonly created: any, readonly taskInfo: Types.Maybe<{ readonly __typename: 'TaskInfo', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any> }>, readonly detail: Types.Maybe<{ readonly __typename: 'PluginDetail', readonly pluginId: string, readonly fields: string } | { readonly __typename: 'LinkDetail', readonly icon: Types.Maybe<string>, readonly url: string } | { readonly __typename: 'NoteDetail', readonly note: string } | { readonly __typename: 'FileDetail', readonly size: number, readonly filename: string, readonly mimetype: string }> };
+export type ItemFieldsFragment = { readonly __typename: 'Item', readonly id: string, readonly summary: string, readonly archived: Types.Maybe<any>, readonly snoozed: Types.Maybe<any>, readonly created: any, readonly taskInfo: Types.Maybe<{ readonly __typename: 'TaskInfo', readonly due: Types.Maybe<any>, readonly done: Types.Maybe<any>, readonly controller: string }>, readonly detail: Types.Maybe<{ readonly __typename: 'PluginDetail', readonly pluginId: string, readonly hasTaskState: boolean, readonly wasEverListed: boolean, readonly isCurrentlyListed: boolean, readonly fields: string } | { readonly __typename: 'LinkDetail', readonly icon: Types.Maybe<string>, readonly url: string } | { readonly __typename: 'NoteDetail', readonly note: string } | { readonly __typename: 'FileDetail', readonly size: number, readonly filename: string, readonly mimetype: string }> };
 
 export const RootFieldsFragmentDoc = gql`
     fragment rootFields on ProjectRoot {
@@ -37,6 +37,7 @@ export const ItemFieldsFragmentDoc = gql`
   taskInfo {
     due
     done
+    controller
   }
   detail {
     ... on FileDetail {
@@ -53,6 +54,9 @@ export const ItemFieldsFragmentDoc = gql`
     }
     ... on PluginDetail {
       pluginId
+      hasTaskState
+      wasEverListed
+      isCurrentlyListed
       fields
     }
   }

@@ -101,6 +101,7 @@ export type Mutation = {
   readonly createLink: Item;
   readonly editItem?: Maybe<Item>;
   readonly editTaskInfo?: Maybe<Item>;
+  readonly editTaskController?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
   readonly deleteItem: Scalars['Boolean'];
   readonly archiveItem?: Maybe<Item>;
@@ -181,7 +182,6 @@ export type MutationDeleteSectionArgs = {
 export type MutationCreateTaskArgs = {
   list?: Maybe<Scalars['ID']>;
   item: ItemParams;
-  taskInfo: TaskInfoParams;
 };
 
 
@@ -189,7 +189,7 @@ export type MutationCreateNoteArgs = {
   list?: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: NoteDetailParams;
-  taskInfo?: Maybe<TaskInfoParams>;
+  isTask: Scalars['Boolean'];
 };
 
 
@@ -210,6 +210,12 @@ export type MutationEditItemArgs = {
 export type MutationEditTaskInfoArgs = {
   id: Scalars['ID'];
   taskInfo?: Maybe<TaskInfoParams>;
+};
+
+
+export type MutationEditTaskControllerArgs = {
+  id: Scalars['ID'];
+  controller?: Maybe<Scalars['String']>;
 };
 
 
@@ -248,6 +254,9 @@ export type NoteDetailParams = {
 export type PluginDetail = {
   readonly __typename: 'PluginDetail';
   readonly pluginId: Scalars['String'];
+  readonly hasTaskState: Scalars['Boolean'];
+  readonly wasEverListed: Scalars['Boolean'];
+  readonly isCurrentlyListed: Scalars['Boolean'];
   readonly fields: Scalars['String'];
 };
 
@@ -314,6 +323,7 @@ export type TaskInfo = {
   readonly __typename: 'TaskInfo';
   readonly due?: Maybe<Scalars['DateTime']>;
   readonly done?: Maybe<Scalars['DateTime']>;
+  readonly controller: Scalars['String'];
 };
 
 export type TaskInfoParams = {
@@ -386,7 +396,7 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -406,6 +416,7 @@ export type MutationFieldPolicy = {
 	createLink?: FieldPolicy<any> | FieldReadFunction<any>,
 	editItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	editTaskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
+	editTaskController?: FieldPolicy<any> | FieldReadFunction<any>,
 	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -415,9 +426,12 @@ export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {
 	note?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type PluginDetailKeySpecifier = ('pluginId' | 'fields' | PluginDetailKeySpecifier)[];
+export type PluginDetailKeySpecifier = ('pluginId' | 'hasTaskState' | 'wasEverListed' | 'isCurrentlyListed' | 'fields' | PluginDetailKeySpecifier)[];
 export type PluginDetailFieldPolicy = {
 	pluginId?: FieldPolicy<any> | FieldReadFunction<any>,
+	hasTaskState?: FieldPolicy<any> | FieldReadFunction<any>,
+	wasEverListed?: FieldPolicy<any> | FieldReadFunction<any>,
+	isCurrentlyListed?: FieldPolicy<any> | FieldReadFunction<any>,
 	fields?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ProjectKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
@@ -453,10 +467,11 @@ export type SectionFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type TaskInfoKeySpecifier = ('due' | 'done' | TaskInfoKeySpecifier)[];
+export type TaskInfoKeySpecifier = ('due' | 'done' | 'controller' | TaskInfoKeySpecifier)[];
 export type TaskInfoFieldPolicy = {
 	due?: FieldPolicy<any> | FieldReadFunction<any>,
-	done?: FieldPolicy<any> | FieldReadFunction<any>
+	done?: FieldPolicy<any> | FieldReadFunction<any>,
+	controller?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TaskListKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];
 export type TaskListFieldPolicy = {
