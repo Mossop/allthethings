@@ -3,7 +3,7 @@ import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@
 import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
-import type { Dispatch, ReactElement, SetStateAction } from "react";
+import type { ReactElement } from "react";
 import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
@@ -112,7 +112,6 @@ interface SectionListProps {
   index: number;
   sections: Section[];
   filter: ListFilter;
-  setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 export function SectionDragMarker({
@@ -155,7 +154,6 @@ export default ReactMemo(function SectionList({
   index,
   sections,
   filter,
-  setFilter,
 }: SectionListProps): ReactResult {
   let classes = useStyles();
 
@@ -256,7 +254,7 @@ export default ReactMemo(function SectionList({
           onSubmit={changeSectionName}
         />
       </div>
-      <ItemListActions list={section} filter={filter} setFilter={setFilter}/>
+      <ItemListActions list={section}/>
     </ListSubheader>
     {section.items.length > 0 && <Divider/>}
     <ItemList items={section.items} section={section} taskList={section.taskList} filter={filter}/>

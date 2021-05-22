@@ -6,6 +6,7 @@ import clsx from "clsx";
 import type { Dispatch, ReactElement, SetStateAction } from "react";
 import { useState, forwardRef, useCallback, useMemo } from "react";
 
+import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
@@ -79,7 +80,8 @@ const UserHeader = ReactMemo(forwardRef(function TasksHeader({
       <Icons.Project/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <ItemListActions list={user} filter={filter} setFilter={setFilter}/>
+    <FilterMenu filter={filter} setFilter={setFilter}/>
+    <ItemListActions list={user}/>
   </div>;
 }));
 
@@ -118,7 +120,8 @@ const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
       initialValue={context.name}
       onSubmit={changeContextName}
     />
-    <ItemListActions list={context} filter={filter} setFilter={setFilter}/>
+    <FilterMenu filter={filter} setFilter={setFilter}/>
+    <ItemListActions list={context}/>
   </div>;
 }));
 
@@ -162,8 +165,9 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
         initialValue={project.name}
         onSubmit={changeTaskListName}
       />
+      <FilterMenu filter={filter} setFilter={setFilter}/>
     </div>
-    <ItemListActions list={project} filter={filter} setFilter={setFilter}/>
+    <ItemListActions list={project}/>
   </div>;
 }));
 
@@ -274,7 +278,6 @@ export default ReactMemo(function TaskList({
         index={index}
         sections={entries.sections}
         filter={filter}
-        setFilter={setFilter}
       />,
     );
 

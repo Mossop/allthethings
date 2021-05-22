@@ -4,6 +4,7 @@ import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { useState } from "react";
 
+import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
@@ -48,7 +49,8 @@ export default ReactMemo(function Inbox(): ReactResult {
       <div className={classes.heading}>
         <Icons.Inbox/>
         <Heading className={classes.headingText}>Inbox</Heading>
-        <ItemListActions list={user.inbox} filter={filter} setFilter={setFilter}/>
+        <FilterMenu filter={filter} setFilter={setFilter}/>
+        <ItemListActions list={user.inbox}/>
       </div>
       <List disablePadding={true}>
         <ItemList items={items} taskList={null} section={null} filter={filter}/>
