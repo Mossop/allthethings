@@ -7,6 +7,6 @@ import BugIcon from "./Icon.svg";
 export default function Icon(): ReactElement {
   return <SvgIcon
     component={BugIcon}
-    viewBox="0 9 95 134"
+    viewBox="0 0 90 90"
   />;
 }
