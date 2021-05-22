@@ -2,7 +2,7 @@ import type { URL } from "url";
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { TaskController } from "@allthethings/schema";
-import type { Awaitable, MaybeCallable, Overwrite } from "@allthethings/utils";
+import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
@@ -28,6 +28,11 @@ export type ResolverFn<TContext = any, TResult = any, TParent = any, TArgs = any
 export type TypeResolver<TContext> = Record<string, ResolverFn<TContext>>;
 export type Resolver<TContext> = Record<string, TypeResolver<TContext>>;
 
+export interface PluginTaskInfo {
+  due: DateTime | null;
+  done: DateTime | null;
+}
+
 export interface BasePluginItem {
   id: string;
   summary: string;
@@ -36,19 +41,11 @@ export interface BasePluginItem {
   taskInfo: PluginTaskInfo | null;
 }
 
-export type CreatePluginTaskInfo = PluginTaskInfo & {
-  controller: TaskController;
+export type CreateBasePluginItem = Omit<BasePluginItem, "id" | "taskInfo"> & {
+  due?: DateTime | null;
+  done?: DateTime | null;
+  controller: TaskController | null;
 };
-
-export type CreateBasePluginItem = Overwrite<Omit<BasePluginItem, "id">, {
-  hasTaskState: boolean;
-  taskInfo: CreatePluginTaskInfo | null;
-}>;
-
-export interface PluginTaskInfo {
-  due: DateTime | null;
-  done: DateTime | null;
-}
 
 export interface PluginList {
   name: string;
@@ -151,35 +148,38 @@ export function buildContext(
 
     async createItem(
       userId: string,
-      { hasTaskState, ...item }: CreateBasePluginItem,
+      { due, done, controller, ...item }: CreateBasePluginItem,
     ): Promise<BasePluginItem> {
       let user = await dataSources.users.getImpl(userId);
       if (!user) {
         throw new Error("Unknown user.");
       }
 
-      let {
-        taskInfo,
-        ...itemInfo
-      } = item;
-
       let inbox = await user.inbox();
 
       let itemImpl = await dataSources.items.create(inbox, {
-        ...itemInfo,
+        ...item,
         type: ItemType.Plugin,
       });
 
-      if (taskInfo && hasTaskState) {
+      if (done !== undefined && controller == TaskController.Plugin) {
         await dataSources.taskInfo.create(itemImpl, {
-          ...taskInfo,
+          due: due ?? null,
+          done,
+          controller,
+        });
+      } else if (controller == TaskController.Manual) {
+        await dataSources.taskInfo.create(itemImpl, {
+          due: due ?? null,
+          done: null,
+          controller,
         });
       }
 
       await dataSources.pluginDetail.create(itemImpl, {
         pluginId: plugin.id,
-        hasTaskState: hasTaskState,
-        taskDone: taskInfo?.done ?? null,
+        hasTaskState: done !== undefined,
+        taskDone: done ?? null,
       });
 
       return itemImpl.forPlugin();

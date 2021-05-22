@@ -1,7 +1,7 @@
 import { URL, URLSearchParams } from "url";
 
 import { TaskController } from "@allthethings/schema";
-import type { PluginContext, BasePluginItem, CreatePluginTaskInfo } from "@allthethings/server";
+import type { PluginContext, BasePluginItem } from "@allthethings/server";
 import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Bug as BugzillaBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
@@ -531,46 +531,12 @@ export class Bug {
     bug: BugzillaBug,
     controller: TaskController | null,
   ): Promise<Bug> {
-    let taskInfo: CreatePluginTaskInfo | null;
-
-    switch (controller) {
-      case null:
-        taskInfo = null;
-        break;
-      case TaskController.Manual:
-        // Just asume that since we're creating it the user isn't done with it yet.
-        taskInfo = {
-          done: null,
-          due: null,
-          controller,
-        };
-        break;
-      case TaskController.Plugin: {
-        taskInfo = {
-          done: await account.doneForStatus(bug),
-          due: null,
-          controller,
-        };
-        break;
-      }
-      case TaskController.PluginList: {
-        // Assume that we're only creating the item as the result of a search and so it is in the
-        // results.
-        taskInfo = {
-          done: null,
-          due: null,
-          controller,
-        };
-        break;
-      }
-    }
-
     let item = await account.context.createItem(account.user, {
       summary: bug.summary,
       archived: null,
       snoozed: null,
-      hasTaskState: true,
-      taskInfo,
+      done: await account.doneForStatus(bug),
+      controller,
     });
 
     let record: BugzillaBugRecord = {
