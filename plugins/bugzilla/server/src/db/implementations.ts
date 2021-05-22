@@ -348,7 +348,7 @@ export class Search implements Impl<BugzillaSearch> {
       search = params.toString();
     }
 
-    let url = new URL("/buglist.cgi", this.account.url);
+    let url = new URL("buglist.cgi", this.account.url);
     url.search = search;
 
     return url.toString();
