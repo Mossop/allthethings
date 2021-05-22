@@ -510,7 +510,7 @@ export class Bug {
       accountId: this.account.id,
       bugId: this.record.bugId,
       summary: this.record.summary,
-      url: new URL(`/show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
+      url: new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
       icon: this.account.icon,
       status: this.record.status,
       resolution: this.record.resolution,
