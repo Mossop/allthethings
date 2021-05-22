@@ -208,8 +208,8 @@ export class Account implements Resolver<BugzillaAccount> {
   }
 
   public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
-    let baseUrl = new URL(this.url);
-    if (baseUrl.origin != url.origin || url.pathname != "/show_bug.cgi") {
+    let baseUrl = new URL("show_bug.cgi", this.url);
+    if (baseUrl.origin != url.origin || baseUrl.pathname != url.pathname) {
       return null;
     }
 
