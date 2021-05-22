@@ -35,6 +35,7 @@ const requestListener: GraphQLRequestListener<ResolverContext> = {
     ctx: GraphQLRequestContextWillSendResponse<ResolverContext>,
   ): Promise<void> {
     if (ctx.context.db.isInTransaction) {
+      await ctx.context.dataSources.items.deleteCompleteInboxTasks();
       await ctx.context.db.commitTransaction();
     }
   },

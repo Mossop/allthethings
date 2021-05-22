@@ -126,13 +126,6 @@ export function buildContext(
   dataSources: AppDataSources,
 ): PluginContext {
   let db = dataSources.users.connection;
-  let dirty = false;
-
-  db.onCommit(async () => {
-    if (dirty) {
-      await dataSources.items.deleteUnreferenced(plugin.id);
-    }
-  });
 
   return {
     get knex(): PluginKnex {
@@ -232,12 +225,10 @@ export function buildContext(
     },
 
     async updateList(id: string, list: Partial<PluginList>): Promise<void> {
-      dirty = true;
       return dataSources.pluginList.updateList(plugin.id, id, list);
     },
 
     async deleteList(id: string): Promise<void> {
-      dirty = true;
       return dataSources.pluginList.deleteList(plugin.id, id);
     },
   };

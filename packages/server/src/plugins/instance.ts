@@ -87,6 +87,8 @@ export default class PluginInstance implements PluginServer {
 
     try {
       let result = await task(buildContext(this, dataSources));
+
+      await dataSources.items.deleteCompleteInboxTasks();
       await cloned.commitTransaction();
       return result;
     } catch (e) {

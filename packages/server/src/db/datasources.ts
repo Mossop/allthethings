@@ -510,11 +510,17 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }));
   }
 
-  public async deleteUnreferenced(_pluginId: string): Promise<void> {
+  public async deleteCompleteInboxTasks(): Promise<void> {
+    let itemsInLists = this.knex
+      .from<Db.PluginListItemsDbTable>("PluginListItems")
+      .where("present", true)
+      .distinct("itemId");
+
     let items = await this.select(this.records
       .join("TaskInfo", "TaskInfo.id", this.ref("id"))
       .join("Section", this.ref("ownerId"), "Section.id")
       .whereNotNull("TaskInfo.done")
+      .whereNotIn(this.ref("id"), itemsInLists)
       .where("Section.index", SectionIndex.Inbox));
 
     for (let item of items) {
