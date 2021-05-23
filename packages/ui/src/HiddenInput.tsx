@@ -3,8 +3,9 @@ import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { KeyboardEvent } from "react";
 import { useRef, useCallback, useState } from "react";
+import type { ContentEditableEvent } from "react-contenteditable";
+import ContentEditable from "react-contenteditable";
 
-import { useFieldState } from "./Forms";
 import * as Icons from "./Icons";
 import { flexRow } from "./styles";
 import type { ReactResult } from "./types";
@@ -39,9 +40,6 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: "1.2rem",
       marginRight: theme.spacing(1),
     },
-    buttonInactive: {
-      visibility: "collapse",
-    },
   }));
 
 export interface HiddenInputProps {
@@ -56,30 +54,30 @@ export const HiddenInput = ReactMemo(function HiddenInput({
   onSubmit,
 }: HiddenInputProps): ReactResult {
   let classes = useStyles();
-  let [value, setValue] = useState(initialValue);
-  let [active, setShowButtons] = useState(false);
+  let value = useRef(initialValue);
+  let [showButtons, setShowButtons] = useState(false);
   let ref = useRef<HTMLInputElement | null>(null);
-
-  let updateState = useFieldState(setValue);
-  let currentValue = active ? value : initialValue;
+  if (!showButtons) {
+    value.current = initialValue;
+  }
 
   let focus = useCallback(() => {
-    setValue(initialValue);
+    value.current = initialValue;
     setShowButtons(true);
   }, [initialValue]);
   let blur = useCallback(() => {
-    if (value == initialValue) {
+    if (value.current == initialValue) {
       setShowButtons(false);
     }
   }, [value, initialValue]);
 
   let submit = useCallback(() => {
-    onSubmit(value);
+    onSubmit(value.current);
     setShowButtons(false);
     ref.current?.blur();
   }, [onSubmit, value]);
   let cancel = useCallback(() => {
-    setValue(initialValue);
+    value.current = initialValue;
     setShowButtons(false);
     ref.current?.blur();
   }, [initialValue]);
@@ -95,30 +93,37 @@ export const HiddenInput = ReactMemo(function HiddenInput({
     }
   }, [submit, cancel]);
 
+  let handleChange = useCallback((event: ContentEditableEvent): void => {
+    value.current = event.target.value;
+  }, []);
+
   return <div
-    className={clsx(classes.boxShared, active ? classes.boxActive : classes.boxInactive)}
+    className={clsx(classes.boxShared, showButtons ? classes.boxActive : classes.boxInactive)}
   >
-    <input
-      ref={ref}
+    <ContentEditable
+      innerRef={ref}
       onFocus={focus}
       onBlur={blur}
-      type="text"
       className={clsx(className, classes.inputShared)}
-      onChange={updateState}
+      onChange={handleChange}
       onKeyDown={keypress}
-      value={currentValue}
+      spellCheck={showButtons}
+      html={value.current}
     />
-    <IconButton
-      className={clsx(classes.buttonShared, !active && classes.buttonInactive)}
-      onClick={submit}
-    >
-      <Icons.Save/>
-    </IconButton>
-    <IconButton
-      className={clsx(classes.buttonShared, !active && classes.buttonInactive)}
-      onClick={cancel}
-    >
-      <Icons.Cancel/>
-    </IconButton>
+    {
+      showButtons && <>
+        <IconButton
+          className={clsx(classes.buttonShared)}
+          onClick={submit}
+        >
+          <Icons.Save/>
+        </IconButton>
+        <IconButton
+          className={clsx(classes.buttonShared)}
+          onClick={cancel}
+        >
+          <Icons.Cancel/>
+        </IconButton>
+      </>}
   </div>;
 });

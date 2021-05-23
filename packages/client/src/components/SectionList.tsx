@@ -14,7 +14,6 @@ import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } f
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
 import type { Inbox, Item, Section, TaskList } from "../utils/state";
 import type { ListFilter } from "../utils/view";
-import { isVisible } from "../utils/view";
 import ItemDisplay, { ItemDragMarker } from "./Item";
 import ItemListActions from "./ItemListActions";
 
@@ -75,7 +74,6 @@ export const ItemList = ReactMemo(function ItemList({
 
   let displayItems = useMemo(() => {
     let displayItems = items
-      .filter((item: Item): boolean => isVisible(item, filter))
       .map(
         (item: Item, index: number): ReactElement => <ItemDisplay
           key={item.id}
@@ -84,6 +82,7 @@ export const ItemList = ReactMemo(function ItemList({
           item={item}
           items={items}
           index={index}
+          filter={filter}
         />,
       );
 

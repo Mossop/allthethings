@@ -334,7 +334,6 @@ export default ReactMemo(function ProjectList(): ReactResult {
     elevation={2}
     component="nav"
     square={true}
-    className={clsx(canDropOnRoot && isShallowOverRoot && classes.dropping)}
     ref={dropRef}
   >
     <List component="div" className={classes.list}>
@@ -350,6 +349,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
       <TreeItem
         url={tasksUrl}
         icon={<Icons.Project/>}
+        className={clsx(canDropOnRoot && isShallowOverRoot && classes.dropping)}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
         taskCount={root.remainingTasks}
         label={context?.name ?? "Tasks"}

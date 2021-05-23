@@ -43,6 +43,8 @@ import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
 import type { Inbox, Item, Item as ItemState, Section, TaskList } from "../utils/state";
 import { isInbox, isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
+import type { ListFilter } from "../utils/view";
+import { isVisible } from "../utils/view";
 import FileItem from "./FileItem";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
@@ -205,6 +207,7 @@ interface ItemProps {
   item: ItemState;
   items: ItemState[];
   index: number;
+  filter: ListFilter;
 }
 
 export type ItemRenderProps = Pick<ItemProps, "item" | "section" | "taskList"> & {
@@ -258,6 +261,7 @@ export default ReactMemo(function ItemDisplay({
   taskList,
   items,
   index,
+  filter,
 }: ItemProps): ReactResult {
   let classes = useStyles();
 
@@ -412,6 +416,10 @@ export default ReactMemo(function ItemDisplay({
     item,
   };
 
+  if (!isVisible(item, filter)) {
+    return null;
+  }
+
   return <>
     <ListItem
       className={clsx(classes.item, isDragging && classes.hidden)}
@@ -464,7 +472,10 @@ export default ReactMemo(function ItemDisplay({
           }
         </Menu>
         <Tooltip title="Snooze">
-          <IconButton {...bindTrigger(snoozeMenuState)}>
+          <IconButton
+            color={item.snoozed ? "primary" : "default"}
+            {...bindTrigger(snoozeMenuState)}
+          >
             <Icons.Snooze/>
           </IconButton>
         </Tooltip>
@@ -495,7 +506,7 @@ export default ReactMemo(function ItemDisplay({
             {
               item.archived
                 ? <Tooltip title="Unarchive">
-                  <IconButton onClick={archiveItem}>
+                  <IconButton onClick={archiveItem} color="primary">
                     <Icons.Unarchive/>
                   </IconButton>
                 </Tooltip>
