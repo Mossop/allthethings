@@ -366,7 +366,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
       }
       <TreeItem
         onClick={openCreateProjectDialog}
-        icon={<Icons.AddProject/>}
+        icon={<Icons.Add/>}
         label="Add Project..."
         depth={0}
       />

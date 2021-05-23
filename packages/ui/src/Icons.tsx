@@ -2,7 +2,7 @@ export { default as Context } from "@material-ui/icons/GroupWork";
 export { default as Inbox } from "@material-ui/icons/Inbox";
 export { default as Project } from "@material-ui/icons/ViewList";
 export { default as Section } from "@material-ui/icons/List";
-export { default as AddProject } from "@material-ui/icons/AddBox";
+export { default as Add } from "@material-ui/icons/AddBox";
 export { default as Error } from "@material-ui/icons/Error";
 export { default as Save } from "@material-ui/icons/Save";
 export { default as Cancel } from "@material-ui/icons/Cancel";

@@ -1,5 +1,4 @@
 import {
-  useBoolState,
   Icons,
   Styles,
   ReactMemo,
@@ -22,12 +21,8 @@ import {
   refetchListContextStateQuery,
   refetchListTaskListQuery,
 } from "../schema/queries";
-import CreateSectionDialog from "../ui/CreateSectionDialog";
-import LinkDialog from "../ui/LinkDialog";
-import TaskDialog from "../ui/TaskDialog";
 import type { Inbox, Section, TaskList } from "../utils/state";
 import {
-  isTaskList,
   isInbox,
   useUser,
   useProjectRoot,
@@ -36,6 +31,7 @@ import {
   isProject,
 } from "../utils/state";
 import { ViewType, replaceView, useView } from "../utils/view";
+import AddMenu from "./AddMenu";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -58,10 +54,6 @@ export default ReactMemo(function ItemListActions({
   let root = useProjectRoot();
   let view = useView();
   let user = useUser();
-
-  let [sectionAddDialogOpen, openAddSection, closeAddSection] = useBoolState();
-  let [taskAddDialogOpen, openAddTask, closeAddTask] = useBoolState();
-  let [linkAddDialogOpen, openAddLink, closeAddLink] = useBoolState();
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -119,32 +111,13 @@ export default ReactMemo(function ItemListActions({
     };
   }, [deleteContext, deleteProject, deleteSection, list, root, view, user]);
 
-  return <>
-    <div className={classes.actions}>
-      <Tooltip title="Add task">
-        <IconButton onClick={openAddTask}><Icons.Checked/></IconButton>
-      </Tooltip>
-      <Tooltip title="Add link">
-        <IconButton onClick={openAddLink}><Icons.Link/></IconButton>
-      </Tooltip>
-      {
-        isTaskList(list) &&
-        <Tooltip title="Add section">
-          <IconButton onClick={openAddSection}><Icons.Section/></IconButton>
-        </Tooltip>
-      }
-      {
-        deleteList &&
+  return <div className={classes.actions}>
+    <AddMenu list={list}/>
+    {
+      deleteList &&
         <Tooltip title="Delete">
           <IconButton onClick={deleteList}><Icons.Delete/></IconButton>
         </Tooltip>
-      }
-    </div>
-    {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
-    {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink}/>}
-    {
-      sectionAddDialogOpen && isTaskList(list) &&
-      <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>
     }
-  </>;
+  </div>;
 });
