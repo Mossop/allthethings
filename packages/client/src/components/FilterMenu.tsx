@@ -11,14 +11,18 @@ import {
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
+import type { Inbox, TaskList } from "../utils/state";
+import { isInbox } from "../utils/state";
 import { ListFilter } from "../utils/view";
 
 interface FilterMenuProps {
+  list: TaskList | Inbox;
   filter: ListFilter;
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
 export default ReactMemo(function FilterMenu({
+  list,
   filter,
   setFilter,
 }: FilterMenuProps): ReactResult {
@@ -88,12 +92,17 @@ export default ReactMemo(function FilterMenu({
         </ListItemIcon>
         <ListItemText>Complete Tasks</ListItemText>
       </MenuItem>
-      <MenuItem selected={filter == ListFilter.Archived} onClick={filterArchived}>
-        <ListItemIcon>
-          <Icons.Archive/>
-        </ListItemIcon>
-        <ListItemText>Archived Items</ListItemText>
-      </MenuItem>
+      {
+        !isInbox(list) && <MenuItem
+          selected={filter == ListFilter.Archived}
+          onClick={filterArchived}
+        >
+          <ListItemIcon>
+            <Icons.Archive/>
+          </ListItemIcon>
+          <ListItemText>Archived Items</ListItemText>
+        </MenuItem>
+      }
       <MenuItem selected={filter == ListFilter.Snoozed} onClick={filterSnoozed}>
         <ListItemIcon>
           <Icons.Snooze/>

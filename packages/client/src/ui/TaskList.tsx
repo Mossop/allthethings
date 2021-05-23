@@ -80,7 +80,7 @@ const UserHeader = ReactMemo(forwardRef(function TasksHeader({
       <Icons.Project/>
     </div>
     <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <FilterMenu filter={filter} setFilter={setFilter}/>
+    <FilterMenu list={user} filter={filter} setFilter={setFilter}/>
     <ItemListActions list={user}/>
   </div>;
 }));
@@ -120,7 +120,7 @@ const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
       initialValue={context.name}
       onSubmit={changeContextName}
     />
-    <FilterMenu filter={filter} setFilter={setFilter}/>
+    <FilterMenu list={context} filter={filter} setFilter={setFilter}/>
     <ItemListActions list={context}/>
   </div>;
 }));
@@ -165,7 +165,7 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
         initialValue={project.name}
         onSubmit={changeTaskListName}
       />
-      <FilterMenu filter={filter} setFilter={setFilter}/>
+      <FilterMenu list={project} filter={filter} setFilter={setFilter}/>
     </div>
     <ItemListActions list={project}/>
   </div>;

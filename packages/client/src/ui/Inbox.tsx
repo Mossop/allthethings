@@ -49,11 +49,11 @@ export default ReactMemo(function Inbox(): ReactResult {
       <div className={classes.heading}>
         <Icons.Inbox/>
         <Heading className={classes.headingText}>Inbox</Heading>
-        <FilterMenu filter={filter} setFilter={setFilter}/>
+        <FilterMenu list={user.inbox} filter={filter} setFilter={setFilter}/>
         <ItemListActions list={user.inbox}/>
       </div>
       <List disablePadding={true}>
-        <ItemList items={items} taskList={null} section={null} filter={filter}/>
+        <ItemList items={items} taskList={user.inbox} section={null} filter={filter}/>
       </List>
     </div>
   </Page>;

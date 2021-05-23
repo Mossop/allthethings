@@ -41,8 +41,8 @@ import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
-import type { Item, Item as ItemState, Section, TaskList } from "../utils/state";
-import { isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
+import type { Inbox, Item, Item as ItemState, Section, TaskList } from "../utils/state";
+import { isInbox, isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
 import FileItem from "./FileItem";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
@@ -200,7 +200,7 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
 }));
 
 interface ItemProps {
-  taskList: TaskList | null;
+  taskList: TaskList | Inbox;
   section: Section | null;
   item: ItemState;
   items: ItemState[];
@@ -289,7 +289,7 @@ export default ReactMemo(function ItemDisplay({
     refetchListContextStateQuery(),
   ];
 
-  if (taskList) {
+  if (!isInbox(taskList)) {
     refetchQueries.push(refetchListTaskListQuery({
       taskList: taskList.id,
     }));
@@ -374,7 +374,7 @@ export default ReactMemo(function ItemDisplay({
   } = useDropArea(DragType.Item, {
     getDragResult: useCallback(
       (_: DraggedItem, monitor: DropTargetMonitor): ItemDragResult | null => {
-        if (!taskList || !elementRef.current) {
+        if (isInbox(taskList) || !elementRef.current) {
           return null;
         }
 
@@ -490,17 +490,22 @@ export default ReactMemo(function ItemDisplay({
           </MenuItem>
         </Menu>
         {
-          item.archived
-            ? <Tooltip title="Unarchive">
-              <IconButton onClick={archiveItem}>
-                <Icons.Unarchive/>
-              </IconButton>
-            </Tooltip>
-            : <Tooltip title="Archive">
-              <IconButton onClick={archiveItem}>
-                <Icons.Archive/>
-              </IconButton>
-            </Tooltip>
+          // eslint-disable-next-line react/jsx-no-useless-fragment
+          !isInbox(taskList) && <>
+            {
+              item.archived
+                ? <Tooltip title="Unarchive">
+                  <IconButton onClick={archiveItem}>
+                    <Icons.Unarchive/>
+                  </IconButton>
+                </Tooltip>
+                : <Tooltip title="Archive">
+                  <IconButton onClick={archiveItem}>
+                    <Icons.Archive/>
+                  </IconButton>
+                </Tooltip>
+            }
+          </>
         }
         {
           !isPluginItem(item) && <Tooltip title="Edit">
