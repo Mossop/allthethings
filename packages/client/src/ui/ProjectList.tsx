@@ -35,6 +35,9 @@ interface StyleProps {
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
+    nav: {
+      minWidth: 250,
+    },
     grabHandle: {
       cursor: "grab",
     },
@@ -335,6 +338,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
     component="nav"
     square={true}
     ref={dropRef}
+    className={classes.nav}
   >
     <List component="div" className={classes.list}>
       <TreeItem
