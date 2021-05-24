@@ -25,8 +25,8 @@ import type {
   User,
 } from "../utils/state";
 import { isUser, buildEntries, isProject } from "../utils/state";
-import { ListFilter } from "../utils/view";
-import type { TaskListView } from "../utils/view";
+import { Filters } from "../utils/view";
+import type { TaskListView, ListFilter } from "../utils/view";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -191,7 +191,7 @@ export default ReactMemo(function TaskList({
     [data, view],
   );
 
-  let [filter, setFilter] = useState(() => ListFilter.Normal);
+  let [filter, setFilter] = useState(() => Filters.Normal);
 
   let {
     dropRef: headingDropRef,

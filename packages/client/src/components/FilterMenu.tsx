@@ -1,19 +1,29 @@
 import type { ReactResult } from "@allthethings/ui";
 import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "@allthethings/ui";
+import type { Theme } from "@material-ui/core";
 import {
-  Badge,
+  createStyles,
   IconButton,
   ListItemIcon,
   ListItemText,
+  makeStyles,
   MenuItem,
   Tooltip,
 } from "@material-ui/core";
+import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
 import type { Inbox, TaskList } from "../utils/state";
 import { isInbox } from "../utils/state";
-import { ListFilter } from "../utils/view";
+import type { ListFilter } from "../utils/view";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    active: {
+      color: theme.palette.primary.main,
+    },
+  }));
 
 interface FilterMenuProps {
   list: TaskList | Inbox;
@@ -26,43 +36,34 @@ export default ReactMemo(function FilterMenu({
   filter,
   setFilter,
 }: FilterMenuProps): ReactResult {
+  let classes = useStyles();
   let filterMenuState = useMenuState("filter");
 
-  let filterNormal = useCallback(() => setFilter(ListFilter.Normal), [setFilter]);
-  let filterComplete = useCallback(() => setFilter(ListFilter.Complete), [setFilter]);
-  let filterIncomplete = useCallback(() => setFilter(ListFilter.Incomplete), [setFilter]);
-  let filterArchived = useCallback(() => setFilter(ListFilter.Archived), [setFilter]);
-  let filterSnoozed = useCallback(() => setFilter(ListFilter.Snoozed), [setFilter]);
+  let toggleComplete = useCallback(() => {
+    setFilter((filter: ListFilter): ListFilter => ({
+      ...filter,
+      complete: !filter.complete,
+    }));
+  }, [setFilter]);
+  let toggleArchived = useCallback(() => {
+    setFilter((filter: ListFilter): ListFilter => ({
+      ...filter,
+      archived: !filter.archived,
+    }));
+  }, [setFilter]);
+  let toggleSnoozed = useCallback(() => {
+    setFilter((filter: ListFilter): ListFilter => ({
+      ...filter,
+      snoozed: !filter.snoozed,
+    }));
+  }, [setFilter]);
 
-  let badge;
-  switch (filter) {
-    case ListFilter.Normal:
-      badge = null;
-      break;
-    case ListFilter.Incomplete:
-      badge = <Icons.Unchecked/>;
-      break;
-    case ListFilter.Complete:
-      badge = <Icons.Checked/>;
-      break;
-    case ListFilter.Archived:
-      badge = <Icons.Archive/>;
-      break;
-    case ListFilter.Snoozed:
-      badge = <Icons.Snooze/>;
-      break;
-  }
+  let isFiltered = filter.archived || filter.complete || filter.snoozed;
 
   return <>
     <Tooltip title="Filter">
-      <IconButton {...bindTrigger(filterMenuState)}>
-        {
-          badge
-            ? <Badge badgeContent={badge} color="primary">
-              <Icons.Filter/>
-            </Badge>
-            : <Icons.Filter/>
-        }
+      <IconButton {...bindTrigger(filterMenuState)} color={isFiltered ? "primary" : "default"}>
+        <Icons.Filter/>
       </IconButton>
     </Tooltip>
     <Menu
@@ -74,19 +75,7 @@ export default ReactMemo(function FilterMenu({
         }
       }
     >
-      <MenuItem selected={filter == ListFilter.Normal} onClick={filterNormal}>
-        <ListItemIcon>
-          <Icons.Section/>
-        </ListItemIcon>
-        <ListItemText>Current Items</ListItemText>
-      </MenuItem>
-      <MenuItem selected={filter == ListFilter.Incomplete} onClick={filterIncomplete}>
-        <ListItemIcon>
-          <Icons.Unchecked/>
-        </ListItemIcon>
-        <ListItemText>Incomplete Tasks</ListItemText>
-      </MenuItem>
-      <MenuItem selected={filter == ListFilter.Complete} onClick={filterComplete}>
+      <MenuItem onClick={toggleComplete} className={clsx(filter.complete && classes.active)}>
         <ListItemIcon>
           <Icons.Checked/>
         </ListItemIcon>
@@ -94,8 +83,8 @@ export default ReactMemo(function FilterMenu({
       </MenuItem>
       {
         !isInbox(list) && <MenuItem
-          selected={filter == ListFilter.Archived}
-          onClick={filterArchived}
+          onClick={toggleArchived}
+          className={clsx(filter.archived && classes.active)}
         >
           <ListItemIcon>
             <Icons.Archive/>
@@ -103,7 +92,7 @@ export default ReactMemo(function FilterMenu({
           <ListItemText>Archived Items</ListItemText>
         </MenuItem>
       }
-      <MenuItem selected={filter == ListFilter.Snoozed} onClick={filterSnoozed}>
+      <MenuItem onClick={toggleSnoozed} className={clsx(filter.snoozed && classes.active)}>
         <ListItemIcon>
           <Icons.Snooze/>
         </ListItemIcon>

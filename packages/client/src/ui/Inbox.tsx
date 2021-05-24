@@ -9,7 +9,7 @@ import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
 import { useUser } from "../utils/state";
-import { ListFilter } from "../utils/view";
+import { Filters } from "../utils/view";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -42,7 +42,7 @@ export default ReactMemo(function Inbox(): ReactResult {
   let user = useUser();
   let items = user.inbox.items;
 
-  let [filter, setFilter] = useState(() => ListFilter.Normal);
+  let [filter, setFilter] = useState(() => Filters.Normal);
 
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>

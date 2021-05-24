@@ -26,7 +26,7 @@ import type {
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import type { Project, TaskList, Item } from "../utils/state";
 import { useCurrentContext, useProjectRoot } from "../utils/state";
-import { isVisible, ListFilter, useUrl, useView, ViewType } from "../utils/view";
+import { Filters, isVisible, useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -306,7 +306,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
 
   let inboxLabel = useMemo(() => {
     let items = view.user.inbox.items.filter(
-      (item: Item): boolean => isVisible(item, ListFilter.Normal),
+      (item: Item): boolean => isVisible(item, Filters.Normal),
     );
 
     return items.length ? `Inbox (${items.length})` : "Inbox";

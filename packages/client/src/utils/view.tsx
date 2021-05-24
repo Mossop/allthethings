@@ -10,32 +10,35 @@ import { buildItems, buildProjects, isContext, isUser, isProject } from "./state
 
 const ViewContext = createContext<View | null | undefined>(undefined);
 
-export enum ListFilter {
-  Normal,
-  Snoozed,
-  Archived,
-  Incomplete,
-  Complete,
+export interface ListFilter {
+  snoozed: boolean;
+  archived: boolean;
+  complete: boolean;
 }
+
+export const Filters: Record<string, ListFilter> = {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  Normal: {
+    snoozed: false,
+    archived: false,
+    complete: false,
+  },
+};
 
 export function isVisible(item: Item, filter: ListFilter): boolean {
   if (item.taskInfo?.done) {
-    return filter == ListFilter.Complete;
-  }
-
-  if (filter == ListFilter.Incomplete) {
-    return !!item.taskInfo;
+    return filter.complete;
   }
 
   if (item.archived) {
-    return filter == ListFilter.Archived;
+    return filter.archived;
   }
 
   if (item.snoozed && item.snoozed > DateTime.now()) {
-    return filter == ListFilter.Snoozed;
+    return filter.snoozed;
   }
 
-  return filter == ListFilter.Normal;
+  return true;
 }
 
 export enum ViewType {
