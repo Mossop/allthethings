@@ -30,7 +30,7 @@ export const Dialog = ReactMemo(function Dialog({
   onClosed,
   title,
   error,
-  submitLabel,
+  submitLabel = "Submit",
   cancelLabel = "Cancel",
   children,
 }: DialogProps & ReactChildren): ReactResult {
@@ -47,7 +47,7 @@ export const Dialog = ReactMemo(function Dialog({
         {children}
       </DialogContent>
       <DialogActions>
-        <Button type="submit" variant="contained" color="primary">{submitLabel ?? "Submit"}</Button>
+        <Button type="submit" variant="contained" color="primary">{submitLabel}</Button>
         {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
       </DialogActions>
     </form>

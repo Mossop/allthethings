@@ -49,6 +49,7 @@ import FileItem from "./FileItem";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import PluginItem from "./PluginItem";
+import SnoozeMenu from "./SnoozeMenu";
 import TaskItem from "./TaskItem";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -340,36 +341,14 @@ export default ReactMemo(function ItemDisplay({
     refetchQueries,
   });
 
-  let wakeUp = useCallback(() => {
+  let snoozeItem = useCallback((till: DateTime | null) => {
     return snoozeItemMutation({
       variables: {
         id: item.id,
-        snoozed: null,
+        snoozed: till,
       },
     });
   }, [item.id, snoozeItemMutation]);
-
-  let snoozeTomorrow = useCallback(() => {
-    let tomorrow = DateTime.now().plus({ days: 1 }).set({ hour: 8 }).startOf("hour");
-    return snoozeItemMutation({
-      variables: {
-        id: item.id,
-        snoozed: tomorrow,
-      },
-    });
-  }, [item.id, snoozeItemMutation]);
-
-  let snoozeNextWeek = useCallback(() => {
-    let tomorrow = DateTime.now().plus({ weeks: 1 }).startOf("week").set({ hour: 8 });
-    return snoozeItemMutation({
-      variables: {
-        id: item.id,
-        snoozed: tomorrow,
-      },
-    });
-  }, [item.id, snoozeItemMutation]);
-
-  let snoozeMenuState = useMenuState("filter");
 
   let {
     dragRef,
@@ -487,35 +466,7 @@ export default ReactMemo(function ItemDisplay({
             />
           }
         </Menu>
-        <Tooltip title="Snooze">
-          <IconButton
-            color={item.snoozed ? "primary" : "default"}
-            {...bindTrigger(snoozeMenuState)}
-          >
-            <Icons.Snooze/>
-          </IconButton>
-        </Tooltip>
-        <Menu
-          state={snoozeMenuState}
-          anchor={
-            {
-              vertical: "bottom",
-              horizontal: "right",
-            }
-          }
-        >
-          {
-            item.snoozed && <MenuItem onClick={wakeUp}>
-              <ListItemText>Wake up</ListItemText>
-            </MenuItem>
-          }
-          <MenuItem onClick={snoozeTomorrow}>
-            <ListItemText>Tomorrow</ListItemText>
-          </MenuItem>
-          <MenuItem onClick={snoozeNextWeek}>
-            <ListItemText>Next Week</ListItemText>
-          </MenuItem>
-        </Menu>
+        <SnoozeMenu item={item} onSnooze={snoozeItem}/>
         {
           // eslint-disable-next-line react/jsx-no-useless-fragment
           !isInbox(taskList) && <>

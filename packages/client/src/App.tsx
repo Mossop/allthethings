@@ -1,4 +1,5 @@
 import type { ReactResult } from "@allthethings/ui";
+import { UIProvider } from "@allthethings/ui";
 import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
 import {
@@ -124,11 +125,13 @@ export default function App({
     <ThemeProvider theme={baseTheme}>
       <ApolloProvider client={client}>
         <CssBaseline/>
-        <ViewListener>
-          <DragTracker>
-            <Main/>
-          </DragTracker>
-        </ViewListener>
+        <UIProvider>
+          <ViewListener>
+            <DragTracker>
+              <Main/>
+            </DragTracker>
+          </ViewListener>
+        </UIProvider>
       </ApolloProvider>
     </ThemeProvider>
   </ThemeProvider>;
