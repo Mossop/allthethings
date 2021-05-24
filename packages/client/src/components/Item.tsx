@@ -26,7 +26,7 @@ import {
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import { DateTime } from "luxon";
-import { forwardRef, useCallback, useMemo, useRef } from "react";
+import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
@@ -57,6 +57,9 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexRow,
       "alignItems": "center",
       "fontSize": "1.1rem",
+      "opacity": 1,
+      "transitionProperty": "opacity",
+      "transitionDuration": "1.5s",
       "&:hover": {
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.getContrastText(theme.palette.background.paper),
@@ -91,6 +94,9 @@ const useStyles = makeStyles((theme: Theme) =>
       alignItems: "center",
       justifyContent: "end",
       paddingLeft: theme.spacing(1),
+    },
+    hiding: {
+      opacity: 0,
     },
   }));
 
@@ -416,15 +422,25 @@ export default ReactMemo(function ItemDisplay({
     item,
   };
 
-  if (!isVisible(item, filter)) {
+  let visible = isVisible(item, filter);
+  let [currentlyVisible, setCurrentlyVisible] = useState(visible);
+
+  if (visible && !currentlyVisible) {
+    setCurrentlyVisible(true);
+  }
+
+  let transitionEnd = useCallback(() => setCurrentlyVisible(visible), [visible]);
+
+  if (!visible && !currentlyVisible) {
     return null;
   }
 
   return <>
     <ListItem
-      className={clsx(classes.item, isDragging && classes.hidden)}
+      className={clsx(classes.item, isDragging && classes.hidden, !visible && classes.hiding)}
       disableGutters={true}
       ref={itemRef}
+      onTransitionEnd={transitionEnd}
     >
       <div className={classes.dragPreview} ref={previewRef}>
         <div className={classes.dragHandleContainer} ref={dragRef}>
