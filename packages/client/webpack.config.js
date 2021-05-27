@@ -1,29 +1,8 @@
 const path = require("path");
 
+const { externalTags, sharedPackages } = require("@allthethings/ui/externals");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
-
-const externals = require("./externals.json");
-
-function buildExternals(mode) {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return externals.map(pkg => {
-    let path = mode == "production" ? pkg.path : pkg.devPath;
-    let package = require(`${pkg.id}/package.json`);
-    return {
-      type: "js",
-      path: `https://unpkg.com/${pkg.id}@${package.version}/${path}`,
-      publicPath: false,
-      attributes: {
-        crossorigin: true,
-      },
-      external: {
-        packageName: pkg.id,
-        variableName: pkg.variable,
-      },
-    };
-  });
-}
 
 module.exports = {
   mode: "development",
@@ -58,9 +37,7 @@ module.exports = {
       }],
     }],
   },
-  externals: {
-    "@apollo/client": "AllTheThingsUI.Apollo",
-  },
+  externals: sharedPackages(),
   plugins: [
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, "dist", "index.html"),
@@ -76,7 +53,7 @@ module.exports = {
           path: "https://fonts.googleapis.com/css?family=Roboto:300,400,500,700&amp;display=swap",
           publicPath: false,
         },
-        ...buildExternals("development"),
+        ...externalTags("development"),
         {
           type: "js",
           path: "/ui/ui.js",

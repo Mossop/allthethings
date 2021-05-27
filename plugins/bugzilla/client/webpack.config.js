@@ -1,5 +1,7 @@
 const path = require("path");
 
+const { sharedPackages } = require("@allthethings/ui/externals");
+
 module.exports = {
   mode: "development",
   entry: {
@@ -36,14 +38,7 @@ module.exports = {
       use: ["@svgr/webpack"],
     }],
   },
-  externals: {
-    "react": "React",
-    "react-dom": "ReactDOM",
-    "@material-ui/core": "MaterialUI",
-    "@allthethings/client": "AllTheThings",
-    "@allthethings/ui": "AllTheThingsUI",
-    "@apollo/client": "AllTheThingsUI.Apollo",
-  },
+  externals: sharedPackages(),
   optimization: {
     usedExports: true,
     mangleExports: false,

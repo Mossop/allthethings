@@ -1,5 +1,7 @@
 const path = require("path");
 
+const { externalPackages } = require("./externals");
+
 module.exports = {
   mode: "development",
   entry: {
@@ -35,11 +37,7 @@ module.exports = {
       }],
     }],
   },
-  externals: {
-    "react": "React",
-    "react-dom": "ReactDOM",
-    "@material-ui/core": "MaterialUI",
-  },
+  externals: externalPackages(),
   optimization: {
     usedExports: true,
     mangleExports: false,
