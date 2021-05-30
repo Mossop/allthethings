@@ -439,7 +439,7 @@ class PluginManager {
       await instance.init();
       this.plugins.add(instance);
     } catch (e) {
-      console.error(`Failed to initialize plugin ${spec}`);
+      console.error(`Failed to initialize plugin ${spec}`, e);
     }
   }
 

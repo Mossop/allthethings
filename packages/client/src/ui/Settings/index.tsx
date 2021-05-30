@@ -76,15 +76,17 @@ function SettingsSidebar(): ReactResult {
         General
       </SettingsPageItem>
       {
-        plugins.map((plugin: ClientPlugin) => <Fragment key={plugin.serverId}>
-          <Divider className={classes.divider}/>
-          <List disablePadding={true}>
-            <ListSubheader className={classes.pluginHeader}>
-              {plugin.name}
-            </ListSubheader>
-            {plugin.renderPluginSettingsPageList()}
-          </List>
-        </Fragment>)
+        plugins.map((plugin: ClientPlugin) => plugin.renderPluginSettingsPageList
+          ? <Fragment key={plugin.serverId}>
+            <Divider className={classes.divider}/>
+            <List disablePadding={true}>
+              <ListSubheader className={classes.pluginHeader}>
+                {plugin.name}
+              </ListSubheader>
+              {plugin.renderPluginSettingsPageList()}
+            </List>
+          </Fragment>
+          : null)
       }
     </List>
   </Paper>;
@@ -103,7 +105,7 @@ const SettingsPage = ReactMemo(function SettingsPage({
 
   if (pluginId) {
     for (let plugin of plugins) {
-      if (plugin.serverId == pluginId) {
+      if (plugin.serverId == pluginId && plugin.renderPluginSettingsPage) {
         return plugin.renderPluginSettingsPage(page);
       }
     }
