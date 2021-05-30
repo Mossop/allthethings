@@ -1,4 +1,4 @@
-import type { BugRecord } from "@allthethings/bugzilla-server";
+import type { BugFields } from "@allthethings/bugzilla-server";
 import type { PluginItemProps, ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,
@@ -50,7 +50,7 @@ export default ReactMemo(function Bug({
 }: PluginItemProps): ReactResult {
   let classes = useStyles();
 
-  let bug = JSON.parse(item.detail.fields) as BugRecord;
+  let bug = JSON.parse(item.detail.fields) as BugFields;
 
   return <>
     <TaskDoneToggle item={item}/>

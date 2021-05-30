@@ -8,7 +8,7 @@ export interface SearchPresence {
   present: boolean;
 }
 
-export interface BugRecord {
+export interface BugFields {
   accountId: string;
   bugId: number;
   summary: string;

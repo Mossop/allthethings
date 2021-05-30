@@ -4,8 +4,8 @@ import { URL } from "url";
 import type { Resolver, GraphQLContext, User } from "@allthethings/server";
 import { bestIcon, loadPageInfo } from "@allthethings/server";
 
-import type { BugzillaAccountRecord } from "./db/implementations";
 import { Search, Account } from "./db/implementations";
+import type { BugzillaAccountRecord } from "./db/types";
 import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,

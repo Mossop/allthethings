@@ -2,8 +2,9 @@ import { URL, URLSearchParams } from "url";
 
 import { TaskController } from "@allthethings/schema";
 import type { PluginContext, BasePluginItem } from "@allthethings/server";
-import type { Awaitable, MaybeCallable } from "@allthethings/utils";
-import type { Bug as BugzillaBug, History } from "bugzilla";
+import { ItemCache } from "@allthethings/utils";
+import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
+import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
@@ -12,19 +13,9 @@ import type {
   BugzillaAccountParams,
   BugzillaSearch,
 } from "../schema";
-import type { BugRecord } from "../types";
+import type { BugFields } from "../types";
 import { SearchType } from "../types";
-
-type Impl<T> = Omit<T, "__typename">;
-
-type Resolver<T> = {
-  readonly [K in keyof Impl<T>]: MaybeCallable<Awaitable<T[K]>>;
-};
-
-export type BugzillaAccountRecord = Omit<Impl<BugzillaAccount>, "searches"> & {
-  user: string;
-  password: string | null;
-};
+import type { BugzillaAccountRecord, BugzillaBugRecord, BugzillaSearchRecord } from "./types";
 
 function isDone(status: string): boolean {
   switch (status) {
@@ -37,56 +28,7 @@ function isDone(status: string): boolean {
   }
 }
 
-interface IdItem<I> {
-  id: I;
-}
-type Getter<I, T extends IdItem<I>> = (id: I) => Awaitable<T | null>;
-type Builder<T> = () => Awaitable<T>;
-
-class ItemCache<I, T extends IdItem<I>> {
-  private cache = new Map<I, T>();
-
-  public constructor(private readonly getter: Getter<I, T>) {
-  }
-
-  public async getItem(id: I): Promise<T | null> {
-    let item = this.cache.get(id);
-    if (item) {
-      return item;
-    }
-
-    let newItem = await this.getter(id);
-    if (newItem) {
-      this.cache.set(id, newItem);
-    }
-    return newItem;
-  }
-
-  public getCachedItem(id: I): T | null {
-    return this.cache.get(id) ?? null;
-  }
-
-  public addItem(item: T): void {
-    this.cache.set(item.id, item);
-  }
-
-  public async upsertItem(id: I, builder: Builder<T>): Promise<T> {
-    let item = this.cache.get(id);
-    if (item) {
-      return item;
-    }
-
-    let newItem = await builder();
-    this.cache.set(id, newItem);
-    return newItem;
-  }
-
-  public deleteItem(id: I): void {
-    this.cache.delete(id);
-  }
-}
-
-export class Account implements Resolver<BugzillaAccount> {
+export class Account implements GraphQLResolver<BugzillaAccount> {
   private api: BugzillaAPI | null = null;
   public readonly bugCache: ItemCache<number, Bug>;
   public readonly searchCache: ItemCache<string, Search>;
@@ -240,7 +182,7 @@ export class Account implements Resolver<BugzillaAccount> {
     }
   }
 
-  public async doneForStatus(bug: BugzillaBug): Promise<DateTime | null> {
+  public async doneForStatus(bug: BugzillaAPIBug): Promise<DateTime | null> {
     if (!isDone(bug.status)) {
       return null;
     }
@@ -308,12 +250,7 @@ export class Account implements Resolver<BugzillaAccount> {
   }
 }
 
-type BugzillaSearchRecord = Omit<Impl<BugzillaSearch>, "url" | "type"> & {
-  accountId: string;
-  type: SearchType;
-};
-
-export class Search implements Impl<BugzillaSearch> {
+export class Search implements GraphQLType<BugzillaSearch> {
   public constructor(
     private readonly account: Account,
     private readonly record: BugzillaSearchRecord,
@@ -354,7 +291,7 @@ export class Search implements Impl<BugzillaSearch> {
     return url.toString();
   }
 
-  public async updateBugs(bugs?: BugzillaBug[]): Promise<Bug[]> {
+  public async updateBugs(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
     if (!bugs) {
       bugs = await this.getBugRecords();
     }
@@ -380,14 +317,14 @@ export class Search implements Impl<BugzillaSearch> {
     return instances;
   }
 
-  public async getBugRecords(): Promise<BugzillaBug[]> {
+  public async getBugRecords(): Promise<BugzillaAPIBug[]> {
     return Search.getBugRecords(this.account.getAPI(), this.record);
   }
 
   public static async getBugRecords(
     api: BugzillaAPI,
     record: Pick<BugzillaSearchRecord, "type" | "query">,
-  ): Promise<BugzillaBug[]> {
+  ): Promise<BugzillaAPIBug[]> {
     if (record.type == SearchType.Quicksearch) {
       return api.quicksearch(record.query);
     } else {
@@ -434,17 +371,9 @@ export class Search implements Impl<BugzillaSearch> {
   }
 }
 
-type BugzillaBugRecord = Pick<BugzillaBug, "summary"> & {
-  accountId: string;
-  bugId: number;
-  itemId: string;
-  status: string;
-  resolution: string | null;
-};
-
 type FixedFields = "accountId" | "itemId";
 
-function recordFromBug(bug: BugzillaBug): Omit<BugzillaBugRecord, FixedFields> {
+function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields> {
   return {
     bugId: bug.id,
     summary: bug.summary,
@@ -464,7 +393,7 @@ export class Bug {
     return this.account.context;
   }
 
-  public async getBug(): Promise<BugzillaBug> {
+  public async getBug(): Promise<BugzillaAPIBug> {
     let account = this.account;
     let api = account.getAPI();
     let bugs = await api.getBugs([this.id]);
@@ -484,7 +413,7 @@ export class Bug {
     return this.record.itemId;
   }
 
-  public async update(record?: BugzillaBug): Promise<void> {
+  public async update(record?: BugzillaAPIBug): Promise<void> {
     if (!record) {
       let bugs = await this.account.getAPI().getBugs([this.id]);
       if (!bugs.length) {
@@ -503,7 +432,7 @@ export class Bug {
     await this.context.setItemTaskDone(this.itemId, await this.account.doneForStatus(record));
   }
 
-  public async fields(): Promise<BugRecord> {
+  public async fields(): Promise<BugFields> {
     let baseUrl = new URL(this.account.url);
 
     return {
@@ -528,7 +457,7 @@ export class Bug {
 
   public static async create(
     account: Account,
-    bug: BugzillaBug,
+    bug: BugzillaAPIBug,
     controller: TaskController | null,
   ): Promise<Bug> {
     let item = await account.context.createItem(account.user, {
