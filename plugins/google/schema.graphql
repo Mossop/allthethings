@@ -1,0 +1,8 @@
+type GoogleAccount {
+  id: ID!
+  email: String!
+}
+
+type User {
+  googleAccounts: [GoogleAccount!]!
+}

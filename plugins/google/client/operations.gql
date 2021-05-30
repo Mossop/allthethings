@@ -1,0 +1,8 @@
+query ListGoogleAccounts {
+  user {
+    googleAccounts {
+      id
+      email
+    }
+  }
+}
