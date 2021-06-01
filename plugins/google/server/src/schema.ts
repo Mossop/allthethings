@@ -17,6 +17,7 @@ export type GoogleAccount = {
   readonly __typename?: 'GoogleAccount';
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
+  readonly avatar: Maybe<Scalars['String']>;
 };
 
 export type Query = {
@@ -129,6 +130,7 @@ export type ResolversParentTypes = ResolversObject<{
 export type GoogleAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['GoogleAccount'] = ResolversParentTypes['GoogleAccount']> = ResolversObject<{
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  avatar: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

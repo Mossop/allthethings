@@ -3,6 +3,7 @@ query ListGoogleAccounts {
     googleAccounts {
       id
       email
+      avatar
     }
   }
 }

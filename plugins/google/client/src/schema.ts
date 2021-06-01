@@ -52,6 +52,7 @@ export type GoogleAccount = {
   readonly __typename?: 'GoogleAccount';
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
+  readonly avatar: Maybe<Scalars['String']>;
 };
 
 export type Inbox = {
@@ -370,7 +371,7 @@ export type UserProjectByIdArgs = {
 export type ListGoogleAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string }> }> };
+export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string> }> }> };
 
 export type RequestLoginUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -384,6 +385,7 @@ export const ListGoogleAccountsDocument = gql`
     googleAccounts {
       id
       email
+      avatar
     }
   }
 }

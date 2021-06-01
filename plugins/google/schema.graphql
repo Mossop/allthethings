@@ -1,6 +1,7 @@
 type GoogleAccount {
   id: ID!
   email: String!
+  avatar: String
 }
 
 type User {

@@ -14,6 +14,9 @@ class BaseMigration implements PluginDbMigration {
       helper.userRef(table, "user")
         .notNullable();
 
+      table.text("avatar")
+        .nullable();
+
       table.text("accessToken")
         .notNullable();
       table.text("refreshToken")

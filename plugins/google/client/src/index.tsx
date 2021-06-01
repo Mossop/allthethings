@@ -1,7 +1,7 @@
 import { PluginManager } from "@allthethings/ui";
 import type { ClientPlugin, PluginItemProps, ReactResult } from "@allthethings/ui";
 
-import { SettingsPages } from "./Settings";
+import { SettingsPage, SettingsPages } from "./Settings";
 
 class GooglePlugin implements ClientPlugin {
   public readonly serverId = "@allthethings/google-server";
@@ -9,6 +9,10 @@ class GooglePlugin implements ClientPlugin {
 
   public renderPluginSettingsPageList(): ReactResult {
     return <SettingsPages/>;
+  }
+
+  public renderPluginSettingsPage(page: string): ReactResult {
+    return <SettingsPage page={page}/>;
   }
 
   public renderItem(_itemProps: PluginItemProps): ReactResult {

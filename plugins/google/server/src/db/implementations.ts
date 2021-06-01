@@ -1,5 +1,6 @@
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
+import { people as gPeople } from "@googleapis/people";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 
 import { createAuthClient } from "../auth";
@@ -59,6 +60,10 @@ export class Account implements GraphQLResolver<GoogleAccount> {
     return this.record.email;
   }
 
+  public get avatar(): string | null {
+    return this.record.avatar;
+  }
+
   public static async list(
     config: GooglePluginConfig,
     context: PluginContext,
@@ -93,15 +98,34 @@ export class Account implements GraphQLResolver<GoogleAccount> {
 
     client.setCredentials(credentials);
 
-    let info = await client.getTokenInfo(accessToken);
-    if (!info.email) {
+    let tokenInfo = await client.getTokenInfo(accessToken);
+    if (!tokenInfo.email) {
       throw new Error("Failed to authenticate correctly.");
+    }
+
+    let people = gPeople({
+      version: "v1",
+      auth: client,
+    });
+
+    let userInfo = await people.people.get({
+      resourceName: "people/me",
+      personFields: "photos",
+    });
+
+    let avatar: string | null = null;
+    let photos = userInfo.data.photos ?? [];
+    for (let photo of photos) {
+      if (photo.metadata?.primary && photo.url) {
+        avatar = photo.url;
+      }
     }
 
     let record: GoogleAccountRecord = {
       id: await context.id(),
       user: context.userId,
-      email: info.email,
+      email: tokenInfo.email,
+      avatar,
       accessToken,
       refreshToken,
       expiry: Math.floor(expiry / 1000),
