@@ -11,8 +11,20 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
+      helper.userRef(table, "user")
+        .notNullable();
+
+      table.text("accessToken")
+        .notNullable();
+      table.text("refreshToken")
+        .notNullable();
+      table.integer("expiry")
+        .notNullable();
+
       table.text("email")
         .notNullable();
+
+      table.unique(["user", "email"]);
     });
   }
 

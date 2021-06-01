@@ -1,24 +1,19 @@
-import type Koa from "koa";
-
 import type { ProjectRoot, AppDataSources, TaskList, User } from "../db";
 import type { DatabaseConnection } from "../db/connection";
-import type { AppContext } from "../webserver/context";
+import type { WebServerContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
 
-export interface BaseContext {
+export interface ResolverContext {
   db: DatabaseConnection;
   userId: string | null;
+  dataSources: AppDataSources;
   getRoot: (id: string) => Promise<ProjectRoot | null>;
   getTaskList: (id: string) => Promise<TaskList | null>;
   login: (user: User) => void;
   logout: () => void;
 }
 
-export type ResolverContext = BaseContext & {
-  dataSources: AppDataSources;
-};
-
-export type AuthedContext = Omit<ResolverContext, "userId"> & {
+export type AuthedResolverContext = Omit<ResolverContext, "userId"> & {
   userId: string;
 };
 
@@ -35,7 +30,7 @@ export type ResolverParams<
 export type AuthedParams<
   TParent = unknown,
   TArgs = unknown,
-> = Params<AuthedContext, TParent, TArgs>;
+> = Params<AuthedResolverContext, TParent, TArgs>;
 
 export function authed<TResult, TParent, TArgs>(
   resolver: (params: AuthedParams<TParent, TArgs>) => Promise<TResult> | TResult,
@@ -69,9 +64,9 @@ export function resolver<TResult, TParent, TArgs>(
   };
 }
 
-export async function buildContext({
+export async function buildResolverContext({
   ctx,
-}: { ctx: AppContext & Koa.Context }): Promise<BaseContext> {
+}: { ctx: WebServerContext }): Promise<Omit<ResolverContext, "dataSources">> {
   let user = ctx.session?.userId ?? null;
 
   if (!ctx.db.isInTransaction) {
@@ -108,7 +103,7 @@ export async function buildContext({
       return this.getRoot(id);
     },
 
-    login(user: User): void {
+    login(this: ResolverContext, user: User): void {
       if (!ctx.session) {
         throw new Error("Session is not initialized.");
       }
@@ -118,7 +113,7 @@ export async function buildContext({
       ctx.session.save();
     },
 
-    logout(): void {
+    logout(this: ResolverContext): void {
       this.userId = null;
 
       if (!ctx.session) {
@@ -128,5 +123,5 @@ export async function buildContext({
       ctx.session.userId = null;
       ctx.session.save();
     },
-  } as BaseContext;
+  };
 }

@@ -2,6 +2,11 @@ import { promises as fs } from "fs";
 
 import { JsonDecoder } from "ts.data.json";
 
+export enum Protocol {
+  Http = "http",
+  Https = "https",
+}
+
 export interface DatabaseConfig {
   host: string;
   port: number;
@@ -11,6 +16,8 @@ export interface DatabaseConfig {
 }
 
 export interface ServerConfig {
+  protocol: Protocol;
+  hostname: string;
   port: number;
   database: DatabaseConfig;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -18,6 +25,8 @@ export interface ServerConfig {
 }
 
 interface ConfigFile {
+  protocol?: Protocol;
+  hostname: string;
   port: number;
   database?: Partial<DatabaseConfig>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -33,6 +42,8 @@ const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
 }, "DatabaseConfig");
 
 const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
+  protocol: JsonDecoder.optional(JsonDecoder.enumeration<Protocol>(Protocol, "protocol")),
+  hostname: JsonDecoder.string,
   port: JsonDecoder.number,
   database: JsonDecoder.optional(DatabaseConfigDecoder),
   plugins: JsonDecoder.optional(JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
@@ -47,6 +58,7 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
 
   return {
     ...config,
+    protocol: config.protocol ?? Protocol.Https,
     plugins: config.plugins ?? {},
     database: {
       host: "localhost",

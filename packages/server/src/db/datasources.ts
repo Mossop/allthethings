@@ -6,7 +6,7 @@ import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type { Knex } from "knex";
 import { DateTime } from "luxon";
 
-import type { PluginList } from "../plugins";
+import type { PluginList } from "../plugins/types";
 import type { ResolverContext } from "../schema/context";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";

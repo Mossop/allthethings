@@ -15,7 +15,7 @@ async function init(): Promise<void> {
 
   let config = await parseConfig(process.argv[2]);
   let db = await createDbConnection(config);
-  await PluginManager.loadPlugins(db, config.plugins);
+  await PluginManager.loadPlugins(db, config);
 
   if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
     await db.rollback(true);

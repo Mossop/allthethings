@@ -9,7 +9,7 @@ import { DateTime } from "luxon";
 
 import * as Db from "../db";
 import PluginManager from "../plugins";
-import { buildContext } from "./context";
+import { buildResolverContext } from "./context";
 import MutationResolvers from "./mutations";
 import ServerPlugin from "./plugin";
 import QueryResolvers from "./queries";
@@ -106,7 +106,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
       rootResolvers,
       ...await PluginManager.getResolvers(),
     ]),
-    context: buildContext,
+    context: buildResolverContext,
     // @ts-ignore
     dataSources: () => Db.dataSources(),
     plugins: [ServerPlugin],

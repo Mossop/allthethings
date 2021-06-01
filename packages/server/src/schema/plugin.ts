@@ -18,15 +18,10 @@ const requestListener: GraphQLRequestListener<ResolverContext> = {
     }
 
     ctx.errors.forEach((error: GraphQLError) => {
-      if (error.stack) {
-        console.log(error.stack);
-      } else {
-        console.log(error.message);
-      }
+      console.error(error);
     });
 
     if (ctx.context.db.isInTransaction) {
-      console.log("Rolling back transaction");
       await ctx.context.db.rollbackTransaction();
     }
   },

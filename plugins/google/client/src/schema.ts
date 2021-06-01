@@ -300,18 +300,19 @@ export type ProjectRootProjectByIdArgs = {
 
 export type Query = {
   readonly __typename?: 'Query';
-  readonly user: Maybe<User>;
-  readonly taskList: Maybe<TaskList>;
+  readonly googleLoginUrl: Scalars['String'];
   readonly root: Maybe<ProjectRoot>;
-};
-
-
-export type QueryTaskListArgs = {
-  id: Scalars['ID'];
+  readonly taskList: Maybe<TaskList>;
+  readonly user: Maybe<User>;
 };
 
 
 export type QueryRootArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type QueryTaskListArgs = {
   id: Scalars['ID'];
 };
 
@@ -371,6 +372,11 @@ export type ListGoogleAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string }> }> };
 
+export type RequestLoginUrlQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type RequestLoginUrlQuery = { readonly __typename: 'Query', readonly googleLoginUrl: string };
+
 
 export const ListGoogleAccountsDocument = gql`
     query ListGoogleAccounts {
@@ -411,4 +417,39 @@ export type ListGoogleAccountsLazyQueryHookResult = ReturnType<typeof useListGoo
 export type ListGoogleAccountsQueryResult = Apollo.QueryResult<ListGoogleAccountsQuery, ListGoogleAccountsQueryVariables>;
 export function refetchListGoogleAccountsQuery(variables?: ListGoogleAccountsQueryVariables) {
       return { query: ListGoogleAccountsDocument, variables: variables }
+    }
+export const RequestLoginUrlDocument = gql`
+    query RequestLoginUrl {
+  googleLoginUrl
+}
+    `;
+
+/**
+ * __useRequestLoginUrlQuery__
+ *
+ * To run a query within a React component, call `useRequestLoginUrlQuery` and pass it any options that fit your needs.
+ * When your component renders, `useRequestLoginUrlQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useRequestLoginUrlQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useRequestLoginUrlQuery(baseOptions?: Apollo.QueryHookOptions<RequestLoginUrlQuery, RequestLoginUrlQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<RequestLoginUrlQuery, RequestLoginUrlQueryVariables>(RequestLoginUrlDocument, options);
+      }
+export function useRequestLoginUrlLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<RequestLoginUrlQuery, RequestLoginUrlQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<RequestLoginUrlQuery, RequestLoginUrlQueryVariables>(RequestLoginUrlDocument, options);
+        }
+export type RequestLoginUrlQueryHookResult = ReturnType<typeof useRequestLoginUrlQuery>;
+export type RequestLoginUrlLazyQueryHookResult = ReturnType<typeof useRequestLoginUrlLazyQuery>;
+export type RequestLoginUrlQueryResult = Apollo.QueryResult<RequestLoginUrlQuery, RequestLoginUrlQueryVariables>;
+export function refetchRequestLoginUrlQuery(variables?: RequestLoginUrlQueryVariables) {
+      return { query: RequestLoginUrlDocument, variables: variables }
     }

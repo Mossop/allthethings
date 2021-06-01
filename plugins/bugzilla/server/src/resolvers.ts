@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { URL } from "url";
 
-import type { Resolver, GraphQLContext, User } from "@allthethings/server";
+import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 import { bestIcon, loadPageInfo } from "@allthethings/server";
 
 import { Search, Account } from "./db/implementations";
@@ -12,12 +12,12 @@ import type {
 } from "./schema";
 import { SearchType } from "./types";
 
-const Resolvers: Resolver<GraphQLContext> = {
+const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
     bugzillaAccounts(
       user: User,
       args: unknown,
-      ctx: GraphQLContext,
+      ctx: AuthedPluginContext,
     ): Promise<Account[]> {
       return Account.list(ctx, user.id());
     },
@@ -27,7 +27,7 @@ const Resolvers: Resolver<GraphQLContext> = {
     async createBugzillaAccount(
       outer: unknown,
       { params: { url, name, username, password } }: MutationCreateBugzillaAccountArgs,
-      ctx: GraphQLContext,
+      ctx: AuthedPluginContext,
     ): Promise<Account> {
       if (!ctx.userId) {
         throw new Error("Not authenticated.");
@@ -59,7 +59,7 @@ const Resolvers: Resolver<GraphQLContext> = {
     async createBugzillaSearch(
       outer: unknown,
       { account: accountId, params }: MutationCreateBugzillaSearchArgs,
-      ctx: GraphQLContext,
+      ctx: AuthedPluginContext,
     ): Promise<Search> {
       if (!ctx.userId) {
         throw new Error("Not authenticated.");

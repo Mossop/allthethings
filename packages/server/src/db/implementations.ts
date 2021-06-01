@@ -1,7 +1,7 @@
 import type { DateTime } from "luxon";
 
 import PluginManager from "../plugins";
-import type { User as PluginUser, PluginTaskInfo, BasePluginItem } from "../plugins";
+import type { User as PluginUser, PluginTaskInfo, BasePluginItem } from "../plugins/types";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";

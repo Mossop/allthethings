@@ -1,4 +1,5 @@
 import { upsert } from "@allthethings/utils";
+import type Koa from "koa";
 
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";
@@ -7,19 +8,21 @@ export type DescriptorsFor<C> = {
   [K in keyof C]: TypedPropertyDescriptor<C[K]>;
 };
 
-export interface AppContext {
+interface ExtraContext {
   readonly db: DatabaseConnection;
 }
 
-export async function buildContext(
+export type WebServerContext = ExtraContext & Koa.DefaultContext;
+
+export async function buildWebServerContext(
   config: ServerConfig,
   dbConnection: DatabaseConnection,
-): Promise<DescriptorsFor<AppContext>> {
-  let dbMap = new WeakMap<AppContext, DatabaseConnection>();
+): Promise<DescriptorsFor<ExtraContext>> {
+  let dbMap = new WeakMap<ExtraContext, DatabaseConnection>();
 
   return {
     db: {
-      get(this: AppContext): DatabaseConnection {
+      get(this: WebServerContext): DatabaseConnection {
         return upsert(dbMap, this, () => dbConnection.clone());
       },
     },

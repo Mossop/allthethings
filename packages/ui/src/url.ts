@@ -11,20 +11,21 @@ export function pushClickedLink(event: React.MouseEvent<HTMLElement>): void {
   let currentTarget: HTMLElement | null = event.currentTarget;
   while (currentTarget) {
     if (currentTarget instanceof HTMLAnchorElement) {
+      let page = new URL(document.documentURI);
+      let target = new URL(currentTarget.href, page);
+      if (page.origin != target.origin) {
+        return;
+      }
+
       event.preventDefault();
-      pushUrl(currentTarget.href);
-      return;
+      pushUrl(target);
     }
 
     currentTarget = currentTarget.parentElement;
   }
 }
 
-export function pushUrl(url: URL | string): void {
-  if (typeof url == "string") {
-    url = new URL(url, document.documentURI);
-  }
-
+export function pushUrl(url: URL): void {
   let {
     pathname,
     search,

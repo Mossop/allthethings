@@ -6,3 +6,7 @@ type GoogleAccount {
 type User {
   googleAccounts: [GoogleAccount!]!
 }
+
+type Query {
+  googleLoginUrl: String!
+}

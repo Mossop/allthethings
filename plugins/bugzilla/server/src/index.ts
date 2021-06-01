@@ -6,14 +6,14 @@ import type {
   PluginDbMigration,
   ServerPlugin,
   PluginItemFields,
-  GraphQLContext,
+  AuthedPluginContext,
   Resolver,
   ServerPluginExport,
   PluginServer,
   PluginContext,
   BasePluginItem,
+  PluginWebMiddleware,
 } from "@allthethings/server";
-import type Koa from "koa";
 import koaStatic from "koa-static";
 
 import { Account, Bug, Search } from "./db/implementations";
@@ -25,14 +25,14 @@ export * from "./types";
 const UPDATE_DELAY = 60000;
 
 class BugzillaPlugin implements ServerPlugin {
-  public readonly serverMiddleware: Koa.Middleware;
+  public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
 
   public constructor(private readonly server: PluginServer) {
     this.clientPath = path.dirname(require.resolve("@allthethings/bugzilla-client/dist/app.js"));
 
-    this.serverMiddleware = koaStatic(this.clientPath, {
+    this.middleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
     });
 
@@ -60,10 +60,6 @@ class BugzillaPlugin implements ServerPlugin {
     }
   }
 
-  public middleware(): Koa.Middleware {
-    return this.serverMiddleware;
-  }
-
   public schema(): Promise<string> {
     let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
     return fs.readFile(schemaFile, {
@@ -71,7 +67,7 @@ class BugzillaPlugin implements ServerPlugin {
     });
   }
 
-  public resolvers(): Resolver<GraphQLContext> {
+  public resolvers(): Resolver<AuthedPluginContext> {
     return Resolvers;
   }
 
@@ -96,7 +92,7 @@ class BugzillaPlugin implements ServerPlugin {
   }
 
   public async createItemFromURL(
-    context: GraphQLContext,
+    context: AuthedPluginContext,
     url: URL,
     isTask: boolean,
   ): Promise<string | null> {

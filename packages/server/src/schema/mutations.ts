@@ -9,7 +9,7 @@ import { PluginDetail } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
 import { bestIcon, loadPageInfo } from "../utils/page";
-import type { AuthedParams, AuthedContext, ResolverParams } from "./context";
+import type { AuthedParams, AuthedResolverContext, ResolverParams } from "./context";
 import { resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
@@ -20,7 +20,7 @@ type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
 }>;
 
 async function baseCreateItem(
-  ctx: AuthedContext,
+  ctx: AuthedResolverContext,
   { list, item: itemParams, taskInfo }: ItemCreateArgs,
   type: ItemType | null,
 ): Promise<Item> {

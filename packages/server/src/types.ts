@@ -7,10 +7,12 @@ export {
   TypeResolver,
   Resolver,
   PluginContext,
-  GraphQLContext,
+  AuthedPluginContext,
   User,
   PluginServer,
   BasePluginItem,
   PluginTaskInfo,
-} from "./plugins";
+  PluginWebMiddleware,
+  PluginWebContext,
+} from "./plugins/types";
 export * from "./utils/page";

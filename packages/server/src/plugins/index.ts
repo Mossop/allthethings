@@ -1,13 +1,12 @@
-import type { URL } from "url";
+import { URL } from "url";
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { TaskController } from "@allthethings/schema";
-import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import type { DateTime } from "luxon";
 
+import type { ServerConfig } from "../config";
 import type { Item } from "../db";
 import { PluginDetail } from "../db";
 import type { DatabaseConnection } from "../db/connection";
@@ -15,116 +14,62 @@ import { id } from "../db/connection";
 import type { AppDataSources } from "../db/datasources";
 import { ItemType } from "../db/types";
 import type { ResolverContext } from "../schema/context";
-import type { TaskManager } from "../utils/tasks";
-import type { PluginDbMigration, PluginKnex, TableRef } from "./db";
+import type { WebServer } from "../webserver";
+import type { WebServerContext } from "../webserver/context";
+import type { PluginKnex, TableRef } from "./db";
 import { wrapKnex, getMigrationSource } from "./db";
 import PluginInstance from "./instance";
+import type {
+  AuthedPluginContext,
+  BasePluginItem,
+  CreateBasePluginItem,
+  PluginContext,
+  PluginItemFields,
+  PluginList,
+  PluginTaskInfo,
+  Resolver,
+  TypeResolver,
+} from "./types";
 
-export type ResolverFn<TContext = any, TResult = any, TParent = any, TArgs = any> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-) => Promise<TResult> | TResult;
-export type TypeResolver<TContext> = Record<string, ResolverFn<TContext>>;
-export type Resolver<TContext> = Record<string, TypeResolver<TContext>>;
-
-export interface PluginTaskInfo {
-  due: DateTime | null;
-  done: DateTime | null;
+export function buildAuthedPluginContext(
+  plugin: PluginInstance,
+  dataSources: AppDataSources,
+  userId: string,
+): AuthedPluginContext {
+  let pluginContext = buildPluginContext(plugin, dataSources);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+  return Object.create(pluginContext, {
+    userId: {
+      get(): string {
+        return userId;
+      },
+    },
+  });
 }
 
-export interface BasePluginItem {
-  id: string;
-  summary: string;
-  archived: DateTime | null;
-  snoozed: DateTime | null;
-  taskInfo: PluginTaskInfo | null;
-}
-
-export type CreateBasePluginItem = Omit<BasePluginItem, "id" | "taskInfo"> & {
-  due?: DateTime | null;
-  done?: DateTime | null;
-  controller: TaskController | null;
-};
-
-export interface PluginList {
-  name: string;
-  url: string;
-  items?: string[];
-}
-
-export interface PluginContext {
-  readonly knex: PluginKnex;
-  readonly userTableRef: TableRef;
-  id(): Promise<string>;
-  tableRef(name: string): TableRef;
-  // eslint-disable-next-line @typescript-eslint/ban-types
-  table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
-  createItem(user: string, props: CreateBasePluginItem): Promise<BasePluginItem>;
-  getItem(id: string): Promise<BasePluginItem | null>;
-  setItemTaskDone(id: string, done: DateTime | null): Promise<void>;
-
-  addList(list: PluginList): Promise<string>;
-  updateList(id: string, list: Partial<PluginList>): Promise<void>;
-  deleteList(id: string): Promise<void>;
-}
-
-export interface GraphQLContext extends PluginContext {
-  readonly userId: string | null;
-}
-
-export interface User {
-  id: () => string;
-}
-
-export interface PluginItemFields {
-}
-
-export type PluginField<R, A extends unknown[] = []> = MaybeCallable<Awaitable<R>, A>;
-
-export interface ServerPlugin {
-  readonly startup?: PluginField<void>;
-  readonly schema?: PluginField<string>;
-  readonly resolvers?: PluginField<Resolver<GraphQLContext>>;
-  readonly middleware?: PluginField<Koa.Middleware>;
-  readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;
-  readonly dbMigrations?: PluginField<PluginDbMigration[]>;
-  readonly getItemFields: PluginField<
-    PluginItemFields,
-    [context: PluginContext, item: BasePluginItem]
-  >;
-  readonly deleteItem?: PluginField<void, [context: PluginContext, item: BasePluginItem]>;
-  readonly createItemFromURL?: PluginField<
-    string | null,
-    [context: GraphQLContext, url: URL, isTask: boolean]
-  >;
-  readonly editItem?: PluginField<
-    void,
-    [context: PluginContext, item: BasePluginItem, newItem: Omit<BasePluginItem, "id" | "taskInfo">]
-  >;
-  readonly editTaskInfo?: PluginField<
-    void,
-    [context: PluginContext, item: BasePluginItem, taskInfo: PluginTaskInfo | null]
-  >;
-}
-
-export interface PluginServer {
-  withContext: <T>(task: (context: PluginContext) => Promise<T>) => Promise<T>;
-  taskManager: TaskManager;
-}
-
-export type ServerPluginExport = MaybeCallable<
-  Awaitable<ServerPlugin>,
-  [server: PluginServer, config: any]
->;
-
-export function buildContext(
+export function buildPluginContext(
   plugin: PluginInstance,
   dataSources: AppDataSources,
 ): PluginContext {
   let db = dataSources.users.connection;
 
   return {
+    get baseUrl(): URL {
+      let { protocol, hostname, port } = plugin.serverConfig;
+
+      return new URL(`${protocol}://${hostname}:${port}/`);
+    },
+
+    get pluginUrl(): URL {
+      let { protocol, hostname, port } = plugin.serverConfig;
+
+      return new URL(`${protocol}://${hostname}:${port}/plugin/${plugin.schema}/`);
+    },
+
+    get pluginSchema(): string {
+      return plugin.schema;
+    },
+
     get knex(): PluginKnex {
       return wrapKnex(db.knex, plugin.schema);
     },
@@ -234,19 +179,20 @@ export function buildContext(
   };
 }
 
-function wrapResolverContext(plugin: PluginInstance, context: ResolverContext): GraphQLContext {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return Object.create(buildContext(plugin, context.dataSources), {
-    userId: {
-      value: context.userId,
-      writable: false,
-    },
-  });
+function wrapResolverContext(
+  plugin: PluginInstance,
+  context: ResolverContext,
+): AuthedPluginContext {
+  if (!context.userId) {
+    throw new Error("Not logged in.");
+  }
+
+  return buildAuthedPluginContext(plugin, context.dataSources, context.userId);
 }
 
 function wrapResolver(
   plugin: PluginInstance,
-  resolver: Resolver<GraphQLContext>,
+  resolver: Resolver<AuthedPluginContext>,
 ): Resolver<ResolverContext> {
   let wrapped: Resolver<ResolverContext> = {};
 
@@ -301,7 +247,11 @@ class PluginManager {
     pluginId: string,
   ): Promise<void> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.editItem(buildContext(plugin, dataSources), await item.forPlugin(), newItem);
+    return plugin.editItem(
+      buildPluginContext(plugin, dataSources),
+      await item.forPlugin(),
+      newItem,
+    );
   }
 
   public async editTaskInfo(
@@ -311,7 +261,11 @@ class PluginManager {
     pluginId: string,
   ): Promise<void> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.editTaskInfo(buildContext(plugin, dataSources), await item.forPlugin(), taskInfo);
+    return plugin.editTaskInfo(
+      buildPluginContext(plugin, dataSources),
+      await item.forPlugin(),
+      taskInfo,
+    );
   }
 
   public async deleteItem(
@@ -320,7 +274,10 @@ class PluginManager {
     pluginId: string,
   ): Promise<void> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.deleteItem(buildContext(plugin, dataSources), await item.forPlugin());
+    return plugin.deleteItem(
+      buildPluginContext(plugin, dataSources),
+      await item.forPlugin(),
+    );
   }
 
   public async getItemFields(
@@ -329,7 +286,7 @@ class PluginManager {
     pluginId: string,
   ): Promise<PluginItemFields> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.getItemFields(buildContext(plugin, dataSources), await item.forPlugin());
+    return plugin.getItemFields(buildPluginContext(plugin, dataSources), await item.forPlugin());
   }
 
   public async getClientScripts(ctx: Koa.Context): Promise<string[]> {
@@ -402,12 +359,16 @@ class PluginManager {
     );
   }
 
-  public async registerServerMiddleware(app: Koa): Promise<void> {
+  public async registerServerMiddleware(app: WebServer): Promise<void> {
     await this.withAll(async (plugin: PluginInstance): Promise<void> => {
-      let middleware = await plugin.getServerMiddleware();
-      if (middleware) {
-        app.use(koaMount("/plugin/" + plugin.schema, middleware));
-      }
+      let middleWare = (
+        ctx: Koa.ParameterizedContext<Koa.DefaultState, WebServerContext>,
+        next: Koa.Next,
+      ): Promise<unknown> => {
+        return plugin.webMiddleware(ctx, next);
+      };
+
+      app.use(koaMount("/plugin/" + plugin.schema, middleWare));
     });
   }
 
@@ -433,8 +394,12 @@ class PluginManager {
     return null;
   }
 
-  private async loadPlugin(db: DatabaseConnection, spec: string, config: any): Promise<void> {
-    let instance = new PluginInstance(spec, db, config);
+  private async loadPlugin(
+    db: DatabaseConnection,
+    spec: string,
+    serverConfig: ServerConfig,
+  ): Promise<void> {
+    let instance = new PluginInstance(spec, db, serverConfig);
     try {
       await instance.init();
       this.plugins.add(instance);
@@ -445,13 +410,12 @@ class PluginManager {
 
   public async loadPlugins(
     db: DatabaseConnection,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    pluginConfig: Record<string, any>,
+    serverConfig: ServerConfig,
   ): Promise<void> {
     let startupPromises: Promise<void>[] = [];
 
-    for (let [spec, config] of Object.entries(pluginConfig)) {
-      startupPromises.push(this.loadPlugin(db, spec, config));
+    for (let spec of Object.keys(serverConfig.plugins)) {
+      startupPromises.push(this.loadPlugin(db, spec, serverConfig));
     }
 
     await Promise.all(startupPromises);

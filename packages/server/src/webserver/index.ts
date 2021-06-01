@@ -11,20 +11,23 @@ import koaStatic from "koa-static";
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";
 import PluginManager from "../plugins";
-import { buildContext } from "./context";
+import type { WebServerContext } from "./context";
+import { buildWebServerContext } from "./context";
+
+export type WebServer = Koa<Koa.DefaultState, WebServerContext>;
 
 export async function createWebServer(
   config: ServerConfig,
   db: DatabaseConnection,
   gqlServer: ApolloServer,
-): Promise<Koa> {
+): Promise<WebServer> {
   let htmlFile = require.resolve("@allthethings/client/dist/index.html");
 
   let clientRoot = path.dirname(htmlFile);
   let uiRoot = path.dirname(require.resolve("@allthethings/ui/dist/ui.js"));
-  let context = await buildContext(config, db);
+  let context = await buildWebServerContext(config, db);
 
-  let app = new koa();
+  let app: WebServer = new koa();
   Object.defineProperties(app.context, {
     ...context,
   });
@@ -57,9 +60,9 @@ export async function createWebServer(
 
   app.use(koaSession({
     renew: true,
-    sameSite: "strict",
+    sameSite: "lax",
     maxAge: 7 * 24 * 60 * 60 * 1000,
-  }, app));
+  }, app as unknown as Koa));
 
   app.use(gqlServer.getMiddleware());
 

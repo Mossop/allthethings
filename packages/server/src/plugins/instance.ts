@@ -1,26 +1,28 @@
 import type { URL } from "url";
 
+import type { Awaitable, MaybeCallable } from "@allthethings/utils";
+import { call, isCallable, waitFor } from "@allthethings/utils";
 import type Koa from "koa";
 
+import { buildAuthedPluginContext, buildPluginContext } from ".";
+import type { ServerConfig } from "../config";
+import type { DatabaseConnection } from "../db/connection";
+import { buildDataSources } from "../db/datasources";
+import type { TaskManager } from "../utils/tasks";
+import taskManager from "../utils/tasks";
+import type { WebServerContext } from "../webserver/context";
+import type { PluginDbMigration } from "./db";
 import type {
+  ServerPlugin,
   PluginContext,
-  GraphQLContext,
+  AuthedPluginContext,
   ServerPluginExport,
   PluginItemFields,
   PluginServer,
   Resolver,
   BasePluginItem,
   PluginTaskInfo,
-} from ".";
-import { buildContext } from ".";
-import type { Awaitable, MaybeCallable } from "../../../utils";
-import { call, isCallable, waitFor } from "../../../utils";
-import type { DatabaseConnection } from "../db/connection";
-import { buildDataSources } from "../db/datasources";
-import type { ServerPlugin } from "../types";
-import type { TaskManager } from "../utils/tasks";
-import taskManager from "../utils/tasks";
-import type { PluginDbMigration } from "./db";
+} from "./types";
 
 async function loadPlugin(
   spec: string,
@@ -60,11 +62,15 @@ export default class PluginInstance implements PluginServer {
   public constructor(
     public readonly id: string,
     private readonly db: DatabaseConnection,
-    config: unknown,
+    public readonly serverConfig: ServerConfig,
   ) {
     this.schema = this.id.replace(/[^0-9a-zA-Z_]/g, "_");
 
-    this.pluginPromise = loadPlugin(this.id, this, config).then((plugin: ServerPlugin) => {
+    this.pluginPromise = loadPlugin(
+      this.id,
+      this,
+      serverConfig.plugins[this.id],
+    ).then((plugin: ServerPlugin) => {
       this._plugin = plugin;
     });
   }
@@ -86,13 +92,13 @@ export default class PluginInstance implements PluginServer {
     let dataSources = buildDataSources(cloned);
 
     try {
-      let result = await task(buildContext(this, dataSources));
+      let result = await task(buildPluginContext(this, dataSources));
 
       await dataSources.items.deleteCompleteInboxTasks();
       await cloned.commitTransaction();
       return result;
     } catch (e) {
-      await cloned.rollbackTransaction();
+      await cloned.rollbackTransaction(e);
       throw e;
     }
   }
@@ -121,15 +127,51 @@ export default class PluginInstance implements PluginServer {
     return getField(this.plugin, this.plugin.dbMigrations, []);
   }
 
-  public getServerMiddleware(): Promise<Koa.Middleware | undefined> {
-    return getField(this.plugin, this.plugin.middleware, undefined);
+  public async webMiddleware(
+    ctx: Koa.ParameterizedContext<Koa.DefaultState, WebServerContext>,
+    next: Koa.Next,
+  ): Promise<unknown> {
+    let user = ctx.session?.userId ?? null;
+    if (!user) {
+      return next();
+    }
+
+    if (!this.plugin.middleware) {
+      return;
+    }
+
+    let { db } = ctx;
+
+    if (!db.isInTransaction) {
+      await db.startTransaction();
+    }
+
+    try {
+      let dataSources = buildDataSources(db);
+      let pluginContext = buildAuthedPluginContext(this, dataSources, user);
+
+      await this.plugin.middleware(Object.create(ctx, {
+        pluginContext: {
+          enumerable: true,
+          configurable: false,
+          writable: false,
+          value: pluginContext,
+        },
+      }), next);
+
+      await dataSources.items.deleteCompleteInboxTasks();
+      await db.commitTransaction();
+    } catch (e) {
+      await db.rollbackTransaction(e);
+      throw e;
+    }
   }
 
   public getSchema(): Promise<string | null> {
     return getField(this.plugin, this.plugin.schema, null);
   }
 
-  public getResolvers(): Promise<Resolver<GraphQLContext> | null> {
+  public getResolvers(): Promise<Resolver<AuthedPluginContext> | null> {
     return getField(this.plugin, this.plugin.resolvers, null);
   }
 
@@ -138,7 +180,7 @@ export default class PluginInstance implements PluginServer {
   }
 
   public createItemFromURL(
-    context: GraphQLContext,
+    context: AuthedPluginContext,
     url: URL,
     isTask: boolean,
   ): Promise<string | null> {

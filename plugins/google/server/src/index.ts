@@ -1,38 +1,77 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { URL } from "url";
 
 import type {
   PluginDbMigration,
   ServerPlugin,
   PluginItemFields,
-  GraphQLContext,
+  AuthedPluginContext,
   Resolver,
   ServerPluginExport,
   PluginServer,
   PluginContext,
   BasePluginItem,
+  PluginWebMiddleware,
+  PluginWebContext,
 } from "@allthethings/server";
 import type Koa from "koa";
+import koaCompose from "koa-compose";
+import koaMount from "koa-mount";
 import koaStatic from "koa-static";
 
+import { Account } from "./db/implementations";
 import buildMigrations from "./db/migrations";
-import Resolvers from "./resolvers";
+import buildResolvers from "./resolvers";
+import type { GooglePluginConfig } from "./types";
+
+function first(param: string | string[] | undefined): string | undefined {
+  if (Array.isArray(param)) {
+    return param[0];
+  }
+
+  return param;
+}
 
 class GooglePlugin implements ServerPlugin {
-  public readonly serverMiddleware: Koa.Middleware;
+  public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
 
-  public constructor(private readonly server: PluginServer) {
+  public constructor(
+    private readonly server: PluginServer,
+    private readonly config: GooglePluginConfig,
+  ) {
     this.clientPath = path.dirname(require.resolve("@allthethings/google-client/dist/app.js"));
 
-    this.serverMiddleware = koaStatic(this.clientPath, {
+    let oauthMiddleware: PluginWebMiddleware = async (ctx: PluginWebContext, next: Koa.Next) => {
+      let code = first(ctx.query.code);
+      let userId = first(ctx.query.state);
+
+      if (!code || userId != ctx.pluginContext.userId) {
+        console.error("Bad oauth", code, userId);
+        return next();
+      }
+
+      ctx.set("Cache-Control", "no-cache");
+
+      let account = await Account.create(this.config, ctx.pluginContext, code);
+      let url = new URL(
+        `settings/${account.id}`,
+        ctx.pluginContext.baseUrl,
+      );
+      url.searchParams.set("plugin", ctx.pluginContext.pluginSchema);
+      ctx.redirect(url.toString());
+    };
+
+    let staticMiddleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
     });
-  }
 
-  public middleware(): Koa.Middleware {
-    return this.serverMiddleware;
+    this.middleware = koaCompose([
+      koaMount("/oauth", oauthMiddleware),
+      staticMiddleware,
+    ]);
   }
 
   public schema(): Promise<string> {
@@ -42,8 +81,8 @@ class GooglePlugin implements ServerPlugin {
     });
   }
 
-  public resolvers(): Resolver<GraphQLContext> {
-    return Resolvers;
+  public resolvers(): Resolver<AuthedPluginContext> {
+    return buildResolvers(this.config);
   }
 
   public clientScripts(): string[] {
@@ -82,6 +121,9 @@ class GooglePlugin implements ServerPlugin {
   // }
 }
 
-const plugin: ServerPluginExport = (server: PluginServer) => new GooglePlugin(server);
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const plugin: ServerPluginExport = (server: PluginServer, config: any) => {
+  return new GooglePlugin(server, config);
+};
 
 export default plugin;

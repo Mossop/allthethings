@@ -112,9 +112,15 @@ export class DatabaseConnection {
     this._transaction = null;
   }
 
-  public async rollbackTransaction(): Promise<void> {
+  public async rollbackTransaction(error?: Error): Promise<void> {
     if (!this._transaction) {
       throw new Error("There is no current transaction.");
+    }
+
+    if (error) {
+      console.error("Rolling back transaction", error);
+    } else {
+      console.log("Rolling back transaction");
     }
 
     try {

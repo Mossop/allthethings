@@ -19,6 +19,11 @@ export type GoogleAccount = {
   readonly email: Scalars['String'];
 };
 
+export type Query = {
+  readonly __typename?: 'Query';
+  readonly googleLoginUrl: Scalars['String'];
+};
+
 export type User = {
   readonly __typename?: 'User';
   readonly googleAccounts: ReadonlyArray<GoogleAccount>;
@@ -106,6 +111,7 @@ export type ResolversTypes = ResolversObject<{
   GoogleAccount: ResolverTypeWrapper<GoogleAccount>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  Query: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
 }>;
@@ -115,6 +121,7 @@ export type ResolversParentTypes = ResolversObject<{
   GoogleAccount: GoogleAccount;
   ID: Scalars['ID'];
   String: Scalars['String'];
+  Query: {};
   User: User;
   Boolean: Scalars['Boolean'];
 }>;
@@ -125,6 +132,10 @@ export type GoogleAccountResolvers<ContextType = any, ParentType extends Resolve
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+  googleLoginUrl: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+}>;
+
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   googleAccounts: Resolver<ReadonlyArray<ResolversTypes['GoogleAccount']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
@@ -132,6 +143,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   GoogleAccount: GoogleAccountResolvers<ContextType>;
+  Query: QueryResolvers<ContextType>;
   User: UserResolvers<ContextType>;
 }>;
 
