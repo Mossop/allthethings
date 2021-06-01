@@ -66,8 +66,10 @@ export function buildPluginContext(
       return new URL(`${protocol}://${hostname}:${port}/plugin/${plugin.schema}/`);
     },
 
-    get pluginSchema(): string {
-      return plugin.schema;
+    settingsPageUrl(page: string): URL {
+      let url = new URL(`settings/${page}`, this.baseUrl);
+      url.searchParams.set("plugin", plugin.schema);
+      return url;
     },
 
     get knex(): PluginKnex {

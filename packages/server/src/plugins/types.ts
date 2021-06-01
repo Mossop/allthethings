@@ -41,7 +41,8 @@ export interface PluginItemFields {
 export interface PluginContext {
   baseUrl: URL;
   pluginUrl: URL;
-  pluginSchema: string;
+
+  settingsPageUrl(page: string): URL;
 
   readonly knex: PluginKnex;
   readonly userTableRef: TableRef;

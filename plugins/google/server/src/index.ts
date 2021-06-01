@@ -56,12 +56,7 @@ class GooglePlugin implements ServerPlugin {
       ctx.set("Cache-Control", "no-cache");
 
       let account = await Account.create(this.config, ctx.pluginContext, code);
-      let url = new URL(
-        `settings/${account.id}`,
-        ctx.pluginContext.baseUrl,
-      );
-      url.searchParams.set("plugin", ctx.pluginContext.pluginSchema);
-      ctx.redirect(url.toString());
+      ctx.redirect(ctx.pluginContext.settingsPageUrl(account.id).toString());
     };
 
     let staticMiddleware = koaStatic(this.clientPath, {
