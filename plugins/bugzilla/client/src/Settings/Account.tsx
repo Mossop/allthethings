@@ -8,6 +8,7 @@ import {
   Styles,
   useBoolState,
   Icons,
+  useResetStore,
 } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
@@ -51,6 +52,7 @@ function SearchSettingsItem({
   search,
 }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
+  let resetStore = useResetStore();
 
   let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
     variables: {
@@ -61,13 +63,12 @@ function SearchSettingsItem({
     ],
   });
 
-  let deleteSearch = useCallback(() => {
-    deleteSearchMutation();
+  let deleteSearch = useCallback(async () => {
+    await deleteSearchMutation();
+    await resetStore();
   }, [deleteSearchMutation]);
 
-  return <SettingsListItem
-    key={search.id}
-  >
+  return <SettingsListItem>
     <div className={classes.searchName}>
       <a href={search.url} target="_blank" className={classes.searchLink}>{search.name}</a>
     </div>
@@ -88,6 +89,7 @@ export default function AccountSettings({
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
   let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
+  let resetStore = useResetStore();
 
   let [deleteAccountMutation] = useDeleteBugzillaAccountMutation({
     variables: {
@@ -98,8 +100,9 @@ export default function AccountSettings({
     ],
   });
 
-  let deleteAccount = useCallback(() => {
-    deleteAccountMutation();
+  let deleteAccount = useCallback(async () => {
+    await deleteAccountMutation();
+    await resetStore();
   }, [deleteAccountMutation]);
 
   return <SettingsPage
@@ -127,7 +130,10 @@ export default function AccountSettings({
         </>
       }
     >
-      {account.searches.map((search: BugzillaSearch) => <SearchSettingsItem search={search}/>)}
+      {account.searches.map((search: BugzillaSearch) => <SearchSettingsItem
+        key={search.id}
+        search={search}
+      />)}
     </SettingsListSection>
     {
       showSearchDialog && <SearchDialog

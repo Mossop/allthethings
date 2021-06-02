@@ -1,9 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFieldsFragment, RootFields_Context_Fragment, RootFields_User_Fragment } from './fragments';
+import { ClientItemFieldsFragment, ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
+import { ClientItemFieldsFragmentDoc, ClientRootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
 export type LoginMutationVariables = Types.Exact<{
@@ -112,7 +112,7 @@ export type CreateTaskMutationVariables = Types.Exact<{
 
 export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly createTask: (
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   ) };
 
 export type CreateLinkMutationVariables = Types.Exact<{
@@ -125,7 +125,7 @@ export type CreateLinkMutationVariables = Types.Exact<{
 
 export type CreateLinkMutation = { readonly __typename: 'Mutation', readonly createLink: (
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   ) };
 
 export type EditItemMutationVariables = Types.Exact<{
@@ -136,7 +136,7 @@ export type EditItemMutationVariables = Types.Exact<{
 
 export type EditItemMutation = { readonly __typename: 'Mutation', readonly editItem: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 export type EditTaskInfoMutationVariables = Types.Exact<{
@@ -147,7 +147,7 @@ export type EditTaskInfoMutationVariables = Types.Exact<{
 
 export type EditTaskInfoMutation = { readonly __typename: 'Mutation', readonly editTaskInfo: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 export type EditTaskControllerMutationVariables = Types.Exact<{
@@ -158,7 +158,7 @@ export type EditTaskControllerMutationVariables = Types.Exact<{
 
 export type EditTaskControllerMutation = { readonly __typename: 'Mutation', readonly editTaskController: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 export type MoveItemMutationVariables = Types.Exact<{
@@ -170,7 +170,7 @@ export type MoveItemMutationVariables = Types.Exact<{
 
 export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 export type DeleteItemMutationVariables = Types.Exact<{
@@ -188,7 +188,7 @@ export type ArchiveItemMutationVariables = Types.Exact<{
 
 export type ArchiveItemMutation = { readonly __typename: 'Mutation', readonly archiveItem: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 export type SnoozeItemMutationVariables = Types.Exact<{
@@ -199,7 +199,7 @@ export type SnoozeItemMutationVariables = Types.Exact<{
 
 export type SnoozeItemMutation = { readonly __typename: 'Mutation', readonly snoozeItem: Types.Maybe<(
     { readonly __typename: 'Item' }
-    & ItemFieldsFragment
+    & ClientItemFieldsFragment
   )> };
 
 
@@ -648,10 +648,10 @@ export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProj
 export const CreateTaskDocument = gql`
     mutation CreateTask($list: ID, $item: ItemParams!) {
   createTask(list: $list, item: $item) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, CreateTaskMutationVariables>;
 
 /**
@@ -682,10 +682,10 @@ export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMut
 export const CreateLinkDocument = gql`
     mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
   createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type CreateLinkMutationFn = Apollo.MutationFunction<CreateLinkMutation, CreateLinkMutationVariables>;
 
 /**
@@ -718,10 +718,10 @@ export type CreateLinkMutationOptions = Apollo.BaseMutationOptions<CreateLinkMut
 export const EditItemDocument = gql`
     mutation EditItem($id: ID!, $item: ItemParams!) {
   editItem(id: $id, item: $item) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type EditItemMutationFn = Apollo.MutationFunction<EditItemMutation, EditItemMutationVariables>;
 
 /**
@@ -752,10 +752,10 @@ export type EditItemMutationOptions = Apollo.BaseMutationOptions<EditItemMutatio
 export const EditTaskInfoDocument = gql`
     mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
   editTaskInfo(id: $id, taskInfo: $taskInfo) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type EditTaskInfoMutationFn = Apollo.MutationFunction<EditTaskInfoMutation, EditTaskInfoMutationVariables>;
 
 /**
@@ -786,10 +786,10 @@ export type EditTaskInfoMutationOptions = Apollo.BaseMutationOptions<EditTaskInf
 export const EditTaskControllerDocument = gql`
     mutation EditTaskController($id: ID!, $controller: String) {
   editTaskController(id: $id, controller: $controller) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type EditTaskControllerMutationFn = Apollo.MutationFunction<EditTaskControllerMutation, EditTaskControllerMutationVariables>;
 
 /**
@@ -820,10 +820,10 @@ export type EditTaskControllerMutationOptions = Apollo.BaseMutationOptions<EditT
 export const MoveItemDocument = gql`
     mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
   moveItem(id: $id, parent: $parent, before: $before) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type MoveItemMutationFn = Apollo.MutationFunction<MoveItemMutation, MoveItemMutationVariables>;
 
 /**
@@ -886,10 +886,10 @@ export type DeleteItemMutationOptions = Apollo.BaseMutationOptions<DeleteItemMut
 export const ArchiveItemDocument = gql`
     mutation ArchiveItem($id: ID!, $archived: DateTime) {
   archiveItem(id: $id, archived: $archived) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type ArchiveItemMutationFn = Apollo.MutationFunction<ArchiveItemMutation, ArchiveItemMutationVariables>;
 
 /**
@@ -920,10 +920,10 @@ export type ArchiveItemMutationOptions = Apollo.BaseMutationOptions<ArchiveItemM
 export const SnoozeItemDocument = gql`
     mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
   snoozeItem(id: $id, snoozed: $snoozed) {
-    ...itemFields
+    ...clientItemFields
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 export type SnoozeItemMutationFn = Apollo.MutationFunction<SnoozeItemMutation, SnoozeItemMutationVariables>;
 
 /**

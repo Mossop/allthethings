@@ -1,9 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ItemFieldsFragment, RootFields_Context_Fragment, RootFields_User_Fragment } from './fragments';
+import { ClientItemFieldsFragment, ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ItemFieldsFragmentDoc, RootFieldsFragmentDoc } from './fragments';
+import { ClientItemFieldsFragmentDoc, ClientRootFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
@@ -12,12 +12,12 @@ export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never;
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
     { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
-        & ItemFieldsFragment
+        & ClientItemFieldsFragment
       )> }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
-      & RootFields_Context_Fragment
+      & ClientRootFields_Context_Fragment
     )> }
-    & RootFields_User_Fragment
+    & ClientRootFields_User_Fragment
   )> };
 
 export type ListTaskListQueryVariables = Types.Exact<{
@@ -27,22 +27,22 @@ export type ListTaskListQueryVariables = Types.Exact<{
 
 export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Item' }
-      & ItemFieldsFragment
+      & ClientItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
-        & ItemFieldsFragment
+        & ClientItemFieldsFragment
       )> }> } | { readonly __typename: 'Project', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Item' }
-      & ItemFieldsFragment
+      & ClientItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
-        & ItemFieldsFragment
+        & ClientItemFieldsFragment
       )> }> } | { readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
       { readonly __typename: 'Item' }
-      & ItemFieldsFragment
+      & ClientItemFieldsFragment
     )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
-        & ItemFieldsFragment
+        & ClientItemFieldsFragment
       )> }> }> };
 
 
@@ -54,20 +54,20 @@ export const ListContextStateDocument = gql`
     inbox {
       id
       items {
-        ...itemFields
+        ...clientItemFields
       }
     }
-    ...rootFields
+    ...clientRootFields
     contexts {
       id
       stub
       name
-      ...rootFields
+      ...clientRootFields
     }
   }
 }
-    ${ItemFieldsFragmentDoc}
-${RootFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}
+${ClientRootFieldsFragmentDoc}`;
 
 /**
  * __useListContextStateQuery__
@@ -103,19 +103,19 @@ export const ListTaskListDocument = gql`
   taskList(id: $taskList) {
     remainingTasks
     items {
-      ...itemFields
+      ...clientItemFields
     }
     sections {
       id
       name
       remainingTasks
       items {
-        ...itemFields
+        ...clientItemFields
       }
     }
   }
 }
-    ${ItemFieldsFragmentDoc}`;
+    ${ClientItemFieldsFragmentDoc}`;
 
 /**
  * __useListTaskListQuery__

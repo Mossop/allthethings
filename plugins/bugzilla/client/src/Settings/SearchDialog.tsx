@@ -1,5 +1,11 @@
 import { SearchType } from "@allthethings/bugzilla-server";
-import { RadioGroupInput, TextFieldInput, Dialog, useBoolState } from "@allthethings/ui";
+import {
+  RadioGroupInput,
+  TextFieldInput,
+  Dialog,
+  useBoolState,
+  useResetStore,
+} from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -26,6 +32,7 @@ export default function SearchDialog({
     query: "",
   });
   let [isOpen, , close] = useBoolState(true);
+  let resetStore = useResetStore();
 
   let [createSearch, { error }] = useCreateBugzillaSearchMutation({
     variables: {
@@ -44,6 +51,7 @@ export default function SearchDialog({
     }
 
     onSearchCreated(data.createBugzillaSearch);
+    await resetStore();
   }, []);
 
   return <Dialog

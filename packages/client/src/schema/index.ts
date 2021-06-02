@@ -32,6 +32,11 @@ let typePolicies: TypedTypePolicies = {
       done: OptionalDateField,
     },
   },
+  Inbox: {
+    fields: {
+      items: ArrayField,
+    },
+  },
   Section: {
     fields: {
       items: ArrayField,

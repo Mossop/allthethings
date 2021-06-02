@@ -1,4 +1,4 @@
-fragment rootFields on ProjectRoot {
+fragment clientRootFields on ProjectRoot {
   remainingTasks
   subprojects {
     id
@@ -14,7 +14,7 @@ fragment rootFields on ProjectRoot {
   }
 }
 
-fragment itemFields on Item {
+fragment clientItemFields on Item {
   id
   summary
   archived

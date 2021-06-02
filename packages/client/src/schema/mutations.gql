@@ -83,37 +83,37 @@ mutation DeleteProject($id: ID!) {
 
 mutation CreateTask($list: ID, $item: ItemParams!) {
   createTask(list: $list, item: $item) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
   createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation EditItem($id: ID!, $item: ItemParams!) {
   editItem(id: $id, item: $item) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
   editTaskInfo(id: $id, taskInfo: $taskInfo) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation EditTaskController($id: ID!, $controller: String) {
   editTaskController(id: $id, controller: $controller) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
   moveItem(id: $id, parent: $parent, before: $before) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
@@ -123,12 +123,12 @@ mutation DeleteItem($id: ID!) {
 
 mutation ArchiveItem($id: ID!, $archived: DateTime) {
   archiveItem(id: $id, archived: $archived) {
-    ...itemFields
+    ...clientItemFields
   }
 }
 
 mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
   snoozeItem(id: $id, snoozed: $snoozed) {
-    ...itemFields
+    ...clientItemFields
   }
 }
