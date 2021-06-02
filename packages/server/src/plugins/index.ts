@@ -68,7 +68,7 @@ export function buildPluginContext(
 
     settingsPageUrl(page: string): URL {
       let url = new URL(`settings/${page}`, this.baseUrl);
-      url.searchParams.set("plugin", plugin.schema);
+      url.searchParams.set("plugin", plugin.id);
       return url;
     },
 

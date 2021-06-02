@@ -1074,6 +1074,13 @@
   dependencies:
     googleapis-common "^5.0.1"
 
+"@googleapis/people@^0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@googleapis/people/-/people-0.3.0.tgz#858fe59365cd0a39addfa5a97080686955970939"
+  integrity sha512-i0736FqcYgwbFd6GbdP3j3XujfaroPWnJPaiEDAoc35dxOzSKrZiSLimgZqBkrE+QKPgFk58o2HUBIftj70pOw==
+  dependencies:
+    googleapis-common "^5.0.1"
+
 "@graphql-codegen/add@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/add/-/add-2.0.2.tgz#4acbb95be9ebb859a3cebfe7132fdf49ffe06dd8"
