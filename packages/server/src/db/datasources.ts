@@ -554,6 +554,21 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
     }));
   }
 
+  public async afterListRemoval(): Promise<void> {
+    let ids = this.records
+      .leftJoin("PluginListItems", this.ref("id"), "PluginListItems.itemId")
+      .whereNull("PluginListItems.listId")
+      .andWhere(this.ref("controller"), TaskController.PluginList)
+      .select(this.ref("id"));
+
+    await this.records
+      .whereIn(this.ref("id"), ids)
+      .update({
+        done: DateTime.now(),
+        controller: TaskController.Manual,
+      });
+  }
+
   public async setItemTaskInfo(
     item: Impl.Item,
     taskInfo: MakeRequired<DbUpdateObject<Db.TaskInfoDbTable>, "controller"> | null,

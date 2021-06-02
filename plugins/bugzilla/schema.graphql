@@ -34,5 +34,8 @@ type User {
 
 type Mutation {
   createBugzillaAccount(params: BugzillaAccountParams!): BugzillaAccount!
+  deleteBugzillaAccount(account: ID!): Boolean
+
   createBugzillaSearch(account: ID!, params: BugzillaSearchParams!): BugzillaSearch!
+  deleteBugzillaSearch(search: ID!): Boolean
 }

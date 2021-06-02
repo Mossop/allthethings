@@ -28,6 +28,10 @@ export class ItemCache<I, T extends IdItem<I>> {
   public constructor(private readonly getter: Getter<I, T>) {
   }
 
+  public clear(): void {
+    this.cache.clear();
+  }
+
   public async getItem(id: I): Promise<T | null> {
     let item = this.cache.get(id);
     if (item) {

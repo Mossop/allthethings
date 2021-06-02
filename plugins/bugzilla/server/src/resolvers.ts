@@ -9,6 +9,8 @@ import type { BugzillaAccountRecord } from "./db/types";
 import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
+  MutationDeleteBugzillaAccountArgs,
+  MutationDeleteBugzillaSearchArgs,
 } from "./schema";
 import { SearchType } from "./types";
 
@@ -29,10 +31,6 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { params: { url, name, username, password } }: MutationCreateBugzillaAccountArgs,
       ctx: AuthedPluginContext,
     ): Promise<Account> {
-      if (!ctx.userId) {
-        throw new Error("Not authenticated.");
-      }
-
       let record: Omit<BugzillaAccountRecord, "id" | "icon" | "user"> = {
         url,
         name,
@@ -56,15 +54,25 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       });
     },
 
+    async deleteBugzillaAccount(
+      outer: unknown,
+      { account: accountId }: MutationDeleteBugzillaAccountArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<boolean> {
+      let account = await Account.get(ctx, accountId);
+      if (!account) {
+        return false;
+      }
+
+      await account.delete();
+      return true;
+    },
+
     async createBugzillaSearch(
       outer: unknown,
       { account: accountId, params }: MutationCreateBugzillaSearchArgs,
       ctx: AuthedPluginContext,
     ): Promise<Search> {
-      if (!ctx.userId) {
-        throw new Error("Not authenticated.");
-      }
-
       let account = await Account.get(ctx, accountId);
       if (!account) {
         throw new Error("Unknown account.");
@@ -89,6 +97,20 @@ const Resolvers: Resolver<AuthedPluginContext> = {
         query: queryStr,
         type: searchType,
       });
+    },
+
+    async deleteBugzillaSearch(
+      outer: unknown,
+      { search: searchId }: MutationDeleteBugzillaSearchArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<boolean> {
+      let search = await Search.get(ctx, searchId);
+      if (!search) {
+        return false;
+      }
+
+      await search.delete();
+      return true;
     },
   },
 };

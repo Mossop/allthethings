@@ -32,6 +32,10 @@ mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
   }
 }
 
+mutation DeleteBugzillaAccount($account: ID!) {
+  deleteBugzillaAccount(account: $account)
+}
+
 mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
   createBugzillaSearch(account: $account, params: $params) {
     id
@@ -40,4 +44,8 @@ mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
     query
     url
   }
+}
+
+mutation DeleteBugzillaSearch($search: ID!) {
+  deleteBugzillaSearch(search: $search)
 }

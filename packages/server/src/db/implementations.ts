@@ -75,6 +75,10 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
     return assertValid(await this.dbObjectDataSource.getRecord(this._id));
   }
 
+  public refresh(): void {
+    this._dbObject = this.getDbObject();
+  }
+
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract readonly dbObjectDataSource: Src.DbDataSource<any, T>;
 

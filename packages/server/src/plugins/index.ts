@@ -167,6 +167,44 @@ export function buildPluginContext(
       });
     },
 
+    async setItemSummary(id: string, summary: string): Promise<void> {
+      await dataSources.items.updateOne(id, {
+        summary,
+      });
+    },
+
+    async disconnectItem(id: string, url?: string, icon: string | null = null): Promise<void> {
+      let item = await dataSources.items.getImpl(id);
+      if (!item) {
+        throw new Error("Unknown item.");
+      }
+
+      await dataSources.pluginDetail.delete(item.id());
+      if (url) {
+        await dataSources.items.updateOne(item.id(), {
+          type: ItemType.Link,
+        });
+        item.refresh();
+
+        await dataSources.linkDetail.create(item, {
+          url,
+          icon,
+        });
+      } else {
+        await dataSources.items.updateOne(item.id(), {
+          type: null,
+        });
+      }
+
+      let taskInfo = await item.taskInfo();
+      let controller = taskInfo ? await taskInfo.controller() : TaskController.Manual;
+      if (controller != TaskController.Manual) {
+        await dataSources.taskInfo.setItemTaskInfo(item, {
+          controller: TaskController.Manual,
+        });
+      }
+    },
+
     async addList(list: PluginList): Promise<string> {
       return dataSources.pluginList.addList(plugin.id, list);
     },
@@ -176,7 +214,8 @@ export function buildPluginContext(
     },
 
     async deleteList(id: string): Promise<void> {
-      return dataSources.pluginList.deleteList(plugin.id, id);
+      await dataSources.pluginList.deleteList(plugin.id, id);
+      await dataSources.taskInfo.afterListRemoval();
     },
   };
 }

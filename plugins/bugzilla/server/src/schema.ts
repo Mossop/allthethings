@@ -49,7 +49,9 @@ export type BugzillaSearchParams = {
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createBugzillaAccount: BugzillaAccount;
+  readonly deleteBugzillaAccount: Maybe<Scalars['Boolean']>;
   readonly createBugzillaSearch: BugzillaSearch;
+  readonly deleteBugzillaSearch: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -58,9 +60,19 @@ export type MutationCreateBugzillaAccountArgs = {
 };
 
 
+export type MutationDeleteBugzillaAccountArgs = {
+  account: Scalars['ID'];
+};
+
+
 export type MutationCreateBugzillaSearchArgs = {
   account: Scalars['ID'];
   params: BugzillaSearchParams;
+};
+
+
+export type MutationDeleteBugzillaSearchArgs = {
+  search: Scalars['ID'];
 };
 
 export type User = {
@@ -154,8 +166,8 @@ export type ResolversTypes = ResolversObject<{
   BugzillaSearch: ResolverTypeWrapper<BugzillaSearch>;
   BugzillaSearchParams: BugzillaSearchParams;
   Mutation: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
+  User: ResolverTypeWrapper<User>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -167,8 +179,8 @@ export type ResolversParentTypes = ResolversObject<{
   BugzillaSearch: BugzillaSearch;
   BugzillaSearchParams: BugzillaSearchParams;
   Mutation: {};
-  User: User;
   Boolean: Scalars['Boolean'];
+  User: User;
 }>;
 
 export type BugzillaAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['BugzillaAccount'] = ResolversParentTypes['BugzillaAccount']> = ResolversObject<{
@@ -192,7 +204,9 @@ export type BugzillaSearchResolvers<ContextType = any, ParentType extends Resolv
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createBugzillaAccount: Resolver<ResolversTypes['BugzillaAccount'], ParentType, ContextType, RequireFields<MutationCreateBugzillaAccountArgs, 'params'>>;
+  deleteBugzillaAccount: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteBugzillaAccountArgs, 'account'>>;
   createBugzillaSearch: Resolver<ResolversTypes['BugzillaSearch'], ParentType, ContextType, RequireFields<MutationCreateBugzillaSearchArgs, 'account' | 'params'>>;
+  deleteBugzillaSearch: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteBugzillaSearchArgs, 'search'>>;
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{

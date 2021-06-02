@@ -126,6 +126,8 @@ export type Mutation = {
   readonly createProject: Project;
   readonly createSection: Section;
   readonly createTask: Item;
+  readonly deleteBugzillaAccount: Maybe<Scalars['Boolean']>;
+  readonly deleteBugzillaSearch: Maybe<Scalars['Boolean']>;
   readonly deleteContext: Scalars['Boolean'];
   readonly deleteItem: Scalars['Boolean'];
   readonly deleteProject: Scalars['Boolean'];
@@ -199,6 +201,16 @@ export type MutationCreateSectionArgs = {
 export type MutationCreateTaskArgs = {
   list: Maybe<Scalars['ID']>;
   item: ItemParams;
+};
+
+
+export type MutationDeleteBugzillaAccountArgs = {
+  account: Scalars['ID'];
+};
+
+
+export type MutationDeleteBugzillaSearchArgs = {
+  search: Scalars['ID'];
 };
 
 
@@ -417,6 +429,13 @@ export type CreateBugzillaAccountMutationVariables = Exact<{
 
 export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> } };
 
+export type DeleteBugzillaAccountMutationVariables = Exact<{
+  account: Scalars['ID'];
+}>;
+
+
+export type DeleteBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly deleteBugzillaAccount: Maybe<boolean> };
+
 export type CreateBugzillaSearchMutationVariables = Exact<{
   account: Scalars['ID'];
   params: BugzillaSearchParams;
@@ -424,6 +443,13 @@ export type CreateBugzillaSearchMutationVariables = Exact<{
 
 
 export type CreateBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly createBugzillaSearch: { readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string } };
+
+export type DeleteBugzillaSearchMutationVariables = Exact<{
+  search: Scalars['ID'];
+}>;
+
+
+export type DeleteBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly deleteBugzillaSearch: Maybe<boolean> };
 
 
 export const ListBugzillaAccountsDocument = gql`
@@ -518,6 +544,37 @@ export function useCreateBugzillaAccountMutation(baseOptions?: Apollo.MutationHo
 export type CreateBugzillaAccountMutationHookResult = ReturnType<typeof useCreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationResult = Apollo.MutationResult<CreateBugzillaAccountMutation>;
 export type CreateBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>;
+export const DeleteBugzillaAccountDocument = gql`
+    mutation DeleteBugzillaAccount($account: ID!) {
+  deleteBugzillaAccount(account: $account)
+}
+    `;
+export type DeleteBugzillaAccountMutationFn = Apollo.MutationFunction<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>;
+
+/**
+ * __useDeleteBugzillaAccountMutation__
+ *
+ * To run a mutation, you first call `useDeleteBugzillaAccountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteBugzillaAccountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteBugzillaAccountMutation, { data, loading, error }] = useDeleteBugzillaAccountMutation({
+ *   variables: {
+ *      account: // value for 'account'
+ *   },
+ * });
+ */
+export function useDeleteBugzillaAccountMutation(baseOptions?: Apollo.MutationHookOptions<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>(DeleteBugzillaAccountDocument, options);
+      }
+export type DeleteBugzillaAccountMutationHookResult = ReturnType<typeof useDeleteBugzillaAccountMutation>;
+export type DeleteBugzillaAccountMutationResult = Apollo.MutationResult<DeleteBugzillaAccountMutation>;
+export type DeleteBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>;
 export const CreateBugzillaSearchDocument = gql`
     mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
   createBugzillaSearch(account: $account, params: $params) {
@@ -556,3 +613,34 @@ export function useCreateBugzillaSearchMutation(baseOptions?: Apollo.MutationHoo
 export type CreateBugzillaSearchMutationHookResult = ReturnType<typeof useCreateBugzillaSearchMutation>;
 export type CreateBugzillaSearchMutationResult = Apollo.MutationResult<CreateBugzillaSearchMutation>;
 export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
+export const DeleteBugzillaSearchDocument = gql`
+    mutation DeleteBugzillaSearch($search: ID!) {
+  deleteBugzillaSearch(search: $search)
+}
+    `;
+export type DeleteBugzillaSearchMutationFn = Apollo.MutationFunction<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>;
+
+/**
+ * __useDeleteBugzillaSearchMutation__
+ *
+ * To run a mutation, you first call `useDeleteBugzillaSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteBugzillaSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteBugzillaSearchMutation, { data, loading, error }] = useDeleteBugzillaSearchMutation({
+ *   variables: {
+ *      search: // value for 'search'
+ *   },
+ * });
+ */
+export function useDeleteBugzillaSearchMutation(baseOptions?: Apollo.MutationHookOptions<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>(DeleteBugzillaSearchDocument, options);
+      }
+export type DeleteBugzillaSearchMutationHookResult = ReturnType<typeof useDeleteBugzillaSearchMutation>;
+export type DeleteBugzillaSearchMutationResult = Apollo.MutationResult<DeleteBugzillaSearchMutation>;
+export type DeleteBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>;

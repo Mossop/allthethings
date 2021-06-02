@@ -64,6 +64,26 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
     });
   }
 
+  public async delete(): Promise<void> {
+    let searches = await Search.list(this);
+    for (let search of searches) {
+      await search.delete();
+    }
+
+    let bugs = await this.getBugs();
+
+    for (let bug of bugs) {
+      await bug.update();
+      await this.context.disconnectItem(bug.itemId, bug.url.toString(), this.icon);
+    }
+
+    this.bugCache.clear();
+    this.searchCache.clear();
+    await this.context.table<BugzillaAccountRecord>("Account")
+      .where("id", this.id)
+      .delete();
+  }
+
   public normalizeQuery(query: string): URLSearchParams {
     let params: URLSearchParams;
 
@@ -257,6 +277,10 @@ export class Search implements GraphQLType<BugzillaSearch> {
   ) {
   }
 
+  public async delete(): Promise<void> {
+    await this.context.deleteList(this.id);
+  }
+
   private get context(): PluginContext {
     return this.account.context;
   }
@@ -360,6 +384,24 @@ export class Search implements GraphQLType<BugzillaSearch> {
     return search;
   }
 
+  public static async get(context: PluginContext, id: string): Promise<Search | null> {
+    let record = await context.table<BugzillaSearchRecord>("Search")
+      .where("id", id)
+      .first();
+
+    if (!record) {
+      return null;
+    }
+
+    let account = await Account.get(context, record.accountId);
+    if (!account) {
+      throw new Error("Unexpected.");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return account.searchCache.upsertItem(record.id, () => new Search(account!, record!));
+  }
+
   public static async list(account: Account): Promise<Search[]> {
     let records = await account.context.table<BugzillaSearchRecord>("Search")
       .where("accountId", account.id);
@@ -413,6 +455,12 @@ export class Bug {
     return this.record.itemId;
   }
 
+  public get url(): URL {
+    let baseUrl = new URL(this.account.url);
+
+    return new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl);
+  }
+
   public async update(record?: BugzillaAPIBug): Promise<void> {
     if (!record) {
       let bugs = await this.account.getAPI().getBugs([this.id]);
@@ -430,16 +478,15 @@ export class Bug {
       .update(recordFromBug(record));
 
     await this.context.setItemTaskDone(this.itemId, await this.account.doneForStatus(record));
+    await this.context.setItemSummary(this.itemId, record.summary);
   }
 
   public async fields(): Promise<BugFields> {
-    let baseUrl = new URL(this.account.url);
-
     return {
       accountId: this.account.id,
       bugId: this.record.bugId,
       summary: this.record.summary,
-      url: new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString(),
+      url: this.url.toString(),
       icon: this.account.icon,
       status: this.record.status,
       resolution: this.record.resolution,
