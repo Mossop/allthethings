@@ -15,8 +15,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingBottom: theme.spacing(1),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       justifyContent: "space-between",
     },
     title: {
@@ -25,8 +24,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     pageControls: {
       fontSize: "1rem",
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       columnGap: theme.spacing(2),
     },
   }));

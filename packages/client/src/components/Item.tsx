@@ -55,8 +55,7 @@ import TaskItem from "./TaskItem";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     item: {
-      ...Styles.flexRow,
-      "alignItems": "center",
+      ...Styles.flexCenteredRow,
       "fontSize": "1.1rem",
       "opacity": 1,
       "transitionProperty": "opacity",
@@ -68,8 +67,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dragPreview: {
       flex: 1,
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       overflow: "hidden",
     },
     hidden: {
@@ -86,13 +84,11 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     itemInner: {
       flex: 1,
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       overflow: "hidden",
     },
     actions: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       justifyContent: "end",
       paddingLeft: theme.spacing(1),
     },

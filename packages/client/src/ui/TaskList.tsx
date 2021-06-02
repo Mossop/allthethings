@@ -45,16 +45,14 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
     },
     heading: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       paddingBottom: theme.spacing(1),
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
     },
     headingDragPreview: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
     },
     tasksHeading: {
       padding: theme.spacing(1) + 2,

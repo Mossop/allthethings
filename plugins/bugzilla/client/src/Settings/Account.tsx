@@ -14,6 +14,7 @@ import type { ReactResult } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
 import Icon from "../Icon";
@@ -32,12 +33,16 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     actions: {
       flex: 1,
-      ...Styles.flexRow,
+      ...Styles.flexCenteredRow,
       justifyContent: "end",
-      alignItems: "center",
+    },
+    searchIcon: {
+      paddingLeft: theme.spacing(1),
+      ...Styles.flexCenteredRow,
     },
     searchName: {
       padding: theme.spacing(1),
+      ...Styles.flexCenteredRow,
     },
     searchLink: {
       cursor: "pointer",
@@ -69,6 +74,9 @@ function SearchSettingsItem({
   }, [deleteSearchMutation]);
 
   return <SettingsListItem>
+    <div className={classes.searchIcon}>
+      <SearchIcon/>
+    </div>
     <div className={classes.searchName}>
       <a href={search.url} target="_blank" className={classes.searchLink}>{search.name}</a>
     </div>

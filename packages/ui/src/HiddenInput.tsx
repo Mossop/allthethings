@@ -7,15 +7,14 @@ import type { ContentEditableEvent } from "react-contenteditable";
 import ContentEditable from "react-contenteditable";
 
 import * as Icons from "./Icons";
-import { flexRow } from "./styles";
+import { flexCenteredRow } from "./styles";
 import type { ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     boxShared: {
-      ...flexRow,
-      alignItems: "center",
+      ...flexCenteredRow,
       borderRadius: theme.shape.borderRadius,
       borderWidth: 2,
       borderStyle: "solid",

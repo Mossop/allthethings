@@ -23,8 +23,7 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
     },
     heading: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       paddingBottom: theme.spacing(1),
       marginBottom: theme.spacing(1),
       borderBottomWidth: 1,

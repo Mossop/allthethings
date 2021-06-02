@@ -4,18 +4,16 @@ import clsx from "clsx";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useCallback, useContext } from "react";
 
-import { Styles } from ".";
 import { ImageIcon } from "./ImageIcon";
 import { SelectableListItem } from "./SelectableListItem";
-import { flexRow, flexCentered } from "./styles";
+import { flexCenteredRow, flexColumn, flexCentered } from "./styles";
 import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
 export const useSidebarStyles = makeStyles((theme: Theme) =>
   createStyles({
     listitem: {
-      ...flexRow,
-      alignItems: "center",
+      ...flexCenteredRow,
     },
     icon: {
       paddingRight: theme.spacing(1),
@@ -31,10 +29,9 @@ export const useSidebarStyles = makeStyles((theme: Theme) =>
 
 export const useSettingsPageStyles = makeStyles((theme: Theme) =>
   createStyles({
-    page: Styles.flexColumn,
+    page: flexColumn,
     heading: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...flexCenteredRow,
       paddingBottom: theme.spacing(1),
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
@@ -44,8 +41,7 @@ export const useSettingsPageStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
     },
     sectionHeading: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...flexCenteredRow,
       color: theme.palette.text.primary,
       paddingBottom: theme.spacing(1),
       paddingTop: theme.spacing(1),
@@ -54,8 +50,7 @@ export const useSettingsPageStyles = makeStyles((theme: Theme) =>
       borderBottomStyle: "solid",
     },
     listItem: {
-      ...Styles.flexRow,
-      "alignItems": "center",
+      ...flexCenteredRow,
       "fontSize": "1.1rem",
       "&:hover": {
         backgroundColor: theme.palette.background.paper,

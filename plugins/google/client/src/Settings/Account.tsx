@@ -18,9 +18,8 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     actions: {
       flex: 1,
-      ...Styles.flexRow,
+      ...Styles.flexCenteredRow,
       justifyContent: "end",
-      alignItems: "center",
     },
     searchName: {
       padding: theme.spacing(1),

@@ -35,8 +35,7 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
     },
     sectionHeading: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       color: theme.palette.text.primary,
       paddingBottom: theme.spacing(1),
       paddingTop: theme.spacing(1),
@@ -45,8 +44,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderTopStyle: "solid",
     },
     sectionDragPreview: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
     },
     sectionHeadingInput: TextStyles.subheading,
     sectionDragHeading: {

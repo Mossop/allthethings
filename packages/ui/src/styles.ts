@@ -17,6 +17,11 @@ export const flexRow: CSSProperties = {
   flexDirection: "row",
 };
 
+export const flexCenteredRow: CSSProperties = {
+  ...flexRow,
+  alignItems: "center",
+};
+
 export const flexCentered: CSSProperties = {
   display: "flex",
   alignItems: "center",

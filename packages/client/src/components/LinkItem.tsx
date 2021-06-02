@@ -10,8 +10,7 @@ import type { ItemRenderProps } from "./Item";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     link: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       flex: 1,
       cursor: "pointer",
       overflow: "hidden",

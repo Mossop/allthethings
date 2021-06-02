@@ -37,8 +37,7 @@ const useStyles = makeStyles(() =>
   createStyles({
     actions: {
       flex: 1,
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       justifyContent: "end",
     },
   }));

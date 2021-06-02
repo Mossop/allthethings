@@ -27,8 +27,7 @@ import CreateContextDialog from "./CreateContextDialog";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     button: {
-      ...Styles.flexRow,
-      alignItems: "center",
+      ...Styles.flexCenteredRow,
       minWidth: "auto",
       textTransform: "none",
     },
