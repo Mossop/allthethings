@@ -71,14 +71,17 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       }
 
       let searchType = params.type as SearchType;
-      let query = account.normalizeQuery(params.query);
-      let queryStr: string;
-      let entries = [...query.entries()];
-      if (entries.length == 1 && entries[0][0] == "quicksearch") {
-        queryStr = entries[0][1];
-        searchType = SearchType.Quicksearch;
-      } else {
-        queryStr = query.toString();
+      let queryStr = params.query;
+
+      if (searchType == SearchType.Advanced) {
+        let query = account.normalizeQuery(params.query);
+        let entries = [...query.entries()];
+        if (entries.length == 1 && entries[0][0] == "quicksearch") {
+          queryStr = entries[0][1];
+          searchType = SearchType.Quicksearch;
+        } else {
+          queryStr = query.toString();
+        }
       }
 
       return Search.create(ctx, account, {
