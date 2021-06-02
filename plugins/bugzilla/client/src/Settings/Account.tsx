@@ -64,8 +64,8 @@ function SearchSettingsItem({
   });
 
   let deleteSearch = useCallback(async () => {
-    await deleteSearchMutation();
     await resetStore();
+    await deleteSearchMutation();
   }, [deleteSearchMutation]);
 
   return <SettingsListItem>
@@ -101,8 +101,8 @@ export default function AccountSettings({
   });
 
   let deleteAccount = useCallback(async () => {
-    await deleteAccountMutation();
     await resetStore();
+    await deleteAccountMutation();
   }, [deleteAccountMutation]);
 
   return <SettingsPage

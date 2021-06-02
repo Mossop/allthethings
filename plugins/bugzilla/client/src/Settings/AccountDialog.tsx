@@ -1,4 +1,4 @@
-import { RadioGroupInput, TextFieldInput, Dialog, useBoolState } from "@allthethings/ui";
+import { RadioGroupInput, TextFieldInput, Dialog, useBoolState, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -33,7 +33,7 @@ export default function AccountDialog({
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount, { error }] = useCreateBugzillaAccountMutation({
+  let [createAccount, { loading, error }] = useCreateBugzillaAccountMutation({
     variables: {
       params: {
         name: state.name,
@@ -64,6 +64,7 @@ export default function AccountDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={submit}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="name"

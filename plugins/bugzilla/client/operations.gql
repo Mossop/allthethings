@@ -1,5 +1,6 @@
 query ListBugzillaAccounts {
   user {
+    id
     bugzillaAccounts {
       id
       name

@@ -1,5 +1,4 @@
 import {
-  Button,
   Dialog as MuiDialog,
   DialogActions,
   DialogContent,
@@ -9,6 +8,7 @@ import type { FormEvent } from "react";
 import { useCallback } from "react";
 
 import { Error } from "./Error";
+import { FormState, FormStateProvider, Button } from "./Forms";
 import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
@@ -21,6 +21,7 @@ export interface DialogProps {
   error?: Error | null;
   submitLabel?: string;
   cancelLabel?: string | null;
+  formState?: FormState;
 }
 
 export const Dialog = ReactMemo(function Dialog({
@@ -32,6 +33,7 @@ export const Dialog = ReactMemo(function Dialog({
   error,
   submitLabel = "Submit",
   cancelLabel = "Cancel",
+  formState = FormState.Default,
   children,
 }: DialogProps & ReactChildren): ReactResult {
   let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
@@ -40,16 +42,18 @@ export const Dialog = ReactMemo(function Dialog({
   }, [onSubmit]);
 
   return <MuiDialog open={isOpen} onClose={onClose} onExited={onClosed}>
-    <form onSubmit={submit}>
-      <DialogTitle>{title}</DialogTitle>
-      <DialogContent>
-        {error && <Error error={error}/>}
-        {children}
-      </DialogContent>
-      <DialogActions>
-        <Button type="submit" variant="contained" color="primary">{submitLabel}</Button>
-        {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
-      </DialogActions>
-    </form>
+    <FormStateProvider state={formState}>
+      <form onSubmit={submit}>
+        <DialogTitle>{title}</DialogTitle>
+        <DialogContent>
+          {error && <Error error={error}/>}
+          {children}
+        </DialogContent>
+        <DialogActions>
+          <Button type="submit" variant="contained" color="primary">{submitLabel}</Button>
+          {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
+        </DialogActions>
+      </form>
+    </FormStateProvider>
   </MuiDialog>;
 });

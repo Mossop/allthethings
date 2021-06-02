@@ -371,7 +371,7 @@ export type UserProjectByIdArgs = {
 export type ListGoogleAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string> }> }> };
+export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string> }> }> };
 
 export type RequestLoginUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -382,6 +382,7 @@ export type RequestLoginUrlQuery = { readonly __typename: 'Query', readonly goog
 export const ListGoogleAccountsDocument = gql`
     query ListGoogleAccounts {
   user {
+    id
     googleAccounts {
       id
       email

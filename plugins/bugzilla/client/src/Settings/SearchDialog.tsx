@@ -5,6 +5,7 @@ import {
   Dialog,
   useBoolState,
   useResetStore,
+  FormState,
 } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
@@ -34,7 +35,7 @@ export default function SearchDialog({
   let [isOpen, , close] = useBoolState(true);
   let resetStore = useResetStore();
 
-  let [createSearch, { error }] = useCreateBugzillaSearchMutation({
+  let [createSearch, { loading, error }] = useCreateBugzillaSearchMutation({
     variables: {
       account: account.id,
       params: state,
@@ -62,6 +63,7 @@ export default function SearchDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={submit}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="name"

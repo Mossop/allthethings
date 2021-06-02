@@ -1,6 +1,8 @@
 import type { Overwrite } from "@allthethings/utils";
-import type { OutlinedInputProps } from "@material-ui/core";
+import type { ButtonProps as MuiButtonProps, OutlinedInputProps } from "@material-ui/core";
 import {
+  CircularProgress,
+  createStyles, makeStyles,
   FormLabel,
   FormControl,
   InputLabel,
@@ -9,11 +11,40 @@ import {
   RadioGroup,
   OutlinedInput,
   Checkbox,
+  Button as MuiButton,
 } from "@material-ui/core";
+import clsx from "clsx";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
-import { useMemo, useCallback } from "react";
+import { useMemo, useCallback, createContext, useContext } from "react";
 
+import { flexCentered } from "./styles";
+import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";
+
+export enum FormState {
+  Default,
+  Disabled,
+  Loading,
+}
+
+const FormStateContext = createContext<FormState>(FormState.Default);
+
+export interface FormStateProviderProps {
+  state: FormState;
+}
+
+export const FormStateProvider = ReactMemo(function FormStateProvider({
+  state,
+  children,
+}: FormStateProviderProps & ReactChildren): ReactResult {
+  return <FormStateContext.Provider value={state}>
+    {children}
+  </FormStateContext.Provider>;
+});
+
+export function useFormState(): FormState {
+  return useContext(FormStateContext);
+}
 
 export function useScopedState<T, K extends keyof T>(
   key: K,
@@ -53,6 +84,7 @@ export interface FieldProps<T, K extends keyof T> {
   state: T;
   setState: Dispatch<SetStateAction<T>>;
   stateKey: K;
+  fieldState?: FormState;
 }
 
 type TextFieldInputProps<T, K extends keyof T> = Overwrite<
@@ -76,14 +108,23 @@ export const TextFieldInput = ReactMemo(
     setState,
     stateKey,
     type = "text",
+    fieldState,
     ...props
   }: TextFieldInputProps<T, K>): ReactElement {
     let value = useMemo(() => state[stateKey], [state, stateKey]);
+
     let change = useFieldState(
       useScopedState(stateKey, setState),
     ) as unknown as Dispatch<FieldEvent<string>>;
 
-    return <FormControl margin="normal" variant="outlined">
+    let globalState = useFormState();
+    fieldState = fieldState ?? globalState;
+
+    return <FormControl
+      margin="normal"
+      variant="outlined"
+      disabled={fieldState != FormState.Default}
+    >
       <InputLabel htmlFor={id}>{label}</InputLabel>
       <OutlinedInput
         {...props}
@@ -114,6 +155,7 @@ export const RadioGroupInput = ReactMemo(
     setState,
     stateKey,
     values,
+    fieldState,
   }: RadioGroupInputProps<T, K>): ReactElement {
     let value = useMemo(() => state[stateKey], [state, stateKey]);
 
@@ -124,7 +166,15 @@ export const RadioGroupInput = ReactMemo(
       }));
     }, [setState, stateKey]);
 
-    return <FormControl component="fieldset" margin="normal" variant="outlined">
+    let globalState = useFormState();
+    fieldState = fieldState ?? globalState;
+
+    return <FormControl
+      component="fieldset"
+      margin="normal"
+      variant="outlined"
+      disabled={fieldState != FormState.Default}
+    >
       <FormLabel component="legend">{label}</FormLabel>
       <RadioGroup value={value} onChange={onChange}>
         {
@@ -154,6 +204,7 @@ export const CheckboxInput = ReactMemo(
     stateKey,
     checkedValue,
     uncheckedValue,
+    fieldState,
   }: CheckboxInputProps<T, K>): ReactElement {
     let value = useMemo(() => state[stateKey], [state, stateKey]);
 
@@ -164,7 +215,11 @@ export const CheckboxInput = ReactMemo(
       }));
     }, [setState, stateKey, checkedValue, uncheckedValue]);
 
+    let globalState = useFormState();
+    fieldState = fieldState ?? globalState;
+
     return <FormControlLabel
+      disabled={fieldState != FormState.Default}
       control={
         <Checkbox
           color="primary"
@@ -194,3 +249,55 @@ export const BooleanCheckboxInput = ReactMemo(
     return <CheckboxInput {...props} checkedValue={true} uncheckedValue={false}/>;
   },
 );
+
+const useButtonStyles = makeStyles(() =>
+  createStyles({
+    buttonInner: {
+      position: "relative",
+      minHeight: "1.5rem",
+      minWidth: "1.5rem",
+      ...flexCentered,
+    },
+    hidden: {
+      visibility: "collapse",
+    },
+    loading: {
+      position: "absolute",
+      top: 0,
+      right: 0,
+      left: 0,
+      bottom: 0,
+      ...flexCentered,
+    },
+  }));
+
+export type ButtonProps = MuiButtonProps & {
+  fieldState?: FormState;
+};
+
+export const Button = ReactMemo(function Button({
+  fieldState,
+  disabled,
+  type,
+  children,
+  ...props
+}: ButtonProps): ReactResult {
+  let classes = useButtonStyles();
+
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
+  disabled = disabled ?? fieldState != FormState.Default;
+
+  let isLoading = fieldState == FormState.Loading && type == "submit";
+
+  return <MuiButton disabled={disabled} type={type} {...props}>
+    <div className={classes.buttonInner}>
+      <div className={clsx(isLoading && classes.hidden)}>{children}</div>
+      {isLoading && <div
+        className={classes.loading}
+      >
+        <CircularProgress size="1.5rem"/>
+      </div>}
+    </div>
+  </MuiButton>;
+});

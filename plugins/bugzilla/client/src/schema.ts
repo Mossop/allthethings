@@ -420,7 +420,7 @@ export type UserProjectByIdArgs = {
 export type ListBugzillaAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> }> }> };
+export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> }> }> };
 
 export type CreateBugzillaAccountMutationVariables = Exact<{
   params: BugzillaAccountParams;
@@ -455,6 +455,7 @@ export type DeleteBugzillaSearchMutation = { readonly __typename: 'Mutation', re
 export const ListBugzillaAccountsDocument = gql`
     query ListBugzillaAccounts {
   user {
+    id
     bugzillaAccounts {
       id
       name
