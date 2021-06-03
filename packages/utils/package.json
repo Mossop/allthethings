@@ -9,8 +9,8 @@
   "types": "dist/index",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "build": "tsc -b",
-    "watch": "tsc -b -w"
+    "build": "tsc -b --incremental",
+    "watch": "tsc -b -w --incremental"
   },
   "devDependencies": {
     "typescript": "^4.1.0"

@@ -10,8 +10,8 @@
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "build-schema": "graphql-codegen",
-    "build": "tsc -b",
-    "watch": "tsc -b -w",
+    "build": "tsc -b --incremental",
+    "watch": "tsc -b -w --incremental",
     "start": "node dist/index.js"
   },
   "dependencies": {

@@ -554,18 +554,27 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
     }));
   }
 
-  public async afterListRemoval(): Promise<void> {
+  public async cleanupMissingLists(): Promise<void> {
+    // The ids of items no longer in any list.
     let ids = this.records
       .leftJoin("PluginListItems", this.ref("id"), "PluginListItems.itemId")
       .whereNull("PluginListItems.listId")
       .andWhere(this.ref("controller"), TaskController.PluginList)
       .select(this.ref("id"));
 
+    // Make them manually controlled.
     await this.records
       .whereIn(this.ref("id"), ids)
       .update({
-        done: DateTime.now(),
         controller: TaskController.Manual,
+      });
+
+    // Mark items as done.
+    await this.records
+      .whereIn(this.ref("id"), ids)
+      .whereNull(this.ref("done"))
+      .update({
+        done: DateTime.now(),
       });
   }
 
@@ -857,40 +866,43 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
   }
 }
 
-export interface AppDataSources {
-  users: UserDataSource,
-  contexts: ContextDataSource;
-  projects: ProjectDataSource;
-  sections: SectionDataSource;
-  items: ItemDataSource;
-  taskInfo: TaskInfoSource;
-  fileDetail: FileDetailSource;
-  pluginDetail: PluginDetailSource;
-  noteDetail: NoteDetailSource;
-  linkDetail: LinkDetailSource;
-  pluginList: PluginListSource;
-}
+export class AppDataSources {
+  public users: UserDataSource;
+  public contexts: ContextDataSource;
+  public projects: ProjectDataSource;
+  public sections: SectionDataSource;
+  public items: ItemDataSource;
+  public taskInfo: TaskInfoSource;
+  public fileDetail: FileDetailSource;
+  public pluginDetail: PluginDetailSource;
+  public noteDetail: NoteDetailSource;
+  public linkDetail: LinkDetailSource;
+  public pluginList: PluginListSource;
 
-export function dataSources(): AppDataSources {
-  return {
-    users: new UserDataSource(),
-    contexts: new ContextDataSource(),
-    projects: new ProjectDataSource(),
-    sections: new SectionDataSource(),
-    items: new ItemDataSource(),
-    taskInfo: new TaskInfoSource(),
-    fileDetail: new FileDetailSource(),
-    pluginDetail: new PluginDetailSource(),
-    noteDetail: new NoteDetailSource(),
-    linkDetail: new LinkDetailSource(),
-    pluginList: new PluginListSource(),
-  };
-}
+  public constructor(db?: DatabaseConnection) {
+    this.users = new UserDataSource();
+    this.contexts = new ContextDataSource();
+    this.projects = new ProjectDataSource();
+    this.sections = new SectionDataSource();
+    this.items = new ItemDataSource();
+    this.taskInfo = new TaskInfoSource();
+    this.fileDetail = new FileDetailSource();
+    this.pluginDetail = new PluginDetailSource();
+    this.noteDetail = new NoteDetailSource();
+    this.linkDetail = new LinkDetailSource();
+    this.pluginList = new PluginListSource();
 
-export function buildDataSources(db: DatabaseConnection): AppDataSources {
-  let datasources = dataSources();
-  for (let source of Object.values(datasources)) {
-    source.init(db, datasources);
+    if (db) {
+      for (let source of Object.values(this)) {
+        if (source instanceof DbDataSource) {
+          source.init(db, this);
+        }
+      }
+    }
   }
-  return datasources;
+
+  public async ensureSanity(): Promise<void> {
+    await this.taskInfo.cleanupMissingLists();
+    await this.items.deleteCompleteInboxTasks();
+  }
 }

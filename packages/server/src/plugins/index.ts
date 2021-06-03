@@ -109,25 +109,25 @@ export function buildPluginContext(
         type: ItemType.Plugin,
       });
 
+      await dataSources.pluginDetail.create(itemImpl, {
+        pluginId: plugin.id,
+        hasTaskState: done !== undefined,
+        taskDone: done ?? null,
+      });
+
       if (done !== undefined && controller == TaskController.Plugin) {
         await dataSources.taskInfo.create(itemImpl, {
           due: due ?? null,
           done,
           controller,
         });
-      } else if (controller == TaskController.Manual) {
+      } else if (controller) {
         await dataSources.taskInfo.create(itemImpl, {
           due: due ?? null,
           done: null,
           controller,
         });
       }
-
-      await dataSources.pluginDetail.create(itemImpl, {
-        pluginId: plugin.id,
-        hasTaskState: done !== undefined,
-        taskDone: done ?? null,
-      });
 
       return itemImpl.forPlugin();
     },
@@ -215,7 +215,6 @@ export function buildPluginContext(
 
     async deleteList(id: string): Promise<void> {
       await dataSources.pluginList.deleteList(plugin.id, id);
-      await dataSources.taskInfo.afterListRemoval();
     },
   };
 }

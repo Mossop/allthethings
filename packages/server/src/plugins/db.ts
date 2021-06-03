@@ -49,7 +49,7 @@ class MigrationHelper implements DbMigrationHelper {
   ): Knex.ColumnBuilder {
     return table.text(column)
       .references("id")
-      .inTable("public.Item")
+      .inTable("public.PluginDetail")
       .onDelete("CASCADE")
       .onUpdate("CASCADE");
   }

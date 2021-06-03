@@ -108,7 +108,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
     ]),
     context: buildResolverContext,
     // @ts-ignore
-    dataSources: () => Db.dataSources(),
+    dataSources: () => new Db.AppDataSources(),
     plugins: [ServerPlugin],
   });
 }

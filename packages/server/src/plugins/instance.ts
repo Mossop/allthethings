@@ -7,7 +7,7 @@ import type Koa from "koa";
 import { buildAuthedPluginContext, buildPluginContext } from ".";
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";
-import { buildDataSources } from "../db/datasources";
+import { AppDataSources } from "../db/datasources";
 import type { TaskManager } from "../utils/tasks";
 import taskManager from "../utils/tasks";
 import type { WebServerContext } from "../webserver/context";
@@ -89,12 +89,12 @@ export default class PluginInstance implements PluginServer {
     let cloned = this.db.clone();
     await cloned.startTransaction();
 
-    let dataSources = buildDataSources(cloned);
+    let dataSources = new AppDataSources(cloned);
 
     try {
       let result = await task(buildPluginContext(this, dataSources));
 
-      await dataSources.items.deleteCompleteInboxTasks();
+      await dataSources.ensureSanity();
       await cloned.commitTransaction();
       return result;
     } catch (e) {
@@ -147,7 +147,7 @@ export default class PluginInstance implements PluginServer {
     }
 
     try {
-      let dataSources = buildDataSources(db);
+      let dataSources = new AppDataSources(db);
       let pluginContext = buildAuthedPluginContext(this, dataSources, user);
 
       await this.plugin.middleware(Object.create(ctx, {
@@ -159,7 +159,7 @@ export default class PluginInstance implements PluginServer {
         },
       }), next);
 
-      await dataSources.items.deleteCompleteInboxTasks();
+      await dataSources.ensureSanity();
       await db.commitTransaction();
     } catch (e) {
       await db.rollbackTransaction(e);
