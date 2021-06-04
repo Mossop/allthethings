@@ -1,15 +1,15 @@
 import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, Icons, Styles, Heading } from "@allthethings/ui";
+import { useBoolState, ReactMemo, Icons, Styles, Heading } from "@allthethings/ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
-import { useUser } from "../utils/state";
-import { Filters } from "../utils/view";
+import { Filters, replaceView, useView, ViewType } from "../utils/view";
+import LinkDialog from "./LinkDialog";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -38,10 +38,22 @@ const useStyles = makeStyles((theme: Theme) =>
 export default ReactMemo(function Inbox(): ReactResult {
   let classes = useStyles();
 
-  let user = useUser();
+  let view = useView();
+  let [newUrl] = useState(view.type == ViewType.AddLink ? view.url : null);
+  let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(newUrl !== null);
+
+  let user = view.user;
   let items = user.inbox.items;
 
   let [filter, setFilter] = useState(() => Filters.Normal);
+
+  useEffect(() => {
+    if (view.type == ViewType.AddLink) {
+      replaceView({
+        type: ViewType.Inbox,
+      }, view);
+    }
+  }, [view]);
 
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
@@ -55,5 +67,12 @@ export default ReactMemo(function Inbox(): ReactResult {
         <ItemList items={items} taskList={user.inbox} section={null} filter={filter}/>
       </List>
     </div>
+    {
+      newUrl && showAddLinkDialog && <LinkDialog
+        list={user.inbox}
+        initialUrl={newUrl}
+        onClosed={closeAddLinkDialog}
+      />
+    }
   </Page>;
 });

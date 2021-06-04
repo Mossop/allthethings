@@ -46,6 +46,7 @@ function MainContent(): ReactResult {
 
   switch (view.type) {
     case ViewType.Inbox:
+    case ViewType.AddLink:
       return <Inbox/>;
     case ViewType.TaskList:
       return <TaskList view={view}/>;

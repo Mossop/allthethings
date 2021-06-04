@@ -16,14 +16,16 @@ import { isSection } from "../utils/state";
 interface LinkDialogProps {
   onClosed: () => void;
   list: TaskList | Inbox | Section;
+  initialUrl?: string;
 }
 
 export default ReactMemo(function LinkDialog({
   onClosed,
   list,
+  initialUrl = "",
 }: LinkDialogProps): ReactElement {
   let [state, setState] = useState({
-    url: "",
+    url: initialUrl,
     isTask: true,
   });
 

@@ -46,6 +46,7 @@ export enum ViewType {
   Inbox = "inbox",
   NotFound = "notfound",
   Settings = "settings",
+  AddLink = "addlink",
 }
 
 export interface BaseView {
@@ -59,6 +60,11 @@ export interface NotFoundView {
 
 export interface InboxView {
   readonly type: ViewType.Inbox;
+}
+
+export interface AddLinkView {
+  readonly type: ViewType.AddLink;
+  readonly url: string;
 }
 
 export interface TaskListView {
@@ -77,7 +83,8 @@ export type View = BaseView & (LinkableView | NotFoundView);
 export type LinkableView =
   InboxView |
   TaskListView |
-  SettingsView;
+  SettingsView |
+  AddLinkView;
 
 export type NavigableView = LinkableView & {
   context?: Context | null;
@@ -123,6 +130,7 @@ function updateView(view: View, user: User): View {
   switch (view.type) {
     case ViewType.NotFound:
     case ViewType.Inbox:
+    case ViewType.AddLink:
     case ViewType.Settings:
       return {
         ...view,
@@ -173,6 +181,10 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
   switch (view.type) {
     case ViewType.Inbox:
       path = "/inbox";
+      break;
+    case ViewType.AddLink:
+      path = "/addlink";
+      searchParams.set("url", view.url);
       break;
     case ViewType.TaskList:
       if (isProject(view.taskList)) {
@@ -251,6 +263,18 @@ export function urlToView(user: User, url: URL): View {
         user,
         context,
       };
+    case "addlink": {
+      let newUrl = url.searchParams.get("url");
+      if (pathParts.length || !newUrl) {
+        return notFound;
+      }
+      return {
+        type: ViewType.AddLink,
+        user,
+        context,
+        url: newUrl,
+      };
+    }
     case "settings": {
       if (pathParts.length > 1) {
         return notFound;
