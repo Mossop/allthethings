@@ -239,12 +239,12 @@ const resolvers: MutationResolvers = {
   }),
 
   createLink: authed(async ({
-    args: { detail, list: listId, isTask, ...args },
+    args: { detail: { url }, list: listId, isTask, ...args },
     ctx,
   }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
-    let url: URL;
+    let targetUrl: URL;
     try {
-      url = new URL(detail.url);
+      targetUrl = new URL(url);
     } catch (e) {
       throw new Error("Invalid url.");
     }
@@ -258,17 +258,17 @@ const resolvers: MutationResolvers = {
       throw new Error("Unknown task list.");
     }
 
-    let item = await PluginManager.createItemFromURL(ctx, url, isTask);
+    let item = await PluginManager.createItemFromURL(ctx, targetUrl, isTask);
     if (item) {
       await item.move(list, null);
       return item;
     }
 
-    let pageInfo = await loadPageInfo(url);
+    let pageInfo = await loadPageInfo(targetUrl);
 
     let summary = args.item.summary;
     if (!summary) {
-      summary = pageInfo.title ?? url.toString();
+      summary = pageInfo.title ?? targetUrl.toString();
     }
 
     item = await baseCreateItem(ctx, {
@@ -285,7 +285,7 @@ const resolvers: MutationResolvers = {
     let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
 
     await ctx.dataSources.linkDetail.create(item, {
-      ...detail,
+      url,
       icon,
     });
 

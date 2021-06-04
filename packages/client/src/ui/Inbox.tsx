@@ -39,8 +39,8 @@ export default ReactMemo(function Inbox(): ReactResult {
   let classes = useStyles();
 
   let view = useView();
-  let [newUrl] = useState(view.type == ViewType.AddLink ? view.url : null);
-  let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(newUrl !== null);
+  let [linkView] = useState(view.type == ViewType.AddLink ? view : null);
+  let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(linkView !== null);
 
   let user = view.user;
   let items = user.inbox.items;
@@ -68,9 +68,10 @@ export default ReactMemo(function Inbox(): ReactResult {
       </List>
     </div>
     {
-      newUrl && showAddLinkDialog && <LinkDialog
+      linkView && showAddLinkDialog && <LinkDialog
         list={user.inbox}
-        initialUrl={newUrl}
+        initialUrl={linkView.url}
+        title={linkView.title}
         onClosed={closeAddLinkDialog}
       />
     }

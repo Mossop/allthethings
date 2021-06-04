@@ -17,12 +17,14 @@ interface LinkDialogProps {
   onClosed: () => void;
   list: TaskList | Inbox | Section;
   initialUrl?: string;
+  title?: string | null;
 }
 
 export default ReactMemo(function LinkDialog({
   onClosed,
   list,
   initialUrl = "",
+  title = null,
 }: LinkDialogProps): ReactElement {
   let [state, setState] = useState({
     url: initialUrl,
@@ -45,7 +47,7 @@ export default ReactMemo(function LinkDialog({
       variables: {
         list: list.id,
         item: {
-          summary: "",
+          summary: title ?? "",
           archived: null,
           snoozed: null,
         },
@@ -57,7 +59,7 @@ export default ReactMemo(function LinkDialog({
     });
 
     close();
-  }, [close, createLink, list.id, state]);
+  }, [close, createLink, list.id, state, title]);
 
   return <Dialog
     title="Create Link"

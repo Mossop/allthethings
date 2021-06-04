@@ -65,6 +65,7 @@ export interface InboxView {
 export interface AddLinkView {
   readonly type: ViewType.AddLink;
   readonly url: string;
+  readonly title: string | null;
 }
 
 export interface TaskListView {
@@ -185,6 +186,9 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
     case ViewType.AddLink:
       path = "/addlink";
       searchParams.set("url", view.url);
+      if (view.title) {
+        searchParams.set("title", view.title);
+      }
       break;
     case ViewType.TaskList:
       if (isProject(view.taskList)) {
@@ -265,6 +269,7 @@ export function urlToView(user: User, url: URL): View {
       };
     case "addlink": {
       let newUrl = url.searchParams.get("url");
+      let title = url.searchParams.get("title");
       if (pathParts.length || !newUrl) {
         return notFound;
       }
@@ -273,6 +278,7 @@ export function urlToView(user: User, url: URL): View {
         user,
         context,
         url: newUrl,
+        title,
       };
     }
     case "settings": {
