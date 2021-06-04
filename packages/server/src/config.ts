@@ -19,15 +19,22 @@ export interface ServerConfig {
   protocol: Protocol;
   hostname: string;
   port: number;
+  admin?: Admin;
   database: DatabaseConfig;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   plugins: Record<string, any>;
+}
+
+interface Admin {
+  email: string;
+  password: string;
 }
 
 interface ConfigFile {
   protocol?: Protocol;
   hostname: string;
   port: number;
+  admin?: Admin;
   database?: Partial<DatabaseConfig>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   plugins?: Record<string, any>;
@@ -41,10 +48,16 @@ const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
   password: JsonDecoder.optional(JsonDecoder.string),
 }, "DatabaseConfig");
 
+const AdminDecoder = JsonDecoder.object<Admin>({
+  email: JsonDecoder.string,
+  password: JsonDecoder.string,
+}, "Admin");
+
 const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
   protocol: JsonDecoder.optional(JsonDecoder.enumeration<Protocol>(Protocol, "protocol")),
   hostname: JsonDecoder.string,
   port: JsonDecoder.number,
+  admin: JsonDecoder.optional(AdminDecoder),
   database: JsonDecoder.optional(DatabaseConfigDecoder),
   plugins: JsonDecoder.optional(JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
 }, "ConfigFile");
@@ -54,7 +67,7 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
     encoding: "utf8",
   }));
 
-  let config = await ConfigFileDecoder.decodePromise(data);
+  let config = await ConfigFileDecoder.decodeToPromise(data);
 
   return {
     ...config,

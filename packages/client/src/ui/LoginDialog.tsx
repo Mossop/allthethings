@@ -1,4 +1,4 @@
-import { TextFieldInput, ReactMemo, Dialog } from "@allthethings/ui";
+import { TextFieldInput, ReactMemo, Dialog, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -11,7 +11,7 @@ export default ReactMemo(function LoginDialog(): ReactElement {
     password: "",
   });
 
-  let [login] = useLoginMutation({
+  let [login, { error, loading }] = useLoginMutation({
     variables: state,
     refetchQueries: [refetchListContextStateQuery()],
   });
@@ -26,6 +26,8 @@ export default ReactMemo(function LoginDialog(): ReactElement {
     title="Login"
     submitLabel="Login"
     cancelLabel={null}
+    error={error}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="email"

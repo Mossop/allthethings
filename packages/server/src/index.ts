@@ -1,7 +1,7 @@
 import { install } from "source-map-support";
 
 import { parseConfig } from "./config";
-import { createDbConnection } from "./db";
+import { AppDataSources, createDbConnection } from "./db";
 import PluginManager from "./plugins";
 import { createGqlServer } from "./schema";
 import { createWebServer } from "./webserver";
@@ -21,6 +21,18 @@ async function init(): Promise<void> {
     await db.rollback(true);
   }
   await db.migrate();
+
+  if (config.admin) {
+    let dataSources = new AppDataSources(db);
+    let existing = await dataSources.users.find({
+      email: config.admin.email,
+    });
+
+    if (existing.length == 0) {
+      console.log(`Creating admin user ${config.admin.email}`);
+      await dataSources.users.create(config.admin);
+    }
+  }
 
   let gqlServer = await createGqlServer();
   await createWebServer(config, db, gqlServer);

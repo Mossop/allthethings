@@ -51,10 +51,7 @@ const resolvers: MutationResolvers = {
     let user = await ctx.dataSources.users.verifyUser(email, password);
 
     if (!user) {
-      user = await ctx.dataSources.users.create({
-        email,
-        password,
-      });
+      throw new Error("Unknown user.");
     }
 
     ctx.login(user);
