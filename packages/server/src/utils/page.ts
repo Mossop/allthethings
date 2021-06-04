@@ -2,6 +2,7 @@ import { URL } from "url";
 
 import sizeOf from "image-size";
 import fetch from "node-fetch";
+import type { HTMLElement } from "node-html-parser";
 import { parse } from "node-html-parser";
 
 const TYPE_SVG = "image/svg+xml";
@@ -107,10 +108,10 @@ export async function loadPageInfo(pageUrl: URL): Promise<PageInfo> {
     icons = icons.concat(await loadIcon(favicon));
   }
 
-  let title = root.querySelector("title");
+  let title = root.querySelector("title") as HTMLElement | null;
 
   return {
-    title: title.textContent,
+    title: title?.textContent,
     icons,
   };
 }

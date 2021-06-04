@@ -268,10 +268,7 @@ const resolvers: MutationResolvers = {
 
     let summary = args.item.summary;
     if (!summary) {
-      summary = pageInfo.title ?? "";
-    }
-    if (!summary) {
-      throw new Error("No page title found.");
+      summary = pageInfo.title ?? url.toString();
     }
 
     item = await baseCreateItem(ctx, {
