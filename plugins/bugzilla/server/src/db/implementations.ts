@@ -84,30 +84,43 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
       .delete();
   }
 
-  public normalizeQuery(query: string): URLSearchParams {
-    let params: URLSearchParams;
-
-    if (query.startsWith("https:") || query.startsWith("http:")) {
-      let queryUrl = new URL(query);
-      let ourUrl = new URL(this.url);
-
-      if (queryUrl.origin != ourUrl.origin) {
-        throw new Error("Query is for a different bugzilla installation.");
-      }
-
-      if (!queryUrl.pathname.endsWith("/buglist.cgi")) {
-        throw new Error("Query doesn't appear to be correct.");
-      }
-
-      params = queryUrl.searchParams;
-    } else {
-      params = new URLSearchParams(query);
+  public normalizeQuery(query: string): Pick<BugzillaSearchRecord, "query" | "type"> {
+    if (!query.startsWith("https://") && !query.startsWith("http://")) {
+      return {
+        query,
+        type: SearchType.Quicksearch,
+      };
     }
+
+    let queryUrl = new URL(query);
+    let ourUrl = new URL(this.url);
+
+    if (queryUrl.origin != ourUrl.origin) {
+      throw new Error("Query is for a different bugzilla installation.");
+    }
+
+    if (!queryUrl.pathname.endsWith("/buglist.cgi")) {
+      throw new Error("Query doesn't appear to be correct.");
+    }
+
+    let params = queryUrl.searchParams;
 
     params.delete("list_id");
     params.delete("known_name");
     params.delete("query_based_on");
-    return params;
+
+    let entries = [...params.entries()];
+    if (entries.length == 1 && entries[0][0] == "quicksearch") {
+      return {
+        query: entries[0][1],
+        type: SearchType.Quicksearch,
+      };
+    }
+
+    return {
+      query: params.toString(),
+      type: SearchType.Advanced,
+    };
   }
 
   public static buildAPI(

@@ -12,7 +12,6 @@ import type {
   MutationDeleteBugzillaAccountArgs,
   MutationDeleteBugzillaSearchArgs,
 } from "./schema";
-import { SearchType } from "./types";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
@@ -70,7 +69,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
 
     async createBugzillaSearch(
       outer: unknown,
-      { account: accountId, params }: MutationCreateBugzillaSearchArgs,
+      { account: accountId, params: { name, query } }: MutationCreateBugzillaSearchArgs,
       ctx: AuthedPluginContext,
     ): Promise<Search> {
       let account = await Account.get(ctx, accountId);
@@ -78,24 +77,9 @@ const Resolvers: Resolver<AuthedPluginContext> = {
         throw new Error("Unknown account.");
       }
 
-      let searchType = params.type as SearchType;
-      let queryStr = params.query;
-
-      if (searchType == SearchType.Advanced) {
-        let query = account.normalizeQuery(params.query);
-        let entries = [...query.entries()];
-        if (entries.length == 1 && entries[0][0] == "quicksearch") {
-          queryStr = entries[0][1];
-          searchType = SearchType.Quicksearch;
-        } else {
-          queryStr = query.toString();
-        }
-      }
-
       return Search.create(ctx, account, {
-        name: params.name,
-        query: queryStr,
-        type: searchType,
+        name,
+        ...account.normalizeQuery(query),
       });
     },
 

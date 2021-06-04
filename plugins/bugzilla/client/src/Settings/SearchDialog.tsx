@@ -1,6 +1,4 @@
-import { SearchType } from "@allthethings/bugzilla-server";
 import {
-  RadioGroupInput,
   TextFieldInput,
   Dialog,
   useBoolState,
@@ -29,7 +27,6 @@ export default function SearchDialog({
 }: SearchDialogProps): ReactElement {
   let [state, setState] = useState({
     name: "",
-    type: SearchType.Quicksearch,
     query: "",
   });
   let [isOpen, , close] = useBoolState(true);
@@ -75,20 +72,9 @@ export default function SearchDialog({
       autoFocus={true}
     />
 
-    <RadioGroupInput
-      label="Search type:"
-      state={state}
-      setState={setState}
-      stateKey="type"
-      values={[
-        { value: SearchType.Quicksearch, label: "Quicksearch" },
-        { value: SearchType.Advanced, label: "Advanced" },
-      ]}
-    />
-
     <TextFieldInput
       id="query"
-      label="Query:"
+      label="Address or quicksearch:"
       state={state}
       setState={setState}
       stateKey="query"

@@ -45,7 +45,6 @@ export type BugzillaSearch = {
 
 export type BugzillaSearchParams = {
   readonly name: Scalars['String'];
-  readonly type: Scalars['String'];
   readonly query: Scalars['String'];
 };
 

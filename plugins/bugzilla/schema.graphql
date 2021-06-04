@@ -8,7 +8,6 @@ type BugzillaSearch {
 
 input BugzillaSearchParams {
   name: String!
-  type: String!
   query: String!
 }
 

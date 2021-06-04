@@ -26,7 +26,7 @@ export default function AccountDialog({
   let [state, setState] = useState({
     name: "",
     url: "",
-    auth: AuthType.Password,
+    auth: AuthType.Public,
     username: "",
     password: "",
     key: "",
