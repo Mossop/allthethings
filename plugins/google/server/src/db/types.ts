@@ -9,3 +9,13 @@ export type GoogleAccountRecord = GraphQLType<GoogleAccount> & {
   refreshToken: string;
   expiry: number;
 };
+
+export interface GoogleFileRecord {
+  accountId: string;
+  fileId: string;
+  itemId: string;
+  name: string;
+  description: string | null;
+  mimeType: string;
+  url: string | null;
+}

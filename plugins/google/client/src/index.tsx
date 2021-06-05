@@ -1,6 +1,8 @@
+import type { GoogleFields } from "@allthethings/google-server";
 import { PluginManager } from "@allthethings/ui";
 import type { ClientPlugin, PluginItemProps, ReactResult } from "@allthethings/ui";
 
+import File from "./File";
 import { SettingsPage, SettingsPages } from "./Settings";
 
 class GooglePlugin implements ClientPlugin {
@@ -15,8 +17,9 @@ class GooglePlugin implements ClientPlugin {
     return <SettingsPage page={page}/>;
   }
 
-  public renderItem(_itemProps: PluginItemProps): ReactResult {
-    return null;
+  public renderItem(itemProps: PluginItemProps): ReactResult {
+    let fields: GoogleFields = JSON.parse(itemProps.item.detail.fields);
+    return <File item={itemProps.item} file={fields}/>;
   }
 }
 

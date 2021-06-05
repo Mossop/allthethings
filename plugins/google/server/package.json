@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@allthethings/server": "^1.0.0",
+    "@googleapis/drive": "^0.3.1",
     "@googleapis/gmail": "^0.2.0",
     "@googleapis/people": "^0.3.0",
     "google-auth-library": "^7.1.0",

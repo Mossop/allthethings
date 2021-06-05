@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import type { URL } from "url";
 
 import type {
   PluginDbMigration,
@@ -19,10 +20,12 @@ import koaCompose from "koa-compose";
 import koaMount from "koa-mount";
 import koaStatic from "koa-static";
 
-import { Account } from "./db/implementations";
+import { Account, File } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import buildResolvers from "./resolvers";
 import type { GooglePluginConfig } from "./types";
+
+export * from "./types";
 
 function first(param: string | string[] | undefined): string | undefined {
   if (Array.isArray(param)) {
@@ -88,31 +91,35 @@ class GooglePlugin implements ServerPlugin {
   }
 
   public async getItemFields(
-    _context: PluginContext,
-    _item: BasePluginItem,
+    context: PluginContext,
+    item: BasePluginItem,
   ): Promise<PluginItemFields> {
+    let file = await File.getForItem(this.config, context, item.id);
+    if (file) {
+      return file.fields();
+    }
     return {};
   }
 
-  // public async createItemFromURL(
-  //   context: GraphQLContext,
-  //   url: URL,
-  //   isTask: boolean,
-  // ): Promise<string | null> {
-  //   if (!context.userId) {
-  //     return null;
-  //   }
+  public async createItemFromURL(
+    context: AuthedPluginContext,
+    url: URL,
+    isTask: boolean,
+  ): Promise<string | null> {
+    if (!context.userId) {
+      return null;
+    }
 
-  //   let accounts = await Account.list(context, context.userId);
-  //   for (let account of accounts) {
-  //     let bug = await account.getBugFromURL(url, isTask);
-  //     if (bug) {
-  //       return bug.itemId;
-  //     }
-  //   }
+    let accounts = await Account.list(this.config, context, context.userId);
+    for (let account of accounts) {
+      let item = await account.getItemFromURL(url, isTask);
+      if (item) {
+        return item.itemId;
+      }
+    }
 
-  //   return null;
-  // }
+    return null;
+  }
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

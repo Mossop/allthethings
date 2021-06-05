@@ -1067,6 +1067,13 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
+"@googleapis/drive@^0.3.1":
+  version "0.3.1"
+  resolved "https://registry.yarnpkg.com/@googleapis/drive/-/drive-0.3.1.tgz#d37e53534562a3e7755611742daff545dea8b857"
+  integrity sha512-LYsxWMHFt2Z7kdO16EE6jVP07Qq141hmZHHuFvljWLVo7EBtiPCgzrkjJe03Q7wNs28rnFe0jlIDiBZYT0tnmA==
+  dependencies:
+    googleapis-common "^5.0.1"
+
 "@googleapis/gmail@^0.2.0":
   version "0.2.0"
   resolved "https://registry.yarnpkg.com/@googleapis/gmail/-/gmail-0.2.0.tgz#140a682522ac746f748743d8ffabf99a3f34730c"

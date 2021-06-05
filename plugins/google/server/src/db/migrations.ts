@@ -29,9 +29,41 @@ class BaseMigration implements PluginDbMigration {
 
       table.unique(["user", "email"]);
     });
+
+    await knex.schema.createTable("File", (table: Knex.CreateTableBuilder): void => {
+      helper.itemRef(table, "itemId")
+        .notNullable()
+        .unique()
+        .primary();
+
+      helper.idColumn(table, "accountId")
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"))
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
+
+      table.text("fileId")
+        .notNullable();
+
+      table.text("name")
+        .notNullable();
+
+      table.text("description")
+        .nullable();
+
+      table.text("mimeType")
+        .notNullable();
+
+      table.text("url")
+        .nullable();
+
+      table.unique(["accountId", "fileId"]);
+    });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
+    await knex.schema.dropTableIfExists("File");
     await knex.schema.dropTableIfExists("Account");
   }
 }
