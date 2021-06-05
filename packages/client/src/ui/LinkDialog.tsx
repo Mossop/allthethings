@@ -4,6 +4,7 @@ import {
   useBoolState,
   Dialog,
   BooleanCheckboxInput,
+  FormState,
 } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
@@ -33,7 +34,7 @@ export default ReactMemo(function LinkDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createLink, { error: createError }] = useCreateLinkMutation({
+  let [createLink, { loading, error: createError }] = useCreateLinkMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -69,6 +70,7 @@ export default ReactMemo(function LinkDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={submit}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="url"

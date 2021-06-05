@@ -1,4 +1,4 @@
-import { TextFieldInput, ReactMemo, useBoolState, Dialog } from "@allthethings/ui";
+import { TextFieldInput, ReactMemo, useBoolState, Dialog, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -35,7 +35,7 @@ export default ReactMemo(function TaskDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createTask, { error: createError }] = useCreateTaskMutation({
+  let [createTask, { loading: createLoading, error: createError }] = useCreateTaskMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -44,7 +44,7 @@ export default ReactMemo(function TaskDialog({
     ],
   });
 
-  let [editItem, { error: editError }] = useEditItemMutation({
+  let [editItem, { loading: editLoading, error: editError }] = useEditItemMutation({
     refetchQueries: [
       refetchListTaskListQuery({
         taskList: isSection(list) ? list.taskList.id : list.id,
@@ -89,6 +89,7 @@ export default ReactMemo(function TaskDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={submit}
+    formState={createLoading || editLoading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="summary"
