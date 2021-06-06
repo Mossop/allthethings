@@ -19,3 +19,25 @@ export interface GoogleFileRecord {
   mimeType: string;
   url: string | null;
 }
+
+export interface GoogleThreadRecord {
+  accountId: string;
+  threadId: string;
+  itemId: string;
+  subject: string;
+  url: string;
+  unread: boolean;
+  starred: boolean;
+}
+
+export interface GoogleLabelRecord {
+  accountId: string;
+  labelId: string;
+  name: string;
+}
+
+export interface GoogleThreadLabel {
+  accountId: string;
+  threadId: string;
+  labelId: string;
+}

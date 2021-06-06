@@ -85,7 +85,7 @@ export function buildPluginContext(
     },
 
     tableRef(name: string): TableRef {
-      return db.knex.ref(name).withSchema(plugin.schema);
+      return db.knex.ref(name).withSchema(plugin.schema).as(name);
     },
 
     // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any

@@ -4,6 +4,7 @@ import type { ClientPlugin, PluginItemProps, ReactResult } from "@allthethings/u
 
 import File from "./File";
 import { SettingsPage, SettingsPages } from "./Settings";
+import Thread from "./Thread";
 
 class GooglePlugin implements ClientPlugin {
   public readonly serverId = "@allthethings/google-server";
@@ -19,7 +20,10 @@ class GooglePlugin implements ClientPlugin {
 
   public renderItem(itemProps: PluginItemProps): ReactResult {
     let fields: GoogleFields = JSON.parse(itemProps.item.detail.fields);
-    return <File item={itemProps.item} file={fields}/>;
+    if (fields.type == "file") {
+      return <File item={itemProps.item} file={fields}/>;
+    }
+    return <Thread item={itemProps.item} thread={fields}/>;
   }
 }
 

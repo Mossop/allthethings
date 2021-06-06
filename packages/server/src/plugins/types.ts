@@ -47,7 +47,7 @@ export interface PluginContext {
   readonly knex: PluginKnex;
   readonly userTableRef: TableRef;
   id(): Promise<string>;
-  tableRef(name: string): TableRef;
+  tableRef(table: string): TableRef;
   // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
 

@@ -6,21 +6,29 @@ import type { GraphQLResolver } from "@allthethings/utils";
 import { ItemCache } from "@allthethings/utils";
 import type { drive_v3 } from "@googleapis/drive";
 import { drive } from "@googleapis/drive";
+import type { gmail_v1 } from "@googleapis/gmail";
 import { gmail } from "@googleapis/gmail";
 import { people as gPeople } from "@googleapis/people";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 
-import { createAuthClient } from "../auth";
+import { createAuthClient, decodeWebId } from "../auth";
 import type {
   GoogleAccount,
 } from "../schema";
-import type { FileFields, GooglePluginConfig } from "../types";
-import type { GoogleAccountRecord, GoogleFileRecord } from "./types";
+import type { FileFields, GooglePluginConfig, ThreadFields } from "../types";
+import type {
+  GoogleAccountRecord,
+  GoogleFileRecord,
+  GoogleLabelRecord,
+  GoogleThreadLabel,
+  GoogleThreadRecord,
+} from "./types";
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
 export class Account implements GraphQLResolver<GoogleAccount> {
   public readonly fileCache: ItemCache<string, File>;
+  public readonly threadCache: ItemCache<string, Thread>;
 
   public constructor(
     public readonly config: GooglePluginConfig,
@@ -41,7 +49,76 @@ export class Account implements GraphQLResolver<GoogleAccount> {
       return null;
     });
 
+    this.threadCache = new ItemCache(async (id: string): Promise<Thread | null> => {
+      let records = await this.context.table<GoogleThreadRecord>("Thread").where({
+        accountId: this.id,
+        threadId: id,
+      }).select("*");
+
+      if (records.length == 1) {
+        return new Thread(this, records[0]);
+      }
+
+      return null;
+    });
+
     this.watchTokens();
+  }
+
+  public async updateLabels(): Promise<void> {
+    let api = gmail({
+      version: "v1",
+      auth: this.authClient,
+    });
+
+    try {
+      let { data: { labels } } = await api.users.labels.list({
+        userId: "me",
+      });
+
+      if (!labels) {
+        return;
+      }
+
+      let labelIds = await this.context.table<GoogleLabelRecord>("Label")
+        .where("accountId", this.id)
+        .pluck("labelId");
+
+      let newRecords: GoogleLabelRecord[] = [];
+      let foundIds: string[] = [];
+
+      for (let label of labels) {
+        if (!label.id || !label.name || label.type !== "user") {
+          continue;
+        }
+
+        foundIds.push(label.id);
+
+        if (!labelIds.includes(label.id)) {
+          newRecords.push({
+            accountId: this.id,
+            labelId: label.id,
+            name: label.name,
+          });
+        } else {
+          await this.context.table<GoogleLabelRecord>("Label")
+            .where("labelId", label.id)
+            .update({
+              name: label.name,
+            });
+        }
+      }
+
+      await this.context.table<GoogleLabelRecord>("Label")
+        .where("accountId", this.id)
+        .whereNotIn("labelId", foundIds)
+        .delete();
+
+      await this.context.table<GoogleLabelRecord>("Label")
+        .insert(newRecords);
+    } catch (e) {
+      console.warn(e);
+    }
   }
 
   public get user(): string {
@@ -161,11 +238,13 @@ export class Account implements GraphQLResolver<GoogleAccount> {
 
     await context.table<GoogleAccountRecord>("Account").insert(record);
 
-    return new Account(config, context, record, client);
+    let account = new Account(config, context, record, client);
+    await account.updateLabels();
+    return account;
   }
 
   public async getItemFromURL(url: URL, isTask: boolean): Promise<GoogleItem | null> {
-    let item = await Mail.getItemFromURL(this, url, isTask);
+    let item = await Thread.getItemFromURL(this, url, isTask);
     if (item) {
       return item;
     }
@@ -190,12 +269,23 @@ interface GoogleItem {
   itemId: string;
 }
 
-export class Mail implements GoogleItem {
+export class Thread implements GoogleItem {
+  public constructor(
+    private readonly account: Account,
+    private readonly record: GoogleThreadRecord,
+  ) {
+  }
+
+  public get id(): string {
+    return this.record.threadId;
+  }
+
   public static async getItemFromURL(
     account: Account,
     url: URL,
     isTask: boolean,
-  ): Promise<Mail | null> {
+  ): Promise<Thread | null> {
+    console.log("getItemFromURL", url.toString());
     if (url.hostname != "mail.google.com" || url.hash.length == 0) {
       return null;
     }
@@ -206,11 +296,145 @@ export class Mail implements GoogleItem {
       mailId = mailId.substring(idPos + 1);
     }
 
-    return null;
+    let decoded = decodeWebId(mailId);
+    let pos = decoded.lastIndexOf(":");
+    if (pos >= 0) {
+      decoded = decoded.substring(pos + 1);
+    }
+
+    let threadId = BigInt(decoded).toString(16);
+    let thread = await Thread.getAPIThread(account, threadId);
+    if (!thread) {
+      return null;
+    }
+
+    await account.updateLabels();
+
+    let subject: string | null = null;
+    let unread = false;
+    let starred = false;
+    let labels: Set<string> = new Set();
+
+    for (let message of thread.messages ?? []) {
+      for (let label of message.labelIds ?? []) {
+        if (label.startsWith("Label_")) {
+          labels.add(label);
+        } else if (label == "UNREAD") {
+          unread = true;
+        } else if (label == "STARRED") {
+          starred = true;
+        }
+      }
+
+      if (!subject && message.payload?.headers) {
+        for (let header of message.payload.headers) {
+          if (header.name == "Subject" && header.value) {
+            subject = header.value;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!subject) {
+      return null;
+    }
+
+    let item = await account.context.createItem(account.user, {
+      summary: subject,
+      archived: null,
+      snoozed: null,
+      done: undefined,
+      controller: isTask ? TaskController.Manual : null,
+    });
+
+    let record: GoogleThreadRecord = {
+      accountId: account.id,
+      threadId,
+      itemId: item.id,
+      subject,
+      unread,
+      url: "",
+      starred,
+    };
+
+    await account.context.table<GoogleThreadRecord>("Thread")
+      .insert(record);
+
+    let labelRecords = Array.from(labels, (label: string): GoogleThreadLabel => ({
+      accountId: account.id,
+      labelId: label,
+      threadId: threadId,
+    }));
+
+    await account.context.table<GoogleThreadLabel>("ThreadLabel")
+      .insert(labelRecords);
+
+    return new Thread(account, record);
+  }
+
+  private static async getAPIThread(
+    account: Account,
+    threadId: string,
+  ): Promise<gmail_v1.Schema$Thread | null> {
+    let api = gmail({
+      version: "v1",
+      auth: account.authClient,
+    });
+
+    try {
+      let { data: thread } = await api.users.threads.get({
+        userId: "me",
+        id: threadId,
+      });
+
+      return thread;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
   }
 
   public get itemId(): string {
-    return "";
+    return this.record.itemId;
+  }
+
+  public async fields(): Promise<ThreadFields> {
+    let context = this.account.context;
+
+    let labels: string[] = await context.table<GoogleLabelRecord>("Label")
+      .join(context.tableRef("ThreadLabel"), "Label.labelId", "ThreadLabel.labelId")
+      .where("ThreadLabel.threadId", this.id)
+      .pluck("Label.name");
+
+    return {
+      ...this.record,
+      labels,
+      type: "thread",
+    };
+  }
+
+  public static async getForItem(
+    config: GooglePluginConfig,
+    context: PluginContext,
+    itemId: string,
+  ): Promise<Thread | null> {
+    let records = await context.table<GoogleThreadRecord>("Thread").where({ itemId }).select("*");
+    if (records.length == 1) {
+      let account = await Account.get(config, context, records[0].accountId);
+
+      if (!account) {
+        throw new Error("Missing account");
+      }
+
+      return account.threadCache.upsertItem(
+        records[0].threadId,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        () => new Thread(account!, records[0]),
+      );
+    }
+
+    return null;
   }
 }
 

@@ -20,7 +20,7 @@ import koaCompose from "koa-compose";
 import koaMount from "koa-mount";
 import koaStatic from "koa-static";
 
-import { Account, File } from "./db/implementations";
+import { Account, File, Thread } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import buildResolvers from "./resolvers";
 import type { GooglePluginConfig } from "./types";
@@ -98,7 +98,13 @@ class GooglePlugin implements ServerPlugin {
     if (file) {
       return file.fields();
     }
-    return {};
+
+    let thread = await Thread.getForItem(this.config, context, item.id);
+    if (thread) {
+      return thread.fields();
+    }
+
+    throw new Error("Unknown item.");
   }
 
   public async createItemFromURL(
