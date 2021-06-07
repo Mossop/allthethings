@@ -1,7 +1,9 @@
-import type { PluginContext, TableRef } from "@allthethings/server";
 import type { ItemCache } from "@allthethings/utils";
 import { relatedCache } from "@allthethings/utils";
 import type { Knex } from "knex";
+
+import type { TableRef } from "./db";
+import type { PluginContext } from "./types";
 
 interface ItemRecord<Id> {
   id: Id;

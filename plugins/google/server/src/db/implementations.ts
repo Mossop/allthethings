@@ -1,7 +1,14 @@
 import type { URL } from "url";
 
 import { TaskController } from "@allthethings/schema";
-import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
+import {
+  ItemsTable,
+  OwnedItemsTable,
+} from "@allthethings/server";
+import type {
+  AuthedPluginContext,
+  PluginContext,
+} from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
 import type { gmail_v1 } from "@googleapis/gmail";
 import type { Credentials, OAuth2Client } from "google-auth-library";
@@ -18,7 +25,6 @@ import {
 } from "../api";
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
 import type { FileFields, ThreadFields } from "../types";
-import { ItemsTable, OwnedItemsTable } from "./table";
 import type {
   GoogleAccountRecord,
   GoogleFileRecord,

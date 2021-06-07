@@ -1,4 +1,13 @@
-export { PluginKnex, DbMigrationHelper, PluginDbMigration, TableRef } from "./plugins/db";
+export {
+  ItemsTable,
+  OwnedItemsTable,
+} from "./plugins/tables";
+export {
+  PluginKnex,
+  DbMigrationHelper,
+  PluginDbMigration,
+  TableRef,
+} from "./plugins/db";
 export {
   PluginItemFields,
   ServerPlugin,

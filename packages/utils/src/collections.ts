@@ -91,43 +91,26 @@ class RelatedItemCache<S, I, T extends IdItem<I>> extends ItemCache<I, T> {
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
-class Related<S extends object, T> {
-  private map: WeakMap<S, T>;
+export function related<S extends object, T>(builder: (source: S) => T): (source: S) => T {
+  let map = new WeakMap<S, T>();
 
-  public constructor(private builder: (source: S) => T) {
-    this.map = new WeakMap();
-  }
-
-  public get(source: S): T {
-    let item = this.map.get(source);
+  return (source: S): T => {
+    let item = map.get(source);
     if (item) {
       return item;
     }
 
-    item = this.builder(source);
-    this.map.set(source, item);
+    item = builder(source);
+    map.set(source, item);
     return item;
-  }
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-export function related<S extends object, T>(builder: () => T): (source: S) => T {
-  let map = new Related<S, T>(builder);
-  return (source: S) => map.get(source);
-}
-
-// eslint-disable-next-line @typescript-eslint/ban-types
-class RelatedCache<S extends object, I, T extends IdItem<I>>
-  extends Related<S, RelatedItemCache<S, I, T>> {
-  public constructor(getter: RelatedItemGetter<S, I, T>) {
-    super((source: S) => new RelatedItemCache(source, getter));
-  }
+  };
 }
 
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function relatedCache<S extends object, I, T extends IdItem<I>>(
   getter: RelatedItemGetter<S, I, T>,
 ): (source: S) => ItemCache<I, T> {
-  let map = new RelatedCache<S, I, T>(getter);
-  return (source: S) => map.get(source);
+  return related((source: S): ItemCache<I, T> => {
+    return new RelatedItemCache<S, I, T>(source, getter);
+  });
 }
