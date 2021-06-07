@@ -2,6 +2,19 @@ type GoogleAccount {
   id: ID!
   email: String!
   avatar: String
+  mailSearches: [GoogleMailSearch!]!
+}
+
+type GoogleMailSearch {
+  id: ID!
+  name: String!
+  query: String!
+  url: String!
+}
+
+input GoogleMailSearchParams {
+  name: String!
+  query: String!
 }
 
 type User {
@@ -10,4 +23,8 @@ type User {
 
 type Query {
   googleLoginUrl: String!
+}
+
+type Mutation {
+  createGoogleMailSearch(account: ID!, params: GoogleMailSearchParams!): GoogleMailSearch!
 }

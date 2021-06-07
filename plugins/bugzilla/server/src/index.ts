@@ -40,7 +40,7 @@ class BugzillaPlugin implements ServerPlugin {
       try {
         await this.server.withContext((context: PluginContext) => this.update(context));
       } catch (e) {
-        console.log(e);
+        console.error(e);
       }
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
@@ -50,7 +50,7 @@ class BugzillaPlugin implements ServerPlugin {
     for (let account of await Account.list(context)) {
       let searches = await Search.list(account);
       for (let search of searches) {
-        await search.updateBugs();
+        await search.update();
       }
 
       let bugs = await Bug.list(account);

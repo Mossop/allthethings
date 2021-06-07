@@ -2,7 +2,8 @@
 import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 
 import { createAuthClient, generateAuthUrl } from "./api";
-import { Account } from "./db/implementations";
+import { Account, MailSearch } from "./db/implementations";
+import type { MutationCreateGoogleMailSearchArgs } from "./schema";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
@@ -24,6 +25,21 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       let client = createAuthClient(ctx.pluginUrl);
 
       return generateAuthUrl(client, ctx.userId);
+    },
+  },
+
+  Mutation: {
+    async createGoogleMailSearch(
+      outer: unknown,
+      { account: accountId, params }: MutationCreateGoogleMailSearchArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<MailSearch> {
+      let account = await Account.get(ctx, accountId);
+      if (!account) {
+        throw new Error("Unknown account.");
+      }
+
+      return MailSearch.create(ctx, account, params);
     },
   },
 };

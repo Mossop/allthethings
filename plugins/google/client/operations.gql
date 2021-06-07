@@ -5,10 +5,25 @@ query ListGoogleAccounts {
       id
       email
       avatar
+      mailSearches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
 
 query RequestLoginUrl {
   googleLoginUrl
+}
+
+mutation CreateGoogleMailSearch($account: ID!, $params: GoogleMailSearchParams!) {
+  createGoogleMailSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
 }

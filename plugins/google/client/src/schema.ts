@@ -53,6 +53,20 @@ export type GoogleAccount = {
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
   readonly avatar: Maybe<Scalars['String']>;
+  readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
+};
+
+export type GoogleMailSearch = {
+  readonly __typename?: 'GoogleMailSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type GoogleMailSearchParams = {
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
 };
 
 export type Inbox = {
@@ -92,35 +106,36 @@ export type LinkDetailParams = {
 
 export type Mutation = {
   readonly __typename?: 'Mutation';
+  readonly archiveItem: Maybe<Item>;
+  readonly createContext: Context;
+  readonly createGoogleMailSearch: GoogleMailSearch;
+  readonly createLink: Item;
+  readonly createNote: Item;
+  readonly createProject: Project;
+  readonly createSection: Section;
+  readonly createTask: Item;
+  readonly deleteContext: Scalars['Boolean'];
+  readonly deleteItem: Scalars['Boolean'];
+  readonly deleteProject: Scalars['Boolean'];
+  readonly deleteSection: Scalars['Boolean'];
+  readonly editContext: Maybe<Context>;
+  readonly editItem: Maybe<Item>;
+  readonly editProject: Maybe<Project>;
+  readonly editSection: Maybe<Section>;
+  readonly editTaskController: Maybe<Item>;
+  readonly editTaskInfo: Maybe<Item>;
   readonly login: Maybe<User>;
   readonly logout: Maybe<Scalars['Boolean']>;
-  readonly createContext: Context;
-  readonly editContext: Maybe<Context>;
-  readonly deleteContext: Scalars['Boolean'];
-  readonly createProject: Project;
-  readonly moveProject: Maybe<Project>;
-  readonly editProject: Maybe<Project>;
-  readonly deleteProject: Scalars['Boolean'];
-  readonly createSection: Section;
-  readonly moveSection: Maybe<Section>;
-  readonly editSection: Maybe<Section>;
-  readonly deleteSection: Scalars['Boolean'];
-  readonly createTask: Item;
-  readonly createNote: Item;
-  readonly createLink: Item;
-  readonly editItem: Maybe<Item>;
-  readonly editTaskInfo: Maybe<Item>;
-  readonly editTaskController: Maybe<Item>;
   readonly moveItem: Maybe<Item>;
-  readonly deleteItem: Scalars['Boolean'];
-  readonly archiveItem: Maybe<Item>;
+  readonly moveProject: Maybe<Project>;
+  readonly moveSection: Maybe<Section>;
   readonly snoozeItem: Maybe<Item>;
 };
 
 
-export type MutationLoginArgs = {
-  email: Scalars['String'];
-  password: Scalars['String'];
+export type MutationArchiveItemArgs = {
+  id: Scalars['ID'];
+  archived: Maybe<Scalars['DateTime']>;
 };
 
 
@@ -129,76 +144,9 @@ export type MutationCreateContextArgs = {
 };
 
 
-export type MutationEditContextArgs = {
-  id: Scalars['ID'];
-  params: ContextParams;
-};
-
-
-export type MutationDeleteContextArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCreateProjectArgs = {
-  taskList: Maybe<Scalars['ID']>;
-  params: ProjectParams;
-};
-
-
-export type MutationMoveProjectArgs = {
-  id: Scalars['ID'];
-  taskList: Maybe<Scalars['ID']>;
-};
-
-
-export type MutationEditProjectArgs = {
-  id: Scalars['ID'];
-  params: ProjectParams;
-};
-
-
-export type MutationDeleteProjectArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCreateSectionArgs = {
-  taskList: Maybe<Scalars['ID']>;
-  before: Maybe<Scalars['ID']>;
-  params: SectionParams;
-};
-
-
-export type MutationMoveSectionArgs = {
-  id: Scalars['ID'];
-  taskList: Maybe<Scalars['ID']>;
-  before: Maybe<Scalars['ID']>;
-};
-
-
-export type MutationEditSectionArgs = {
-  id: Scalars['ID'];
-  params: SectionParams;
-};
-
-
-export type MutationDeleteSectionArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type MutationCreateTaskArgs = {
-  list: Maybe<Scalars['ID']>;
-  item: ItemParams;
-};
-
-
-export type MutationCreateNoteArgs = {
-  list: Maybe<Scalars['ID']>;
-  item: ItemParams;
-  detail: NoteDetailParams;
-  isTask: Scalars['Boolean'];
+export type MutationCreateGoogleMailSearchArgs = {
+  account: Scalars['ID'];
+  params: GoogleMailSearchParams;
 };
 
 
@@ -210,9 +158,80 @@ export type MutationCreateLinkArgs = {
 };
 
 
+export type MutationCreateNoteArgs = {
+  list: Maybe<Scalars['ID']>;
+  item: ItemParams;
+  detail: NoteDetailParams;
+  isTask: Scalars['Boolean'];
+};
+
+
+export type MutationCreateProjectArgs = {
+  taskList: Maybe<Scalars['ID']>;
+  params: ProjectParams;
+};
+
+
+export type MutationCreateSectionArgs = {
+  taskList: Maybe<Scalars['ID']>;
+  before: Maybe<Scalars['ID']>;
+  params: SectionParams;
+};
+
+
+export type MutationCreateTaskArgs = {
+  list: Maybe<Scalars['ID']>;
+  item: ItemParams;
+};
+
+
+export type MutationDeleteContextArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteItemArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteProjectArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationDeleteSectionArgs = {
+  id: Scalars['ID'];
+};
+
+
+export type MutationEditContextArgs = {
+  id: Scalars['ID'];
+  params: ContextParams;
+};
+
+
 export type MutationEditItemArgs = {
   id: Scalars['ID'];
   item: ItemParams;
+};
+
+
+export type MutationEditProjectArgs = {
+  id: Scalars['ID'];
+  params: ProjectParams;
+};
+
+
+export type MutationEditSectionArgs = {
+  id: Scalars['ID'];
+  params: SectionParams;
+};
+
+
+export type MutationEditTaskControllerArgs = {
+  id: Scalars['ID'];
+  controller: Maybe<Scalars['String']>;
 };
 
 
@@ -222,9 +241,9 @@ export type MutationEditTaskInfoArgs = {
 };
 
 
-export type MutationEditTaskControllerArgs = {
-  id: Scalars['ID'];
-  controller: Maybe<Scalars['String']>;
+export type MutationLoginArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
 };
 
 
@@ -235,14 +254,16 @@ export type MutationMoveItemArgs = {
 };
 
 
-export type MutationDeleteItemArgs = {
+export type MutationMoveProjectArgs = {
   id: Scalars['ID'];
+  taskList: Maybe<Scalars['ID']>;
 };
 
 
-export type MutationArchiveItemArgs = {
+export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
-  archived: Maybe<Scalars['DateTime']>;
+  taskList: Maybe<Scalars['ID']>;
+  before: Maybe<Scalars['ID']>;
 };
 
 
@@ -371,12 +392,20 @@ export type UserProjectByIdArgs = {
 export type ListGoogleAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string> }> }> };
+export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string>, readonly mailSearches: ReadonlyArray<{ readonly __typename: 'GoogleMailSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
 
 export type RequestLoginUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
 
 export type RequestLoginUrlQuery = { readonly __typename: 'Query', readonly googleLoginUrl: string };
+
+export type CreateGoogleMailSearchMutationVariables = Exact<{
+  account: Scalars['ID'];
+  params: GoogleMailSearchParams;
+}>;
+
+
+export type CreateGoogleMailSearchMutation = { readonly __typename: 'Mutation', readonly createGoogleMailSearch: { readonly __typename: 'GoogleMailSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string } };
 
 
 export const ListGoogleAccountsDocument = gql`
@@ -387,6 +416,12 @@ export const ListGoogleAccountsDocument = gql`
       id
       email
       avatar
+      mailSearches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
@@ -456,3 +491,40 @@ export type RequestLoginUrlQueryResult = Apollo.QueryResult<RequestLoginUrlQuery
 export function refetchRequestLoginUrlQuery(variables?: RequestLoginUrlQueryVariables) {
       return { query: RequestLoginUrlDocument, variables: variables }
     }
+export const CreateGoogleMailSearchDocument = gql`
+    mutation CreateGoogleMailSearch($account: ID!, $params: GoogleMailSearchParams!) {
+  createGoogleMailSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
+}
+    `;
+export type CreateGoogleMailSearchMutationFn = Apollo.MutationFunction<CreateGoogleMailSearchMutation, CreateGoogleMailSearchMutationVariables>;
+
+/**
+ * __useCreateGoogleMailSearchMutation__
+ *
+ * To run a mutation, you first call `useCreateGoogleMailSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateGoogleMailSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createGoogleMailSearchMutation, { data, loading, error }] = useCreateGoogleMailSearchMutation({
+ *   variables: {
+ *      account: // value for 'account'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateGoogleMailSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateGoogleMailSearchMutation, CreateGoogleMailSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateGoogleMailSearchMutation, CreateGoogleMailSearchMutationVariables>(CreateGoogleMailSearchDocument, options);
+      }
+export type CreateGoogleMailSearchMutationHookResult = ReturnType<typeof useCreateGoogleMailSearchMutation>;
+export type CreateGoogleMailSearchMutationResult = Apollo.MutationResult<CreateGoogleMailSearchMutation>;
+export type CreateGoogleMailSearchMutationOptions = Apollo.BaseMutationOptions<CreateGoogleMailSearchMutation, CreateGoogleMailSearchMutationVariables>;

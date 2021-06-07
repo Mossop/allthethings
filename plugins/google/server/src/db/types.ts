@@ -1,13 +1,17 @@
 import type { GraphQLType } from "@allthethings/utils";
 
-import type { GoogleAccount } from "../schema";
+import type { GoogleAccount, GoogleMailSearch } from "../schema";
 
-export type GoogleAccountRecord = GraphQLType<GoogleAccount> & {
+export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches"> & {
   user: string;
   avatar: string | null;
   accessToken: string;
   refreshToken: string;
   expiry: number;
+};
+
+export type GoogleMailSearchRecord = Omit<GraphQLType<GoogleMailSearch>, "url"> & {
+  accountId: string;
 };
 
 export interface GoogleFileRecord {
@@ -36,7 +40,7 @@ export interface GoogleLabelRecord {
   name: string;
 }
 
-export interface GoogleThreadLabel {
+export interface GoogleThreadLabelRecord {
   accountId: string;
   threadId: string;
   labelId: string;

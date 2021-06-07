@@ -3,11 +3,6 @@ export const enum SearchType {
   Advanced = "advanced",
 }
 
-export interface SearchPresence {
-  search: string;
-  present: boolean;
-}
-
 export interface BugFields {
   accountId: string;
   bugId: number;

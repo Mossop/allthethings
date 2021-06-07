@@ -164,6 +164,42 @@ export async function getThread(
   }
 }
 
+function isNonNull<T>(item: T | null): item is T {
+  return !!item;
+}
+
+export async function listThreads(
+  authClient: OAuth2Client,
+  query: string,
+): Promise<gmail_v1.Schema$Thread[]> {
+  let api = gmail({
+    version: "v1",
+    auth: authClient,
+  });
+
+  let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
+
+  let pageToken: string | null | undefined = undefined;
+  while (pageToken !== null) {
+    let { data: response } = await api.users.threads.list({
+      userId: "me",
+      q: query,
+      pageToken,
+    });
+
+    for (let thread of response.threads ?? []) {
+      if (thread.id) {
+        threads.push(getThread(authClient, thread.id));
+      }
+    }
+
+    pageToken = response.nextPageToken ?? null;
+  }
+
+  let results = await Promise.all(threads);
+  return results.filter(isNonNull);
+}
+
 export interface GoogleAPILabel {
   id: string;
   name: string;

@@ -20,7 +20,7 @@ import koaCompose from "koa-compose";
 import koaMount from "koa-mount";
 import koaStatic from "koa-static";
 
-import { Account, File, Thread } from "./db/implementations";
+import { Account, File, MailSearch, Thread } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 import type { GooglePluginConfig } from "./types";
@@ -34,6 +34,8 @@ function first(param: string | string[] | undefined): string | undefined {
 
   return param;
 }
+
+const UPDATE_DELAY = 60000;
 
 export class GooglePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
@@ -81,6 +83,25 @@ export class GooglePlugin implements ServerPlugin {
       koaMount("/oauth", oauthMiddleware),
       staticMiddleware,
     ]);
+
+    server.taskManager.queueRecurringTask(async (): Promise<number> => {
+      try {
+        await this.server.withContext((context: PluginContext) => this.update(context));
+      } catch (e) {
+        console.error(e);
+      }
+      return UPDATE_DELAY;
+    }, UPDATE_DELAY);
+  }
+
+  public async update(context: PluginContext): Promise<void> {
+    for (let account of await Account.list(context)) {
+      await account.update();
+
+      for (let search of await MailSearch.list(context, account)) {
+        await search.update();
+      }
+    }
   }
 
   public schema(): Promise<string> {

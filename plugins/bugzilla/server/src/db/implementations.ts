@@ -206,6 +206,11 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
       return null;
     }
 
+    let existing = await Bug.get(this, parseInt(id));
+    if (existing) {
+      return existing;
+    }
+
     let api = this.getAPI();
     try {
       let bugs = await api.getBugs([id]);
@@ -340,7 +345,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
     return url.toString();
   }
 
-  public async updateBugs(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
+  public async update(bugs?: BugzillaAPIBug[]): Promise<void> {
     if (!bugs) {
       bugs = await this.getBugRecords();
     }
@@ -362,8 +367,6 @@ export class Search implements GraphQLType<BugzillaSearch> {
     await this.context.updateList(this.id, {
       items: instances.map((bug: Bug): string => bug.itemId),
     });
-
-    return instances;
   }
 
   public async getBugRecords(): Promise<BugzillaAPIBug[]> {
@@ -402,9 +405,9 @@ export class Search implements GraphQLType<BugzillaSearch> {
       accountId: account.id,
     };
 
-    await context.table("Search").insert(dbRecord);
+    await context.table<BugzillaSearchRecord>("Search").insert(dbRecord);
     let search = searches(account).upsertItem(id, () => new Search(account, dbRecord));
-    await search.updateBugs(bugs);
+    await search.update(bugs);
 
     return search;
   }

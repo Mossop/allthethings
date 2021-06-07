@@ -4,6 +4,7 @@ export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
 export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]: Maybe<T[SubKey]> };
+export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -18,6 +19,31 @@ export type GoogleAccount = {
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
   readonly avatar: Maybe<Scalars['String']>;
+  readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
+};
+
+export type GoogleMailSearch = {
+  readonly __typename?: 'GoogleMailSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type GoogleMailSearchParams = {
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+};
+
+export type Mutation = {
+  readonly __typename?: 'Mutation';
+  readonly createGoogleMailSearch: GoogleMailSearch;
+};
+
+
+export type MutationCreateGoogleMailSearchArgs = {
+  account: Scalars['ID'];
+  params: GoogleMailSearchParams;
 };
 
 export type Query = {
@@ -112,6 +138,9 @@ export type ResolversTypes = ResolversObject<{
   GoogleAccount: ResolverTypeWrapper<GoogleAccount>;
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
+  GoogleMailSearch: ResolverTypeWrapper<GoogleMailSearch>;
+  GoogleMailSearchParams: GoogleMailSearchParams;
+  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
@@ -122,6 +151,9 @@ export type ResolversParentTypes = ResolversObject<{
   GoogleAccount: GoogleAccount;
   ID: Scalars['ID'];
   String: Scalars['String'];
+  GoogleMailSearch: GoogleMailSearch;
+  GoogleMailSearchParams: GoogleMailSearchParams;
+  Mutation: {};
   Query: {};
   User: User;
   Boolean: Scalars['Boolean'];
@@ -131,7 +163,20 @@ export type GoogleAccountResolvers<ContextType = any, ParentType extends Resolve
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   avatar: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
+  mailSearches: Resolver<ReadonlyArray<ResolversTypes['GoogleMailSearch']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type GoogleMailSearchResolvers<ContextType = any, ParentType extends ResolversParentTypes['GoogleMailSearch'] = ResolversParentTypes['GoogleMailSearch']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  query: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+  createGoogleMailSearch: Resolver<ResolversTypes['GoogleMailSearch'], ParentType, ContextType, RequireFields<MutationCreateGoogleMailSearchArgs, 'account' | 'params'>>;
 }>;
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
@@ -145,6 +190,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   GoogleAccount: GoogleAccountResolvers<ContextType>;
+  GoogleMailSearch: GoogleMailSearchResolvers<ContextType>;
+  Mutation: MutationResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   User: UserResolvers<ContextType>;
 }>;

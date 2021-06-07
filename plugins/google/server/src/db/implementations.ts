@@ -4,10 +4,12 @@ import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
 import { relatedCache } from "@allthethings/utils";
+import type { gmail_v1 } from "@googleapis/gmail";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 
 import type { GoogleAPIFile } from "../api";
 import {
+  listThreads,
   getAccountInfo,
   createAuthClient,
   decodeWebId,
@@ -15,13 +17,14 @@ import {
   getLabels,
   getThread,
 } from "../api";
-import type { GoogleAccount } from "../schema";
+import type { GoogleAccount, GoogleMailSearch } from "../schema";
 import type { FileFields, ThreadFields } from "../types";
 import type {
   GoogleAccountRecord,
   GoogleFileRecord,
   GoogleLabelRecord,
-  GoogleThreadLabel,
+  GoogleMailSearchRecord,
+  GoogleThreadLabelRecord,
   GoogleThreadRecord,
 } from "./types";
 
@@ -75,6 +78,23 @@ const threads = relatedCache(
   },
 );
 
+const searches = relatedCache(
+  async (account: Account, id: string): Promise<MailSearch | null> => {
+    let records = await account.context.table<GoogleMailSearchRecord>("MailSearch")
+      .where({
+        accountId: account.id,
+        id,
+      })
+      .select("*");
+
+    if (records.length == 1) {
+      return new MailSearch(account, records[0]);
+    }
+
+    return null;
+  },
+);
+
 export class Account implements GraphQLResolver<GoogleAccount> {
   public constructor(
     public readonly context: PluginContext,
@@ -82,6 +102,14 @@ export class Account implements GraphQLResolver<GoogleAccount> {
     private client?: OAuth2Client,
   ) {
     this.watchTokens();
+  }
+
+  public async mailSearches(): Promise<MailSearch[]> {
+    return MailSearch.list(this.context, this);
+  }
+
+  public async update(): Promise<void> {
+    return this.updateLabels();
   }
 
   public async updateLabels(): Promise<void> {
@@ -117,8 +145,10 @@ export class Account implements GraphQLResolver<GoogleAccount> {
       .whereNotIn("labelId", foundIds)
       .delete();
 
-    await this.context.table<GoogleLabelRecord>("Label")
-      .insert(newRecords);
+    if (newRecords.length) {
+      await this.context.table<GoogleLabelRecord>("Label")
+        .insert(newRecords);
+    }
   }
 
   public get user(): string {
@@ -171,11 +201,14 @@ export class Account implements GraphQLResolver<GoogleAccount> {
 
   public static async list(
     context: PluginContext,
-    userId: string,
+    userId?: string,
   ): Promise<Account[]> {
-    let records = await context.table<GoogleAccountRecord>("Account")
-      .where("user", userId)
-      .select("*");
+    let query = context.table<GoogleAccountRecord>("Account");
+    if (userId) {
+      query = query.where("user", userId);
+    }
+
+    let records = await query;
 
     return records.map((record: GoogleAccountRecord): Account => {
       return accounts(context).upsertItem(record.id, () => new Account(context, record));
@@ -250,6 +283,108 @@ export class Account implements GraphQLResolver<GoogleAccount> {
   }
 }
 
+export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
+  public constructor(
+    private readonly account: Account,
+    private readonly record: GoogleMailSearchRecord,
+  ) {
+  }
+
+  public async update(threadList?: gmail_v1.Schema$Thread[]): Promise<void> {
+    if (!threadList) {
+      threadList = await listThreads(this.account.authClient, this.query);
+    }
+
+    let instances: Thread[] = [];
+
+    for (let thread of threadList) {
+      if (!thread.id) {
+        return;
+      }
+
+      let instance = await threads(this.account).getItem(thread.id);
+
+      if (!instance) {
+        instance = await Thread.create(this.account, thread, TaskController.PluginList);
+      }
+
+      instances.push(instance);
+    }
+
+    await this.account.context.updateList(this.id, {
+      items: instances.map((thread: Thread): string => thread.itemId),
+    });
+  }
+
+  public static async create(
+    context: PluginContext,
+    account: Account,
+    record: Omit<GoogleMailSearchRecord, "id" | "accountId">,
+  ): Promise<MailSearch> {
+    let threads = await listThreads(account.authClient, record.query);
+
+    let id = await context.addList({
+      name: record.name,
+      url: "",
+    });
+
+    let dbRecord: GoogleMailSearchRecord = {
+      ...record,
+      id,
+      accountId: account.id,
+    };
+
+    await context.table<GoogleMailSearchRecord>("MailSearch").insert(dbRecord);
+    let search = searches(account).upsertItem(id, () => new MailSearch(account, dbRecord));
+    await search.update(threads);
+
+    return search;
+  }
+
+  public static async list(context: PluginContext, account: Account): Promise<MailSearch[]> {
+    let records = await context.table<GoogleMailSearchRecord>("MailSearch")
+      .where("accountId", account.id);
+
+    return records.map((record: GoogleMailSearchRecord): MailSearch => {
+      return searches(account).upsertItem(record.id, () => new MailSearch(account, record));
+    });
+  }
+
+  public static async get(context: PluginContext, id: string): Promise<MailSearch | null> {
+    let record = await context.table<GoogleMailSearchRecord>("MailSearch")
+      .where("id", id)
+      .first();
+
+    if (!record) {
+      return null;
+    }
+
+    let account = await Account.get(context, record.accountId);
+    if (!account) {
+      throw new Error("Unexpected.");
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    return searches(account).upsertItem(id, () => new MailSearch(account!, record!));
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
+  public get name(): string {
+    return this.record.name;
+  }
+
+  public get query(): string {
+    return this.record.query;
+  }
+
+  public get url(): string {
+    return "";
+  }
+}
+
 interface GoogleItem {
   itemId: string;
 }
@@ -263,6 +398,81 @@ export class Thread implements GoogleItem {
 
   public get id(): string {
     return this.record.threadId;
+  }
+
+  public static async create(
+    account: Account,
+    data: gmail_v1.Schema$Thread,
+    controller: TaskController | null,
+  ): Promise<Thread> {
+    if (!data.id) {
+      throw new Error("No ID.");
+    }
+
+    let subject: string | null = null;
+    let unread = false;
+    let starred = false;
+    let labels: Set<string> = new Set();
+
+    for (let message of data.messages ?? []) {
+      for (let label of message.labelIds ?? []) {
+        if (label.startsWith("Label_")) {
+          labels.add(label);
+        } else if (label == "UNREAD") {
+          unread = true;
+        } else if (label == "STARRED") {
+          starred = true;
+        }
+      }
+
+      if (!subject && message.payload?.headers) {
+        for (let header of message.payload.headers) {
+          if (header.name == "Subject" && header.value) {
+            subject = header.value;
+            break;
+          }
+        }
+      }
+    }
+
+    if (!subject) {
+      throw new Error("Missing subject");
+    }
+
+    let item = await account.context.createItem(account.user, {
+      summary: subject,
+      archived: null,
+      snoozed: null,
+      done: undefined,
+      controller,
+    });
+
+    let record: GoogleThreadRecord = {
+      accountId: account.id,
+      threadId: data.id,
+      itemId: item.id,
+      subject,
+      unread,
+      url: "",
+      starred,
+    };
+
+    await account.context.table<GoogleThreadRecord>("Thread")
+      .insert(record);
+
+    let labelRecords = Array.from(labels, (label: string): GoogleThreadLabelRecord => ({
+      accountId: account.id,
+      labelId: label,
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      threadId: data.id!,
+    }));
+
+    if (labelRecords.length) {
+      await account.context.table<GoogleThreadLabelRecord>("ThreadLabel")
+        .insert(labelRecords);
+    }
+
+    return threads(account).addItem(new Thread(account, record));
   }
 
   public static async getItemFromURL(
@@ -288,74 +498,19 @@ export class Thread implements GoogleItem {
     }
 
     let threadId = BigInt(decoded).toString(16);
+
+    let existing = await threads(account).getItem(threadId);
+    if (existing) {
+      return existing;
+    }
+
     let apiThread = await getThread(account.authClient, threadId);
     if (!apiThread) {
       return null;
     }
 
     await account.updateLabels();
-
-    let subject: string | null = null;
-    let unread = false;
-    let starred = false;
-    let labels: Set<string> = new Set();
-
-    for (let message of apiThread.messages ?? []) {
-      for (let label of message.labelIds ?? []) {
-        if (label.startsWith("Label_")) {
-          labels.add(label);
-        } else if (label == "UNREAD") {
-          unread = true;
-        } else if (label == "STARRED") {
-          starred = true;
-        }
-      }
-
-      if (!subject && message.payload?.headers) {
-        for (let header of message.payload.headers) {
-          if (header.name == "Subject" && header.value) {
-            subject = header.value;
-            break;
-          }
-        }
-      }
-    }
-
-    if (!subject) {
-      return null;
-    }
-
-    let item = await account.context.createItem(account.user, {
-      summary: subject,
-      archived: null,
-      snoozed: null,
-      done: undefined,
-      controller: isTask ? TaskController.Manual : null,
-    });
-
-    let record: GoogleThreadRecord = {
-      accountId: account.id,
-      threadId,
-      itemId: item.id,
-      subject,
-      unread,
-      url: "",
-      starred,
-    };
-
-    await account.context.table<GoogleThreadRecord>("Thread")
-      .insert(record);
-
-    let labelRecords = Array.from(labels, (label: string): GoogleThreadLabel => ({
-      accountId: account.id,
-      labelId: label,
-      threadId: threadId,
-    }));
-
-    await account.context.table<GoogleThreadLabel>("ThreadLabel")
-      .insert(labelRecords);
-
-    return threads(account).addItem(new Thread(account, record));
+    return Thread.create(account, apiThread, isTask ? TaskController.Manual : null);
   }
 
   public get itemId(): string {
@@ -474,6 +629,12 @@ export class File implements GoogleItem {
     let matches = DRIVE_REGEX.exec(url.toString());
     if (!matches) {
       return null;
+    }
+
+    let fileId = matches[1];
+    let existing = await files(account).getItem(fileId);
+    if (existing) {
+      return existing;
     }
 
     let file = await getFile(account.authClient, matches[1]);
