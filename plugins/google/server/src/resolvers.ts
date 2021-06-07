@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 
-import { createAuthClient, generateAuthUrl } from "./auth";
+import { createAuthClient, generateAuthUrl } from "./api";
 import { Account } from "./db/implementations";
 import type { GooglePluginConfig } from "./types";
 

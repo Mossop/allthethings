@@ -4,17 +4,18 @@ import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
 import { ItemCache } from "@allthethings/utils";
-import type { drive_v3 } from "@googleapis/drive";
-import { drive } from "@googleapis/drive";
-import type { gmail_v1 } from "@googleapis/gmail";
-import { gmail } from "@googleapis/gmail";
-import { people as gPeople } from "@googleapis/people";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 
-import { createAuthClient, decodeWebId } from "../auth";
-import type {
-  GoogleAccount,
-} from "../schema";
+import type { GoogleAPIFile } from "../api";
+import {
+  getAccountInfo,
+  createAuthClient,
+  decodeWebId,
+  getFile,
+  getLabels,
+  getThread,
+} from "../api";
+import type { GoogleAccount } from "../schema";
 import type { FileFields, GooglePluginConfig, ThreadFields } from "../types";
 import type {
   GoogleAccountRecord,
@@ -66,59 +67,40 @@ export class Account implements GraphQLResolver<GoogleAccount> {
   }
 
   public async updateLabels(): Promise<void> {
-    let api = gmail({
-      version: "v1",
-      auth: this.authClient,
-    });
+    let labels = await getLabels(this.authClient);
 
-    try {
-      let { data: { labels } } = await api.users.labels.list({
-        userId: "me",
-      });
+    let labelIds = await this.context.table<GoogleLabelRecord>("Label")
+      .where("accountId", this.id)
+      .pluck("labelId");
 
-      if (!labels) {
-        return;
-      }
+    let newRecords: GoogleLabelRecord[] = [];
+    let foundIds: string[] = [];
 
-      let labelIds = await this.context.table<GoogleLabelRecord>("Label")
-        .where("accountId", this.id)
-        .pluck("labelId");
+    for (let label of labels) {
+      foundIds.push(label.id);
 
-      let newRecords: GoogleLabelRecord[] = [];
-      let foundIds: string[] = [];
-
-      for (let label of labels) {
-        if (!label.id || !label.name || label.type !== "user") {
-          continue;
-        }
-
-        foundIds.push(label.id);
-
-        if (!labelIds.includes(label.id)) {
-          newRecords.push({
-            accountId: this.id,
-            labelId: label.id,
+      if (!labelIds.includes(label.id)) {
+        newRecords.push({
+          accountId: this.id,
+          labelId: label.id,
+          name: label.name,
+        });
+      } else {
+        await this.context.table<GoogleLabelRecord>("Label")
+          .where("labelId", label.id)
+          .update({
             name: label.name,
           });
-        } else {
-          await this.context.table<GoogleLabelRecord>("Label")
-            .where("labelId", label.id)
-            .update({
-              name: label.name,
-            });
-        }
       }
-
-      await this.context.table<GoogleLabelRecord>("Label")
-        .where("accountId", this.id)
-        .whereNotIn("labelId", foundIds)
-        .delete();
-
-      await this.context.table<GoogleLabelRecord>("Label")
-        .insert(newRecords);
-    } catch (e) {
-      console.warn(e);
     }
+
+    await this.context.table<GoogleLabelRecord>("Label")
+      .where("accountId", this.id)
+      .whereNotIn("labelId", foundIds)
+      .delete();
+
+    await this.context.table<GoogleLabelRecord>("Label")
+      .insert(newRecords);
   }
 
   public get user(): string {
@@ -208,18 +190,10 @@ export class Account implements GraphQLResolver<GoogleAccount> {
       throw new Error("Failed to authenticate correctly.");
     }
 
-    let people = gPeople({
-      version: "v1",
-      auth: client,
-    });
-
-    let userInfo = await people.people.get({
-      resourceName: "people/me",
-      personFields: "photos",
-    });
+    let userInfo = await getAccountInfo(client);
 
     let avatar: string | null = null;
-    let photos = userInfo.data.photos ?? [];
+    let photos = userInfo.photos ?? [];
     for (let photo of photos) {
       if (photo.metadata?.primary && photo.url) {
         avatar = photo.url;
@@ -303,7 +277,7 @@ export class Thread implements GoogleItem {
     }
 
     let threadId = BigInt(decoded).toString(16);
-    let thread = await Thread.getAPIThread(account, threadId);
+    let thread = await getThread(account.authClient, threadId);
     if (!thread) {
       return null;
     }
@@ -373,28 +347,6 @@ export class Thread implements GoogleItem {
     return new Thread(account, record);
   }
 
-  private static async getAPIThread(
-    account: Account,
-    threadId: string,
-  ): Promise<gmail_v1.Schema$Thread | null> {
-    let api = gmail({
-      version: "v1",
-      auth: account.authClient,
-    });
-
-    try {
-      let { data: thread } = await api.users.threads.get({
-        userId: "me",
-        id: threadId,
-      });
-
-      return thread;
-    } catch (e) {
-      console.error(e);
-      return null;
-    }
-  }
-
   public get itemId(): string {
     return this.record.itemId;
   }
@@ -438,59 +390,8 @@ export class Thread implements GoogleItem {
   }
 }
 
-type Present<T, F extends keyof T> = Omit<T, F> & {
-  [K in F]-?: NonNullable<T[K]>;
-};
-
-type GoogleAPIFile = Present<Pick<drive_v3.Schema$File,
-  "id" |
-  "name" |
-  "mimeType" |
-  "description" |
-  "iconLink" |
-  "webViewLink"
->, "id" | "name" | "mimeType">;
-
 export class File implements GoogleItem {
   public constructor(private readonly account: Account, private readonly record: GoogleFileRecord) {
-  }
-
-  private static fileFields: (keyof GoogleAPIFile | "trashed")[] = [
-    "id",
-    "name",
-    "mimeType",
-    "description",
-    "iconLink",
-    "webViewLink",
-    "trashed",
-  ];
-
-  private static async getAPIFile(account: Account, fileId: string): Promise<GoogleAPIFile | null> {
-    let api = drive({
-      version: "v3",
-      auth: account.authClient,
-    });
-
-    try {
-      let { data } = await api.files.get({
-        fileId,
-        supportsAllDrives: true,
-        fields: File.fileFields.join(", "),
-      });
-
-      if (data.trashed) {
-        return null;
-      }
-
-      if (!data.id || !data.name || !data.mimeType) {
-        return null;
-      }
-
-      // @ts-ignore
-      return data;
-    } catch (e) {
-      return null;
-    }
   }
 
   private static recordFromFile(
@@ -567,7 +468,7 @@ export class File implements GoogleItem {
       return null;
     }
 
-    let file = await File.getAPIFile(account, matches[1]);
+    let file = await getFile(account.authClient, matches[1]);
     if (!file) {
       return null;
     }

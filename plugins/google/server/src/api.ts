@@ -1,6 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { URL } from "url";
 
+import type { drive_v3 } from "@googleapis/drive";
+import { drive } from "@googleapis/drive";
+import type { gmail_v1 } from "@googleapis/gmail";
+import { gmail } from "@googleapis/gmail";
+import type { people_v1 } from "@googleapis/people";
+import { people } from "@googleapis/people";
 import { decode as b64Decode } from "base-64";
 import { OAuth2Client } from "google-auth-library";
 
@@ -121,4 +127,127 @@ export function decodeWebId(id: string): string {
   }
 
   return b64Decode(resultCharacters.join(""));
+}
+
+export async function getAccountInfo(authClient: OAuth2Client): Promise<people_v1.Schema$Person> {
+  let api = people({
+    version: "v1",
+    auth: authClient,
+  });
+
+  let { data: info } = await api.people.get({
+    resourceName: "people/me",
+    personFields: "photos",
+  });
+
+  return info;
+}
+
+export async function getThread(
+  authClient: OAuth2Client,
+  threadId: string,
+): Promise<gmail_v1.Schema$Thread | null> {
+  let api = gmail({
+    version: "v1",
+    auth: authClient,
+  });
+
+  try {
+    let { data: thread } = await api.users.threads.get({
+      userId: "me",
+      id: threadId,
+    });
+
+    return thread;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
+}
+
+export interface GoogleAPILabel {
+  id: string;
+  name: string;
+}
+
+function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
+  if (!label.id || !label.name) {
+    return false;
+  }
+  return label.type == "user";
+}
+
+export async function getLabels(authClient: OAuth2Client): Promise<GoogleAPILabel[]> {
+  let api = gmail({
+    version: "v1",
+    auth: authClient,
+  });
+
+  try {
+    let { data: { labels } } = await api.users.labels.list({
+      userId: "me",
+    });
+
+    if (!labels) {
+      return [];
+    }
+
+    return labels.filter(isLabel);
+  } catch (e) {
+    return [];
+  }
+}
+
+type Present<T, F extends keyof T> = Omit<T, F> & {
+  [K in F]-?: NonNullable<T[K]>;
+};
+
+export type GoogleAPIFile = Present<Pick<drive_v3.Schema$File,
+  "id" |
+  "name" |
+  "mimeType" |
+  "description" |
+  "iconLink" |
+  "webViewLink"
+>, "id" | "name" | "mimeType">;
+
+const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
+  "id",
+  "name",
+  "mimeType",
+  "description",
+  "iconLink",
+  "webViewLink",
+  "trashed",
+];
+
+export async function getFile(
+  authClient: OAuth2Client,
+  fileId: string,
+): Promise<GoogleAPIFile | null> {
+  let api = drive({
+    version: "v3",
+    auth: authClient,
+  });
+
+  try {
+    let { data } = await api.files.get({
+      fileId,
+      supportsAllDrives: true,
+      fields: fileFields.join(", "),
+    });
+
+    if (data.trashed) {
+      return null;
+    }
+
+    if (!data.id || !data.name || !data.mimeType) {
+      return null;
+    }
+
+    // @ts-ignore
+    return data;
+  } catch (e) {
+    return null;
+  }
 }
