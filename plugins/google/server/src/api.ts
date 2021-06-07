@@ -10,19 +10,18 @@ import { people } from "@googleapis/people";
 import { decode as b64Decode } from "base-64";
 import { OAuth2Client } from "google-auth-library";
 
+import { GooglePlugin } from ".";
 import type { GoogleAccountRecord } from "./db/types";
-import type { GooglePluginConfig } from "./types";
 
 export function createAuthClient(
-  config: GooglePluginConfig,
   pluginUrl: URL,
   credentials?: GoogleAccountRecord,
 ): OAuth2Client {
   let callbackUrl = new URL("oauth", pluginUrl);
 
   let client = new OAuth2Client(
-    config.clientId,
-    config.clientSecret,
+    GooglePlugin.config.clientId,
+    GooglePlugin.config.clientSecret,
     callbackUrl.toString(),
   );
 

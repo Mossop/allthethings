@@ -3,7 +3,7 @@ import type { URL } from "url";
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
-import { ItemCache } from "@allthethings/utils";
+import { relatedCache } from "@allthethings/utils";
 import type { Credentials, OAuth2Client } from "google-auth-library";
 
 import type { GoogleAPIFile } from "../api";
@@ -16,7 +16,7 @@ import {
   getThread,
 } from "../api";
 import type { GoogleAccount } from "../schema";
-import type { FileFields, GooglePluginConfig, ThreadFields } from "../types";
+import type { FileFields, ThreadFields } from "../types";
 import type {
   GoogleAccountRecord,
   GoogleFileRecord,
@@ -27,42 +27,60 @@ import type {
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
-export class Account implements GraphQLResolver<GoogleAccount> {
-  public readonly fileCache: ItemCache<string, File>;
-  public readonly threadCache: ItemCache<string, Thread>;
+const accounts = relatedCache(
+  async (context: PluginContext, id: string): Promise<Account | null> => {
+    let records = await context.table<GoogleAccountRecord>("Account")
+      .where("id", id)
+      .select("*");
 
+    if (records.length == 1) {
+      return new Account(context, records[0]);
+    }
+
+    return null;
+  },
+);
+
+const files = relatedCache(
+  async (account: Account, id: string): Promise<File | null> => {
+    let records = await account.context.table<GoogleFileRecord>("File")
+      .where({
+        accountId: account.id,
+        fileId: id,
+      })
+      .select("*");
+
+    if (records.length == 1) {
+      return new File(account, records[0]);
+    }
+
+    return null;
+  },
+);
+
+const threads = relatedCache(
+  async (account: Account, id: string): Promise<Thread | null> => {
+    let records = await account.context.table<GoogleThreadRecord>("Thread")
+      .where({
+        accountId: account.id,
+        threadId: id,
+      })
+      .select("*");
+
+    if (records.length == 1) {
+      return new Thread(account, records[0]);
+    }
+
+    return null;
+  },
+);
+
+export class Account implements GraphQLResolver<GoogleAccount> {
   public constructor(
-    public readonly config: GooglePluginConfig,
     public readonly context: PluginContext,
     private readonly record: GoogleAccountRecord,
     private client?: OAuth2Client,
   ) {
-    this.fileCache = new ItemCache(async (id: string): Promise<File | null> => {
-      let records = await this.context.table<GoogleFileRecord>("File").where({
-        accountId: this.id,
-        fileId: id,
-      }).select("*");
-
-      if (records.length == 1) {
-        return new File(this, records[0]);
-      }
-
-      return null;
-    });
-
-    this.threadCache = new ItemCache(async (id: string): Promise<Thread | null> => {
-      let records = await this.context.table<GoogleThreadRecord>("Thread").where({
-        accountId: this.id,
-        threadId: id,
-      }).select("*");
-
-      if (records.length == 1) {
-        return new Thread(this, records[0]);
-      }
-
-      return null;
-    });
-
     this.watchTokens();
   }
 
@@ -134,7 +152,7 @@ export class Account implements GraphQLResolver<GoogleAccount> {
       return this.client;
     }
 
-    this.client = createAuthClient(this.config, this.context.pluginUrl, this.record);
+    this.client = createAuthClient(this.context.pluginUrl, this.record);
     this.watchTokens();
     return this.client;
   }
@@ -152,7 +170,6 @@ export class Account implements GraphQLResolver<GoogleAccount> {
   }
 
   public static async list(
-    config: GooglePluginConfig,
     context: PluginContext,
     userId: string,
   ): Promise<Account[]> {
@@ -161,16 +178,15 @@ export class Account implements GraphQLResolver<GoogleAccount> {
       .select("*");
 
     return records.map((record: GoogleAccountRecord): Account => {
-      return new Account(config, context, record);
+      return accounts(context).upsertItem(record.id, () => new Account(context, record));
     });
   }
 
   public static async create(
-    config: GooglePluginConfig,
     context: AuthedPluginContext,
     code: string,
   ): Promise<Account> {
-    let client = createAuthClient(config, context.pluginUrl);
+    let client = createAuthClient(context.pluginUrl);
     let { tokens: credentials } = await client.getToken(code);
 
     let {
@@ -212,9 +228,9 @@ export class Account implements GraphQLResolver<GoogleAccount> {
 
     await context.table<GoogleAccountRecord>("Account").insert(record);
 
-    let account = new Account(config, context, record, client);
+    let account = new Account(context, record, client);
     await account.updateLabels();
-    return account;
+    return accounts(context).addItem(account);
   }
 
   public async getItemFromURL(url: URL, isTask: boolean): Promise<GoogleItem | null> {
@@ -227,15 +243,10 @@ export class Account implements GraphQLResolver<GoogleAccount> {
   }
 
   public static async get(
-    config: GooglePluginConfig,
     context: PluginContext,
     id: string,
   ): Promise<Account | null> {
-    let records = await context.table("Account").where("id", id).select("*");
-    if (records.length == 1) {
-      return new Account(config, context, records[0]);
-    }
-    return null;
+    return accounts(context).getItem(id);
   }
 }
 
@@ -277,8 +288,8 @@ export class Thread implements GoogleItem {
     }
 
     let threadId = BigInt(decoded).toString(16);
-    let thread = await getThread(account.authClient, threadId);
-    if (!thread) {
+    let apiThread = await getThread(account.authClient, threadId);
+    if (!apiThread) {
       return null;
     }
 
@@ -289,7 +300,7 @@ export class Thread implements GoogleItem {
     let starred = false;
     let labels: Set<string> = new Set();
 
-    for (let message of thread.messages ?? []) {
+    for (let message of apiThread.messages ?? []) {
       for (let label of message.labelIds ?? []) {
         if (label.startsWith("Label_")) {
           labels.add(label);
@@ -344,7 +355,7 @@ export class Thread implements GoogleItem {
     await account.context.table<GoogleThreadLabel>("ThreadLabel")
       .insert(labelRecords);
 
-    return new Thread(account, record);
+    return threads(account).addItem(new Thread(account, record));
   }
 
   public get itemId(): string {
@@ -367,19 +378,18 @@ export class Thread implements GoogleItem {
   }
 
   public static async getForItem(
-    config: GooglePluginConfig,
     context: PluginContext,
     itemId: string,
   ): Promise<Thread | null> {
     let records = await context.table<GoogleThreadRecord>("Thread").where({ itemId }).select("*");
     if (records.length == 1) {
-      let account = await Account.get(config, context, records[0].accountId);
+      let account = await Account.get(context, records[0].accountId);
 
       if (!account) {
         throw new Error("Missing account");
       }
 
-      return account.threadCache.upsertItem(
+      return threads(account).upsertItem(
         records[0].threadId,
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         () => new Thread(account!, records[0]),
@@ -427,8 +437,7 @@ export class File implements GoogleItem {
 
     await account.context.table<GoogleFileRecord>("File").insert(record);
     let instance = new File(account, record);
-    account.fileCache.addItem(instance);
-    return instance;
+    return files(account).addItem(instance);
   }
 
   public async fields(): Promise<FileFields> {
@@ -439,20 +448,19 @@ export class File implements GoogleItem {
   }
 
   public static async getForItem(
-    config: GooglePluginConfig,
     context: PluginContext,
     itemId: string,
   ): Promise<File | null> {
     let records = await context.table<GoogleFileRecord>("File").where({ itemId }).select("*");
     if (records.length == 1) {
-      let account = await Account.get(config, context, records[0].accountId);
+      let account = await Account.get(context, records[0].accountId);
 
       if (!account) {
         throw new Error("Missing account");
       }
 
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return account.fileCache.upsertItem(records[0].fileId, () => new File(account!, records[0]));
+      return files(account).upsertItem(records[0].fileId, () => new File(account!, records[0]));
     }
 
     return null;

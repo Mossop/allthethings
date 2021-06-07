@@ -22,7 +22,7 @@ import koaStatic from "koa-static";
 
 import { Account, File, Thread } from "./db/implementations";
 import buildMigrations from "./db/migrations";
-import buildResolvers from "./resolvers";
+import Resolvers from "./resolvers";
 import type { GooglePluginConfig } from "./types";
 
 export * from "./types";
@@ -35,15 +35,27 @@ function first(param: string | string[] | undefined): string | undefined {
   return param;
 }
 
-class GooglePlugin implements ServerPlugin {
+export class GooglePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
+
+  private static _config: GooglePluginConfig | null = null;
+
+  public static get config(): GooglePluginConfig {
+    if (!GooglePlugin._config) {
+      throw new Error("Not yet initialized.");
+    }
+
+    return GooglePlugin._config;
+  }
 
   public constructor(
     private readonly server: PluginServer,
     private readonly config: GooglePluginConfig,
   ) {
+    GooglePlugin._config = config;
+
     this.clientPath = path.dirname(require.resolve("@allthethings/google-client/dist/app.js"));
 
     let oauthMiddleware: PluginWebMiddleware = async (ctx: PluginWebContext, next: Koa.Next) => {
@@ -57,7 +69,7 @@ class GooglePlugin implements ServerPlugin {
 
       ctx.set("Cache-Control", "no-cache");
 
-      let account = await Account.create(this.config, ctx.pluginContext, code);
+      let account = await Account.create(ctx.pluginContext, code);
       ctx.redirect(ctx.pluginContext.settingsPageUrl(account.id).toString());
     };
 
@@ -79,7 +91,7 @@ class GooglePlugin implements ServerPlugin {
   }
 
   public resolvers(): Resolver<AuthedPluginContext> {
-    return buildResolvers(this.config);
+    return Resolvers;
   }
 
   public clientScripts(): string[] {
@@ -94,12 +106,12 @@ class GooglePlugin implements ServerPlugin {
     context: PluginContext,
     item: BasePluginItem,
   ): Promise<PluginItemFields> {
-    let file = await File.getForItem(this.config, context, item.id);
+    let file = await File.getForItem(context, item.id);
     if (file) {
       return file.fields();
     }
 
-    let thread = await Thread.getForItem(this.config, context, item.id);
+    let thread = await Thread.getForItem(context, item.id);
     if (thread) {
       return thread.fields();
     }
@@ -116,7 +128,7 @@ class GooglePlugin implements ServerPlugin {
       return null;
     }
 
-    let accounts = await Account.list(this.config, context, context.userId);
+    let accounts = await Account.list(context, context.userId);
     for (let account of accounts) {
       let item = await account.getItemFromURL(url, isTask);
       if (item) {
