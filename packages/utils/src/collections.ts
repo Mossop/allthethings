@@ -17,19 +17,33 @@ export function upsert<K, V>(map: MapLike<K, V>, key: K, builder: () => V): V {
   return result;
 }
 
-interface IdItem<I> {
+export interface IdItem<I> {
   id: I;
 }
 type ItemGetter<I, T extends IdItem<I>> = (id: I) => Awaitable<T | null>;
 
-abstract class BaseItemCache<I, T extends IdItem<I>> {
+export class ItemCache<I, T extends IdItem<I>> {
   protected cache = new Map<I, T>();
+
+  public constructor(private readonly getter: ItemGetter<I, T>) {
+  }
+
+  public async getItem(id: I): Promise<T | null> {
+    let item = this.cache.get(id);
+    if (item) {
+      return item;
+    }
+
+    let newItem = await this.getter(id);
+    if (newItem) {
+      this.cache.set(id, newItem);
+    }
+    return newItem;
+  }
 
   public clear(): void {
     this.cache.clear();
   }
-
-  public abstract getItem(id: I): Promise<T | null>;
 
   public getCachedItem(id: I): T | null {
     return this.cache.get(id) ?? null;
@@ -65,46 +79,14 @@ abstract class BaseItemCache<I, T extends IdItem<I>> {
   }
 }
 
-export class ItemCache<I, T extends IdItem<I>> extends BaseItemCache<I, T> {
-  public constructor(private readonly getter: ItemGetter<I, T>) {
-    super();
-  }
-
-  public async getItem(id: I): Promise<T | null> {
-    let item = this.cache.get(id);
-    if (item) {
-      return item;
-    }
-
-    let newItem = await this.getter(id);
-    if (newItem) {
-      this.cache.set(id, newItem);
-    }
-    return newItem;
-  }
-}
-
 type RelatedItemGetter<S, I, T extends IdItem<I>> = (source: S, id: I) => Awaitable<T | null>;
 
-class RelatedItemCache<S, I, T extends IdItem<I>> extends BaseItemCache<I, T> {
+class RelatedItemCache<S, I, T extends IdItem<I>> extends ItemCache<I, T> {
   public constructor(
     private readonly source: S,
-    private readonly getter: RelatedItemGetter<S, I, T>,
+    getter: RelatedItemGetter<S, I, T>,
   ) {
-    super();
-  }
-
-  public async getItem(id: I): Promise<T | null> {
-    let item = this.cache.get(id);
-    if (item) {
-      return item;
-    }
-
-    let newItem = await this.getter(this.source, id);
-    if (newItem) {
-      this.cache.set(id, newItem);
-    }
-    return newItem;
+    super((id: I) => getter(source, id));
   }
 }
 
@@ -145,7 +127,7 @@ class RelatedCache<S extends object, I, T extends IdItem<I>>
 // eslint-disable-next-line @typescript-eslint/ban-types
 export function relatedCache<S extends object, I, T extends IdItem<I>>(
   getter: RelatedItemGetter<S, I, T>,
-): (source: S) => BaseItemCache<I, T> {
+): (source: S) => ItemCache<I, T> {
   let map = new RelatedCache<S, I, T>(getter);
   return (source: S) => map.get(source);
 }

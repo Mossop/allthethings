@@ -3,7 +3,7 @@ import type { GraphQLType } from "@allthethings/utils";
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
 
 export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches"> & {
-  user: string;
+  userId: string;
   avatar: string | null;
   accessToken: string;
   refreshToken: string;
@@ -11,12 +11,12 @@ export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches
 };
 
 export type GoogleMailSearchRecord = Omit<GraphQLType<GoogleMailSearch>, "url"> & {
-  accountId: string;
+  ownerId: string;
 };
 
 export interface GoogleFileRecord {
-  accountId: string;
-  fileId: string;
+  ownerId: string;
+  id: string;
   itemId: string;
   name: string;
   description: string | null;
@@ -25,8 +25,8 @@ export interface GoogleFileRecord {
 }
 
 export interface GoogleThreadRecord {
-  accountId: string;
-  threadId: string;
+  ownerId: string;
+  id: string;
   itemId: string;
   subject: string;
   url: string;
@@ -35,13 +35,13 @@ export interface GoogleThreadRecord {
 }
 
 export interface GoogleLabelRecord {
-  accountId: string;
-  labelId: string;
+  ownerId: string;
+  id: string;
   name: string;
 }
 
 export interface GoogleThreadLabelRecord {
-  accountId: string;
+  ownerId: string;
   threadId: string;
   labelId: string;
 }

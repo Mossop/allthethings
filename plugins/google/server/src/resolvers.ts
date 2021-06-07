@@ -12,7 +12,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       _args: unknown,
       ctx: AuthedPluginContext,
     ): Promise<Account[]> {
-      return Account.list(ctx, ctx.userId);
+      return Account.store.list(ctx, { userId: ctx.userId });
     },
   },
 
@@ -34,7 +34,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { account: accountId, params }: MutationCreateGoogleMailSearchArgs,
       ctx: AuthedPluginContext,
     ): Promise<MailSearch> {
-      let account = await Account.get(ctx, accountId);
+      let account = await Account.store.get(ctx, accountId);
       if (!account) {
         throw new Error("Unknown account.");
       }

@@ -95,10 +95,10 @@ export class GooglePlugin implements ServerPlugin {
   }
 
   public async update(context: PluginContext): Promise<void> {
-    for (let account of await Account.list(context)) {
+    for (let account of await Account.store.list(context)) {
       await account.update();
 
-      for (let search of await MailSearch.list(context, account)) {
+      for (let search of await MailSearch.store.list(context, { ownerId: account.id })) {
         await search.update();
       }
     }
@@ -127,12 +127,12 @@ export class GooglePlugin implements ServerPlugin {
     context: PluginContext,
     item: BasePluginItem,
   ): Promise<PluginItemFields> {
-    let file = await File.getForItem(context, item.id);
+    let file = await File.store.first(context, { itemId: item.id });
     if (file) {
       return file.fields();
     }
 
-    let thread = await Thread.getForItem(context, item.id);
+    let thread = await Thread.store.first(context, { itemId: item.id });
     if (thread) {
       return thread.fields();
     }
@@ -149,7 +149,7 @@ export class GooglePlugin implements ServerPlugin {
       return null;
     }
 
-    let accounts = await Account.list(context, context.userId);
+    let accounts = await Account.store.list(context, { userId: context.userId });
     for (let account of accounts) {
       let item = await account.getItemFromURL(url, isTask);
       if (item) {

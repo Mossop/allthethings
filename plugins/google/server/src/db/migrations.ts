@@ -11,7 +11,7 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.userRef(table, "user")
+      helper.userRef(table, "userId")
         .notNullable();
 
       table.text("avatar")
@@ -27,7 +27,7 @@ class BaseMigration implements PluginDbMigration {
       table.text("email")
         .notNullable();
 
-      table.unique(["user", "email"]);
+      table.unique(["userId", "email"]);
     });
 
     await knex.schema.createTable("File", (table: Knex.CreateTableBuilder): void => {
@@ -36,14 +36,14 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.text("fileId")
+      table.text("id")
         .notNullable();
 
       table.text("name")
@@ -58,24 +58,24 @@ class BaseMigration implements PluginDbMigration {
       table.text("url")
         .nullable();
 
-      table.unique(["accountId", "fileId"]);
+      table.unique(["ownerId", "id"]);
     });
 
     await knex.schema.createTable("Label", (table: Knex.CreateTableBuilder): void => {
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.text("labelId")
+      table.text("id")
         .notNullable();
 
       table.text("name")
         .notNullable();
 
-      table.unique(["accountId", "labelId"]);
+      table.unique(["ownerId", "id"]);
     });
 
     await knex.schema.createTable("Thread", (table: Knex.CreateTableBuilder): void => {
@@ -84,14 +84,14 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.text("threadId")
+      table.text("id")
         .notNullable();
 
       table.text("url")
@@ -106,11 +106,11 @@ class BaseMigration implements PluginDbMigration {
       table.boolean("starred")
         .notNullable();
 
-      table.unique(["accountId", "threadId"]);
+      table.unique(["ownerId", "id"]);
     });
 
     await knex.schema.createTable("ThreadLabel", (table: Knex.CreateTableBuilder): void => {
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
@@ -123,16 +123,16 @@ class BaseMigration implements PluginDbMigration {
       table.text("labelId")
         .notNullable();
 
-      table.unique(["accountId", "threadId"]);
-      table.foreign(["accountId", "threadId"])
-        .references(["accountId", "threadId"])
+      table.unique(["ownerId", "threadId"]);
+      table.foreign(["ownerId", "threadId"])
+        .references(["ownerId", "id"])
         .inTable(helper.tableName("Thread"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.unique(["accountId", "labelId"]);
-      table.foreign(["accountId", "labelId"])
-        .references(["accountId", "labelId"])
+      table.unique(["ownerId", "labelId"]);
+      table.foreign(["ownerId", "labelId"])
+        .references(["ownerId", "id"])
         .inTable(helper.tableName("Label"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
@@ -144,7 +144,7 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
