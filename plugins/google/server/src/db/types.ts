@@ -17,7 +17,7 @@ export type GoogleMailSearchRecord = Omit<GraphQLType<GoogleMailSearch>, "url"> 
 export interface GoogleFileRecord {
   ownerId: string;
   id: string;
-  itemId: string;
+  fileId: string;
   name: string;
   description: string | null;
   mimeType: string;
@@ -27,7 +27,7 @@ export interface GoogleFileRecord {
 export interface GoogleThreadRecord {
   ownerId: string;
   id: string;
-  itemId: string;
+  threadId: string;
   subject: string;
   url: string;
   unread: boolean;

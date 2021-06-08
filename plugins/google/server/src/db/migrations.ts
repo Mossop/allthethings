@@ -31,7 +31,7 @@ class BaseMigration implements PluginDbMigration {
     });
 
     await knex.schema.createTable("File", (table: Knex.CreateTableBuilder): void => {
-      helper.itemRef(table, "itemId")
+      helper.itemRef(table, "id")
         .notNullable()
         .unique()
         .primary();
@@ -43,7 +43,7 @@ class BaseMigration implements PluginDbMigration {
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.text("id")
+      table.text("fileId")
         .notNullable();
 
       table.text("name")
@@ -58,7 +58,7 @@ class BaseMigration implements PluginDbMigration {
       table.text("url")
         .nullable();
 
-      table.unique(["ownerId", "id"]);
+      table.unique(["ownerId", "fileId"]);
     });
 
     await knex.schema.createTable("Label", (table: Knex.CreateTableBuilder): void => {
@@ -79,7 +79,7 @@ class BaseMigration implements PluginDbMigration {
     });
 
     await knex.schema.createTable("Thread", (table: Knex.CreateTableBuilder): void => {
-      helper.itemRef(table, "itemId")
+      helper.itemRef(table, "id")
         .notNullable()
         .unique()
         .primary();
@@ -91,7 +91,7 @@ class BaseMigration implements PluginDbMigration {
         .onDelete("CASCADE")
         .onUpdate("CASCADE");
 
-      table.text("id")
+      table.text("threadId")
         .notNullable();
 
       table.text("url")
@@ -106,7 +106,7 @@ class BaseMigration implements PluginDbMigration {
       table.boolean("starred")
         .notNullable();
 
-      table.unique(["ownerId", "id"]);
+      table.unique(["ownerId", "threadId"]);
     });
 
     await knex.schema.createTable("ThreadLabel", (table: Knex.CreateTableBuilder): void => {
@@ -125,7 +125,7 @@ class BaseMigration implements PluginDbMigration {
 
       table.unique(["ownerId", "threadId"]);
       table.foreign(["ownerId", "threadId"])
-        .references(["ownerId", "id"])
+        .references(["ownerId", "threadId"])
         .inTable(helper.tableName("Thread"))
         .onDelete("CASCADE")
         .onUpdate("CASCADE");

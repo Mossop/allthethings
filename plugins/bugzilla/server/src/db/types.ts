@@ -5,19 +5,19 @@ import type { BugzillaAccount, BugzillaSearch } from "../schema";
 import type { SearchType } from "../types";
 
 export type BugzillaAccountRecord = Omit<GraphQLType<BugzillaAccount>, "searches"> & {
-  user: string;
+  userId: string;
   password: string | null;
 };
 
 export type BugzillaSearchRecord = Omit<GraphQLType<BugzillaSearch>, "url" | "type"> & {
-  accountId: string;
+  ownerId: string;
   type: SearchType;
 };
 
 export type BugzillaBugRecord = Pick<BugzillaAPIBug, "summary"> & {
-  accountId: string;
+  ownerId: string;
   bugId: number;
-  itemId: string;
+  id: string;
   status: string;
   resolution: string | null;
 };

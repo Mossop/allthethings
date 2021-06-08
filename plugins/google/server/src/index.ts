@@ -127,12 +127,12 @@ export class GooglePlugin implements ServerPlugin {
     context: PluginContext,
     item: BasePluginItem,
   ): Promise<PluginItemFields> {
-    let file = await File.store.first(context, { itemId: item.id });
+    let file = await File.store.get(context, item.id);
     if (file) {
       return file.fields();
     }
 
-    let thread = await Thread.store.first(context, { itemId: item.id });
+    let thread = await Thread.store.get(context, item.id);
     if (thread) {
       return thread.fields();
     }
@@ -153,7 +153,7 @@ export class GooglePlugin implements ServerPlugin {
     for (let account of accounts) {
       let item = await account.getItemFromURL(url, isTask);
       if (item) {
-        return item.itemId;
+        return item.id;
       }
     }
 

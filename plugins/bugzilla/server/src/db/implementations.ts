@@ -2,7 +2,7 @@ import { URL, URLSearchParams } from "url";
 
 import { TaskController } from "@allthethings/schema";
 import type { PluginContext, BasePluginItem } from "@allthethings/server";
-import { relatedCache } from "@allthethings/utils";
+import { ItemsTable, OwnedItemsTable } from "@allthethings/server";
 import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
@@ -17,46 +17,6 @@ import type { BugFields } from "../types";
 import { SearchType } from "../types";
 import type { BugzillaAccountRecord, BugzillaBugRecord, BugzillaSearchRecord } from "./types";
 
-const accounts = relatedCache(
-  async (context: PluginContext, id: string): Promise<Account | null> => {
-    let records = await context.table<BugzillaAccountRecord>("Account").where({
-      id,
-    }).select("*");
-
-    if (records.length == 1) {
-      return new Account(context, records[0]);
-    }
-
-    return null;
-  },
-);
-
-const bugs = relatedCache(async (account: Account, id: number): Promise<Bug | null> => {
-  let records = await account.context.table<BugzillaBugRecord>("Bug").where({
-    accountId: account.id,
-    bugId: id,
-  }).select("*");
-
-  if (records.length == 1) {
-    return new Bug(account, records[0]);
-  }
-
-  return null;
-});
-
-const searches = relatedCache(async (account: Account, id: string): Promise<Search | null> => {
-  let records = await account.context.table<BugzillaSearchRecord>("Search").where({
-    accountId: account.id,
-    id,
-  }).select("*");
-
-  if (records.length == 1) {
-    return new Search(account, records[0]);
-  }
-
-  return null;
-});
-
 function isDone(status: string): boolean {
   switch (status) {
     case "RESOLVED":
@@ -69,6 +29,8 @@ function isDone(status: string): boolean {
 }
 
 export class Account implements GraphQLResolver<BugzillaAccount> {
+  public static readonly store = new ItemsTable(Account, "Account");
+
   private api: BugzillaAPI | null = null;
 
   public constructor(
@@ -77,24 +39,23 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
   ) {
   }
 
+  public async searches(): Promise<Search[]> {
+    return Search.store.list(this.context, { ownerId: this.id });
+  }
+
   public async delete(): Promise<void> {
-    let searches = await Search.list(this);
+    let searches = await Search.store.list(this.context, { ownerId: this.id });
     for (let search of searches) {
       await search.delete();
     }
 
-    let bugs = await this.getBugs();
-
+    let bugs = await Bug.store.list(this.context, { ownerId: this.id });
     for (let bug of bugs) {
       await bug.update();
-      await this.context.disconnectItem(bug.itemId, bug.url.toString(), this.icon);
+      await this.context.disconnectItem(bug.id, bug.url.toString(), this.icon);
     }
 
-    await this.context.table<BugzillaAccountRecord>("Account")
-      .where("id", this.id)
-      .delete();
-
-    accounts(this.context).deleteItem(this.id);
+    await Account.store.delete(this.context, { id: this.id });
   }
 
   public normalizeQuery(query: string): Pick<BugzillaSearchRecord, "query" | "type"> {
@@ -172,27 +133,12 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
     return this.record.url;
   }
 
-  public get user(): string {
-    return this.record.user;
+  public get userId(): string {
+    return this.record.userId;
   }
 
   public get username(): string | null {
     return this.record.username;
-  }
-
-  public async searches(): Promise<BugzillaSearch[]> {
-    return Search.list(this);
-  }
-
-  public async getBugs(): Promise<Bug[]> {
-    let records = await this.context
-      .table<BugzillaBugRecord>("Bug")
-      .where("accountId", this.id)
-      .select("*");
-
-    return records.map((record: BugzillaBugRecord): Bug => {
-      return bugs(this).upsertItem(record.bugId, () => new Bug(this, record));
-    });
   }
 
   public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
@@ -206,7 +152,7 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
       return null;
     }
 
-    let existing = await Bug.get(this, parseInt(id));
+    let existing = await Bug.store.first(this.context, { bugId: parseInt(id) });
     if (existing) {
       return existing;
     }
@@ -266,49 +212,33 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
     return null;
   }
 
-  public static async list(context: PluginContext, user: string | null = null): Promise<Account[]> {
-    let query = context.table<BugzillaAccountRecord>("Account");
-    if (user) {
-      query = query.where("user", user);
-    }
-
-    let records = await query;
-    return records.map((record: BugzillaAccountRecord): Account => {
-      return accounts(context).upsertItem(record.id, () => new Account(context, record));
-    });
-  }
-
   public static async create(
     context: PluginContext,
-    user: string,
+    userId: string,
     args: BugzillaAccountParams & Pick<BugzillaAccount, "icon">,
   ): Promise<Account> {
     let record: BugzillaAccountRecord = {
       ...args,
       id: await context.id(),
-      user,
+      userId,
       icon: args.icon,
     };
 
-    await context.table("Account").insert(record);
-    return accounts(context).addItem(new Account(context, record));
-  }
-
-  public static async get(context: PluginContext, id: string): Promise<Account | null> {
-    return accounts(context).getItem(id);
+    return Account.store.insert(context, record);
   }
 }
 
 export class Search implements GraphQLType<BugzillaSearch> {
+  public static readonly store = new OwnedItemsTable(Account.store, Search, "Search");
+
   public constructor(
     private readonly account: Account,
     private readonly record: BugzillaSearchRecord,
   ) {
   }
 
-  public async delete(): Promise<void> {
-    await this.context.deleteList(this.id);
-    searches(this.account).deleteItem(this.id);
+  public get owner(): Account {
+    return this.account;
   }
 
   private get context(): PluginContext {
@@ -345,6 +275,10 @@ export class Search implements GraphQLType<BugzillaSearch> {
     return url.toString();
   }
 
+  public async delete(): Promise<void> {
+    await this.context.deleteList(this.id);
+  }
+
   public async update(bugs?: BugzillaAPIBug[]): Promise<void> {
     if (!bugs) {
       bugs = await this.getBugRecords();
@@ -353,7 +287,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
     let instances: Bug[] = [];
 
     for (let bug of bugs) {
-      let instance = await Bug.get(this.account, bug.id);
+      let instance = await Bug.store.first(this.context, { bugId: bug.id });
 
       if (!instance) {
         instance = await Bug.create(this.account, bug, TaskController.PluginList);
@@ -365,7 +299,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
     }
 
     await this.context.updateList(this.id, {
-      items: instances.map((bug: Bug): string => bug.itemId),
+      items: instances.map((bug: Bug): string => bug.id),
     });
   }
 
@@ -385,7 +319,6 @@ export class Search implements GraphQLType<BugzillaSearch> {
   }
 
   public static async create(
-    context: PluginContext,
     account: Account,
     record: Omit<BugzillaSearchRecord, "id" | "accountId">,
   ): Promise<Search> {
@@ -394,54 +327,24 @@ export class Search implements GraphQLType<BugzillaSearch> {
       query: record.query,
     });
 
-    let id = await context.addList({
+    let id = await account.context.addList({
       name: record.name,
       url: "",
     });
 
-    let dbRecord: BugzillaSearchRecord = {
+    let dbRecord = {
       ...record,
       id,
-      accountId: account.id,
     };
 
-    await context.table<BugzillaSearchRecord>("Search").insert(dbRecord);
-    let search = searches(account).upsertItem(id, () => new Search(account, dbRecord));
+    let search = await Search.store.insert(account, dbRecord);
     await search.update(bugs);
 
     return search;
   }
-
-  public static async get(context: PluginContext, id: string): Promise<Search | null> {
-    let record = await context.table<BugzillaSearchRecord>("Search")
-      .where("id", id)
-      .first();
-
-    if (!record) {
-      return null;
-    }
-
-    let account = await Account.get(context, record.accountId);
-    if (!account) {
-      throw new Error("Unexpected.");
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return searches(account).upsertItem(record.id, () => new Search(account!, record!));
-  }
-
-  public static async list(account: Account): Promise<Search[]> {
-    let records = await account.context.table<BugzillaSearchRecord>("Search")
-      .where("accountId", account.id);
-    return records.map(
-      (record: BugzillaSearchRecord): Search => {
-        return searches(account).upsertItem(record.id, () => new Search(account, record));
-      },
-    );
-  }
 }
 
-type FixedFields = "accountId" | "itemId";
+type FixedFields = "ownerId" | "id";
 
 function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields> {
   return {
@@ -453,10 +356,16 @@ function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields
 }
 
 export class Bug {
+  public static readonly store = new OwnedItemsTable(Account.store, Bug, "Bug");
+
   public constructor(
     private readonly account: Account,
     private record: BugzillaBugRecord,
   ) {
+  }
+
+  public get owner(): Account {
+    return this.account;
   }
 
   private get context(): PluginContext {
@@ -475,23 +384,23 @@ export class Bug {
     return bugs[0];
   }
 
-  public get id(): number {
-    return this.record.bugId;
+  public get id(): string {
+    return this.record.id;
   }
 
-  public get itemId(): string {
-    return this.record.itemId;
+  public get bugId(): number {
+    return this.record.bugId;
   }
 
   public get url(): URL {
     let baseUrl = new URL(this.account.url);
 
-    return new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl);
+    return new URL(`show_bug.cgi?id=${this.record.id}`, baseUrl);
   }
 
   public async update(record?: BugzillaAPIBug): Promise<void> {
     if (!record) {
-      let bugs = await this.account.getAPI().getBugs([this.id]);
+      let bugs = await this.account.getAPI().getBugs([this.bugId]);
       if (!bugs.length) {
         throw new Error("Unknown bug.");
       }
@@ -499,14 +408,9 @@ export class Bug {
       record = bugs[0];
     }
 
-    await this.context.table("Bug")
-      .where({
-        itemId: this.itemId,
-      })
-      .update(recordFromBug(record));
-
-    await this.context.setItemTaskDone(this.itemId, await this.account.doneForStatus(record));
-    await this.context.setItemSummary(this.itemId, record.summary);
+    await Bug.store.update(this, recordFromBug(record));
+    await this.context.setItemTaskDone(this.id, await this.account.doneForStatus(record));
+    await this.context.setItemSummary(this.id, record.summary);
   }
 
   public async fields(): Promise<BugFields> {
@@ -522,9 +426,9 @@ export class Bug {
   }
 
   public async getItem(): Promise<BasePluginItem> {
-    let item = await this.context.getItem(this.itemId);
+    let item = await this.context.getItem(this.id);
     if (!item) {
-      throw new Error(`Missing item record for ${this.itemId}`);
+      throw new Error(`Missing item record for ${this.id}`);
     }
 
     return item;
@@ -535,7 +439,7 @@ export class Bug {
     bug: BugzillaAPIBug,
     controller: TaskController | null,
   ): Promise<Bug> {
-    let item = await account.context.createItem(account.user, {
+    let item = await account.context.createItem(account.userId, {
       summary: bug.summary,
       archived: null,
       snoozed: null,
@@ -543,48 +447,11 @@ export class Bug {
       controller,
     });
 
-    let record: BugzillaBugRecord = {
-      accountId: account.id,
-      itemId: item.id,
+    let record = {
+      id: item.id,
       ...recordFromBug(bug),
     };
 
-    await account.context.table("Bug").insert(record);
-    return bugs(account).addItem(new Bug(account, record));
-  }
-
-  public static async getForItem(context: PluginContext, itemId: string): Promise<Bug | null> {
-    let records = await context.table<BugzillaBugRecord>("Bug").where({ itemId }).select("*");
-    if (records.length == 1) {
-      let account = await Account.get(context, records[0].accountId);
-
-      if (!account) {
-        throw new Error("Missing account");
-      }
-
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      return bugs(account).upsertItem(records[0].bugId, () => new Bug(account!, records[0]));
-    }
-
-    return null;
-  }
-
-  public static async get(
-    account: Account,
-    bugId: number,
-  ): Promise<Bug | null> {
-    return bugs(account).getItem(bugId);
-  }
-
-  public static async list(account: Account): Promise<Bug[]> {
-    let records = await account.context.table<BugzillaBugRecord>("Bug")
-      .where("accountId", account.id)
-      .select("*");
-
-    return records.map(
-      (record: BugzillaBugRecord): Bug => {
-        return bugs(account).upsertItem(record.bugId, () => new Bug(account, record));
-      },
-    );
+    return Bug.store.insert(account, record);
   }
 }

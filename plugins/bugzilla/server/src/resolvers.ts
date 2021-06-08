@@ -20,7 +20,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       args: unknown,
       ctx: AuthedPluginContext,
     ): Promise<Account[]> {
-      return Account.list(ctx, user.id());
+      return Account.store.list(ctx, { userId: user.id() });
     },
   },
 
@@ -30,7 +30,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { params: { url, name, username, password } }: MutationCreateBugzillaAccountArgs,
       ctx: AuthedPluginContext,
     ): Promise<Account> {
-      let record: Omit<BugzillaAccountRecord, "id" | "icon" | "user"> = {
+      let record: Omit<BugzillaAccountRecord, "id" | "icon" | "userId"> = {
         url,
         name,
         username,
@@ -58,7 +58,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { account: accountId }: MutationDeleteBugzillaAccountArgs,
       ctx: AuthedPluginContext,
     ): Promise<boolean> {
-      let account = await Account.get(ctx, accountId);
+      let account = await Account.store.get(ctx, accountId);
       if (!account) {
         return false;
       }
@@ -72,13 +72,14 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { account: accountId, params: { name, query } }: MutationCreateBugzillaSearchArgs,
       ctx: AuthedPluginContext,
     ): Promise<Search> {
-      let account = await Account.get(ctx, accountId);
+      let account = await Account.store.get(ctx, accountId);
       if (!account) {
         throw new Error("Unknown account.");
       }
 
-      return Search.create(ctx, account, {
+      return Search.create(account, {
         name,
+        ownerId: account.id,
         ...account.normalizeQuery(query),
       });
     },
@@ -88,7 +89,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { search: searchId }: MutationDeleteBugzillaSearchArgs,
       ctx: AuthedPluginContext,
     ): Promise<boolean> {
-      let search = await Search.get(ctx, searchId);
+      let search = await Search.store.get(ctx, searchId);
       if (!search) {
         return false;
       }

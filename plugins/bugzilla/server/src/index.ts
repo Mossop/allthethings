@@ -47,13 +47,13 @@ class BugzillaPlugin implements ServerPlugin {
   }
 
   public async update(context: PluginContext): Promise<void> {
-    for (let account of await Account.list(context)) {
-      let searches = await Search.list(account);
+    for (let account of await Account.store.list(context)) {
+      let searches = await Search.store.list(context, { ownerId: account.id });
       for (let search of searches) {
         await search.update();
       }
 
-      let bugs = await Bug.list(account);
+      let bugs = await Bug.store.list(context, { ownerId: account.id });
       for (let bug of bugs) {
         await bug.update();
       }
@@ -83,7 +83,7 @@ class BugzillaPlugin implements ServerPlugin {
     context: PluginContext,
     item: BasePluginItem,
   ): Promise<PluginItemFields> {
-    let bug = await Bug.getForItem(context, item.id);
+    let bug = await Bug.store.get(context, item.id);
     if (!bug) {
       throw new Error("Missing bug record.");
     }
@@ -100,11 +100,11 @@ class BugzillaPlugin implements ServerPlugin {
       return null;
     }
 
-    let accounts = await Account.list(context, context.userId);
+    let accounts = await Account.store.list(context, { userId: context.userId });
     for (let account of accounts) {
       let bug = await account.getBugFromURL(url, isTask);
       if (bug) {
-        return bug.itemId;
+        return bug.id;
       }
     }
 

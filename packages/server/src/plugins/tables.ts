@@ -194,7 +194,7 @@ export class OwnedItemsTable<
     return this.build(context, record);
   }
 
-  public async insert(owner: Owner, record: Omit<Record, "owner">): Promise<Instance> {
+  public async insert(owner: Owner, record: Omit<Record, "ownerId">): Promise<Instance> {
     // @ts-ignore
     let fullRecord: Record = {
       ...record,

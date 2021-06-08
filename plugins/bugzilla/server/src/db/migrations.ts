@@ -11,7 +11,7 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.userRef(table, "user")
+      helper.userRef(table, "userId")
         .notNullable();
 
       table.text("name")
@@ -36,7 +36,7 @@ class BaseMigration implements PluginDbMigration {
         .unique()
         .primary();
 
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
@@ -54,12 +54,12 @@ class BaseMigration implements PluginDbMigration {
     });
 
     await knex.schema.createTable("Bug", (table: Knex.CreateTableBuilder): void => {
-      helper.itemRef(table, "itemId")
+      helper.itemRef(table, "id")
         .notNullable()
         .unique()
         .primary();
 
-      helper.idColumn(table, "accountId")
+      helper.idColumn(table, "ownerId")
         .notNullable()
         .references("id")
         .inTable(helper.tableName("Account"))
@@ -78,12 +78,11 @@ class BaseMigration implements PluginDbMigration {
       table.text("resolution")
         .nullable();
 
-      table.unique(["accountId", "bugId"]);
+      table.unique(["ownerId", "bugId"]);
     });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
-    await knex.schema.dropTableIfExists("SearchBugs");
     await knex.schema.dropTableIfExists("Search");
     await knex.schema.dropTableIfExists("Bug");
     await knex.schema.dropTableIfExists("Account");

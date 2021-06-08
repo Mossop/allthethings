@@ -244,7 +244,10 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
         return;
       }
 
-      let instance = await Thread.store.get(this.account.context, thread.id);
+      let instance = await Thread.store.first(this.account.context, {
+        ownerId: this.id,
+        threadId: thread.id,
+      });
 
       if (!instance) {
         instance = await Thread.create(this.account, thread, TaskController.PluginList);
@@ -254,7 +257,7 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
     }
 
     await this.account.context.updateList(this.id, {
-      items: instances.map((thread: Thread): string => thread.itemId),
+      items: instances.map((thread: Thread): string => thread.id),
     });
   }
 
@@ -270,10 +273,9 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
       url: "",
     });
 
-    let dbRecord: GoogleMailSearchRecord = {
+    let dbRecord = {
       ...record,
       id,
-      ownerId: account.id,
     };
 
     let search = await MailSearch.store.insert(account, dbRecord);
@@ -283,7 +285,7 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
 }
 
 interface GoogleItem {
-  itemId: string;
+  id: string;
 }
 
 export class Thread implements GoogleItem {
@@ -303,8 +305,8 @@ export class Thread implements GoogleItem {
     return this.record.id;
   }
 
-  public get itemId(): string {
-    return this.record.itemId;
+  public get threadId(): string {
+    return this.record.threadId;
   }
 
   public static async create(
@@ -354,10 +356,9 @@ export class Thread implements GoogleItem {
       controller,
     });
 
-    let record: GoogleThreadRecord = {
-      ownerId: account.id,
-      id: data.id,
-      itemId: item.id,
+    let record = {
+      id: item.id,
+      threadId: data.id,
       subject,
       unread,
       url: "",
@@ -405,7 +406,7 @@ export class Thread implements GoogleItem {
 
     let threadId = BigInt(decoded).toString(16);
 
-    let existing = await Thread.store.get(account.context, threadId);
+    let existing = await Thread.store.first(account.context, { ownerId: account.id, threadId });
     if (existing) {
       return existing;
     }
@@ -449,13 +450,13 @@ export class File implements GoogleItem {
     return this.record.id;
   }
 
-  public get itemId(): string {
-    return this.record.itemId;
+  public get fileId(): string {
+    return this.record.fileId;
   }
 
   private static recordFromFile(
     file: GoogleAPIFile,
-  ): Omit<GoogleFileRecord, "ownerId" | "id" | "itemId"> {
+  ): Omit<GoogleFileRecord, "ownerId" | "id" | "fileId"> {
     return {
       name: file.name,
       description: file.description ?? null,
@@ -477,10 +478,9 @@ export class File implements GoogleItem {
       controller: isTask ? TaskController.Manual : null,
     });
 
-    let record: GoogleFileRecord = {
-      ownerId: account.id,
-      id: file.id,
-      itemId: item.id,
+    let record = {
+      id: item.id,
+      fileId: file.id,
       ...File.recordFromFile(file),
     };
 
@@ -505,7 +505,7 @@ export class File implements GoogleItem {
     }
 
     let fileId = matches[1];
-    let existing = await File.store.get(account.context, fileId);
+    let existing = await File.store.first(account.context, { ownerId: account.id, fileId });
     if (existing) {
       return existing;
     }
