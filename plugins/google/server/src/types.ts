@@ -12,6 +12,7 @@ export type FileFields = GoogleFileRecord & {
 export type ThreadFields = GoogleThreadRecord & {
   type: "thread";
   labels: string[];
+  url: string;
 };
 
 export type GoogleFields = FileFields | ThreadFields;

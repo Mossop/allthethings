@@ -1,4 +1,4 @@
-import type { URL } from "url";
+import { URL } from "url";
 
 import { TaskController } from "@allthethings/schema";
 import {
@@ -18,6 +18,7 @@ import type { Credentials, OAuth2Client } from "google-auth-library";
 
 import type { GoogleAPIFile } from "../api";
 import {
+  encodeWebId,
   listThreads,
   getAccountInfo,
   createAuthClient,
@@ -81,6 +82,13 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
 
   public async mailSearches(): Promise<MailSearch[]> {
     return MailSearch.store.list(this.context, { ownerId: this.id });
+  }
+
+  public buildURL(target: URL): URL {
+    let url = new URL("https://accounts.google.com/AccountChooser");
+    url.searchParams.set("Email", this.email);
+    url.searchParams.set("continue", target.toString());
+    return url;
   }
 
   public async update(): Promise<void> {
@@ -315,6 +323,13 @@ export class Thread extends BaseItem {
     return this.record.threadId;
   }
 
+  public get url(): string {
+    let intId = BigInt(`0x${this.threadId}`);
+    let encoded = encodeWebId(`f:${intId}`);
+    let url = new URL(`https://mail.google.com/mail/#all/${encoded}`);
+    return this.account.buildURL(url).toString();
+  }
+
   public async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
     if (!thread) {
       thread = await getThread(this.account.authClient, this.threadId) ?? undefined;
@@ -398,7 +413,6 @@ export class Thread extends BaseItem {
         threadId: data.id,
         subject,
         unread,
-        url: "",
         starred,
       },
       labels: [...labels],
@@ -492,6 +506,7 @@ export class Thread extends BaseItem {
     return {
       ...this.record,
       labels,
+      url: this.url,
       type: "thread",
     };
   }

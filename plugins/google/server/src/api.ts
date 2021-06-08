@@ -7,7 +7,7 @@ import type { gmail_v1 } from "@googleapis/gmail";
 import { gmail } from "@googleapis/gmail";
 import type { people_v1 } from "@googleapis/people";
 import { people } from "@googleapis/people";
-import { decode as b64Decode } from "base-64";
+import { decode as b64Decode, encode as b64Encode } from "base-64";
 import { OAuth2Client } from "google-auth-library";
 
 import { GooglePlugin } from ".";
@@ -65,15 +65,34 @@ function *reversedRange(max: number): Iterable<number> {
   }
 }
 
+// https://arsenalrecon.com/2019/07/digging-deeper-into-gmail-urls-introducing-gmail-url-decoder/
 export function decodeWebId(id: string): string {
-  let charsetLength = B64_CHARSET.length;
+  let result = modifyCharset(id, GML_CHARSET, B64_CHARSET);
+  if (result.length % 4 != 0) {
+    result += "=".repeat(4 - result.length % 4);
+  }
+  return b64Decode(result);
+}
+
+export function encodeWebId(id: string): string {
+  let data = b64Encode(id);
+  let pos = data.indexOf("=");
+  if (pos >= 0) {
+    data = data.substring(0, pos);
+  }
+
+  return modifyCharset(data, B64_CHARSET, GML_CHARSET);
+}
+
+export function modifyCharset(id: string, sourceCharset: string, targetCharset: string): string {
+  let charsetLength = targetCharset.length;
 
   let resultIndexes: number[] = [];
   for (let i of range(id.length)) {
     let offset = 0;
 
     for (let j of range(resultIndexes.length)) {
-      let index = GML_CHARSET.length * resultIndexes[j] + offset;
+      let index = sourceCharset.length * resultIndexes[j] + offset;
 
       if (index >= charsetLength) {
         let rest = index % charsetLength;
@@ -92,7 +111,7 @@ export function decodeWebId(id: string): string {
       offset = Math.floor((offset - rest) / charsetLength);
     }
 
-    offset = GML_CHARSET.indexOf(id[i]);
+    offset = sourceCharset.indexOf(id[i]);
 
     let j = 0;
     while (offset) {
@@ -118,14 +137,10 @@ export function decodeWebId(id: string): string {
   let resultCharacters: string[] = [];
   for (let i of reversedRange(resultIndexes.length)) {
     let idx = resultIndexes[i];
-    resultCharacters.push(B64_CHARSET[idx]);
+    resultCharacters.push(targetCharset[idx]);
   }
 
-  while (resultCharacters.length % 4 != 0) {
-    resultCharacters.push("=");
-  }
-
-  return b64Decode(resultCharacters.join(""));
+  return resultCharacters.join("");
 }
 
 export async function getAccountInfo(authClient: OAuth2Client): Promise<people_v1.Schema$Person> {

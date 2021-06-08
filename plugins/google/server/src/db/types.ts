@@ -29,7 +29,6 @@ export interface GoogleThreadRecord {
   id: string;
   threadId: string;
   subject: string;
-  url: string;
   unread: boolean;
   starred: boolean;
 }

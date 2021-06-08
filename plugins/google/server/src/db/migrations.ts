@@ -94,9 +94,6 @@ class BaseMigration implements PluginDbMigration {
       table.text("threadId")
         .notNullable();
 
-      table.text("url")
-        .notNullable();
-
       table.text("subject")
         .notNullable();
 
