@@ -9,7 +9,7 @@ export {
   TableRef,
 } from "./plugins/db";
 export {
-  PluginItemFields,
+  PluginItem,
   ServerPlugin,
   ServerPluginExport,
   ResolverFn,
@@ -19,8 +19,6 @@ export {
   AuthedPluginContext,
   User,
   PluginServer,
-  BasePluginItem,
-  PluginTaskInfo,
   PluginWebMiddleware,
   PluginWebContext,
 } from "./plugins/types";

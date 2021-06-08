@@ -5,13 +5,12 @@ import type { URL } from "url";
 import type {
   PluginDbMigration,
   ServerPlugin,
-  PluginItemFields,
+  PluginItem,
   AuthedPluginContext,
   Resolver,
   ServerPluginExport,
   PluginServer,
   PluginContext,
-  BasePluginItem,
   PluginWebMiddleware,
 } from "@allthethings/server";
 import koaStatic from "koa-static";
@@ -79,16 +78,16 @@ class BugzillaPlugin implements ServerPlugin {
     return buildMigrations();
   }
 
-  public async getItemFields(
+  public async getPluginItem(
     context: PluginContext,
-    item: BasePluginItem,
-  ): Promise<PluginItemFields> {
-    let bug = await Bug.store.get(context, item.id);
+    id: string,
+  ): Promise<PluginItem> {
+    let bug = await Bug.store.get(context, id);
     if (!bug) {
       throw new Error("Missing bug record.");
     }
 
-    return bug.fields();
+    return bug;
   }
 
   public async createItemFromURL(

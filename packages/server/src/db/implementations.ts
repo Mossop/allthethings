@@ -1,7 +1,7 @@
 import type { DateTime } from "luxon";
 
 import PluginManager from "../plugins";
-import type { User as PluginUser, PluginTaskInfo, BasePluginItem } from "../plugins/types";
+import type { User as PluginUser } from "../plugins/types";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
 import * as Src from "./datasources";
@@ -362,19 +362,6 @@ export class Item extends BaseImpl<Db.ItemDbTable>
     }
   }
 
-  public async forPlugin(): Promise<BasePluginItem> {
-    let taskInfo = await this.taskInfo();
-
-    return {
-      id: this.id(),
-      summary: await this.summary(),
-      archived: await this.archived(),
-      snoozed: await this.snoozed(),
-
-      taskInfo: taskInfo ? await taskInfo.forPlugin() : null,
-    };
-  }
-
   public readonly type = fields<Db.ItemDbTable>()("type");
   public readonly created = fields<Db.ItemDbTable>()("created");
   public readonly archived = fields<Db.ItemDbTable>()("archived");
@@ -391,13 +378,6 @@ export class TaskInfo extends BaseImpl<Db.TaskInfoDbTable>
   public readonly due = fields<Db.TaskInfoDbTable>()("due");
   public readonly done = fields<Db.TaskInfoDbTable>()("done");
   public readonly controller = fields<Db.TaskInfoDbTable>()("controller");
-
-  public async forPlugin(): Promise<PluginTaskInfo> {
-    return {
-      due: await this.due(),
-      done: await this.done(),
-    };
-  }
 }
 
 abstract class Detail<T extends Db.DbTable = Db.DbTable> extends BaseImpl<T> {
@@ -444,18 +424,6 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
   implements Rslv.PluginDetailResolvers {
   protected get dbObjectDataSource(): Src.PluginDetailSource {
     return this.dataSources.pluginDetail;
-  }
-
-  public async editItem(newItem: Omit<BasePluginItem, "id" | "taskInfo">): Promise<void> {
-    let item = await this.item();
-    let pluginId = await this.pluginId();
-    return PluginManager.editItem(this.dataSources, item, newItem, pluginId);
-  }
-
-  public async editTaskInfo(taskInfo: PluginTaskInfo | null): Promise<void> {
-    let item = await this.item();
-    let pluginId = await this.pluginId();
-    return PluginManager.editTaskInfo(this.dataSources, item, taskInfo, pluginId);
   }
 
   public async delete(): Promise<void> {

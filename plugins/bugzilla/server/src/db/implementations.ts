@@ -1,7 +1,7 @@
 import { URL, URLSearchParams } from "url";
 
 import { TaskController } from "@allthethings/schema";
-import type { PluginContext, BasePluginItem } from "@allthethings/server";
+import type { PluginContext } from "@allthethings/server";
 import { ItemsTable, OwnedItemsTable } from "@allthethings/server";
 import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Bug as BugzillaAPIBug, History } from "bugzilla";
@@ -425,21 +425,12 @@ export class Bug {
     };
   }
 
-  public async getItem(): Promise<BasePluginItem> {
-    let item = await this.context.getItem(this.id);
-    if (!item) {
-      throw new Error(`Missing item record for ${this.id}`);
-    }
-
-    return item;
-  }
-
   public static async create(
     account: Account,
     bug: BugzillaAPIBug,
     controller: TaskController | null,
   ): Promise<Bug> {
-    let item = await account.context.createItem(account.userId, {
+    let id = await account.context.createItem(account.userId, {
       summary: bug.summary,
       archived: null,
       snoozed: null,
@@ -448,7 +439,7 @@ export class Bug {
     });
 
     let record = {
-      id: item.id,
+      id,
       ...recordFromBug(bug),
     };
 

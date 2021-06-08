@@ -17,11 +17,9 @@ import type {
   PluginContext,
   AuthedPluginContext,
   ServerPluginExport,
-  PluginItemFields,
+  PluginItem,
   PluginServer,
   Resolver,
-  BasePluginItem,
-  PluginTaskInfo,
 } from "./types";
 
 async function loadPlugin(
@@ -111,12 +109,16 @@ export default class PluginInstance implements PluginServer {
     return this._plugin;
   }
 
-  public getItemFields(context: PluginContext, item: BasePluginItem): Promise<PluginItemFields> {
-    return getField(this.plugin, this.plugin.getItemFields, {}, context, item);
+  public async getPluginItem(context: PluginContext, id: string): Promise<PluginItem> {
+    let item = await getField(this.plugin, this.plugin.getPluginItem, null, context, id);
+    if (!item) {
+      throw new Error(`Missing plugin item (${id}`);
+    }
+    return item;
   }
 
-  public deleteItem(context: PluginContext, item: BasePluginItem): Promise<void> {
-    return getField(this.plugin, this.plugin.deleteItem, undefined, context, item);
+  public deleteItem(context: PluginContext, id: string): Promise<void> {
+    return getField(this.plugin, this.plugin.deleteItem, undefined, context, id);
   }
 
   public getClientScripts(ctx: Koa.Context): Promise<string[]> {
@@ -185,21 +187,5 @@ export default class PluginInstance implements PluginServer {
     isTask: boolean,
   ): Promise<string | null> {
     return getField(this.plugin, this.plugin.createItemFromURL, null, context, url, isTask);
-  }
-
-  public editItem(
-    context: PluginContext,
-    item: BasePluginItem,
-    newItem: Omit<BasePluginItem, "id" | "taskInfo">,
-  ): Promise<void> {
-    return getField(this.plugin, this.plugin.editItem, undefined, context, item, newItem);
-  }
-
-  public editTaskInfo(
-    context: PluginContext,
-    item: BasePluginItem,
-    taskInfo: PluginTaskInfo | null,
-  ): Promise<void> {
-    return getField(this.plugin, this.plugin.editTaskInfo, undefined, context, item, taskInfo);
   }
 }

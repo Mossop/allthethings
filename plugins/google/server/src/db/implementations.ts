@@ -348,7 +348,7 @@ export class Thread implements GoogleItem {
       throw new Error("Missing subject");
     }
 
-    let item = await account.context.createItem(account.userId, {
+    let id = await account.context.createItem(account.userId, {
       summary: subject,
       archived: null,
       snoozed: null,
@@ -357,7 +357,7 @@ export class Thread implements GoogleItem {
     });
 
     let record = {
-      id: item.id,
+      id,
       threadId: data.id,
       subject,
       unread,
@@ -470,7 +470,7 @@ export class File implements GoogleItem {
     file: GoogleAPIFile,
     isTask: boolean,
   ): Promise<File> {
-    let item = await account.context.createItem(account.userId, {
+    let id = await account.context.createItem(account.userId, {
       summary: file.name,
       archived: null,
       snoozed: null,
@@ -479,7 +479,7 @@ export class File implements GoogleItem {
     });
 
     let record = {
-      id: item.id,
+      id,
       fileId: file.id,
       ...File.recordFromFile(file),
     };

@@ -5,13 +5,12 @@ import type { URL } from "url";
 import type {
   PluginDbMigration,
   ServerPlugin,
-  PluginItemFields,
+  PluginItem,
   AuthedPluginContext,
   Resolver,
   ServerPluginExport,
   PluginServer,
   PluginContext,
-  BasePluginItem,
   PluginWebMiddleware,
   PluginWebContext,
 } from "@allthethings/server";
@@ -123,18 +122,18 @@ export class GooglePlugin implements ServerPlugin {
     return buildMigrations();
   }
 
-  public async getItemFields(
+  public async getPluginItem(
     context: PluginContext,
-    item: BasePluginItem,
-  ): Promise<PluginItemFields> {
-    let file = await File.store.get(context, item.id);
+    id: string,
+  ): Promise<PluginItem> {
+    let file = await File.store.get(context, id);
     if (file) {
-      return file.fields();
+      return file;
     }
 
-    let thread = await Thread.store.get(context, item.id);
+    let thread = await Thread.store.get(context, id);
     if (thread) {
-      return thread.fields();
+      return thread;
     }
 
     throw new Error("Unknown item.");

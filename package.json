@@ -9,6 +9,8 @@
     "clean": "lerna run clean",
     "build-schema": "lerna run build-schema",
     "build": "lerna run build-schema && lerna run build",
+    "build-client": "lerna run build-client",
+    "build-server": "lerna run build-server",
     "watch": "yarn build && lerna run --parallel watch",
     "start": "cd packages/server && yarn start ../../testing/config.json",
     "jslint": "eslint .",

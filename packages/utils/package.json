@@ -9,6 +9,7 @@
   "types": "dist/index",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "build-server": "yarn build",
     "build": "tsc -b --incremental",
     "watch": "tsc -b -w --incremental"
   },

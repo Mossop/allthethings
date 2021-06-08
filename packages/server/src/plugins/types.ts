@@ -16,26 +16,18 @@ export interface PluginList {
   items?: string[];
 }
 
-export interface PluginTaskInfo {
-  due: DateTime | null;
-  done: DateTime | null;
-}
-
-export interface BasePluginItem {
-  id: string;
+export interface CreatePluginItemParams {
   summary: string;
   archived: DateTime | null;
   snoozed: DateTime | null;
-  taskInfo: PluginTaskInfo | null;
-}
-
-export type CreateBasePluginItem = Omit<BasePluginItem, "id" | "taskInfo"> & {
   due?: DateTime | null;
   done?: DateTime | null;
   controller: TaskController | null;
-};
+}
 
-export interface PluginItemFields {
+export interface PluginItem {
+  id: string;
+  fields: Awaitable<unknown>;
 }
 
 export interface PluginContext {
@@ -51,8 +43,7 @@ export interface PluginContext {
   // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-explicit-any
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
 
-  createItem(user: string, props: CreateBasePluginItem): Promise<BasePluginItem>;
-  getItem(id: string): Promise<BasePluginItem | null>;
+  createItem(user: string, props: CreatePluginItemParams): Promise<string>;
   setItemTaskDone(id: string, done: DateTime | null): Promise<void>;
   setItemSummary(id: string, summary: string): Promise<void>;
   disconnectItem(id: string, url?: string, icon?: string | null): Promise<void>;
@@ -103,21 +94,13 @@ export interface ServerPlugin {
   readonly middleware?: PluginWebMiddleware;
   readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;
   readonly dbMigrations?: PluginField<PluginDbMigration[]>;
-  readonly getItemFields: PluginField<
-    PluginItemFields,
-    [context: PluginContext, item: BasePluginItem]
+  readonly getPluginItem: PluginField<
+    PluginItem,
+    [context: PluginContext, id: string]
   >;
-  readonly deleteItem?: PluginField<void, [context: PluginContext, item: BasePluginItem]>;
+  readonly deleteItem?: PluginField<void, [context: PluginContext, id: string]>;
   readonly createItemFromURL?: PluginField<
     string | null,
     [context: AuthedPluginContext, url: URL, isTask: boolean]
-  >;
-  readonly editItem?: PluginField<
-    void,
-    [context: PluginContext, item: BasePluginItem, newItem: Omit<BasePluginItem, "id" | "taskInfo">]
-  >;
-  readonly editTaskInfo?: PluginField<
-    void,
-    [context: PluginContext, item: BasePluginItem, taskInfo: PluginTaskInfo | null]
   >;
 }

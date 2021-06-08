@@ -21,12 +21,9 @@ import { wrapKnex, getMigrationSource } from "./db";
 import PluginInstance from "./instance";
 import type {
   AuthedPluginContext,
-  BasePluginItem,
-  CreateBasePluginItem,
+  CreatePluginItemParams,
   PluginContext,
-  PluginItemFields,
   PluginList,
-  PluginTaskInfo,
   Resolver,
   TypeResolver,
 } from "./types";
@@ -95,8 +92,8 @@ export function buildPluginContext(
 
     async createItem(
       userId: string,
-      { due, done, controller, ...item }: CreateBasePluginItem,
-    ): Promise<BasePluginItem> {
+      { due, done, controller, ...item }: CreatePluginItemParams,
+    ): Promise<string> {
       let user = await dataSources.users.getImpl(userId);
       if (!user) {
         throw new Error("Unknown user.");
@@ -129,12 +126,7 @@ export function buildPluginContext(
         });
       }
 
-      return itemImpl.forPlugin();
-    },
-
-    async getItem(id: string): Promise<BasePluginItem | null> {
-      let item = await dataSources.items.getImpl(id);
-      return item?.forPlugin() ?? null;
+      return itemImpl.id();
     },
 
     async setItemTaskDone(id: string, done: DateTime | null): Promise<void> {
@@ -280,53 +272,23 @@ class PluginManager {
     throw new Error(`Item from unknown plugin ${id}`);
   }
 
-  public async editItem(
-    dataSources: AppDataSources,
-    item: Item,
-    newItem: Omit<BasePluginItem, "id" | "taskInfo">,
-    pluginId: string,
-  ): Promise<void> {
-    let plugin = this.getPlugin(pluginId);
-    return plugin.editItem(
-      buildPluginContext(plugin, dataSources),
-      await item.forPlugin(),
-      newItem,
-    );
-  }
-
-  public async editTaskInfo(
-    dataSources: AppDataSources,
-    item: Item,
-    taskInfo: PluginTaskInfo | null,
-    pluginId: string,
-  ): Promise<void> {
-    let plugin = this.getPlugin(pluginId);
-    return plugin.editTaskInfo(
-      buildPluginContext(plugin, dataSources),
-      await item.forPlugin(),
-      taskInfo,
-    );
-  }
-
   public async deleteItem(
     dataSources: AppDataSources,
     item: Item,
     pluginId: string,
   ): Promise<void> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.deleteItem(
-      buildPluginContext(plugin, dataSources),
-      await item.forPlugin(),
-    );
+    return plugin.deleteItem(buildPluginContext(plugin, dataSources), item.id());
   }
 
   public async getItemFields(
     dataSources: AppDataSources,
     item: Item,
     pluginId: string,
-  ): Promise<PluginItemFields> {
+  ): Promise<unknown> {
     let plugin = this.getPlugin(pluginId);
-    return plugin.getItemFields(buildPluginContext(plugin, dataSources), await item.forPlugin());
+    let pluginItem = await plugin.getPluginItem(buildPluginContext(plugin, dataSources), item.id());
+    return pluginItem.fields;
   }
 
   public async getClientScripts(ctx: Koa.Context): Promise<string[]> {

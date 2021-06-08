@@ -10,6 +10,7 @@
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "build-schema": "graphql-codegen",
+    "build-server": "yarn build",
     "build": "tsc -b --incremental",
     "watch": "tsc -b -w --incremental"
   },

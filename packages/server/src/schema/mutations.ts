@@ -324,15 +324,6 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    let detail = await item.detail();
-    if (detail instanceof PluginDetail) {
-      await detail.editItem({
-        ...params,
-        archived: params.archived ?? null,
-        snoozed: params.snoozed ?? null,
-      });
-    }
-
     await ctx.dataSources.items.updateOne(id, {
       ...params,
       archived: params.archived ?? null,
@@ -364,11 +355,6 @@ const resolvers: MutationResolvers = {
         done: taskInfoParams.done ?? null,
       }
       : null;
-
-    let detail = await item.detail();
-    if (detail instanceof PluginDetail) {
-      await detail.editTaskInfo(taskInfo);
-    }
 
     await ctx.dataSources.taskInfo.setItemTaskInfo(
       item,
