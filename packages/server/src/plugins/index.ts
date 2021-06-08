@@ -166,7 +166,11 @@ export function buildPluginContext(
       });
     },
 
-    async disconnectItem(id: string, url?: string, icon: string | null = null): Promise<void> {
+    async disconnectItem(
+      id: string,
+      url: string | null = null,
+      icon: string | null = null,
+    ): Promise<void> {
       let item = await dataSources.items.getImpl(id);
       if (!item) {
         throw new Error("Unknown item.");

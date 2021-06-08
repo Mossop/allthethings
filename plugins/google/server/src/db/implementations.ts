@@ -258,7 +258,7 @@ export class MailSearch extends BaseSearch<gmail_v1.Schema$Thread[]>
       });
 
       if (instance) {
-        await instance.update();
+        await instance.update(thread);
       } else {
         instance = await Thread.create(this.account, thread, TaskController.PluginList);
       }
@@ -315,11 +315,50 @@ export class Thread extends BaseItem {
     return this.record.threadId;
   }
 
-  public static async create(
-    account: Account,
+  public async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
+    if (!thread) {
+      thread = await getThread(this.account.authClient, this.threadId) ?? undefined;
+      if (!thread) {
+        await this.delete();
+        return;
+      }
+    }
+
+    let { record, labels } = Thread.recordFromThread(thread);
+
+    await Thread.store.update(this.context, {
+      id: this.id,
+      ...record,
+    });
+
+    await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
+      .where("threadId", this.threadId)
+      .whereNotIn("labelId", labels)
+      .delete();
+
+    let existingLabels = new Set(
+      await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
+        .where("threadId", this.threadId)
+        .pluck("labelId"),
+    );
+
+    let newLabels = labels.filter((label: string): boolean => !existingLabels.has(label));
+
+    let labelRecords = newLabels.map((label: string): GoogleThreadLabelRecord => ({
+      ownerId: this.account.id,
+      labelId: label,
+      threadId: this.threadId,
+    }));
+
+    if (labelRecords.length) {
+      await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
+        .insert(labelRecords);
+    }
+  }
+
+  public static recordFromThread(
     data: gmail_v1.Schema$Thread,
-    controller: TaskController | null,
-  ): Promise<Thread> {
+  ): { record: Omit<GoogleThreadRecord, "id"| "ownerId">, labels: string[] } {
     if (!data.id) {
       throw new Error("No ID.");
     }
@@ -354,31 +393,43 @@ export class Thread extends BaseItem {
       throw new Error("Missing subject");
     }
 
+    return {
+      record: {
+        threadId: data.id,
+        subject,
+        unread,
+        url: "",
+        starred,
+      },
+      labels: [...labels],
+    };
+  }
+
+  public static async create(
+    account: Account,
+    data: gmail_v1.Schema$Thread,
+    controller: TaskController | null,
+  ): Promise<Thread> {
+    let { record, labels } = Thread.recordFromThread(data);
+
     let id = await account.context.createItem(account.userId, {
-      summary: subject,
+      summary: record.subject,
       archived: null,
       snoozed: null,
       done: undefined,
       controller,
     });
 
-    let record = {
+    let thread = await Thread.store.insert(account.context, {
+      ...record,
       id,
-      threadId: data.id,
-      subject,
-      unread,
-      url: "",
-      starred,
       ownerId: account.id,
-    };
-
-    let thread = await Thread.store.insert(account.context, record);
+    });
 
     let labelRecords = Array.from(labels, (label: string): GoogleThreadLabelRecord => ({
       ownerId: account.id,
       labelId: label,
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      threadId: data.id!,
+      threadId: record.threadId,
     }));
 
     if (labelRecords.length) {
@@ -461,6 +512,10 @@ export class File extends BaseItem {
     return this.record.id;
   }
 
+  public get url(): string | null {
+    return this.record.url;
+  }
+
   public get fileId(): string {
     return this.record.fileId;
   }
@@ -474,6 +529,23 @@ export class File extends BaseItem {
       mimeType: file.mimeType,
       url: file.webViewLink ?? null,
     };
+  }
+
+  public async update(file?: GoogleAPIFile): Promise<void> {
+    if (!file) {
+      file = await getFile(this.account.authClient, this.fileId) ?? undefined;
+
+      if (!file) {
+        await this.delete();
+        return;
+      }
+    }
+
+    let record = File.recordFromFile(file);
+    await File.store.update(this.context, {
+      id: this.id,
+      ...record,
+    });
   }
 
   public static async create(

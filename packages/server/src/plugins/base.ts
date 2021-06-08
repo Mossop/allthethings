@@ -148,7 +148,7 @@ export abstract class BaseItem extends Base implements IItem {
   public abstract get id(): string;
   public abstract fields(): Awaitable<unknown>;
 
-  public get url(): string | undefined {
+  public get url(): string | null | undefined {
     return undefined;
   }
 
