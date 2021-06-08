@@ -1,6 +1,7 @@
 import { URL } from "url";
 
 import { TaskController } from "@allthethings/schema";
+import { isCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
@@ -288,6 +289,9 @@ class PluginManager {
   ): Promise<unknown> {
     let plugin = this.getPlugin(pluginId);
     let pluginItem = await plugin.getPluginItem(buildPluginContext(plugin, dataSources), item.id());
+    if (isCallable(pluginItem.fields)) {
+      return pluginItem.fields();
+    }
     return pluginItem.fields;
   }
 

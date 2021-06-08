@@ -2,6 +2,9 @@ import type { URL } from "url";
 
 import { TaskController } from "@allthethings/schema";
 import {
+  BaseAccount,
+  BaseItem,
+  BaseSearch,
   ItemsTable,
   OwnedItemsTable,
 } from "@allthethings/server";
@@ -36,7 +39,7 @@ import type {
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
-export class Account implements GraphQLResolver<GoogleAccount> {
+export class Account extends BaseAccount implements GraphQLResolver<GoogleAccount> {
   public static readonly store = new ItemsTable(Account, "Account");
 
   private client: OAuth2Client | null;
@@ -45,6 +48,7 @@ export class Account implements GraphQLResolver<GoogleAccount> {
     public readonly context: PluginContext,
     private readonly record: GoogleAccountRecord,
   ) {
+    super(context);
     this.client = null;
   }
 
@@ -62,6 +66,17 @@ export class Account implements GraphQLResolver<GoogleAccount> {
 
   public get avatar(): string | null {
     return this.record.avatar;
+  }
+
+  public async items(): Promise<BaseItem[]> {
+    return [
+      ...await Thread.store.list(this.context, { ownerId: this.id }),
+      ...await File.store.list(this.context, { ownerId: this.id }),
+    ];
+  }
+
+  public searches(): Promise<MailSearch[]> {
+    return this.mailSearches();
   }
 
   public async mailSearches(): Promise<MailSearch[]> {
@@ -192,24 +207,17 @@ export class Account implements GraphQLResolver<GoogleAccount> {
     await account.updateLabels();
     return account;
   }
-
-  public async getItemFromURL(url: URL, isTask: boolean): Promise<GoogleItem | null> {
-    let item = await Thread.getItemFromURL(this, url, isTask);
-    if (item) {
-      return item;
-    }
-
-    return File.getItemFromURL(this, url, isTask);
-  }
 }
 
-export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
+export class MailSearch extends BaseSearch<gmail_v1.Schema$Thread[]>
+  implements GraphQLResolver<GoogleMailSearch> {
   public static readonly store = new OwnedItemsTable(Account.store, MailSearch, "MailSearch");
 
   public constructor(
     private readonly account: Account,
     private readonly record: GoogleMailSearchRecord,
   ) {
+    super(account.context);
   }
 
   public get owner(): Account {
@@ -232,7 +240,7 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
     return "";
   }
 
-  public async update(threadList?: gmail_v1.Schema$Thread[]): Promise<void> {
+  public async listItems(threadList?: gmail_v1.Schema$Thread[]): Promise<Thread[]> {
     if (!threadList) {
       threadList = await listThreads(this.account.authClient, this.query);
     }
@@ -241,24 +249,24 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
 
     for (let thread of threadList) {
       if (!thread.id) {
-        return;
+        continue;
       }
 
       let instance = await Thread.store.first(this.account.context, {
-        ownerId: this.id,
+        ownerId: this.account.id,
         threadId: thread.id,
       });
 
-      if (!instance) {
+      if (instance) {
+        await instance.update();
+      } else {
         instance = await Thread.create(this.account, thread, TaskController.PluginList);
       }
 
       instances.push(instance);
     }
 
-    await this.account.context.updateList(this.id, {
-      items: instances.map((thread: Thread): string => thread.id),
-    });
+    return instances;
   }
 
   public static async create(
@@ -275,26 +283,24 @@ export class MailSearch implements GraphQLResolver<GoogleMailSearch> {
 
     let dbRecord = {
       ...record,
+      ownerId: account.id,
       id,
     };
 
-    let search = await MailSearch.store.insert(account, dbRecord);
+    let search = await MailSearch.store.insert(account.context, dbRecord);
     await search.update(threads);
     return search;
   }
 }
 
-interface GoogleItem {
-  id: string;
-}
-
-export class Thread implements GoogleItem {
+export class Thread extends BaseItem {
   public static readonly store = new OwnedItemsTable(Account.store, Thread, "Thread");
 
   public constructor(
     private readonly account: Account,
     private readonly record: GoogleThreadRecord,
   ) {
+    super(account.context);
   }
 
   public get owner(): Account {
@@ -363,9 +369,10 @@ export class Thread implements GoogleItem {
       unread,
       url: "",
       starred,
+      ownerId: account.id,
     };
 
-    let thread = await Thread.store.insert(account, record);
+    let thread = await Thread.store.insert(account.context, record);
 
     let labelRecords = Array.from(labels, (label: string): GoogleThreadLabelRecord => ({
       ownerId: account.id,
@@ -382,12 +389,11 @@ export class Thread implements GoogleItem {
     return thread;
   }
 
-  public static async getItemFromURL(
-    account: Account,
+  public static async createItemFromURL(
+    context: AuthedPluginContext,
     url: URL,
     isTask: boolean,
   ): Promise<Thread | null> {
-    console.log("getItemFromURL", url.toString());
     if (url.hostname != "mail.google.com" || url.hash.length == 0) {
       return null;
     }
@@ -406,18 +412,22 @@ export class Thread implements GoogleItem {
 
     let threadId = BigInt(decoded).toString(16);
 
-    let existing = await Thread.store.first(account.context, { ownerId: account.id, threadId });
-    if (existing) {
-      return existing;
+    for (let account of await Account.store.list(context, { userId: context.userId })) {
+      let existing = await Thread.store.first(account.context, { ownerId: account.id, threadId });
+      if (existing) {
+        return existing;
+      }
+
+      let apiThread = await getThread(account.authClient, threadId);
+      if (!apiThread) {
+        continue;
+      }
+
+      await account.updateLabels();
+      return Thread.create(account, apiThread, isTask ? TaskController.Manual : null);
     }
 
-    let apiThread = await getThread(account.authClient, threadId);
-    if (!apiThread) {
-      return null;
-    }
-
-    await account.updateLabels();
-    return Thread.create(account, apiThread, isTask ? TaskController.Manual : null);
+    return null;
   }
 
   public async fields(): Promise<ThreadFields> {
@@ -436,10 +446,11 @@ export class Thread implements GoogleItem {
   }
 }
 
-export class File implements GoogleItem {
+export class File extends BaseItem {
   public static readonly store = new OwnedItemsTable(Account.store, File, "File");
 
   public constructor(private readonly account: Account, private readonly record: GoogleFileRecord) {
+    super(account.context);
   }
 
   public get owner(): Account {
@@ -482,9 +493,10 @@ export class File implements GoogleItem {
       id,
       fileId: file.id,
       ...File.recordFromFile(file),
+      ownerId: account.id,
     };
 
-    return File.store.insert(account, record);
+    return File.store.insert(account.context, record);
   }
 
   public async fields(): Promise<FileFields> {
@@ -494,8 +506,8 @@ export class File implements GoogleItem {
     };
   }
 
-  public static async getItemFromURL(
-    account: Account,
+  public static async createItemFromURL(
+    context: AuthedPluginContext,
     url: URL,
     isTask: boolean,
   ): Promise<File | null> {
@@ -505,19 +517,22 @@ export class File implements GoogleItem {
     }
 
     let fileId = matches[1];
-    let existing = await File.store.first(account.context, { ownerId: account.id, fileId });
-    if (existing) {
-      return existing;
+
+    for (let account of await Account.store.list(context, { userId: context.userId })) {
+      let existing = await File.store.first(context, { ownerId: account.id, fileId });
+      if (existing) {
+        return existing;
+      }
+
+      let file = await getFile(account.authClient, matches[1]);
+      if (file) {
+        return File.create(account, {
+          webViewLink: url.toString(),
+          ...file,
+        }, isTask);
+      }
     }
 
-    let file = await getFile(account.authClient, matches[1]);
-    if (!file) {
-      return null;
-    }
-
-    return File.create(account, {
-      webViewLink: url.toString(),
-      ...file,
-    }, isTask);
+    return null;
   }
 }

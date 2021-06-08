@@ -3,6 +3,12 @@ export {
   OwnedItemsTable,
 } from "./plugins/tables";
 export {
+  BaseAccount,
+  BaseSearch,
+  BaseItem,
+  BasePlugin,
+} from "./plugins/base";
+export {
   PluginKnex,
   DbMigrationHelper,
   PluginDbMigration,

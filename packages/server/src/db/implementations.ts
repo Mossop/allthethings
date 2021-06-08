@@ -436,6 +436,9 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
     let item = await this.item();
     let pluginId = await this.pluginId();
     let fields = await PluginManager.getItemFields(this.dataSources, item, pluginId);
+    if (fields === undefined) {
+      throw new Error(`No fields defined for ${item.id()} in ${pluginId}`);
+    }
     return JSON.stringify(fields);
   }
 

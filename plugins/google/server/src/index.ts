@@ -1,11 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { URL } from "url";
 
 import type {
   PluginDbMigration,
   ServerPlugin,
-  PluginItem,
   AuthedPluginContext,
   Resolver,
   ServerPluginExport,
@@ -13,6 +11,9 @@ import type {
   PluginContext,
   PluginWebMiddleware,
   PluginWebContext,
+} from "@allthethings/server";
+import {
+  BasePlugin,
 } from "@allthethings/server";
 import type Koa from "koa";
 import koaCompose from "koa-compose";
@@ -36,12 +37,21 @@ function first(param: string | string[] | undefined): string | undefined {
 
 const UPDATE_DELAY = 60000;
 
-export class GooglePlugin implements ServerPlugin {
+export class GooglePlugin extends BasePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
 
   private static _config: GooglePluginConfig | null = null;
+
+  protected readonly searchProviders = [
+    MailSearch,
+  ];
+
+  protected readonly itemProviders = [
+    File,
+    Thread,
+  ];
 
   public static get config(): GooglePluginConfig {
     if (!GooglePlugin._config) {
@@ -55,6 +65,8 @@ export class GooglePlugin implements ServerPlugin {
     private readonly server: PluginServer,
     private readonly config: GooglePluginConfig,
   ) {
+    super();
+
     GooglePlugin._config = config;
 
     this.clientPath = path.dirname(require.resolve("@allthethings/google-client/dist/app.js"));
@@ -94,13 +106,11 @@ export class GooglePlugin implements ServerPlugin {
   }
 
   public async update(context: PluginContext): Promise<void> {
-    for (let account of await Account.store.list(context)) {
+    let accounts = await Account.store.list(context);
+    for (let account of accounts) {
       await account.update();
-
-      for (let search of await MailSearch.store.list(context, { ownerId: account.id })) {
-        await search.update();
-      }
     }
+    await super.update(context);
   }
 
   public schema(): Promise<string> {
@@ -120,43 +130,6 @@ export class GooglePlugin implements ServerPlugin {
 
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
-  }
-
-  public async getPluginItem(
-    context: PluginContext,
-    id: string,
-  ): Promise<PluginItem> {
-    let file = await File.store.get(context, id);
-    if (file) {
-      return file;
-    }
-
-    let thread = await Thread.store.get(context, id);
-    if (thread) {
-      return thread;
-    }
-
-    throw new Error("Unknown item.");
-  }
-
-  public async createItemFromURL(
-    context: AuthedPluginContext,
-    url: URL,
-    isTask: boolean,
-  ): Promise<string | null> {
-    if (!context.userId) {
-      return null;
-    }
-
-    let accounts = await Account.store.list(context, { userId: context.userId });
-    for (let account of accounts) {
-      let item = await account.getItemFromURL(url, isTask);
-      if (item) {
-        return item.id;
-      }
-    }
-
-    return null;
   }
 }
 

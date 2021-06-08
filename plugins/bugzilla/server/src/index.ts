@@ -1,11 +1,9 @@
 import { promises as fs } from "fs";
 import path from "path";
-import type { URL } from "url";
 
 import type {
   PluginDbMigration,
   ServerPlugin,
-  PluginItem,
   AuthedPluginContext,
   Resolver,
   ServerPluginExport,
@@ -15,7 +13,8 @@ import type {
 } from "@allthethings/server";
 import koaStatic from "koa-static";
 
-import { Account, Bug, Search } from "./db/implementations";
+import { BasePlugin } from "../../../../packages/server/dist/plugins/base";
+import { Bug, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -23,12 +22,22 @@ export * from "./types";
 
 const UPDATE_DELAY = 60000;
 
-class BugzillaPlugin implements ServerPlugin {
+class BugzillaPlugin extends BasePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
 
+  public readonly itemProviders = [
+    Bug,
+  ];
+
+  public readonly searchProviders = [
+    Search,
+  ];
+
   public constructor(private readonly server: PluginServer) {
+    super();
+
     this.clientPath = path.dirname(require.resolve("@allthethings/bugzilla-client/dist/app.js"));
 
     this.middleware = koaStatic(this.clientPath, {
@@ -43,20 +52,6 @@ class BugzillaPlugin implements ServerPlugin {
       }
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
-  }
-
-  public async update(context: PluginContext): Promise<void> {
-    for (let account of await Account.store.list(context)) {
-      let searches = await Search.store.list(context, { ownerId: account.id });
-      for (let search of searches) {
-        await search.update();
-      }
-
-      let bugs = await Bug.store.list(context, { ownerId: account.id });
-      for (let bug of bugs) {
-        await bug.update();
-      }
-    }
   }
 
   public schema(): Promise<string> {
@@ -76,38 +71,6 @@ class BugzillaPlugin implements ServerPlugin {
 
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
-  }
-
-  public async getPluginItem(
-    context: PluginContext,
-    id: string,
-  ): Promise<PluginItem> {
-    let bug = await Bug.store.get(context, id);
-    if (!bug) {
-      throw new Error("Missing bug record.");
-    }
-
-    return bug;
-  }
-
-  public async createItemFromURL(
-    context: AuthedPluginContext,
-    url: URL,
-    isTask: boolean,
-  ): Promise<string | null> {
-    if (!context.userId) {
-      return null;
-    }
-
-    let accounts = await Account.store.list(context, { userId: context.userId });
-    for (let account of accounts) {
-      let bug = await account.getBugFromURL(url, isTask);
-      if (bug) {
-        return bug.id;
-      }
-    }
-
-    return null;
   }
 }
 

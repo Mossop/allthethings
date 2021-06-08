@@ -1,8 +1,14 @@
 import { URL, URLSearchParams } from "url";
 
 import { TaskController } from "@allthethings/schema";
-import type { PluginContext } from "@allthethings/server";
-import { ItemsTable, OwnedItemsTable } from "@allthethings/server";
+import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
+import {
+  BaseItem,
+  BaseAccount,
+  BaseSearch,
+  ItemsTable,
+  OwnedItemsTable,
+} from "@allthethings/server";
 import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
@@ -28,34 +34,24 @@ function isDone(status: string): boolean {
   }
 }
 
-export class Account implements GraphQLResolver<BugzillaAccount> {
+export class Account extends BaseAccount implements GraphQLResolver<BugzillaAccount> {
   public static readonly store = new ItemsTable(Account, "Account");
 
   private api: BugzillaAPI | null = null;
 
   public constructor(
-    public readonly context: PluginContext,
+    context: PluginContext,
     private readonly record: BugzillaAccountRecord,
   ) {
+    super(context);
+  }
+
+  public async items(): Promise<Bug[]> {
+    return Bug.store.list(this.context, { ownerId: this.id });
   }
 
   public async searches(): Promise<Search[]> {
     return Search.store.list(this.context, { ownerId: this.id });
-  }
-
-  public async delete(): Promise<void> {
-    let searches = await Search.store.list(this.context, { ownerId: this.id });
-    for (let search of searches) {
-      await search.delete();
-    }
-
-    let bugs = await Bug.store.list(this.context, { ownerId: this.id });
-    for (let bug of bugs) {
-      await bug.update();
-      await this.context.disconnectItem(bug.id, bug.url.toString(), this.icon);
-    }
-
-    await Account.store.delete(this.context, { id: this.id });
   }
 
   public normalizeQuery(query: string): Pick<BugzillaSearchRecord, "query" | "type"> {
@@ -212,6 +208,11 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
     return null;
   }
 
+  public async delete(): Promise<void> {
+    await super.delete();
+    await Account.store.delete(this.context, this.id);
+  }
+
   public static async create(
     context: PluginContext,
     userId: string,
@@ -228,21 +229,18 @@ export class Account implements GraphQLResolver<BugzillaAccount> {
   }
 }
 
-export class Search implements GraphQLType<BugzillaSearch> {
+export class Search extends BaseSearch<BugzillaAPIBug[]> implements GraphQLType<BugzillaSearch> {
   public static readonly store = new OwnedItemsTable(Account.store, Search, "Search");
 
   public constructor(
     private readonly account: Account,
     private readonly record: BugzillaSearchRecord,
   ) {
+    super(account.context);
   }
 
   public get owner(): Account {
     return this.account;
-  }
-
-  private get context(): PluginContext {
-    return this.account.context;
   }
 
   public get id(): string {
@@ -275,11 +273,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
     return url.toString();
   }
 
-  public async delete(): Promise<void> {
-    await this.context.deleteList(this.id);
-  }
-
-  public async update(bugs?: BugzillaAPIBug[]): Promise<void> {
+  public async listItems(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
     if (!bugs) {
       bugs = await this.getBugRecords();
     }
@@ -298,9 +292,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
       instances.push(instance);
     }
 
-    await this.context.updateList(this.id, {
-      items: instances.map((bug: Bug): string => bug.id),
-    });
+    return instances;
   }
 
   public async getBugRecords(): Promise<BugzillaAPIBug[]> {
@@ -320,7 +312,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
 
   public static async create(
     account: Account,
-    record: Omit<BugzillaSearchRecord, "id" | "accountId">,
+    record: Omit<BugzillaSearchRecord, "id">,
   ): Promise<Search> {
     let bugs = await Search.getBugRecords(account.getAPI(), {
       type: record.type,
@@ -337,7 +329,7 @@ export class Search implements GraphQLType<BugzillaSearch> {
       id,
     };
 
-    let search = await Search.store.insert(account, dbRecord);
+    let search = await Search.store.insert(account.context, dbRecord);
     await search.update(bugs);
 
     return search;
@@ -355,21 +347,33 @@ function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields
   };
 }
 
-export class Bug {
+export class Bug extends BaseItem {
   public static readonly store = new OwnedItemsTable(Account.store, Bug, "Bug");
 
   public constructor(
     private readonly account: Account,
     private record: BugzillaBugRecord,
   ) {
+    super(account.context);
   }
 
   public get owner(): Account {
     return this.account;
   }
 
-  private get context(): PluginContext {
-    return this.account.context;
+  public static async createItemFromURL(
+    context: AuthedPluginContext,
+    url: URL,
+    isTask: boolean,
+  ): Promise<Bug | null> {
+    for (let account of await Account.store.list(context, { userId: context.userId })) {
+      let bug = await account.getBugFromURL(url, isTask);
+      if (bug) {
+        return bug;
+      }
+    }
+
+    return null;
   }
 
   public async getBug(): Promise<BugzillaAPIBug> {
@@ -392,10 +396,14 @@ export class Bug {
     return this.record.bugId;
   }
 
-  public get url(): URL {
+  public get url(): string {
     let baseUrl = new URL(this.account.url);
 
-    return new URL(`show_bug.cgi?id=${this.record.id}`, baseUrl);
+    return new URL(`show_bug.cgi?id=${this.record.id}`, baseUrl).toString();
+  }
+
+  public get icon(): string | null {
+    return this.account.icon;
   }
 
   public async update(record?: BugzillaAPIBug): Promise<void> {
@@ -408,7 +416,11 @@ export class Bug {
       record = bugs[0];
     }
 
-    await Bug.store.update(this, recordFromBug(record));
+    await Bug.store.update(this.context, {
+      ...recordFromBug(record),
+      id: this.id,
+      ownerId: this.account.id,
+    });
     await this.context.setItemTaskDone(this.id, await this.account.doneForStatus(record));
     await this.context.setItemSummary(this.id, record.summary);
   }
@@ -418,7 +430,7 @@ export class Bug {
       accountId: this.account.id,
       bugId: this.record.bugId,
       summary: this.record.summary,
-      url: this.url.toString(),
+      url: this.url,
       icon: this.account.icon,
       status: this.record.status,
       resolution: this.record.resolution,
@@ -441,8 +453,9 @@ export class Bug {
     let record = {
       id,
       ...recordFromBug(bug),
+      ownerId: account.id,
     };
 
-    return Bug.store.insert(account, record);
+    return Bug.store.insert(account.context, record);
   }
 }

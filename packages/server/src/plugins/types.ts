@@ -27,7 +27,7 @@ export interface CreatePluginItemParams {
 
 export interface PluginItem {
   id: string;
-  fields: Awaitable<unknown>;
+  fields: MaybeCallable<Awaitable<unknown>>;
 }
 
 export interface PluginContext {

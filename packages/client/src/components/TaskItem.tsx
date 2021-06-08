@@ -16,11 +16,9 @@ export default ReactMemo(function TaskItem({
   item,
 }: TaskItemProps): ReactResult {
   let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
-  if (taskList) {
-    refetchQueries.push(refetchListTaskListQuery({
-      taskList: taskList.id,
-    }));
-  }
+  refetchQueries.push(refetchListTaskListQuery({
+    taskList: taskList.id,
+  }));
 
   return <>
     <TaskDoneToggle item={item}/>
