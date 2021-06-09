@@ -15,6 +15,7 @@ import type {
 import type { GraphQLResolver } from "@allthethings/utils";
 import type { gmail_v1 } from "@googleapis/gmail";
 import type { Credentials, OAuth2Client } from "google-auth-library";
+import { DateTime } from "luxon";
 
 import type { GoogleAPIFile } from "../api";
 import {
@@ -346,6 +347,8 @@ export class Thread extends BaseItem {
       ...record,
     });
 
+    await this.context.setItemTaskDone(this.id, record.unread ? null : DateTime.now());
+
     await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
       .where("threadId", this.threadId)
       .whereNotIn("labelId", labels)
@@ -426,11 +429,16 @@ export class Thread extends BaseItem {
   ): Promise<Thread> {
     let { record, labels } = Thread.recordFromThread(data);
 
+    // Probably didn't want to create an already complete task.
+    if (!record.unread && controller == TaskController.Plugin) {
+      controller = TaskController.Manual;
+    }
+
     let id = await account.context.createItem(account.userId, {
       summary: record.subject,
       archived: null,
       snoozed: null,
-      done: undefined,
+      done: record.unread ? null : DateTime.now(),
       controller,
     });
 
@@ -489,7 +497,7 @@ export class Thread extends BaseItem {
       }
 
       await account.updateLabels();
-      return Thread.create(account, apiThread, isTask ? TaskController.Manual : null);
+      return Thread.create(account, apiThread, isTask ? TaskController.Plugin : null);
     }
 
     return null;
