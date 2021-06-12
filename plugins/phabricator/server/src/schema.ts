@@ -37,16 +37,26 @@ export type PhabricatorAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiKey: Scalars['String'];
+  readonly enabledQueries: Maybe<ReadonlyArray<Scalars['ID']>>;
 };
 
 export type PhabricatorAccountParams = {
   readonly url: Scalars['String'];
   readonly apiKey: Scalars['String'];
+  readonly queries: ReadonlyArray<Scalars['ID']>;
+};
+
+export type PhabricatorQuery = {
+  readonly __typename?: 'PhabricatorQuery';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly description: Scalars['String'];
 };
 
 export type User = {
   readonly __typename?: 'User';
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
+  readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
 };
 
 export type WithIndex<TObject> = TObject & Record<string, any>;
@@ -134,6 +144,7 @@ export type ResolversTypes = ResolversObject<{
   PhabricatorAccount: ResolverTypeWrapper<PhabricatorAccount>;
   String: ResolverTypeWrapper<Scalars['String']>;
   PhabricatorAccountParams: PhabricatorAccountParams;
+  PhabricatorQuery: ResolverTypeWrapper<PhabricatorQuery>;
   User: ResolverTypeWrapper<User>;
 }>;
 
@@ -145,6 +156,7 @@ export type ResolversParentTypes = ResolversObject<{
   PhabricatorAccount: PhabricatorAccount;
   String: Scalars['String'];
   PhabricatorAccountParams: PhabricatorAccountParams;
+  PhabricatorQuery: PhabricatorQuery;
   User: User;
 }>;
 
@@ -159,17 +171,27 @@ export type PhabricatorAccountResolvers<ContextType = any, ParentType extends Re
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   apiKey: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  enabledQueries: Resolver<Maybe<ReadonlyArray<ResolversTypes['ID']>>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PhabricatorQueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PhabricatorQuery'] = ResolversParentTypes['PhabricatorQuery']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  description: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
   phabricatorAccounts: Resolver<ReadonlyArray<ResolversTypes['PhabricatorAccount']>, ParentType, ContextType>;
+  phabricatorQueries: Resolver<ReadonlyArray<ResolversTypes['PhabricatorQuery']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   Mutation: MutationResolvers<ContextType>;
   PhabricatorAccount: PhabricatorAccountResolvers<ContextType>;
+  PhabricatorQuery: PhabricatorQueryResolvers<ContextType>;
   User: UserResolvers<ContextType>;
 }>;
 

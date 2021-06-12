@@ -10,7 +10,7 @@ import {
   Radio,
   RadioGroup,
   OutlinedInput,
-  Checkbox,
+  Checkbox as MuiCheckbox,
   Button as MuiButton,
 } from "@material-ui/core";
 import clsx from "clsx";
@@ -190,30 +190,23 @@ export const RadioGroupInput = ReactMemo(
   },
 );
 
-type CheckboxInputProps<T, K extends keyof T> = FieldProps<T, K> & {
+export interface CheckboxProps {
+  checked: boolean;
   label: string;
-  checkedValue: T[K];
-  uncheckedValue: T[K];
-};
+  fieldState?: FormState;
+  onChange: (checked: boolean) => void;
+}
 
-export const CheckboxInput = ReactMemo(
-  function CheckboxInput<T, K extends keyof T>({
+export const Checkbox = ReactMemo(
+  function Checkbox({
+    checked,
     label,
-    state,
-    setState,
-    stateKey,
-    checkedValue,
-    uncheckedValue,
     fieldState,
-  }: CheckboxInputProps<T, K>): ReactElement {
-    let value = useMemo(() => state[stateKey], [state, stateKey]);
-
-    let onChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-      setState((state: T): T => ({
-        ...state,
-        [stateKey]: event.target.checked ? checkedValue : uncheckedValue,
-      }));
-    }, [setState, stateKey, checkedValue, uncheckedValue]);
+    onChange,
+  }: CheckboxProps): ReactElement {
+    let change = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+      onChange(event.target.checked);
+    }, [onChange]);
 
     let globalState = useFormState();
     fieldState = fieldState ?? globalState;
@@ -221,13 +214,46 @@ export const CheckboxInput = ReactMemo(
     return <FormControlLabel
       disabled={fieldState != FormState.Default}
       control={
-        <Checkbox
+        <MuiCheckbox
           color="primary"
-          checked={value == checkedValue}
-          onChange={onChange}
+          checked={checked}
+          onChange={change}
         />
       }
       label={label}
+    />;
+  },
+);
+
+type CheckboxInputProps<T, K extends keyof T> =
+  Omit<CheckboxProps, "onChange" | "checked"> &
+  FieldProps<T, K> & {
+    checkedValue: T[K];
+    uncheckedValue: T[K];
+  };
+
+export const CheckboxInput = ReactMemo(
+  function CheckboxInput<T, K extends keyof T>({
+    state,
+    setState,
+    stateKey,
+    checkedValue,
+    uncheckedValue,
+    ...props
+  }: CheckboxInputProps<T, K>): ReactElement {
+    let value = useMemo(() => state[stateKey], [state, stateKey]);
+
+    let onChange = useCallback((checked: boolean) => {
+      setState((state: T): T => ({
+        ...state,
+        [stateKey]: checked ? checkedValue : uncheckedValue,
+      }));
+    }, [setState, stateKey, checkedValue, uncheckedValue]);
+
+    return <Checkbox
+      {...props}
+      onChange={onChange}
+      checked={value == checkedValue}
     />;
   },
 );

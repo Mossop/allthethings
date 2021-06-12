@@ -46,7 +46,7 @@ export interface Differential$Revision$Search$Params {
   limit?: number;
 }
 
-interface Differential$Revision$Search$Constraints {
+export interface Differential$Revision$Search$Constraints {
   ids?: number[];
   phids?: string[];
   responsiblePHIDs?: string[];
@@ -64,7 +64,7 @@ interface Differential$Revision$Search$Constraints {
   projects?: string[];
 }
 
-interface Differential$Revision$Search$Attachments {
+export interface Differential$Revision$Search$Attachments {
   reviewers?: boolean;
   subscribers?: boolean;
   projects?: boolean;

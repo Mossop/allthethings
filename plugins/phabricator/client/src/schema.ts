@@ -272,11 +272,20 @@ export type PhabricatorAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiKey: Scalars['String'];
+  readonly enabledQueries: Maybe<ReadonlyArray<Scalars['ID']>>;
 };
 
 export type PhabricatorAccountParams = {
   readonly url: Scalars['String'];
   readonly apiKey: Scalars['String'];
+  readonly queries: ReadonlyArray<Scalars['ID']>;
+};
+
+export type PhabricatorQuery = {
+  readonly __typename?: 'PhabricatorQuery';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly description: Scalars['String'];
 };
 
 export type PluginDetail = {
@@ -383,6 +392,7 @@ export type User = ProjectRoot & TaskList & {
   readonly inbox: Inbox;
   readonly items: ReadonlyArray<Item>;
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
+  readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
   readonly projectById: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
   readonly remainingTasks: Scalars['Int'];
@@ -398,14 +408,19 @@ export type UserProjectByIdArgs = {
 export type ListPhabricatorAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListPhabricatorAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorAccounts: ReadonlyArray<{ readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string }> }> };
+export type ListPhabricatorAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorAccounts: ReadonlyArray<{ readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: Maybe<ReadonlyArray<string>> }> }> };
+
+export type ListPhabricatorQueriesQueryVariables = Exact<{ [key: string]: never; }>;
+
+
+export type ListPhabricatorQueriesQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorQueries: ReadonlyArray<{ readonly __typename: 'PhabricatorQuery', readonly id: string, readonly name: string, readonly description: string }> }> };
 
 export type CreatePhabricatorAccountMutationVariables = Exact<{
   params: PhabricatorAccountParams;
 }>;
 
 
-export type CreatePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly createPhabricatorAccount: { readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string } };
+export type CreatePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly createPhabricatorAccount: { readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: Maybe<ReadonlyArray<string>> } };
 
 export type DeletePhabricatorAccountMutationVariables = Exact<{
   account: Scalars['ID'];
@@ -425,6 +440,7 @@ export const ListPhabricatorAccountsDocument = gql`
       icon
       url
       apiKey
+      enabledQueries
     }
   }
 }
@@ -459,6 +475,48 @@ export type ListPhabricatorAccountsQueryResult = Apollo.QueryResult<ListPhabrica
 export function refetchListPhabricatorAccountsQuery(variables?: ListPhabricatorAccountsQueryVariables) {
       return { query: ListPhabricatorAccountsDocument, variables: variables }
     }
+export const ListPhabricatorQueriesDocument = gql`
+    query ListPhabricatorQueries {
+  user {
+    id
+    phabricatorQueries {
+      id
+      name
+      description
+    }
+  }
+}
+    `;
+
+/**
+ * __useListPhabricatorQueriesQuery__
+ *
+ * To run a query within a React component, call `useListPhabricatorQueriesQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListPhabricatorQueriesQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListPhabricatorQueriesQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListPhabricatorQueriesQuery(baseOptions?: Apollo.QueryHookOptions<ListPhabricatorQueriesQuery, ListPhabricatorQueriesQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListPhabricatorQueriesQuery, ListPhabricatorQueriesQueryVariables>(ListPhabricatorQueriesDocument, options);
+      }
+export function useListPhabricatorQueriesLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListPhabricatorQueriesQuery, ListPhabricatorQueriesQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListPhabricatorQueriesQuery, ListPhabricatorQueriesQueryVariables>(ListPhabricatorQueriesDocument, options);
+        }
+export type ListPhabricatorQueriesQueryHookResult = ReturnType<typeof useListPhabricatorQueriesQuery>;
+export type ListPhabricatorQueriesLazyQueryHookResult = ReturnType<typeof useListPhabricatorQueriesLazyQuery>;
+export type ListPhabricatorQueriesQueryResult = Apollo.QueryResult<ListPhabricatorQueriesQuery, ListPhabricatorQueriesQueryVariables>;
+export function refetchListPhabricatorQueriesQuery(variables?: ListPhabricatorQueriesQueryVariables) {
+      return { query: ListPhabricatorQueriesDocument, variables: variables }
+    }
 export const CreatePhabricatorAccountDocument = gql`
     mutation CreatePhabricatorAccount($params: PhabricatorAccountParams!) {
   createPhabricatorAccount(params: $params) {
@@ -467,6 +525,7 @@ export const CreatePhabricatorAccountDocument = gql`
     icon
     url
     apiKey
+    enabledQueries
   }
 }
     `;

@@ -1,34 +1,85 @@
-import { TextFieldInput, Dialog, useBoolState, FormState } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+import {
+  TextFieldInput,
+  Dialog,
+  useBoolState,
+  FormState,
+  ReactMemo,
+  Checkbox,
+} from "@allthethings/ui";
+import type { Theme } from "@material-ui/core";
+import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type { PhabricatorAccount } from "../schema";
+import type { PhabricatorAccount, PhabricatorQuery } from "../schema";
 import {
+  useListPhabricatorQueriesQuery,
   refetchListPhabricatorAccountsQuery,
   useCreatePhabricatorAccountMutation,
 } from "../schema";
 
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    queriesHeader: {
+      paddingTop: theme.spacing(1),
+      paddingBottom: theme.spacing(0.5),
+      marginTop: theme.spacing(1),
+      fontSize: "1.1rem",
+      borderTopWidth: 1,
+      borderTopColor: theme.palette.divider,
+      borderTopStyle: "solid",
+    },
+  }));
+
+interface QueryCheckboxProps {
+  query: PhabricatorQuery;
+  checked: boolean;
+  onChange: (id: string, checked: boolean) => void;
+}
+
+const QueryCheckbox = ReactMemo(function QueryCheckbox({
+  query,
+  checked,
+  onChange,
+}: QueryCheckboxProps): ReactResult {
+  let change = useCallback((checked: boolean) => onChange(query.id, checked), [onChange]);
+  return <Checkbox
+    label={query.description}
+    onChange={change}
+    checked={checked}
+  />;
+});
+
 interface AccountDialogProps {
   onAccountCreated: (account: Omit<PhabricatorAccount, "username">) => void;
   onClosed: () => void;
+  queries: readonly PhabricatorQuery[];
 }
 
-export default function AccountDialog({
+const AccountDialog = ReactMemo(function AccountDialog({
   onAccountCreated,
   onClosed,
+  queries,
 }: AccountDialogProps): ReactElement {
-  let [state, setState] = useState({
+  let classes = useStyles();
+
+  interface State {
+    url: string;
+    apiKey: string;
+    queries: string[];
+  }
+
+  let [state, setState] = useState<State>({
     url: "",
     apiKey: "",
+    queries: queries.map((query: PhabricatorQuery): string => query.id),
   });
   let [isOpen, , close] = useBoolState(true);
 
   let [createAccount, { loading, error }] = useCreatePhabricatorAccountMutation({
     variables: {
-      params: {
-        url: state.url,
-        apiKey: state.apiKey,
-      },
+      params: state,
     },
     refetchQueries: [
       refetchListPhabricatorAccountsQuery(),
@@ -42,6 +93,19 @@ export default function AccountDialog({
     }
 
     onAccountCreated(account.createPhabricatorAccount);
+  }, []);
+
+  let changeQuery = useCallback((id: string, enabled: boolean): void => {
+    setState((state: State): State => {
+      let queries = state.queries.filter((query: string): boolean => query != id);
+      if (enabled) {
+        queries = [...queries, id];
+      }
+      return {
+        ...state,
+        queries,
+      };
+    });
   }, []);
 
   return <Dialog
@@ -71,5 +135,28 @@ export default function AccountDialog({
       stateKey="apiKey"
       required={true}
     />
+
+    <div className={classes.queriesHeader}>Queries</div>
+
+    {
+      queries.map((query: PhabricatorQuery) => <QueryCheckbox
+        key={query.id}
+        query={query}
+        onChange={changeQuery}
+        checked={state.queries.includes(query.id)}
+      />)
+    }
   </Dialog>;
-}
+});
+
+export type AccountDialogOuterProps = Omit<AccountDialogProps, "queries">;
+
+export default ReactMemo(function AccountDialogOuter(props: AccountDialogOuterProps): ReactResult {
+  let { data } = useListPhabricatorQueriesQuery();
+
+  if (data === undefined) {
+    return null;
+  }
+
+  return <AccountDialog {...props} queries={data.user?.phabricatorQueries ?? []}/>;
+});

@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 
-import { Account } from "./db/implementations";
+import { Account, Query } from "./db/implementations";
 import type {
   MutationCreatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
+  PhabricatorQuery,
 } from "./schema";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
@@ -16,17 +17,22 @@ const Resolvers: Resolver<AuthedPluginContext> = {
     ): Promise<Account[]> {
       return Account.store.list(ctx, { userId: user.id() });
     },
+
+    phabricatorQueries(): PhabricatorQuery[] {
+      return Query.queries;
+    },
   },
 
   Mutation: {
     async createPhabricatorAccount(
       outer: unknown,
-      { params: { url, apiKey } }: MutationCreatePhabricatorAccountArgs,
+      { params: { url, apiKey, queries } }: MutationCreatePhabricatorAccountArgs,
       ctx: AuthedPluginContext,
     ): Promise<Account> {
       return Account.create(ctx, ctx.userId, {
         url,
         apiKey,
+        queries,
       });
     },
 

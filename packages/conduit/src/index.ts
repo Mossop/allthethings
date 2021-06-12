@@ -4,6 +4,8 @@ import fetch from "node-fetch";
 
 import type { Conduit } from "./types";
 
+export * from "./types";
+
 class ConduitError extends Error {
   public constructor(
     public readonly code: string,

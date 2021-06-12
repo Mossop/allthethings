@@ -4,15 +4,24 @@ type PhabricatorAccount {
   url: String!
   email: String!
   apiKey: String!
+  enabledQueries: [ID!]
+}
+
+type PhabricatorQuery {
+  id: ID!
+  name: String!
+  description: String!
 }
 
 input PhabricatorAccountParams {
   url: String!,
   apiKey: String!
+  queries: [ID!]!
 }
 
 type User {
   phabricatorAccounts: [PhabricatorAccount!]!
+  phabricatorQueries: [PhabricatorQuery!]!
 }
 
 type Mutation {

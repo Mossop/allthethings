@@ -7,6 +7,18 @@ query ListPhabricatorAccounts {
       icon
       url
       apiKey
+      enabledQueries
+    }
+  }
+}
+
+query ListPhabricatorQueries {
+  user {
+    id
+    phabricatorQueries {
+      id
+      name
+      description
     }
   }
 }
@@ -18,6 +30,7 @@ mutation CreatePhabricatorAccount($params: PhabricatorAccountParams!) {
     icon
     url
     apiKey
+    enabledQueries
   }
 }
 
