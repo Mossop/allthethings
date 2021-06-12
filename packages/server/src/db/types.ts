@@ -134,7 +134,7 @@ export type PluginDetailDbTable = DbTable<{
 export type PluginListDbTable = DbTable<{
   pluginId: string;
   name: string;
-  url: string;
+  url: string | null;
 }>;
 
 export interface PluginListItem {

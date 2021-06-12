@@ -24,16 +24,6 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-    label: {
-      borderRadius: 5,
-      borderColor: theme.palette.text.primary,
-      borderStyle: "solid",
-      borderWidth: 1,
-      padding: theme.spacing(0.5),
-      marginLeft: theme.spacing(1),
-      textTransform: "uppercase",
-      fontSize: "0.7rem",
-    },
   }));
 
 export interface FileProps {
@@ -54,7 +44,6 @@ export default ReactMemo(function Thread({
         {thread.unread ? <UnreadMailIcon/> : <ReadMailIcon/>}
       </div>
       <div className={classes.subject}>{thread.subject}</div>
-      {thread.labels.map((label: string) => <div className={classes.label}>{label}</div>)}
     </a>
   </>;
 });

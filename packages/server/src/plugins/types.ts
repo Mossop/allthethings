@@ -12,7 +12,7 @@ import type { PluginDbMigration, PluginKnex, TableRef } from "./db";
 
 export interface PluginList {
   name: string;
-  url: string;
+  url: string | null;
   items?: string[];
 }
 

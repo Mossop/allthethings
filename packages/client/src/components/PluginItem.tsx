@@ -24,6 +24,9 @@ const useStyles = makeStyles((theme: Theme) =>
       textTransform: "uppercase",
       fontSize: "0.7rem",
     },
+    listLink: {
+      cursor: "pointer",
+    },
   }));
 
 interface PluginListProps {
@@ -37,7 +40,9 @@ const PluginList = ReactMemo(function PluginList({
 
   if (list.url) {
     return <div className={classes.list}>
-      <a href={list.url} target="_blank" rel="noreferrer">{list.name}</a>
+      <a className={classes.listLink} href={list.url} target="_blank" rel="noreferrer">
+        {list.name}
+      </a>
     </div>;
   }
 

@@ -131,9 +131,17 @@ export abstract class BaseSearch<SR> extends Base implements ISearch {
 
   protected abstract listItems(results?: SR): Promise<PluginItem[]>;
 
+  public abstract get name(): string;
+
+  public get url(): string | null | undefined {
+    return undefined;
+  }
+
   public async update(results?: SR): Promise<PluginItem[]> {
     let items = await this.listItems(results);
     await this.context.updateList(this.id, {
+      name: this.name,
+      url: this.url,
       items: items.map((item: PluginItem): string => item.id),
     });
     return items;

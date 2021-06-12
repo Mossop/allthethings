@@ -321,7 +321,7 @@ export class Search extends BaseSearch<BugzillaAPIBug[]> implements GraphQLType<
 
     let id = await account.context.addList({
       name: record.name,
-      url: "",
+      url: null,
     });
 
     let dbRecord = {

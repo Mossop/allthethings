@@ -246,7 +246,9 @@ export class MailSearch extends BaseSearch<gmail_v1.Schema$Thread[]>
   }
 
   public get url(): string {
-    return "";
+    let url = new URL("https://mail.google.com/mail/");
+    url.hash = `search/${this.query}`;
+    return this.account.buildURL(url).toString();
   }
 
   public async listItems(threadList?: gmail_v1.Schema$Thread[]): Promise<Thread[]> {
@@ -287,7 +289,7 @@ export class MailSearch extends BaseSearch<gmail_v1.Schema$Thread[]>
 
     let id = await context.addList({
       name: record.name,
-      url: "",
+      url: null,
     });
 
     let dbRecord = {
