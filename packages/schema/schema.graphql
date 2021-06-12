@@ -12,6 +12,7 @@ type PluginDetail {
   wasEverListed: Boolean!
   isCurrentlyListed: Boolean!
   fields: String!
+  lists: [PluginList!]!
 }
 
 type FileDetail {
@@ -30,6 +31,13 @@ type LinkDetail {
 }
 
 union ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail
+
+type PluginList {
+  id: ID!
+  pluginId: String!
+  name: String!
+  url: String
+}
 
 type Item {
   id: ID!

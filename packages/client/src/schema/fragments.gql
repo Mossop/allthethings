@@ -49,6 +49,12 @@ fragment clientItemFields on Item {
       wasEverListed
       isCurrentlyListed
       fields
+      lists {
+        id
+        pluginId
+        name
+        url
+      }
     }
   }
 }

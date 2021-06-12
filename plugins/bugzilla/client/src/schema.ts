@@ -316,6 +316,15 @@ export type PluginDetail = {
   readonly wasEverListed: Scalars['Boolean'];
   readonly isCurrentlyListed: Scalars['Boolean'];
   readonly fields: Scalars['String'];
+  readonly lists: ReadonlyArray<PluginList>;
+};
+
+export type PluginList = {
+  readonly __typename?: 'PluginList';
+  readonly id: Scalars['ID'];
+  readonly pluginId: Scalars['String'];
+  readonly name: Scalars['String'];
+  readonly url: Maybe<Scalars['String']>;
 };
 
 export type Project = TaskList & {

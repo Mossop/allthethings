@@ -442,6 +442,10 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
     return JSON.stringify(fields);
   }
 
+  public async lists(): Promise<readonly PluginList[]> {
+    return this.dataSources.pluginList.getListsForItem(this.id());
+  }
+
   public async wasEverListed(): Promise<boolean> {
     return this.dataSources.pluginList.wasItemEverListed(this.id());
   }
@@ -455,7 +459,8 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
   public readonly taskDone = fields<Db.PluginDetailDbTable>()("taskDone");
 }
 
-export class PluginList extends BaseImpl<Db.PluginListDbTable> {
+export class PluginList extends BaseImpl<Db.PluginListDbTable>
+  implements Rslv.PluginListResolvers {
   protected get dbObjectDataSource(): Src.PluginListSource {
     return this.dataSources.pluginList;
   }

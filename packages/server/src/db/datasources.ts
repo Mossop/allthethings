@@ -712,6 +712,14 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
   public tableName = "PluginList";
   protected builder = classBuilder<Impl.PluginList, Db.PluginListDbTable>(Impl.PluginList);
 
+  public async getListsForItem(itemId: string): Promise<Impl.PluginList[]> {
+    return this.buildAll(
+      this.records
+        .join("PluginListItems", "PluginListItems.listId", "PluginList.id")
+        .where("PluginListItems.itemId", itemId),
+    );
+  }
+
   public async wasItemEverListed(id: string): Promise<boolean> {
     return await count(this.knex
       .from("PluginListItems")

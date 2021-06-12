@@ -258,6 +258,15 @@ export type PluginDetail = {
   readonly wasEverListed: Scalars['Boolean'];
   readonly isCurrentlyListed: Scalars['Boolean'];
   readonly fields: Scalars['String'];
+  readonly lists: ReadonlyArray<PluginList>;
+};
+
+export type PluginList = {
+  readonly __typename: 'PluginList';
+  readonly id: Scalars['ID'];
+  readonly pluginId: Scalars['String'];
+  readonly name: Scalars['String'];
+  readonly url?: Maybe<Scalars['String']>;
 };
 
 export type Project = TaskList & {
@@ -426,13 +435,21 @@ export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {
 	note?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type PluginDetailKeySpecifier = ('pluginId' | 'hasTaskState' | 'wasEverListed' | 'isCurrentlyListed' | 'fields' | PluginDetailKeySpecifier)[];
+export type PluginDetailKeySpecifier = ('pluginId' | 'hasTaskState' | 'wasEverListed' | 'isCurrentlyListed' | 'fields' | 'lists' | PluginDetailKeySpecifier)[];
 export type PluginDetailFieldPolicy = {
 	pluginId?: FieldPolicy<any> | FieldReadFunction<any>,
 	hasTaskState?: FieldPolicy<any> | FieldReadFunction<any>,
 	wasEverListed?: FieldPolicy<any> | FieldReadFunction<any>,
 	isCurrentlyListed?: FieldPolicy<any> | FieldReadFunction<any>,
-	fields?: FieldPolicy<any> | FieldReadFunction<any>
+	fields?: FieldPolicy<any> | FieldReadFunction<any>,
+	lists?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type PluginListKeySpecifier = ('id' | 'pluginId' | 'name' | 'url' | PluginListKeySpecifier)[];
+export type PluginListFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	pluginId?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ProjectKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
@@ -525,6 +542,10 @@ export type TypedTypePolicies = TypePolicies & {
 	PluginDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | PluginDetailKeySpecifier | (() => undefined | PluginDetailKeySpecifier),
 		fields?: PluginDetailFieldPolicy,
+	},
+	PluginList?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | PluginListKeySpecifier | (() => undefined | PluginListKeySpecifier),
+		fields?: PluginListFieldPolicy,
 	},
 	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),

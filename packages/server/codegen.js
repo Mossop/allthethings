@@ -45,6 +45,7 @@ module.exports = {
             FileDetail: "../db/implementations#FileDetail",
             NoteDetail: "../db/implementations#NoteDetail",
             PluginDetail: "../db/implementations#PluginDetail",
+            PluginList: "../db/implementations#PluginList",
           /* eslint-enable @typescript-eslint/naming-convention */
           },
         },

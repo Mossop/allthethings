@@ -1,6 +1,6 @@
 /* eslint-disable */
 import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } from 'graphql';
-import type { User, Context, Project, Section, TaskList, ProjectRoot, Inbox, Item, TaskInfo, LinkDetail, FileDetail, NoteDetail, PluginDetail } from '../db/implementations';
+import type { User, Context, Project, Section, TaskList, ProjectRoot, Inbox, Item, TaskInfo, LinkDetail, FileDetail, NoteDetail, PluginDetail, PluginList } from '../db/implementations';
 import type { ResolverContext } from './context';
 import * as Schema from './types';
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
@@ -101,6 +101,7 @@ export type ResolversTypes = ResolversObject<{
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: ResolverTypeWrapper<PluginDetail>;
+  PluginList: ResolverTypeWrapper<PluginList>;
   Project: ResolverTypeWrapper<Project>;
   ProjectParams: Schema.ProjectParams;
   ProjectRoot: ResolverTypeWrapper<ProjectRoot>;
@@ -133,6 +134,7 @@ export type ResolversParentTypes = ResolversObject<{
   NoteDetail: NoteDetail;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: PluginDetail;
+  PluginList: PluginList;
   Project: Project;
   ProjectParams: Schema.ProjectParams;
   ProjectRoot: ProjectRoot;
@@ -234,6 +236,15 @@ export type PluginDetailResolvers<ContextType = ResolverContext, ParentType exte
   wasEverListed: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   isCurrentlyListed: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   fields: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  lists: Resolver<ReadonlyArray<ResolversTypes['PluginList']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type PluginListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginList'] = ResolversParentTypes['PluginList']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  pluginId: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -313,6 +324,7 @@ export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
   Mutation: MutationResolvers<ContextType>;
   NoteDetail: NoteDetailResolvers<ContextType>;
   PluginDetail: PluginDetailResolvers<ContextType>;
+  PluginList: PluginListResolvers<ContextType>;
   Project: ProjectResolvers<ContextType>;
   ProjectRoot: ProjectRootResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
