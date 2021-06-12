@@ -14,7 +14,6 @@ import type {
 import { BasePlugin } from "@allthethings/server";
 import koaStatic from "koa-static";
 
-import { Bug, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -22,23 +21,15 @@ export * from "./types";
 
 const UPDATE_DELAY = 60000;
 
-class BugzillaPlugin extends BasePlugin implements ServerPlugin {
+class PhabricatorPlugin extends BasePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
 
   private readonly clientPath: string;
 
-  public readonly itemProviders = [
-    Bug,
-  ];
-
-  public readonly searchProviders = [
-    Search,
-  ];
-
   public constructor(private readonly server: PluginServer) {
     super();
 
-    this.clientPath = path.dirname(require.resolve("@allthethings/bugzilla-client/dist/app.js"));
+    this.clientPath = path.dirname(require.resolve("@allthethings/phabricator-client/dist/app.js"));
 
     this.middleware = koaStatic(this.clientPath, {
       maxAge: 1000 * 10,
@@ -74,6 +65,6 @@ class BugzillaPlugin extends BasePlugin implements ServerPlugin {
   }
 }
 
-const plugin: ServerPluginExport = (server: PluginServer) => new BugzillaPlugin(server);
+const plugin: ServerPluginExport = (server: PluginServer) => new PhabricatorPlugin(server);
 
 export default plugin;

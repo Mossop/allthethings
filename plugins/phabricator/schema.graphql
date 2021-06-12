@@ -1,0 +1,21 @@
+type PhabricatorAccount {
+  id: ID!
+  icon: String!
+  url: String!
+  email: String!
+  apiKey: String!
+}
+
+input PhabricatorAccountParams {
+  url: String!,
+  apiKey: String!
+}
+
+type User {
+  phabricatorAccounts: [PhabricatorAccount!]!
+}
+
+type Mutation {
+  createPhabricatorAccount(params: PhabricatorAccountParams!): PhabricatorAccount!
+  deletePhabricatorAccount(account: ID!): Boolean
+}

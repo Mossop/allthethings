@@ -1,0 +1,26 @@
+query ListPhabricatorAccounts {
+  user {
+    id
+    phabricatorAccounts {
+      id
+      email
+      icon
+      url
+      apiKey
+    }
+  }
+}
+
+mutation CreatePhabricatorAccount($params: PhabricatorAccountParams!) {
+  createPhabricatorAccount(params: $params) {
+    id
+    email
+    icon
+    url
+    apiKey
+  }
+}
+
+mutation DeletePhabricatorAccount($account: ID!) {
+  deletePhabricatorAccount(account: $account)
+}
