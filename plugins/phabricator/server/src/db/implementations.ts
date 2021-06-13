@@ -304,9 +304,7 @@ export class Revision extends BaseItem {
       });
 
       if (revisions.data.length < 1) {
-        // TODO actually delete the item.
-        await this.delete();
-        return;
+        return this.context.deleteItem(this.id);
       }
 
       [revision] = revisions.data;

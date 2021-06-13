@@ -215,6 +215,15 @@ export function buildPluginContext(
       }
     },
 
+    async deleteItem(id: string): Promise<void> {
+      let item = await dataSources.items.getImpl(id);
+      if (!item) {
+        throw new Error("Unknown item.");
+      }
+
+      await item.delete();
+    },
+
     async addList(list: PluginList): Promise<string> {
       return dataSources.pluginList.addList(plugin.id, list);
     },

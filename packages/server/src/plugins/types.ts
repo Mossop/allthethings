@@ -47,6 +47,7 @@ export interface PluginContext {
   setItemTaskDone(id: string, done: DateTime | boolean | null): Promise<void>;
   setItemSummary(id: string, summary: string): Promise<void>;
   disconnectItem(id: string, url?: string | null, icon?: string | null): Promise<void>;
+  deleteItem(id: string): Promise<void>;
 
   addList(list: PluginList): Promise<string>;
   updateList(id: string, list: Partial<PluginList>): Promise<void>;

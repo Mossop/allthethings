@@ -336,9 +336,7 @@ export class Thread extends BaseItem {
     if (!thread) {
       thread = await getThread(this.account.authClient, this.threadId) ?? undefined;
       if (!thread) {
-        // TODO actually delete.
-        await this.delete();
-        return;
+        return this.context.deleteItem(this.id);
       }
     }
 
@@ -561,9 +559,7 @@ export class File extends BaseItem {
       file = await getFile(this.account.authClient, this.fileId) ?? undefined;
 
       if (!file) {
-        // TODO actually delete.
-        await this.delete();
-        return;
+        return this.context.deleteItem(this.id);
       }
     }
 
