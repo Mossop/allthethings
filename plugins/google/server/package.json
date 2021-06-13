@@ -16,11 +16,8 @@
   },
   "dependencies": {
     "@allthethings/server": "^1.0.0",
-    "@googleapis/drive": "^0.3.1",
-    "@googleapis/gmail": "^0.2.0",
-    "@googleapis/people": "^0.3.0",
     "base-64": "^1.0.0",
-    "google-auth-library": "^7.1.0",
+    "googleapis": "^76.0.0",
     "koa-compose": "^4.1.0",
     "koa-mount": "^4.0.0",
     "koa-static": "^5.0.0"

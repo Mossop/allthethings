@@ -14,6 +14,9 @@ class BaseMigration implements PluginDbMigration {
       helper.userRef(table, "userId")
         .notNullable();
 
+      table.text("phid")
+        .notNullable();
+
       table.text("email")
         .notNullable();
 
@@ -25,6 +28,8 @@ class BaseMigration implements PluginDbMigration {
 
       table.text("icon")
         .notNullable();
+
+      table.unique(["url", "phid"]);
     });
 
     await knex.schema.createTable("Query", (table: Knex.CreateTableBuilder): void => {
@@ -34,16 +39,44 @@ class BaseMigration implements PluginDbMigration {
         .primary();
 
       helper.idColumn(table, "ownerId")
-        .notNullable();
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"))
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
 
       table.text("queryId")
         .notNullable();
 
-      table.unique(["ownerId", "query"]);
+      table.unique(["ownerId", "queryId"]);
+    });
+
+    await knex.schema.createTable("Revision", (table: Knex.CreateTableBuilder): void => {
+      helper.itemRef(table, "id")
+        .notNullable()
+        .unique()
+        .primary();
+
+      helper.idColumn(table, "ownerId")
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"))
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
+
+      table.integer("revisionId")
+        .notNullable();
+
+      table.text("title")
+        .notNullable();
+
+      table.text("uri")
+        .notNullable();
     });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
+    await knex.schema.dropTableIfExists("Revision");
     await knex.schema.dropTableIfExists("Query");
     await knex.schema.dropTableIfExists("Account");
   }

@@ -43,7 +43,7 @@ const QueryCheckbox = ReactMemo(function QueryCheckbox({
   checked,
   onChange,
 }: QueryCheckboxProps): ReactResult {
-  let change = useCallback((checked: boolean) => onChange(query.id, checked), [onChange]);
+  let change = useCallback((checked: boolean) => onChange(query.queryId, checked), [onChange]);
   return <Checkbox
     label={query.description}
     onChange={change}
@@ -73,7 +73,7 @@ const AccountDialog = ReactMemo(function AccountDialog({
   let [state, setState] = useState<State>({
     url: "",
     apiKey: "",
-    queries: queries.map((query: PhabricatorQuery): string => query.id),
+    queries: queries.map((query: PhabricatorQuery): string => query.queryId),
   });
   let [isOpen, , close] = useBoolState(true);
 
@@ -140,10 +140,10 @@ const AccountDialog = ReactMemo(function AccountDialog({
 
     {
       queries.map((query: PhabricatorQuery) => <QueryCheckbox
-        key={query.id}
+        key={query.queryId}
         query={query}
         onChange={changeQuery}
-        checked={state.queries.includes(query.id)}
+        checked={state.queries.includes(query.queryId)}
       />)
     }
   </Dialog>;

@@ -13,8 +13,7 @@ import type {
   PluginContext,
 } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
-import type { gmail_v1 } from "@googleapis/gmail";
-import type { Credentials, OAuth2Client } from "google-auth-library";
+import type { gmail_v1, Auth } from "googleapis";
 import { DateTime } from "luxon";
 
 import type { GoogleAPIFile } from "../api";
@@ -44,7 +43,7 @@ const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 export class Account extends BaseAccount implements GraphQLResolver<GoogleAccount> {
   public static readonly store = new ItemsTable(Account, "Account");
 
-  private client: OAuth2Client | null;
+  private client: Auth.OAuth2Client | null;
 
   public constructor(
     public readonly context: PluginContext,
@@ -137,7 +136,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
 
   private watchTokens(): void {
     if (this.client) {
-      this.client.on("tokens", (credentials: Credentials): void => {
+      this.client.on("tokens", (credentials: Auth.Credentials): void => {
         let {
           access_token: accessToken,
           expiry_date: expiry,
@@ -158,7 +157,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     }
   }
 
-  public get authClient(): OAuth2Client {
+  public get authClient(): Auth.OAuth2Client {
     if (this.client) {
       return this.client;
     }
@@ -337,6 +336,7 @@ export class Thread extends BaseItem {
     if (!thread) {
       thread = await getThread(this.account.authClient, this.threadId) ?? undefined;
       if (!thread) {
+        // TODO actually delete.
         await this.delete();
         return;
       }
@@ -349,6 +349,7 @@ export class Thread extends BaseItem {
       ...record,
     });
 
+    // TODO do this properly.
     await this.context.setItemTaskDone(this.id, record.unread ? null : DateTime.now());
 
     await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
@@ -561,6 +562,7 @@ export class File extends BaseItem {
       file = await getFile(this.account.authClient, this.fileId) ?? undefined;
 
       if (!file) {
+        // TODO actually delete.
         await this.delete();
         return;
       }

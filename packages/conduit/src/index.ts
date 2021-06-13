@@ -1,8 +1,9 @@
-import { URL, URLSearchParams } from "url";
+import { URL } from "url";
 
+import formurlencoded from "form-urlencoded";
 import fetch from "node-fetch";
 
-import type { Conduit } from "./types";
+import type { Conduit, PaginatedApiMethod } from "./types";
 
 export * from "./types";
 
@@ -21,16 +22,13 @@ async function callApi(
   method: string[],
   params: Record<string, unknown> = {},
 ): Promise<unknown> {
-  let formData = new URLSearchParams();
-  formData.set("api.token", apiToken);
-  for (let [key, value] of Object.entries(params)) {
-    formData.set(key, JSON.stringify(value));
-  }
-
   let target = new URL(method.join("."), apiHost);
   let response = await fetch(target, {
     method: "POST",
-    body: formData,
+    body: formurlencoded({
+      "api.token": apiToken,
+      ...params,
+    }),
   });
 
   let json = await response.json();
@@ -64,4 +62,21 @@ export default function conduit(host: URL | string, apiToken: string): Conduit {
   }
 
   return api(new URL("api/", host), apiToken, []) as Conduit;
+}
+
+export async function requestAll<R, A>(method: PaginatedApiMethod<R, A>, args: A): Promise<R[]> {
+  let results: R[] = [];
+
+  let result = await method(args);
+  results = result.data;
+  while (result.cursor.after) {
+    result = await method({
+      ...args,
+      after: result.cursor.after,
+    });
+
+    results = [...results, ...result.data];
+  }
+
+  return results;
 }

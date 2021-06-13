@@ -1,14 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { URL } from "url";
 
-import type { drive_v3 } from "@googleapis/drive";
-import { drive } from "@googleapis/drive";
-import type { gmail_v1 } from "@googleapis/gmail";
-import { gmail } from "@googleapis/gmail";
-import type { people_v1 } from "@googleapis/people";
-import { people } from "@googleapis/people";
 import { decode as b64Decode, encode as b64Encode } from "base-64";
-import { OAuth2Client } from "google-auth-library";
+import type { drive_v3, gmail_v1, people_v1 } from "googleapis";
+import { google, Auth } from "googleapis";
 
 import { GooglePlugin } from ".";
 import type { GoogleAccountRecord } from "./db/types";
@@ -16,10 +11,10 @@ import type { GoogleAccountRecord } from "./db/types";
 export function createAuthClient(
   pluginUrl: URL,
   credentials?: GoogleAccountRecord,
-): OAuth2Client {
+): Auth.OAuth2Client {
   let callbackUrl = new URL("oauth", pluginUrl);
 
-  let client = new OAuth2Client(
+  let client = new Auth.OAuth2Client(
     GooglePlugin.config.clientId,
     GooglePlugin.config.clientSecret,
     callbackUrl.toString(),
@@ -36,7 +31,7 @@ export function createAuthClient(
   return client;
 }
 
-export function generateAuthUrl(client: OAuth2Client, userId: string): string {
+export function generateAuthUrl(client: Auth.OAuth2Client, userId: string): string {
   return client.generateAuthUrl({
     // eslint-disable-next-line @typescript-eslint/naming-convention
     access_type: "offline",
@@ -143,8 +138,10 @@ export function modifyCharset(id: string, sourceCharset: string, targetCharset: 
   return resultCharacters.join("");
 }
 
-export async function getAccountInfo(authClient: OAuth2Client): Promise<people_v1.Schema$Person> {
-  let api = people({
+export async function getAccountInfo(
+  authClient: Auth.OAuth2Client,
+): Promise<people_v1.Schema$Person> {
+  let api = google.people({
     version: "v1",
     auth: authClient,
   });
@@ -158,10 +155,10 @@ export async function getAccountInfo(authClient: OAuth2Client): Promise<people_v
 }
 
 export async function getThread(
-  authClient: OAuth2Client,
+  authClient: Auth.OAuth2Client,
   threadId: string,
 ): Promise<gmail_v1.Schema$Thread | null> {
-  let api = gmail({
+  let api = google.gmail({
     version: "v1",
     auth: authClient,
   });
@@ -184,10 +181,10 @@ function isNonNull<T>(item: T | null): item is T {
 }
 
 export async function listThreads(
-  authClient: OAuth2Client,
+  authClient: Auth.OAuth2Client,
   query: string,
 ): Promise<gmail_v1.Schema$Thread[]> {
-  let api = gmail({
+  let api = google.gmail({
     version: "v1",
     auth: authClient,
   });
@@ -227,8 +224,8 @@ function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
   return label.type == "user";
 }
 
-export async function getLabels(authClient: OAuth2Client): Promise<GoogleAPILabel[]> {
-  let api = gmail({
+export async function getLabels(authClient: Auth.OAuth2Client): Promise<GoogleAPILabel[]> {
+  let api = google.gmail({
     version: "v1",
     auth: authClient,
   });
@@ -272,10 +269,10 @@ const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
 ];
 
 export async function getFile(
-  authClient: OAuth2Client,
+  authClient: Auth.OAuth2Client,
   fileId: string,
 ): Promise<GoogleAPIFile | null> {
-  let api = drive({
+  let api = google.drive({
     version: "v3",
     auth: authClient,
   });

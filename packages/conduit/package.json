@@ -13,6 +13,7 @@
     "watch": "tsc -b -w --incremental"
   },
   "dependencies": {
+    "form-urlencoded": "^6.0.4",
     "node-fetch": "^2.6.1"
   },
   "devDependencies": {

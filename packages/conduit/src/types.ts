@@ -5,7 +5,44 @@ export interface GenericAPI {
   [K: string]: GenericAPI;
 }
 
-export type ApiMethod<R, A extends unknown[] = []> = (...args: A) => Promise<R>;
+export enum RevisionStatus {
+  Draft = "draft",
+  NeedsReview = "needs-review",
+  NeedsRevision = "needs-revision",
+  ChangesPlanned = "changes-planned",
+  Accepted = "accepted",
+  Closed = "published",
+  Abandoned = "abandoned",
+}
+
+export function isClosed(status: RevisionStatus): boolean {
+  return status == RevisionStatus.Closed || status == RevisionStatus.Abandoned;
+}
+
+export function isOpen(status: RevisionStatus): boolean {
+  return !isClosed(status);
+}
+
+export type PaginatedRequest<R> = R & {
+  before?: string | null;
+  after?: string | null;
+  order?: string | null;
+  limit?: number;
+};
+
+export interface PaginatedResult<R> {
+  data: R[];
+  cursor: {
+    limit: number;
+    after: string | null;
+    before: string | null;
+    order: string | null;
+  };
+}
+
+export type SimpleApiMethod<R> = () => Promise<R>;
+export type ApiMethod<R, A> = (arg: A) => Promise<R>;
+export type PaginatedApiMethod<R, A> = ApiMethod<PaginatedResult<R>, PaginatedRequest<A>>;
 
 export interface Conduit {
   user: User;
@@ -15,7 +52,7 @@ export interface Conduit {
 }
 
 export type User = GenericAPI & {
-  whoami: ApiMethod<User$Result>;
+  whoami: SimpleApiMethod<User$Result>;
 };
 
 export interface User$Result {
@@ -33,7 +70,10 @@ export type Differential = GenericAPI & {
 };
 
 export type Differential$Revision = GenericAPI & {
-  search: ApiMethod<Differential$Revision$Search$Result[], [Differential$Revision$Search$Params]>;
+  search: PaginatedApiMethod<
+    Differential$Revision$Search$Result,
+    Differential$Revision$Search$Params
+  >;
 };
 
 export interface Differential$Revision$Search$Params {
@@ -80,7 +120,7 @@ export interface Differential$Revision$Search$Result {
     uri: string;
     authorPHID: string;
     status: {
-      value: string;
+      value: RevisionStatus;
       name: string;
       closed: boolean;
       "color.ansi": string;

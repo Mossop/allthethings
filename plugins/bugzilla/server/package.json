@@ -17,7 +17,8 @@
   "dependencies": {
     "@allthethings/server": "^1.0.0",
     "bugzilla": "^1.1.6",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "luxon": "^1.27.0"
   },
   "devDependencies": {
     "@types/koa": "^2.13.0",

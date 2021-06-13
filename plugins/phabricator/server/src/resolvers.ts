@@ -19,7 +19,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
     },
 
     phabricatorQueries(): PhabricatorQuery[] {
-      return Query.queries;
+      return Object.values(Query.queries);
     },
   },
 

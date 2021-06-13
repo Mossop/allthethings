@@ -1305,27 +1305,6 @@
     minimatch "^3.0.4"
     strip-json-comments "^3.1.1"
 
-"@googleapis/drive@^0.3.1":
-  version "0.3.1"
-  resolved "https://registry.yarnpkg.com/@googleapis/drive/-/drive-0.3.1.tgz#d37e53534562a3e7755611742daff545dea8b857"
-  integrity sha512-LYsxWMHFt2Z7kdO16EE6jVP07Qq141hmZHHuFvljWLVo7EBtiPCgzrkjJe03Q7wNs28rnFe0jlIDiBZYT0tnmA==
-  dependencies:
-    googleapis-common "^5.0.1"
-
-"@googleapis/gmail@^0.2.0":
-  version "0.2.0"
-  resolved "https://registry.yarnpkg.com/@googleapis/gmail/-/gmail-0.2.0.tgz#140a682522ac746f748743d8ffabf99a3f34730c"
-  integrity sha512-Zctm/l1lRXGWACJkwxAM4+FolBWg+oDJTIt/HEwPWwS4BKHrhZT2RMyckr4b7ddp0duKxdyGnlfws+Pwg9GTfw==
-  dependencies:
-    googleapis-common "^5.0.1"
-
-"@googleapis/people@^0.3.0":
-  version "0.3.0"
-  resolved "https://registry.yarnpkg.com/@googleapis/people/-/people-0.3.0.tgz#858fe59365cd0a39addfa5a97080686955970939"
-  integrity sha512-i0736FqcYgwbFd6GbdP3j3XujfaroPWnJPaiEDAoc35dxOzSKrZiSLimgZqBkrE+QKPgFk58o2HUBIftj70pOw==
-  dependencies:
-    googleapis-common "^5.0.1"
-
 "@graphql-codegen/add@^2.0.2":
   version "2.0.2"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/add/-/add-2.0.2.tgz#4acbb95be9ebb859a3cebfe7132fdf49ffe06dd8"
@@ -5986,6 +5965,11 @@ form-data@~2.3.2:
     combined-stream "^1.0.6"
     mime-types "^2.1.12"
 
+form-urlencoded@^6.0.4:
+  version "6.0.4"
+  resolved "https://registry.yarnpkg.com/form-urlencoded/-/form-urlencoded-6.0.4.tgz#62305ea704bb86e1c8b946d1aae5a34e02b6634f"
+  integrity sha512-39GnqmnZkThJBXiKhBCrBGPKiwFHDgi3lcGO3SfURjXoz9x8quxNRTiIWViYN+QzQXxxl/uyKm+i+0PCj7Aqbw==
+
 fresh@~0.5.2:
   version "0.5.2"
   resolved "https://registry.yarnpkg.com/fresh/-/fresh-0.5.2.tgz#3d8cadd90d976569fa835ab1f8e4b23a105605a7"
@@ -6264,21 +6248,6 @@ globrex@^0.1.2:
   integrity sha512-uHJgbwAMwNFf5mLst7IWLNg14x1CkeqglJb/K3doi4dw6q2IvAAmM/Y81kevy83wP+Sst+nutFTYOGg3d1lsxg==
 
 google-auth-library@^7.0.2:
-  version "7.1.0"
-  resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-7.1.0.tgz#d83b6bed1d170e30649e15e9b5b17cb375e88919"
-  integrity sha512-X+gbkGjnLN3HUZP2W3KBREuA603BXd80ITvL0PeS0QpyDNYz/u0pIZ7aRuGnrSuUc0grk/qxEgtVTFt1ogbP+A==
-  dependencies:
-    arrify "^2.0.0"
-    base64-js "^1.3.0"
-    ecdsa-sig-formatter "^1.0.11"
-    fast-text-encoding "^1.0.0"
-    gaxios "^4.0.0"
-    gcp-metadata "^4.2.0"
-    gtoken "^5.0.4"
-    jws "^4.0.0"
-    lru-cache "^6.0.0"
-
-google-auth-library@^7.1.0:
   version "7.1.2"
   resolved "https://registry.yarnpkg.com/google-auth-library/-/google-auth-library-7.1.2.tgz#29fc0fe8b6d5a59b93b7cb561b1a28bcc93360b7"
   integrity sha512-FMipHgfe2u1LzWsf2n9zEB9KsJ8M3n8OYTHbHtlkzPCyo7IknXQR5X99nfvwUHGuX+iEpihUZxDuPm7+qBYeXg==
@@ -6300,7 +6269,7 @@ google-p12-pem@^3.0.3:
   dependencies:
     node-forge "^0.10.0"
 
-googleapis-common@^5.0.1:
+googleapis-common@^5.0.2:
   version "5.0.2"
   resolved "https://registry.yarnpkg.com/googleapis-common/-/googleapis-common-5.0.2.tgz#e2c4e777050b921e90657de1f2edec4e7c64a3e0"
   integrity sha512-TL7qronKNZwE/XBvqshwzCPmZGq2gz/beXzANF7EVoO7FsQjOd7dk40DYrXkoCpvbnJHCQKWESq6NansiIPFqA==
@@ -6311,6 +6280,14 @@ googleapis-common@^5.0.1:
     qs "^6.7.0"
     url-template "^2.0.8"
     uuid "^8.0.0"
+
+googleapis@^76.0.0:
+  version "76.0.0"
+  resolved "https://registry.yarnpkg.com/googleapis/-/googleapis-76.0.0.tgz#44bed361e92df7e44646bdc1a51df031c1ddf0bd"
+  integrity sha512-l/TFSW7IRFcb7wF641BlmuP8Ox1ncuzJk5Fcs2947otlGBm5ktDxFhPkmrcNDaG+LWPQsuDwP1ojL0xV39cpmw==
+  dependencies:
+    google-auth-library "^7.0.2"
+    googleapis-common "^5.0.2"
 
 got@^9.6.0:
   version "9.6.0"
@@ -7909,7 +7886,7 @@ lru-cache@^6.0.0:
   dependencies:
     yallist "^4.0.0"
 
-luxon@^1.25.0:
+luxon@^1.25.0, luxon@^1.27.0:
   version "1.27.0"
   resolved "https://registry.yarnpkg.com/luxon/-/luxon-1.27.0.tgz#ae10c69113d85dab8f15f5e8390d0cbeddf4f00f"
   integrity sha512-VKsFsPggTA0DvnxtJdiExAucKdAnwbCCNlMM5ENvHlxubqWd0xhZcdb4XgZ7QFNhaRhilXCFxHuoObP5BNA4PA==

@@ -12,3 +12,11 @@ export interface PhabricatorQueryRecord {
   ownerId: string;
   queryId: string;
 }
+
+export interface PhabricatorRevisionRecord {
+  id: string;
+  ownerId: string;
+  revisionId: number;
+  title: string;
+  uri: string;
+}
