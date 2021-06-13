@@ -312,7 +312,8 @@ export class Revision extends BaseItem {
       [revision] = revisions.data;
     }
 
-    // TODO update done state.
+    await this.context.setItemTaskDone(this.id, revision.fields.status.closed);
+
     await Revision.store.update(this.context, {
       id: this.id,
       title: revision.fields.title,

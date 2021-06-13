@@ -5,7 +5,7 @@ import { isCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
-import type { DateTime } from "luxon";
+import { DateTime } from "luxon";
 
 import type { ServerConfig } from "../config";
 import type { Item } from "../db";
@@ -100,6 +100,12 @@ export function buildPluginContext(
         throw new Error("Unknown user.");
       }
 
+      if (done === true) {
+        done = DateTime.now();
+      } else if (done === false) {
+        done = null;
+      }
+
       let inbox = await user.inbox();
 
       let itemImpl = await dataSources.items.create(inbox, {
@@ -130,7 +136,7 @@ export function buildPluginContext(
       return itemImpl.id();
     },
 
-    async setItemTaskDone(id: string, done: DateTime | null): Promise<void> {
+    async setItemTaskDone(id: string, done: DateTime | boolean | null): Promise<void> {
       let item = await dataSources.items.getImpl(id);
       if (!item) {
         throw new Error("Unknown item.");
@@ -143,6 +149,13 @@ export function buildPluginContext(
 
       if (!await detail.hasTaskState()) {
         return;
+      }
+
+      let currentDone = await detail.taskDone();
+      if (done === true) {
+        done = currentDone ?? DateTime.now();
+      } else if (done === false) {
+        done = null;
       }
 
       await dataSources.pluginDetail.updateOne(id, {

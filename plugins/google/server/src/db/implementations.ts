@@ -349,8 +349,7 @@ export class Thread extends BaseItem {
       ...record,
     });
 
-    // TODO do this properly.
-    await this.context.setItemTaskDone(this.id, record.unread ? null : DateTime.now());
+    await this.context.setItemTaskDone(this.id, !record.unread);
 
     await this.context.table<GoogleThreadLabelRecord>("ThreadLabel")
       .where("threadId", this.threadId)

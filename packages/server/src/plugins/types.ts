@@ -21,7 +21,7 @@ export interface CreatePluginItemParams {
   archived: DateTime | null;
   snoozed: DateTime | null;
   due?: DateTime | null;
-  done?: DateTime | null;
+  done?: DateTime | boolean | null;
   controller: TaskController | null;
 }
 
@@ -44,7 +44,7 @@ export interface PluginContext {
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
 
   createItem(user: string, props: CreatePluginItemParams): Promise<string>;
-  setItemTaskDone(id: string, done: DateTime | null): Promise<void>;
+  setItemTaskDone(id: string, done: DateTime | boolean | null): Promise<void>;
   setItemSummary(id: string, summary: string): Promise<void>;
   disconnectItem(id: string, url?: string | null, icon?: string | null): Promise<void>;
 
