@@ -72,6 +72,9 @@ class BaseMigration implements PluginDbMigration {
 
       table.text("uri")
         .notNullable();
+
+      table.text("status")
+        .notNullable();
     });
   }
 

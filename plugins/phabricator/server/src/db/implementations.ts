@@ -281,6 +281,7 @@ export class Revision extends BaseItem {
       revisionId: this.record.revisionId,
       title: this.title,
       uri: this.url,
+      status: this.record.status,
     };
   }
 
@@ -306,6 +307,7 @@ export class Revision extends BaseItem {
       id: this.id,
       title: revision.fields.title,
       uri: revision.fields.uri,
+      status: revision.fields.status.value,
     });
   }
 
@@ -334,11 +336,12 @@ export class Revision extends BaseItem {
       });
 
       if (revisions.data.length == 1) {
+        let [revision] = revisions.data;
         let controller = isTask ? TaskController.Plugin : null;
-        if (isTask && revisions[0].fields.status.closed) {
+        if (isTask && revision.fields.status.closed) {
           controller = TaskController.Manual;
         }
-        return Revision.create(account, revisions[0], controller);
+        return Revision.create(account, revision, controller);
       }
     }
 
@@ -364,6 +367,7 @@ export class Revision extends BaseItem {
       revisionId: revision.id,
       title: revision.fields.title,
       uri: revision.fields.uri,
+      status: revision.fields.status.value,
     };
 
     return Revision.store.insert(account.context, record);

@@ -11,6 +11,7 @@ import {
   makeStyles,
   createStyles,
 } from "@material-ui/core";
+import { RevisionStatus } from "conduit-api";
 
 import Icon from "./Icon";
 
@@ -32,7 +33,22 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
+    status: {
+      paddingLeft: theme.spacing(1),
+      textTransform: "uppercase",
+      fontSize: "0.7rem",
+    },
   }));
+
+const StatusMap: Record<RevisionStatus, string> = {
+  [RevisionStatus.Draft]: "Draft",
+  [RevisionStatus.NeedsReview]: "Needs Review",
+  [RevisionStatus.NeedsRevision]: "Needs Revision",
+  [RevisionStatus.ChangesPlanned]: "Changes Planned",
+  [RevisionStatus.Accepted]: "Ready to Land",
+  [RevisionStatus.Closed]: "Landed",
+  [RevisionStatus.Abandoned]: "Abandoned",
+};
 
 export default ReactMemo(function Revision({
   item,
@@ -48,6 +64,7 @@ export default ReactMemo(function Revision({
         <ImageIcon icon={<Icon/>}/>
       </div>
       <div className={classes.summary}>{revision.title}</div>
+      <div className={classes.status}>{StatusMap[revision.status]}</div>
     </a>
   </>;
 });

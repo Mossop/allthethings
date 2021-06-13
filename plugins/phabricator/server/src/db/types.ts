@@ -1,4 +1,5 @@
 import type { GraphQLType } from "@allthethings/utils";
+import type { RevisionStatus } from "conduit-api";
 
 import type { PhabricatorAccount } from "../schema";
 
@@ -19,4 +20,5 @@ export interface PhabricatorRevisionRecord {
   revisionId: number;
   title: string;
   uri: string;
+  status: RevisionStatus;
 }

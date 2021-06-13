@@ -5,7 +5,7 @@ export interface GenericAPI {
   [K: string]: GenericAPI;
 }
 
-export enum RevisionStatus {
+export const enum RevisionStatus {
   Draft = "draft",
   NeedsReview = "needs-review",
   NeedsRevision = "needs-revision",
