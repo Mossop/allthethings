@@ -48,7 +48,7 @@ export type PhabricatorAccountParams = {
 
 export type PhabricatorQuery = {
   readonly __typename?: 'PhabricatorQuery';
-  readonly id: Scalars['ID'];
+  readonly queryId: Scalars['ID'];
   readonly name: Scalars['String'];
   readonly description: Scalars['String'];
 };
@@ -176,7 +176,7 @@ export type PhabricatorAccountResolvers<ContextType = any, ParentType extends Re
 }>;
 
 export type PhabricatorQueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['PhabricatorQuery'] = ResolversParentTypes['PhabricatorQuery']> = ResolversObject<{
-  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  queryId: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   description: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;

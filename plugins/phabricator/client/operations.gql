@@ -16,7 +16,7 @@ query ListPhabricatorQueries {
   user {
     id
     phabricatorQueries {
-      id
+      queryId
       name
       description
     }

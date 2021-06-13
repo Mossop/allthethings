@@ -8,7 +8,7 @@ type PhabricatorAccount {
 }
 
 type PhabricatorQuery {
-  id: ID!
+  queryId: ID!
   name: String!
   description: String!
 }

@@ -29,6 +29,10 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
     return this.record.id;
   }
 
+  public get phid(): string {
+    return this.record.phid;
+  }
+
   public get icon(): string {
     return this.record.icon;
   }
@@ -77,6 +81,7 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
       apiKey,
       icon: user.image,
       email: user.primaryEmail,
+      phid: user.phid,
     };
 
     return Account.store.insert(context, record);
@@ -86,15 +91,33 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
 interface QueryClass {
   new (account: Account, id: string): Query;
 
-  readonly id: string;
+  readonly queryId: string;
   readonly description: string;
 }
 
 export abstract class Query extends BaseSearch<never> {
-  public static queries: QueryClass[] = [];
+  private static queries: Record<string, QueryClass> = {};
 
+  public static addQuery(query: QueryClass): void {
+    Query.queries[query.queryId] = query;
+  }
+
+  public static getQuery;
   protected constructor(protected readonly account: Account) {
     super(account.context);
+  }
+
+  public get queryId(): string {
+    return this.class.queryId;
+  }
+
+  public get description(): string {
+    return this.class.description;
+  }
+
+  protected get class(): QueryClass {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return Object.getPrototypeOf(this);
   }
 
   protected getConstraints(): Differential$Revision$Search$Constraints {
@@ -123,7 +146,7 @@ export abstract class Query extends BaseSearch<never> {
 }
 
 class MustReview extends Query {
-  public static id = "mustreview";
+  public static queryId = "mustreview";
   public static description = "Revisions that must be reviewed.";
 
   public readonly name = "Must Review";
@@ -134,7 +157,7 @@ class MustReview extends Query {
 }
 
 class CanReview extends Query {
-  public static id = "canreview";
+  public static queryId = "canreview";
   public static description = "Revisions that can be reviewed.";
 
   public readonly name = "Review";
@@ -145,7 +168,7 @@ class CanReview extends Query {
 }
 
 class Draft extends Query {
-  public static id = "draft";
+  public static queryId = "draft";
   public static description = "Draft revisions.";
 
   public readonly name = "Draft";
@@ -156,7 +179,7 @@ class Draft extends Query {
 }
 
 class NeedsRevision extends Query {
-  public static id = "needsrevision";
+  public static queryId = "needsrevision";
   public static description = "Revisions that need changes.";
 
   public readonly name = "Needs Changes";
@@ -167,7 +190,7 @@ class NeedsRevision extends Query {
 }
 
 class Waiting extends Query {
-  public static id = "waiting";
+  public static queryId = "waiting";
   public static description = "Revisions waiting on reviewers.";
 
   public readonly name = "In Review";
@@ -178,7 +201,7 @@ class Waiting extends Query {
 }
 
 class Accepted extends Query {
-  public static id = "accepted";
+  public static queryId = "accepted";
   public static description = "Revisions that are ready to land.";
 
   public readonly name = "Accepted";
@@ -188,11 +211,9 @@ class Accepted extends Query {
   }
 }
 
-Query.queries.push(
-  MustReview,
-  CanReview,
-  Draft,
-  NeedsRevision,
-  Waiting,
-  Accepted,
-);
+Query.addQuery(MustReview);
+Query.addQuery(CanReview);
+Query.addQuery(Draft);
+Query.addQuery(NeedsRevision);
+Query.addQuery(Waiting);
+Query.addQuery(Accepted);

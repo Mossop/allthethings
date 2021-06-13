@@ -283,7 +283,7 @@ export type PhabricatorAccountParams = {
 
 export type PhabricatorQuery = {
   readonly __typename?: 'PhabricatorQuery';
-  readonly id: Scalars['ID'];
+  readonly queryId: Scalars['ID'];
   readonly name: Scalars['String'];
   readonly description: Scalars['String'];
 };
@@ -413,7 +413,7 @@ export type ListPhabricatorAccountsQuery = { readonly __typename: 'Query', reado
 export type ListPhabricatorQueriesQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListPhabricatorQueriesQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorQueries: ReadonlyArray<{ readonly __typename: 'PhabricatorQuery', readonly id: string, readonly name: string, readonly description: string }> }> };
+export type ListPhabricatorQueriesQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorQueries: ReadonlyArray<{ readonly __typename: 'PhabricatorQuery', readonly queryId: string, readonly name: string, readonly description: string }> }> };
 
 export type CreatePhabricatorAccountMutationVariables = Exact<{
   params: PhabricatorAccountParams;
@@ -480,7 +480,7 @@ export const ListPhabricatorQueriesDocument = gql`
   user {
     id
     phabricatorQueries {
-      id
+      queryId
       name
       description
     }
