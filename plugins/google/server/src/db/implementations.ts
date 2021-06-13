@@ -4,7 +4,7 @@ import { TaskController } from "@allthethings/schema";
 import {
   BaseAccount,
   BaseItem,
-  BaseSearch,
+  BaseList,
   ItemsTable,
   OwnedItemsTable,
 } from "@allthethings/server";
@@ -77,7 +77,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     ];
   }
 
-  public searches(): Promise<MailSearch[]> {
+  public lists(): Promise<MailSearch[]> {
     return this.mailSearches();
   }
 
@@ -218,7 +218,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
   }
 }
 
-export class MailSearch extends BaseSearch<gmail_v1.Schema$Thread[]>
+export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
   implements GraphQLResolver<GoogleMailSearch> {
   public static readonly store = new OwnedItemsTable(Account.store, MailSearch, "MailSearch");
 
@@ -378,7 +378,7 @@ export class Thread extends BaseItem {
 
   public static recordFromThread(
     data: gmail_v1.Schema$Thread,
-  ): { record: Omit<GoogleThreadRecord, "id"| "ownerId">, labels: string[] } {
+  ): { record: Omit<GoogleThreadRecord, "id" | "ownerId">, labels: string[] } {
     if (!data.id) {
       throw new Error("No ID.");
     }

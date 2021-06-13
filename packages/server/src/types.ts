@@ -4,7 +4,7 @@ export {
 } from "./plugins/tables";
 export {
   BaseAccount,
-  BaseSearch,
+  BaseList,
   BaseItem,
   BasePlugin,
 } from "./plugins/base";

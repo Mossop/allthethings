@@ -1,6 +1,6 @@
 import type { PluginContext, PluginItem } from "@allthethings/server";
 import {
-  BaseSearch,
+  BaseList,
   BaseAccount,
   ItemsTable,
 } from "@allthethings/server";
@@ -61,6 +61,10 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
     return [];
   }
 
+  public async lists(): Promise<[]> {
+    return [];
+  }
+
   public async delete(): Promise<void> {
     await super.delete();
     await Account.store.delete(this.context, this.id);
@@ -95,7 +99,7 @@ interface QueryClass {
   readonly description: string;
 }
 
-export abstract class Query extends BaseSearch<never> {
+export abstract class Query extends BaseList<never> {
   private static queries: Record<string, QueryClass> = {};
 
   public static addQuery(query: QueryClass): void {

@@ -15,7 +15,7 @@ interface IItem extends PluginItem {
   delete(): Promise<void>;
 }
 
-interface ISearch {
+interface IList {
   update(): Promise<PluginItem[]>;
   delete(): Promise<void>;
 }
@@ -30,21 +30,21 @@ interface ItemProvider {
   ): Promise<PluginItem | null>;
 }
 
-interface SearchProvider {
-  store: Store<ISearch>;
+interface ListProvider {
+  store: Store<IList>;
 }
 
 export abstract class BasePlugin implements ServerPlugin {
   protected readonly itemProviders: ItemProvider[] = [];
-  protected readonly searchProviders: SearchProvider[] = [];
+  protected readonly listProviders: ListProvider[] = [];
 
   protected async update(context: PluginContext): Promise<void> {
     let seenIds = new Set<string>();
 
-    for (let provider of this.searchProviders) {
-      let searches = await provider.store.list(context);
-      for (let search of searches) {
-        let seen = await search.update();
+    for (let provider of this.listProviders) {
+      let lists = await provider.store.list(context);
+      for (let list of lists) {
+        let seen = await list.update();
         for (let item of seen) {
           seenIds.add(item.id);
         }
@@ -100,7 +100,7 @@ export abstract class Base {
 }
 
 export abstract class BaseAccount extends Base {
-  public async searches(): Promise<ISearch[]> {
+  public async lists(): Promise<IList[]> {
     return [];
   }
 
@@ -109,12 +109,12 @@ export abstract class BaseAccount extends Base {
   public async delete(): Promise<void> {
     let seenIds = new Set<string>();
 
-    for (let search of await this.searches()) {
-      let seen = await search.update();
+    for (let list of await this.lists()) {
+      let seen = await list.update();
       for (let item of seen) {
         seenIds.add(item.id);
       }
-      await search.delete();
+      await list.delete();
     }
 
     for (let item of await this.items()) {
@@ -126,7 +126,7 @@ export abstract class BaseAccount extends Base {
   }
 }
 
-export abstract class BaseSearch<SR> extends Base implements ISearch {
+export abstract class BaseList<SR> extends Base implements IList {
   public abstract get id(): string;
 
   protected abstract listItems(results?: SR): Promise<PluginItem[]>;

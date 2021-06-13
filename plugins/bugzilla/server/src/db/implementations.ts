@@ -5,7 +5,7 @@ import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
   BaseItem,
   BaseAccount,
-  BaseSearch,
+  BaseList,
   ItemsTable,
   OwnedItemsTable,
 } from "@allthethings/server";
@@ -48,6 +48,10 @@ export class Account extends BaseAccount implements GraphQLResolver<BugzillaAcco
 
   public async items(): Promise<Bug[]> {
     return Bug.store.list(this.context, { ownerId: this.id });
+  }
+
+  public lists(): Promise<Search[]> {
+    return this.searches();
   }
 
   public async searches(): Promise<Search[]> {
@@ -229,7 +233,7 @@ export class Account extends BaseAccount implements GraphQLResolver<BugzillaAcco
   }
 }
 
-export class Search extends BaseSearch<BugzillaAPIBug[]> implements GraphQLType<BugzillaSearch> {
+export class Search extends BaseList<BugzillaAPIBug[]> implements GraphQLType<BugzillaSearch> {
   public static readonly store = new OwnedItemsTable(Account.store, Search, "Search");
 
   public constructor(
