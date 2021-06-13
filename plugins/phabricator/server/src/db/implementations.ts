@@ -3,6 +3,7 @@ import { URL } from "url";
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
+  bestIcon, loadPageInfo,
   BaseItem, OwnedItemsTable,
   BaseList,
   BaseAccount,
@@ -47,6 +48,10 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
   }
 
   public get icon(): string {
+    return this.record.icon ?? this.record.userIcon;
+  }
+
+  public get revisionIcon(): string | null {
     return this.record.icon;
   }
 
@@ -91,12 +96,16 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
     let api = conduit(url, apiKey);
     let user = await api.user.whoami();
 
+    let info = await loadPageInfo(new URL(url));
+    let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
+
     let record: PhabricatorAccountRecord = {
       id: await context.id(),
       userId,
       url,
       apiKey,
-      icon: user.image,
+      icon,
+      userIcon: user.image,
       email: user.primaryEmail,
       phid: user.phid,
     };
@@ -282,6 +291,7 @@ export class Revision extends BaseItem {
       title: this.title,
       uri: this.url,
       status: this.record.status,
+      icon: this.account.revisionIcon,
     };
   }
 

@@ -255,8 +255,13 @@ function wrapResolver(
 class PluginManager {
   private readonly plugins: Set<PluginInstance> = new Set();
 
-  private withAll<T>(caller: (plugin: PluginInstance) => Promise<T>): Promise<T[]> {
-    return Promise.all(Array.from(this.plugins, caller));
+  private async withAll<T>(caller: (plugin: PluginInstance) => Promise<T>): Promise<T[]> {
+    let results: T[] = [];
+    for (let plugin of this.plugins) {
+      results.push(await caller(plugin));
+    }
+
+    return results;
   }
 
   private async filteredAll<T, D extends T>(

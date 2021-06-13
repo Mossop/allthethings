@@ -7,5 +7,6 @@ export interface RevisionFields {
   revisionId: number;
   title: string;
   uri: string;
+  icon: string | null;
   status: RevisionStatus;
 }

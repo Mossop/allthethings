@@ -27,6 +27,9 @@ class BaseMigration implements PluginDbMigration {
         .notNullable();
 
       table.text("icon")
+        .nullable();
+
+      table.text("userIcon")
         .notNullable();
 
       table.unique(["url", "phid"]);

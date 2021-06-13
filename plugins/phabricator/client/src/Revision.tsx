@@ -61,7 +61,7 @@ export default ReactMemo(function Revision({
     <TaskDoneToggle item={item}/>
     <a className={classes.link} rel="noreferrer" target="_blank" href={revision.uri}>
       <div className={classes.iconContainer}>
-        <ImageIcon icon={<Icon/>}/>
+        <ImageIcon icon={revision.icon ?? <Icon/>}/>
       </div>
       <div className={classes.summary}>{revision.title}</div>
       <div className={classes.status}>{StatusMap[revision.status]}</div>
