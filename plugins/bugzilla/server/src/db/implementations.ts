@@ -9,6 +9,7 @@ import {
   ItemsTable,
   OwnedItemsTable,
 } from "@allthethings/server";
+import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
@@ -35,15 +36,19 @@ function isDone(status: string): boolean {
 }
 
 export class Account extends BaseAccount implements GraphQLResolver<BugzillaAccount> {
-  public static readonly store = new ItemsTable(Account, "Account");
+  public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   private api: BugzillaAPI | null = null;
 
   public constructor(
     context: PluginContext,
-    private readonly record: BugzillaAccountRecord,
+    private record: BugzillaAccountRecord,
   ) {
     super(context);
+  }
+
+  public async onRecordUpdate(record: BugzillaAccountRecord): Promise<void> {
+    this.record = record;
   }
 
   public async items(): Promise<Bug[]> {
@@ -234,13 +239,17 @@ export class Account extends BaseAccount implements GraphQLResolver<BugzillaAcco
 }
 
 export class Search extends BaseList<BugzillaAPIBug[]> implements GraphQLType<BugzillaSearch> {
-  public static readonly store = new OwnedItemsTable(Account.store, Search, "Search");
+  public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Search), "Search");
 
   public constructor(
     private readonly account: Account,
-    private readonly record: BugzillaSearchRecord,
+    private record: BugzillaSearchRecord,
   ) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: BugzillaSearchRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {
@@ -275,6 +284,11 @@ export class Search extends BaseList<BugzillaAPIBug[]> implements GraphQLType<Bu
     url.search = search;
 
     return url.toString();
+  }
+
+  public async delete(): Promise<void> {
+    await super.delete();
+    await Search.store.delete(this.context, this.id);
   }
 
   public async listItems(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
@@ -352,13 +366,17 @@ function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields
 }
 
 export class Bug extends BaseItem {
-  public static readonly store = new OwnedItemsTable(Account.store, Bug, "Bug");
+  public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Bug), "Bug");
 
   public constructor(
     private readonly account: Account,
     private record: BugzillaBugRecord,
   ) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: BugzillaBugRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {

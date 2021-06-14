@@ -20,7 +20,7 @@ export function SettingsPages(): ReactResult {
   let onAccountCreated = useCallback((account: Omit<BugzillaAccount, "username">) => {
     closeAccountDialog();
     setSettingsPage(account.id, "@allthethings/bugzilla-server");
-  }, []);
+  }, [closeAccountDialog, setSettingsPage]);
 
   let { data } = useListBugzillaAccountsQuery();
   let accounts = data?.user?.bugzillaAccounts ?? [];

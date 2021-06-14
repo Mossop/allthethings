@@ -20,7 +20,7 @@ export function SettingsPages(): ReactResult {
   let onAccountCreated = useCallback((account: Omit<PhabricatorAccount, "username">) => {
     closeAccountDialog();
     setSettingsPage(account.id, "@allthethings/phabricator-server");
-  }, []);
+  }, [closeAccountDialog, setSettingsPage]);
 
   let { data } = useListPhabricatorAccountsQuery();
   let accounts = data?.user?.phabricatorAccounts ?? [];

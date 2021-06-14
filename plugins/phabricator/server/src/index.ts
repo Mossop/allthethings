@@ -14,7 +14,7 @@ import type {
 import { BasePlugin } from "@allthethings/server";
 import koaStatic from "koa-static";
 
-import { Revision } from "./db/implementations";
+import { Query, Revision } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -29,6 +29,10 @@ class PhabricatorPlugin extends BasePlugin implements ServerPlugin {
 
   public readonly itemProviders = [
     Revision,
+  ];
+
+  public readonly listProviders = [
+    Query,
   ];
 
   public constructor(private readonly server: PluginServer) {

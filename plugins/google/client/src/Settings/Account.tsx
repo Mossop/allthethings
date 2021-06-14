@@ -69,7 +69,14 @@ function SearchSettingsItem({
       <SearchIcon/>
     </div>
     <div className={classes.searchName}>
-      <a href={search.url} target="_blank" className={classes.searchLink}>{search.name}</a>
+      <a
+        href={search.url}
+        target="_blank"
+        className={classes.searchLink}
+        rel="noreferrer"
+      >
+        {search.name}
+      </a>
     </div>
     <div className={classes.actions}>
       {/* <IconButton onClick={deleteSearch}>
@@ -109,10 +116,12 @@ export default function AccountSettings({
         </>
       }
     >
-      {account.mailSearches.map((search: GoogleMailSearch) => <SearchSettingsItem
-        key={search.id}
-        search={search}
-      />)}
+      {
+        account.mailSearches.map((search: GoogleMailSearch) => <SearchSettingsItem
+          key={search.id}
+          search={search}
+        />)
+      }
     </SettingsListSection>
     {
       showSearchDialog && <SearchDialog

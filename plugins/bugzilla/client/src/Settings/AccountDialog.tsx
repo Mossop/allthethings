@@ -54,7 +54,7 @@ export default function AccountDialog({
     }
 
     onAccountCreated(account.createBugzillaAccount);
-  }, []);
+  }, [createAccount, onAccountCreated]);
 
   return <Dialog
     title="Add Bugzilla Account"
@@ -90,11 +90,13 @@ export default function AccountDialog({
       state={state}
       setState={setState}
       stateKey="auth"
-      values={[
-        { value: AuthType.Public, label: "Unauthenticated" },
-        { value: AuthType.Password, label: "Password" },
-        { value: AuthType.ApiKey, label: "API Key" },
-      ]}
+      values={
+        [
+          { value: AuthType.Public, label: "Unauthenticated" },
+          { value: AuthType.Password, label: "Password" },
+          { value: AuthType.ApiKey, label: "API Key" },
+        ]
+      }
     />
 
     {

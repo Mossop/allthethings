@@ -4,6 +4,7 @@ import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 import { Account, Query } from "./db/implementations";
 import type {
   MutationCreatePhabricatorAccountArgs,
+  MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
   PhabricatorQuery,
 } from "./schema";
@@ -29,11 +30,37 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       { params: { url, apiKey, queries } }: MutationCreatePhabricatorAccountArgs,
       ctx: AuthedPluginContext,
     ): Promise<Account> {
-      return Account.create(ctx, ctx.userId, {
+      let account = await Account.create(ctx, ctx.userId, {
         url,
         apiKey,
         queries,
       });
+
+      await Query.ensureQueries(account, queries);
+
+      return account;
+    },
+
+    async updatePhabricatorAccount(
+      outer: unknown,
+      { id, params: { url, apiKey, queries } }: MutationUpdatePhabricatorAccountArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<Account | null> {
+      let account = await Account.store.update(ctx, {
+        id,
+        url: url ?? undefined,
+        apiKey: apiKey ?? undefined,
+      });
+
+      if (!account) {
+        return null;
+      }
+
+      if (Array.isArray(queries)) {
+        await Query.ensureQueries(account, queries);
+      }
+
+      return account;
     },
 
     async deletePhabricatorAccount(

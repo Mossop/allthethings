@@ -1,8 +1,4 @@
 module.exports = {
-  ignorePatterns: [
-    "src/popup-state/**",
-  ],
-
   overrides: [{
     files: [
       "src/**/*.js",

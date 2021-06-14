@@ -23,8 +23,19 @@ query ListPhabricatorQueries {
   }
 }
 
-mutation CreatePhabricatorAccount($params: PhabricatorAccountParams!) {
+mutation CreatePhabricatorAccount($params: CreatePhabricatorAccountParams!) {
   createPhabricatorAccount(params: $params) {
+    id
+    email
+    icon
+    url
+    apiKey
+    enabledQueries
+  }
+}
+
+mutation UpdatePhabricatorAccount($id: ID!, $params: UpdatePhabricatorAccountParams!) {
+  updatePhabricatorAccount(id: $id, params: $params) {
     id
     email
     icon

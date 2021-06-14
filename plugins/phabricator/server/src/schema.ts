@@ -14,15 +14,28 @@ export type Scalars = {
   Float: number;
 };
 
+export type CreatePhabricatorAccountParams = {
+  readonly url: Scalars['String'];
+  readonly apiKey: Scalars['String'];
+  readonly queries: ReadonlyArray<Scalars['ID']>;
+};
+
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createPhabricatorAccount: PhabricatorAccount;
+  readonly updatePhabricatorAccount: Maybe<PhabricatorAccount>;
   readonly deletePhabricatorAccount: Maybe<Scalars['Boolean']>;
 };
 
 
 export type MutationCreatePhabricatorAccountArgs = {
-  params: PhabricatorAccountParams;
+  params: CreatePhabricatorAccountParams;
+};
+
+
+export type MutationUpdatePhabricatorAccountArgs = {
+  id: Scalars['ID'];
+  params: UpdatePhabricatorAccountParams;
 };
 
 
@@ -37,13 +50,7 @@ export type PhabricatorAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiKey: Scalars['String'];
-  readonly enabledQueries: Maybe<ReadonlyArray<Scalars['ID']>>;
-};
-
-export type PhabricatorAccountParams = {
-  readonly url: Scalars['String'];
-  readonly apiKey: Scalars['String'];
-  readonly queries: ReadonlyArray<Scalars['ID']>;
+  readonly enabledQueries: ReadonlyArray<Scalars['ID']>;
 };
 
 export type PhabricatorQuery = {
@@ -51,6 +58,12 @@ export type PhabricatorQuery = {
   readonly queryId: Scalars['ID'];
   readonly name: Scalars['String'];
   readonly description: Scalars['String'];
+};
+
+export type UpdatePhabricatorAccountParams = {
+  readonly url: Maybe<Scalars['String']>;
+  readonly apiKey: Maybe<Scalars['String']>;
+  readonly queries: Maybe<ReadonlyArray<Scalars['ID']>>;
 };
 
 export type User = {
@@ -138,30 +151,33 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = ResolversObject<{
+  CreatePhabricatorAccountParams: CreatePhabricatorAccountParams;
+  String: ResolverTypeWrapper<Scalars['String']>;
+  ID: ResolverTypeWrapper<Scalars['ID']>;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
-  ID: ResolverTypeWrapper<Scalars['ID']>;
   PhabricatorAccount: ResolverTypeWrapper<PhabricatorAccount>;
-  String: ResolverTypeWrapper<Scalars['String']>;
-  PhabricatorAccountParams: PhabricatorAccountParams;
   PhabricatorQuery: ResolverTypeWrapper<PhabricatorQuery>;
+  UpdatePhabricatorAccountParams: UpdatePhabricatorAccountParams;
   User: ResolverTypeWrapper<User>;
 }>;
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = ResolversObject<{
+  CreatePhabricatorAccountParams: CreatePhabricatorAccountParams;
+  String: Scalars['String'];
+  ID: Scalars['ID'];
   Mutation: {};
   Boolean: Scalars['Boolean'];
-  ID: Scalars['ID'];
   PhabricatorAccount: PhabricatorAccount;
-  String: Scalars['String'];
-  PhabricatorAccountParams: PhabricatorAccountParams;
   PhabricatorQuery: PhabricatorQuery;
+  UpdatePhabricatorAccountParams: UpdatePhabricatorAccountParams;
   User: User;
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createPhabricatorAccount: Resolver<ResolversTypes['PhabricatorAccount'], ParentType, ContextType, RequireFields<MutationCreatePhabricatorAccountArgs, 'params'>>;
+  updatePhabricatorAccount: Resolver<Maybe<ResolversTypes['PhabricatorAccount']>, ParentType, ContextType, RequireFields<MutationUpdatePhabricatorAccountArgs, 'id' | 'params'>>;
   deletePhabricatorAccount: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeletePhabricatorAccountArgs, 'account'>>;
 }>;
 
@@ -171,7 +187,7 @@ export type PhabricatorAccountResolvers<ContextType = any, ParentType extends Re
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   apiKey: Resolver<ResolversTypes['String'], ParentType, ContextType>;
-  enabledQueries: Resolver<Maybe<ReadonlyArray<ResolversTypes['ID']>>, ParentType, ContextType>;
+  enabledQueries: Resolver<ReadonlyArray<ResolversTypes['ID']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

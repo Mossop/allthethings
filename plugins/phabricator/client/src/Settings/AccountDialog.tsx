@@ -43,7 +43,10 @@ const QueryCheckbox = ReactMemo(function QueryCheckbox({
   checked,
   onChange,
 }: QueryCheckboxProps): ReactResult {
-  let change = useCallback((checked: boolean) => onChange(query.queryId, checked), [onChange]);
+  let change = useCallback(
+    (checked: boolean) => onChange(query.queryId, checked),
+    [onChange, query.queryId],
+  );
   return <Checkbox
     label={query.description}
     onChange={change}
@@ -93,7 +96,7 @@ const AccountDialog = ReactMemo(function AccountDialog({
     }
 
     onAccountCreated(account.createPhabricatorAccount);
-  }, []);
+  }, [createAccount, onAccountCreated]);
 
   let changeQuery = useCallback((id: string, enabled: boolean): void => {
     setState((state: State): State => {

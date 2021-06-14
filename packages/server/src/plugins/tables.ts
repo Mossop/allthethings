@@ -9,9 +9,13 @@ interface ItemRecord<Id> {
   id: Id;
 }
 
-interface Item<Id> {
-  id: Id;
+interface UpdatableItem<Record> {
+  onRecordUpdate(record: Record): Promise<void>;
 }
+
+type Item<Id, Record> = UpdatableItem<Record> & {
+  id: Id;
+};
 
 type IdFor<R> = R extends ItemRecord<infer Id> ? Id : never;
 
@@ -19,7 +23,7 @@ interface OwnedItemRecord<Id> extends ItemRecord<Id> {
   ownerId: string;
 }
 
-interface OwnedItem<Id, Owner> extends Item<Id> {
+interface OwnedItem<Id, Record, Owner> extends Item<Id, Record> {
   owner: Owner;
 }
 
@@ -32,9 +36,17 @@ interface OwnerStore<Instance> {
   get(context: PluginContext, id: string): Promise<Instance | null>;
 }
 
-type ItemBuilder<Owner, Record, Instance> = new (owner: Owner, record: Record) => Instance;
+type ItemBuilder<Owner, Record, Instance> = (owner: Owner, record: Record) => Instance;
+export function classBuilder<Owner, Record, Instance>(
+  cls: new (owner: Owner, record: Record) => Instance,
+): ItemBuilder<Owner, Record, Instance> {
+  return (owner: Owner, record: Record) => new cls(owner, record);
+}
 
-abstract class BaseTable<Record extends ItemRecord<unknown>, Instance> {
+abstract class BaseTable<
+  Record extends ItemRecord<unknown>,
+  Instance extends UpdatableItem<Record>,
+> {
   public constructor(protected readonly tableName: string) {
   }
 
@@ -88,11 +100,20 @@ abstract class BaseTable<Record extends ItemRecord<unknown>, Instance> {
   public async update(
     context: PluginContext,
     record: Partial<Omit<Record, "id">> & ItemRecord<IdFor<Record>>,
-  ): Promise<void> {
-    await context.table<Record>(this.tableName)
+  ): Promise<Instance | null> {
+    let records = await context.table<Record>(this.tableName)
       .where("id", record.id)
       // @ts-ignore
-      .update(record);
+      .update(record)
+      .returning("*") as Record[];
+
+    if (records.length != 1) {
+      return null;
+    }
+
+    let instance = await this.build(context, records[0]);
+    await instance.onRecordUpdate(records[0]);
+    return instance;
   }
 
   public async delete(context: PluginContext, id: IdFor<Record>): Promise<void> {
@@ -102,8 +123,10 @@ abstract class BaseTable<Record extends ItemRecord<unknown>, Instance> {
   }
 }
 
-export class ItemsTable<Record extends ItemRecord<unknown>, Instance extends Item<IdFor<Record>>>
-  extends BaseTable<Record, Instance> {
+export class ItemsTable<
+  Record extends ItemRecord<unknown>,
+  Instance extends Item<IdFor<Record>, Record> & UpdatableItem<Record>,
+> extends BaseTable<Record, Instance> {
   protected readonly cache: (context: PluginContext) => ItemCache<IdFor<Record>, Instance>;
 
   public constructor(
@@ -122,21 +145,21 @@ export class ItemsTable<Record extends ItemRecord<unknown>, Instance extends Ite
           return null;
         }
 
-        return new this.builder(context, record);
+        return this.builder(context, record);
       },
     );
   }
 
   public async build(context: PluginContext, record: Record): Promise<Instance> {
     // @ts-ignore
-    return this.cache(context).upsertItem(record.id, () => new this.builder(context, record));
+    return this.cache(context).upsertItem(record.id, () => this.builder(context, record));
   }
 }
 
 export class OwnedItemsTable<
   Owner extends ItemOwner,
   Record extends OwnedItemRecord<unknown>,
-  Instance extends OwnedItem<IdFor<Record>, Owner>,
+  Instance extends OwnedItem<IdFor<Record>, Record, Owner>,
 > extends BaseTable<Record, Instance> {
   private cache: (owner: Owner) => ItemCache<IdFor<Record>, Instance>;
 
@@ -160,7 +183,7 @@ export class OwnedItemsTable<
         return null;
       }
 
-      return new this.builder(owner, record);
+      return this.builder(owner, record);
     });
   }
 
@@ -172,6 +195,6 @@ export class OwnedItemsTable<
 
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    return this.cache(owner).upsertItem(record.id, () => new this.builder(owner, record));
+    return this.cache(owner).upsertItem(record.id, () => this.builder(owner, record));
   }
 }

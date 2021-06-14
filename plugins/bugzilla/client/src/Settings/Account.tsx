@@ -71,14 +71,21 @@ function SearchSettingsItem({
   let deleteSearch = useCallback(async () => {
     await resetStore();
     await deleteSearchMutation();
-  }, [deleteSearchMutation]);
+  }, [deleteSearchMutation, resetStore]);
 
   return <SettingsListItem>
     <div className={classes.searchIcon}>
       <SearchIcon/>
     </div>
     <div className={classes.searchName}>
-      <a href={search.url} target="_blank" className={classes.searchLink}>{search.name}</a>
+      <a
+        href={search.url}
+        target="_blank"
+        className={classes.searchLink}
+        rel="noreferrer"
+      >
+        {search.name}
+      </a>
     </div>
     <div className={classes.actions}>
       <IconButton onClick={deleteSearch}>
@@ -111,7 +118,7 @@ export default function AccountSettings({
   let deleteAccount = useCallback(async () => {
     await resetStore();
     await deleteAccountMutation();
-  }, [deleteAccountMutation]);
+  }, [deleteAccountMutation, resetStore]);
 
   return <SettingsPage
     heading={
@@ -138,10 +145,12 @@ export default function AccountSettings({
         </>
       }
     >
-      {account.searches.map((search: BugzillaSearch) => <SearchSettingsItem
-        key={search.id}
-        search={search}
-      />)}
+      {
+        account.searches.map((search: BugzillaSearch) => <SearchSettingsItem
+          key={search.id}
+          search={search}
+        />)
+      }
     </SettingsListSection>
     {
       showSearchDialog && <SearchDialog

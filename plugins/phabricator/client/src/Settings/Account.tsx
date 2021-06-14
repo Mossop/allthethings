@@ -5,14 +5,19 @@ import {
   Styles,
   Icons,
   useResetStore,
+  SettingsListSection,
+  SubHeading,
+  ReactMemo,
 } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
-import type { PhabricatorAccount } from "../schema";
+import type { PhabricatorAccount, PhabricatorQuery } from "../schema";
 import {
+  useUpdatePhabricatorAccountMutation,
+  useListPhabricatorQueriesQuery,
   refetchListPhabricatorAccountsQuery,
   useDeletePhabricatorAccountMutation,
 } from "../schema";
@@ -27,17 +32,59 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexCenteredRow,
       justifyContent: "end",
     },
+    query: {
+      ...Styles.flexCenteredRow,
+    },
+    queryDescription: {
+      flex: 1,
+    },
   }));
+
+interface QueryProps {
+  query: PhabricatorQuery;
+  enabled: boolean;
+  onChangeQuery: (query: string, enabled: boolean) => void;
+}
+
+const Query = ReactMemo(function Query({
+  query,
+  enabled,
+  onChangeQuery,
+}: QueryProps): ReactResult {
+  let classes = useStyles();
+
+  let click = useCallback(() => {
+    onChangeQuery(query.queryId, !enabled);
+  }, [query, enabled, onChangeQuery]);
+
+  return <div className={classes.query}>
+    <IconButton onClick={click}>
+      {enabled ? <Icons.Checked/> : <Icons.Unchecked/>}
+    </IconButton>
+    <div className={classes.queryDescription}>
+      {query.description}
+    </div>
+  </div>;
+});
 
 interface AccountSettingsProps {
   account: PhabricatorAccount;
 }
 
-export default function AccountSettings({
+export default ReactMemo(function AccountSettings({
   account,
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
   let resetStore = useResetStore();
+
+  let { data: queryList } = useListPhabricatorQueriesQuery();
+  let queries = queryList?.user?.phabricatorQueries ?? [];
+
+  let [updateAccount] = useUpdatePhabricatorAccountMutation({
+    refetchQueries: [
+      refetchListPhabricatorAccountsQuery(),
+    ],
+  });
 
   let [deleteAccountMutation] = useDeletePhabricatorAccountMutation({
     variables: {
@@ -51,7 +98,29 @@ export default function AccountSettings({
   let deleteAccount = useCallback(async () => {
     await resetStore();
     await deleteAccountMutation();
-  }, [deleteAccountMutation]);
+  }, [deleteAccountMutation, resetStore]);
+
+  let onChangeQuery = useMemo(() => {
+    return (query: string, enabled: boolean): void => {
+      let enabledQueries = new Set(account.enabledQueries);
+      if (enabled) {
+        enabledQueries.add(query);
+      } else {
+        enabledQueries.delete(query);
+      }
+
+      void updateAccount({
+        variables: {
+          id: account.id,
+          params: {
+            url: null,
+            apiKey: null,
+            queries: [...enabledQueries],
+          },
+        },
+      });
+    };
+  }, [account.enabledQueries, account.id, updateAccount]);
 
   return <SettingsPage
     heading={
@@ -66,5 +135,17 @@ export default function AccountSettings({
       </>
     }
   >
+    <SettingsListSection
+      heading={<SubHeading>Queries</SubHeading>}
+    >
+      {
+        queries.map((query: PhabricatorQuery) => <Query
+          key={query.queryId}
+          query={query}
+          enabled={account.enabledQueries.includes(query.queryId)}
+          onChangeQuery={onChangeQuery}
+        />)
+      }
+    </SettingsListSection>
   </SettingsPage>;
-}
+});

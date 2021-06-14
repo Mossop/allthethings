@@ -50,7 +50,7 @@ export default function SearchDialog({
 
     onSearchCreated(data.createGoogleMailSearch);
     await resetStore();
-  }, []);
+  }, [createSearch, onSearchCreated, resetStore]);
 
   return <Dialog
     title="Add GMail Search"

@@ -12,6 +12,7 @@ import type {
   AuthedPluginContext,
   PluginContext,
 } from "@allthethings/server";
+import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver } from "@allthethings/utils";
 import type { gmail_v1, Auth } from "googleapis";
 import { DateTime } from "luxon";
@@ -41,16 +42,20 @@ import type {
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
 export class Account extends BaseAccount implements GraphQLResolver<GoogleAccount> {
-  public static readonly store = new ItemsTable(Account, "Account");
+  public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   private client: Auth.OAuth2Client | null;
 
   public constructor(
     public readonly context: PluginContext,
-    private readonly record: GoogleAccountRecord,
+    private record: GoogleAccountRecord,
   ) {
     super(context);
     this.client = null;
+  }
+
+  public async onRecordUpdate(record: GoogleAccountRecord): Promise<void> {
+    this.record = record;
   }
 
   public get id(): string {
@@ -219,13 +224,21 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
 
 export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
   implements GraphQLResolver<GoogleMailSearch> {
-  public static readonly store = new OwnedItemsTable(Account.store, MailSearch, "MailSearch");
+  public static readonly store = new OwnedItemsTable(
+    Account.store,
+    classBuilder(MailSearch),
+    "MailSearch",
+  );
 
   public constructor(
     private readonly account: Account,
-    private readonly record: GoogleMailSearchRecord,
+    private record: GoogleMailSearchRecord,
   ) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: GoogleMailSearchRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {
@@ -248,6 +261,11 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
     let url = new URL("https://mail.google.com/mail/");
     url.hash = `search/${this.query}`;
     return this.account.buildURL(url).toString();
+  }
+
+  public async delete(): Promise<void> {
+    await super.delete();
+    await MailSearch.store.delete(this.context, this.id);
   }
 
   public async listItems(threadList?: gmail_v1.Schema$Thread[]): Promise<Thread[]> {
@@ -304,13 +322,21 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
 }
 
 export class Thread extends BaseItem {
-  public static readonly store = new OwnedItemsTable(Account.store, Thread, "Thread");
+  public static readonly store = new OwnedItemsTable(
+    Account.store,
+    classBuilder(Thread),
+    "Thread",
+  );
 
   public constructor(
     private readonly account: Account,
-    private readonly record: GoogleThreadRecord,
+    private record: GoogleThreadRecord,
   ) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: GoogleThreadRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {
@@ -521,10 +547,18 @@ export class Thread extends BaseItem {
 }
 
 export class File extends BaseItem {
-  public static readonly store = new OwnedItemsTable(Account.store, File, "File");
+  public static readonly store = new OwnedItemsTable(
+    Account.store,
+    classBuilder(File),
+    "File",
+  );
 
-  public constructor(private readonly account: Account, private readonly record: GoogleFileRecord) {
+  public constructor(private readonly account: Account, private record: GoogleFileRecord) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: GoogleFileRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {

@@ -9,6 +9,7 @@ import {
   BaseAccount,
   ItemsTable,
 } from "@allthethings/server";
+import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver } from "@allthethings/utils";
 import type {
   Conduit,
@@ -17,22 +18,32 @@ import type {
   Differential$Revision$Search$Result,
 } from "conduit-api";
 import conduit, {
+  RevisionStatus,
+
   requestAll,
 } from "conduit-api";
 import { DateTime } from "luxon";
 
-import type { PhabricatorAccount, PhabricatorAccountParams } from "../schema";
+import type { PhabricatorAccount, CreatePhabricatorAccountParams } from "../schema";
 import type { RevisionFields } from "../types";
-import type { PhabricatorAccountRecord, PhabricatorRevisionRecord } from "./types";
+import type {
+  PhabricatorAccountRecord,
+  PhabricatorQueryRecord,
+  PhabricatorRevisionRecord,
+} from "./types";
 
 export class Account extends BaseAccount implements GraphQLResolver<PhabricatorAccount> {
-  public static readonly store = new ItemsTable(Account, "Account");
+  public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   public constructor(
     context: PluginContext,
-    private readonly record: PhabricatorAccountRecord,
+    private record: PhabricatorAccountRecord,
   ) {
     super(context);
+  }
+
+  public async onRecordUpdate(record: PhabricatorAccountRecord): Promise<void> {
+    this.record = record;
   }
 
   public get conduit(): Conduit {
@@ -71,16 +82,24 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
     return this.record.apiKey;
   }
 
-  public get enabledQueries(): string[] {
-    return [];
+  public async enabledQueries(): Promise<string[]> {
+    let queries = await Query.store.list(this.context, {
+      ownerId: this.id,
+    });
+
+    return queries.map((query: Query): string => query.queryId);
   }
 
-  public async items(): Promise<[]> {
-    return [];
+  public async items(): Promise<Revision[]> {
+    return Revision.store.list(this.context, {
+      ownerId: this.id,
+    });
   }
 
-  public async lists(): Promise<[]> {
-    return [];
+  public async lists(): Promise<Query[]> {
+    return Query.store.list(this.context, {
+      ownerId: this.id,
+    });
   }
 
   public async delete(): Promise<void> {
@@ -91,7 +110,7 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
   public static async create(
     context: PluginContext,
     userId: string,
-    { url, apiKey }: PhabricatorAccountParams,
+    { url, apiKey, queries }: CreatePhabricatorAccountParams,
   ): Promise<Account> {
     let api = conduit(url, apiKey);
     let user = await api.user.whoami();
@@ -110,34 +129,100 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
       phid: user.phid,
     };
 
-    return Account.store.insert(context, record);
+    let account = await Account.store.insert(context, record);
+    await Query.ensureQueries(account, queries);
+    return account;
   }
 }
 
 interface QueryClass {
-  new (account: Account, id: string): Query;
+  new (account: Account, record: PhabricatorQueryRecord): Query;
 
   readonly queryId: string;
   readonly description: string;
 }
 
 export abstract class Query extends BaseList<never> {
+  public static store = new OwnedItemsTable(
+    Account.store,
+    (owner: Account, record: PhabricatorQueryRecord): Query => {
+      let cls = Query.queries[record.queryId];
+      return new cls(owner, record);
+    },
+    "Query",
+  );
+
   public static queries: Record<string, QueryClass> = {};
 
   public static addQuery(query: QueryClass): void {
     Query.queries[query.queryId] = query;
   }
 
-  protected constructor(protected readonly account: Account) {
+  public static async ensureQueries(account: Account, queryIds: readonly string[]): Promise<void> {
+    let queriesToCreate = new Set(queryIds);
+
+    let existingQueries = await Query.store.list(account.context, {
+      ownerId: account.id,
+    });
+
+    for (let query of existingQueries) {
+      if (queriesToCreate.has(query.queryId)) {
+        queriesToCreate.delete(query.queryId);
+      } else {
+        await query.delete();
+      }
+    }
+
+    for (let queryId of queriesToCreate) {
+      if (!(queryId in Query.queries)) {
+        throw new Error(`Unknown query type: ${queryId}`);
+      }
+
+      let id = await account.context.addList({
+        name: "temp",
+        url: null,
+      });
+
+      let query = await Query.store.insert(account.context, {
+        id,
+        queryId,
+        ownerId: account.id,
+      });
+
+      await query.update();
+    }
+  }
+
+  public constructor(
+    protected readonly account: Account,
+    protected record: PhabricatorQueryRecord,
+  ) {
     super(account.context);
   }
 
+  public async onRecordUpdate(record: PhabricatorQueryRecord): Promise<void> {
+    this.record = record;
+  }
+
+  public get owner(): Account {
+    return this.account;
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
   public get queryId(): string {
-    return this.class.queryId;
+    return this.record.queryId;
   }
 
   public get description(): string {
     return this.class.description;
+  }
+
+  public async delete(): Promise<void> {
+    await super.delete();
+    await Query.store.delete(this.context, this.id);
   }
 
   protected get class(): QueryClass {
@@ -155,7 +240,12 @@ export abstract class Query extends BaseList<never> {
 
   protected getParams(): Differential$Revision$Search$Params {
     return {
+      queryKey: "active",
       constraints: this.getConstraints(),
+      attachments: {
+        "reviewers": true,
+        "reviewers-extra": true,
+      },
     };
   }
 
@@ -185,25 +275,72 @@ export abstract class Query extends BaseList<never> {
   }
 }
 
-class MustReview extends Query {
-  public static queryId = "mustreview";
-  public static description = "Revisions that must be reviewed.";
+enum ReviewState {
+  Reviewed,
+  Blocking,
+  Reviewable,
+}
 
-  public readonly name = "Must Review";
+abstract class ReviewQuery extends Query {
+  protected getReviewState(revision: Differential$Revision$Search$Result): ReviewState {
+    let reviewers = revision.attachments.reviewers?.reviewers ?? [];
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+    let reviewer = reviewers.find(
+      // eslint-disable-next-line @typescript-eslint/typedef
+      (reviewer): boolean => reviewer.reviewerPHID == this.account.phid,
+    );
+
+    // Should never happen
+    if (!reviewer) {
+      console.warn(`Missing reviewer for revision ${revision.id}`);
+      return ReviewState.Reviewed;
+    }
+
+    let extras = revision.attachments["reviewers-extra"]?.["reviewers-extra"] ?? [];
+
+    let reviewerExta = extras.find(
+      // eslint-disable-next-line @typescript-eslint/typedef
+      (reviewer): boolean => reviewer.reviewerPHID == this.account.phid,
+    );
+
+    if (reviewer.status == "accepted" && !reviewerExta?.voidedPHID) {
+      return ReviewState.Reviewed;
+    }
+
+    // If you're the only reviewer then you are essentially blocking.
+    if (reviewer.isBlocking || reviewers.length == 1) {
+      return ReviewState.Blocking;
+    }
+
+    return ReviewState.Reviewable;
+  }
+
+  protected getConstraints(): Differential$Revision$Search$Constraints {
+    return {
+      reviewerPHIDs: [this.account.phid],
+    };
   }
 }
 
-class CanReview extends Query {
+class MustReview extends ReviewQuery {
+  public static queryId = "mustreview";
+  public static description = "Revisions that must be reviewed.";
+
+  public readonly name: string = "Must Review";
+
+  protected filterRevision(revision: Differential$Revision$Search$Result): boolean {
+    return this.getReviewState(revision) == ReviewState.Blocking;
+  }
+}
+
+class CanReview extends ReviewQuery {
   public static queryId = "canreview";
   public static description = "Revisions that can be reviewed.";
 
-  public readonly name = "Review";
+  public readonly name: string = "Review";
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+  protected filterRevision(revision: Differential$Revision$Search$Result): boolean {
+    return this.getReviewState(revision) == ReviewState.Reviewable;
   }
 }
 
@@ -213,8 +350,11 @@ class Draft extends Query {
 
   public readonly name = "Draft";
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+  protected getConstraints(): Differential$Revision$Search$Constraints {
+    return {
+      authorPHIDs: [this.account.phid],
+      statuses: [RevisionStatus.Draft],
+    };
   }
 }
 
@@ -224,8 +364,11 @@ class NeedsRevision extends Query {
 
   public readonly name = "Needs Changes";
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+  protected getConstraints(): Differential$Revision$Search$Constraints {
+    return {
+      authorPHIDs: [this.account.phid],
+      statuses: [RevisionStatus.NeedsRevision, RevisionStatus.ChangesPlanned],
+    };
   }
 }
 
@@ -235,8 +378,11 @@ class Waiting extends Query {
 
   public readonly name = "In Review";
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+  protected getConstraints(): Differential$Revision$Search$Constraints {
+    return {
+      authorPHIDs: [this.account.phid],
+      statuses: [RevisionStatus.NeedsReview],
+    };
   }
 }
 
@@ -246,8 +392,11 @@ class Accepted extends Query {
 
   public readonly name = "Accepted";
 
-  public constructor(account: Account, public readonly id: string) {
-    super(account);
+  protected getConstraints(): Differential$Revision$Search$Constraints {
+    return {
+      authorPHIDs: [this.account.phid],
+      statuses: [RevisionStatus.Accepted],
+    };
   }
 }
 
@@ -259,13 +408,21 @@ Query.addQuery(Waiting);
 Query.addQuery(Accepted);
 
 export class Revision extends BaseItem {
-  public static readonly store = new OwnedItemsTable(Account.store, Revision, "Revision");
+  public static readonly store = new OwnedItemsTable(
+    Account.store,
+    classBuilder(Revision),
+    "Revision",
+  );
 
   public constructor(
     private readonly account: Account,
     private record: PhabricatorRevisionRecord,
   ) {
     super(account.context);
+  }
+
+  public async onRecordUpdate(record: PhabricatorRevisionRecord): Promise<void> {
+    this.record = record;
   }
 
   public get owner(): Account {

@@ -4,11 +4,14 @@ import type { Awaitable } from "@allthethings/utils";
 
 import type { AuthedPluginContext, PluginContext, PluginItem, ServerPlugin } from "./types";
 
-interface Store<T> {
-  get(context: PluginContext, id: string): Promise<T | null>;
+interface Listable<T> {
   list(context: PluginContext): Promise<T[]>;
-  delete(context: PluginContext, id: string): Promise<void>;
 }
+
+type Store<T> = Listable<T> & {
+  get(context: PluginContext, id: string): Promise<T | null>;
+  delete(context: PluginContext, id: string): Promise<void>;
+};
 
 interface IItem extends PluginItem {
   update(): Promise<void>;
@@ -31,7 +34,7 @@ interface ItemProvider {
 }
 
 interface ListProvider {
-  store: Store<IList>;
+  store: Listable<IList>;
 }
 
 export abstract class BasePlugin implements ServerPlugin {
@@ -95,7 +98,9 @@ export abstract class BasePlugin implements ServerPlugin {
 }
 
 export abstract class Base {
-  public constructor(public readonly context: PluginContext) {
+  public constructor(
+    public readonly context: PluginContext,
+  ) {
   }
 }
 

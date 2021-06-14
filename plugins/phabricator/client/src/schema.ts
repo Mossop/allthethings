@@ -40,6 +40,12 @@ export type ContextParams = {
   readonly name: Scalars['String'];
 };
 
+export type CreatePhabricatorAccountParams = {
+  readonly url: Scalars['String'];
+  readonly apiKey: Scalars['String'];
+  readonly queries: ReadonlyArray<Scalars['ID']>;
+};
+
 
 export type FileDetail = {
   readonly __typename?: 'FileDetail';
@@ -110,6 +116,7 @@ export type Mutation = {
   readonly moveProject: Maybe<Project>;
   readonly moveSection: Maybe<Section>;
   readonly snoozeItem: Maybe<Item>;
+  readonly updatePhabricatorAccount: Maybe<PhabricatorAccount>;
 };
 
 
@@ -141,7 +148,7 @@ export type MutationCreateNoteArgs = {
 
 
 export type MutationCreatePhabricatorAccountArgs = {
-  params: PhabricatorAccountParams;
+  params: CreatePhabricatorAccountParams;
 };
 
 
@@ -256,6 +263,12 @@ export type MutationSnoozeItemArgs = {
   snoozed: Maybe<Scalars['DateTime']>;
 };
 
+
+export type MutationUpdatePhabricatorAccountArgs = {
+  id: Scalars['ID'];
+  params: UpdatePhabricatorAccountParams;
+};
+
 export type NoteDetail = {
   readonly __typename?: 'NoteDetail';
   readonly note: Scalars['String'];
@@ -272,13 +285,7 @@ export type PhabricatorAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiKey: Scalars['String'];
-  readonly enabledQueries: Maybe<ReadonlyArray<Scalars['ID']>>;
-};
-
-export type PhabricatorAccountParams = {
-  readonly url: Scalars['String'];
-  readonly apiKey: Scalars['String'];
-  readonly queries: ReadonlyArray<Scalars['ID']>;
+  readonly enabledQueries: ReadonlyArray<Scalars['ID']>;
 };
 
 export type PhabricatorQuery = {
@@ -384,6 +391,12 @@ export type TaskList = {
   readonly items: ReadonlyArray<Item>;
 };
 
+export type UpdatePhabricatorAccountParams = {
+  readonly url: Maybe<Scalars['String']>;
+  readonly apiKey: Maybe<Scalars['String']>;
+  readonly queries: Maybe<ReadonlyArray<Scalars['ID']>>;
+};
+
 export type User = ProjectRoot & TaskList & {
   readonly __typename?: 'User';
   readonly contexts: ReadonlyArray<Context>;
@@ -408,7 +421,7 @@ export type UserProjectByIdArgs = {
 export type ListPhabricatorAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListPhabricatorAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorAccounts: ReadonlyArray<{ readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: Maybe<ReadonlyArray<string>> }> }> };
+export type ListPhabricatorAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorAccounts: ReadonlyArray<{ readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: ReadonlyArray<string> }> }> };
 
 export type ListPhabricatorQueriesQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -416,11 +429,19 @@ export type ListPhabricatorQueriesQueryVariables = Exact<{ [key: string]: never;
 export type ListPhabricatorQueriesQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly phabricatorQueries: ReadonlyArray<{ readonly __typename: 'PhabricatorQuery', readonly queryId: string, readonly name: string, readonly description: string }> }> };
 
 export type CreatePhabricatorAccountMutationVariables = Exact<{
-  params: PhabricatorAccountParams;
+  params: CreatePhabricatorAccountParams;
 }>;
 
 
-export type CreatePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly createPhabricatorAccount: { readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: Maybe<ReadonlyArray<string>> } };
+export type CreatePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly createPhabricatorAccount: { readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: ReadonlyArray<string> } };
+
+export type UpdatePhabricatorAccountMutationVariables = Exact<{
+  id: Scalars['ID'];
+  params: UpdatePhabricatorAccountParams;
+}>;
+
+
+export type UpdatePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly updatePhabricatorAccount: Maybe<{ readonly __typename: 'PhabricatorAccount', readonly id: string, readonly email: string, readonly icon: string, readonly url: string, readonly apiKey: string, readonly enabledQueries: ReadonlyArray<string> }> };
 
 export type DeletePhabricatorAccountMutationVariables = Exact<{
   account: Scalars['ID'];
@@ -518,7 +539,7 @@ export function refetchListPhabricatorQueriesQuery(variables?: ListPhabricatorQu
       return { query: ListPhabricatorQueriesDocument, variables: variables }
     }
 export const CreatePhabricatorAccountDocument = gql`
-    mutation CreatePhabricatorAccount($params: PhabricatorAccountParams!) {
+    mutation CreatePhabricatorAccount($params: CreatePhabricatorAccountParams!) {
   createPhabricatorAccount(params: $params) {
     id
     email
@@ -555,6 +576,45 @@ export function useCreatePhabricatorAccountMutation(baseOptions?: Apollo.Mutatio
 export type CreatePhabricatorAccountMutationHookResult = ReturnType<typeof useCreatePhabricatorAccountMutation>;
 export type CreatePhabricatorAccountMutationResult = Apollo.MutationResult<CreatePhabricatorAccountMutation>;
 export type CreatePhabricatorAccountMutationOptions = Apollo.BaseMutationOptions<CreatePhabricatorAccountMutation, CreatePhabricatorAccountMutationVariables>;
+export const UpdatePhabricatorAccountDocument = gql`
+    mutation UpdatePhabricatorAccount($id: ID!, $params: UpdatePhabricatorAccountParams!) {
+  updatePhabricatorAccount(id: $id, params: $params) {
+    id
+    email
+    icon
+    url
+    apiKey
+    enabledQueries
+  }
+}
+    `;
+export type UpdatePhabricatorAccountMutationFn = Apollo.MutationFunction<UpdatePhabricatorAccountMutation, UpdatePhabricatorAccountMutationVariables>;
+
+/**
+ * __useUpdatePhabricatorAccountMutation__
+ *
+ * To run a mutation, you first call `useUpdatePhabricatorAccountMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useUpdatePhabricatorAccountMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [updatePhabricatorAccountMutation, { data, loading, error }] = useUpdatePhabricatorAccountMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useUpdatePhabricatorAccountMutation(baseOptions?: Apollo.MutationHookOptions<UpdatePhabricatorAccountMutation, UpdatePhabricatorAccountMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<UpdatePhabricatorAccountMutation, UpdatePhabricatorAccountMutationVariables>(UpdatePhabricatorAccountDocument, options);
+      }
+export type UpdatePhabricatorAccountMutationHookResult = ReturnType<typeof useUpdatePhabricatorAccountMutation>;
+export type UpdatePhabricatorAccountMutationResult = Apollo.MutationResult<UpdatePhabricatorAccountMutation>;
+export type UpdatePhabricatorAccountMutationOptions = Apollo.BaseMutationOptions<UpdatePhabricatorAccountMutation, UpdatePhabricatorAccountMutationVariables>;
 export const DeletePhabricatorAccountDocument = gql`
     mutation DeletePhabricatorAccount($account: ID!) {
   deletePhabricatorAccount(account: $account)

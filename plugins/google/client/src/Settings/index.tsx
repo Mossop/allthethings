@@ -23,12 +23,14 @@ export function SettingsPages(): ReactResult {
         {account.email}
       </SettingsPageItem>)
     }
-    {loginUrlData && <SettingsPageItem
-      icon={<Google/>}
-      href={loginUrl}
-    >
-      Add Account
-    </SettingsPageItem>}
+    {
+      loginUrlData && <SettingsPageItem
+        icon={<Google/>}
+        href={loginUrl}
+      >
+        Add Account
+      </SettingsPageItem>
+    }
   </>;
 }
 
