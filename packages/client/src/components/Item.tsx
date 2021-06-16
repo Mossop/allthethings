@@ -46,6 +46,7 @@ import { isInbox, isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../ut
 import type { ListFilter } from "../utils/view";
 import { isVisible } from "../utils/view";
 import FileItem from "./FileItem";
+import ItemMenu from "./ItemMenu";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import PluginItem from "./PluginItem";
@@ -488,13 +489,11 @@ export default ReactMemo(function ItemDisplay({
             </IconButton>
           </Tooltip>
         }
-        {
-          !isCurrentlyListed && <Tooltip title="Delete">
-            <IconButton onClick={deleteItem}>
-              <Icons.Delete/>
-            </IconButton>
-          </Tooltip>
-        }
+        <ItemMenu
+          item={item}
+          onSnooze={snoozeItem}
+          onDelete={isCurrentlyListed ? null : deleteItem}
+        />
       </div>
     </ListItem>
     {editDialogOpen && renderEditDialog(item, closeEditDialog)}

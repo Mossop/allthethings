@@ -19,11 +19,13 @@ export interface MenuProps {
     vertical: "top" | "bottom";
     horizontal: "left" | "right";
   };
+  onClosed?: () => void;
 }
 
 export const Menu = ReactMemo(function Menu({
   state,
   anchor = { vertical: "bottom", horizontal: "left" },
+  onClosed,
   children,
 }: MenuProps & ReactChildren) {
   let anchorOrigin: PopoverOrigin = {
@@ -44,6 +46,7 @@ export const Menu = ReactMemo(function Menu({
     keepMounted={true}
     getContentAnchorEl={null}
     onClick={closeMenu}
+    onExited={onClosed}
   >
     {children}
   </MuiMenu>;
