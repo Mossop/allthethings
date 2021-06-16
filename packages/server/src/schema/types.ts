@@ -105,6 +105,7 @@ export type Mutation = {
   readonly deleteItem: Scalars['Boolean'];
   readonly archiveItem?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
+  readonly markItemDue?: Maybe<Item>;
 };
 
 
@@ -239,6 +240,12 @@ export type MutationArchiveItemArgs = {
 export type MutationSnoozeItemArgs = {
   id: Scalars['ID'];
   snoozed?: Maybe<Scalars['DateTime']>;
+};
+
+
+export type MutationMarkItemDueArgs = {
+  id: Scalars['ID'];
+  due?: Maybe<Scalars['DateTime']>;
 };
 
 export type NoteDetail = {

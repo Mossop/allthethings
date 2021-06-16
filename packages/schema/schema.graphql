@@ -197,4 +197,5 @@ type Mutation {
 
   archiveItem(id: ID!, archived: DateTime): Item
   snoozeItem(id: ID!, snoozed: DateTime): Item
+  markItemDue(id: ID!, due: DateTime): Item
 }

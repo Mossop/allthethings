@@ -48,6 +48,7 @@ import {
 } from "../utils/state";
 import type { ListFilter } from "../utils/view";
 import { isVisible } from "../utils/view";
+import DueMenu from "./DueMenu";
 import FileItem from "./FileItem";
 import ItemMenu from "./ItemMenu";
 import LinkItem from "./LinkItem";
@@ -407,6 +408,7 @@ export default ReactMemo(function ItemDisplay({
           />
         }
       </Menu>
+      <DueMenu item={item}/>
       <SnoozeMenu item={item}/>
       {
         // eslint-disable-next-line react/jsx-no-useless-fragment

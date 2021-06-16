@@ -475,12 +475,6 @@ const resolvers: MutationResolvers = {
     args: { id, archived },
     ctx,
   }: AuthedParams<unknown, Types.MutationArchiveItemArgs>): Promise<Item | null> => {
-    let item = await ctx.dataSources.items.getImpl(id);
-
-    if (!item) {
-      return null;
-    }
-
     await ctx.dataSources.items.updateOne(id, {
       archived: archived ?? null,
       snoozed: null,
@@ -493,15 +487,20 @@ const resolvers: MutationResolvers = {
     args: { id, snoozed },
     ctx,
   }: AuthedParams<unknown, Types.MutationSnoozeItemArgs>): Promise<Item | null> => {
-    let item = await ctx.dataSources.items.getImpl(id);
-
-    if (!item) {
-      return null;
-    }
-
     await ctx.dataSources.items.updateOne(id, {
       archived: null,
       snoozed: snoozed ?? null,
+    });
+
+    return ctx.dataSources.items.getImpl(id);
+  }),
+
+  markItemDue: authed(async ({
+    args: { id, due },
+    ctx,
+  }: AuthedParams<unknown, Types.MutationMarkItemDueArgs>): Promise<Item | null> => {
+    await ctx.dataSources.taskInfo.updateOne(id, {
+      due: due ?? null,
     });
 
     return ctx.dataSources.items.getImpl(id);

@@ -21,3 +21,4 @@ export { default as PluginTask } from "@material-ui/icons/Cloud";
 export { default as NoTask } from "@material-ui/icons/Description";
 export { default as ManualTask } from "@material-ui/icons/Person";
 export { default as ListTask } from "@material-ui/icons/Search";
+export { default as Due } from "@material-ui/icons/AccessAlarm";

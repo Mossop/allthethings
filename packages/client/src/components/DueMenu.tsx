@@ -22,7 +22,7 @@ import {
 import { DateTime } from "luxon";
 import { useCallback, useMemo } from "react";
 
-import { useSnoozeItemMutation } from "../schema/mutations";
+import { useMarkItemDueMutation } from "../schema/mutations";
 import type { Item } from "../utils/state";
 import { refetchQueriesForItem } from "../utils/state";
 
@@ -33,112 +33,112 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-interface SnoozeMenuProps {
+interface DueMenuProps {
   item: Item;
   isInner?: boolean;
 }
 
-export const WakeUpItems = ReactMemo(function WakeUpItems({
+export const DueItemItems = ReactMemo(function DueItemItems({
   item,
-}: SnoozeMenuProps): ReactResult {
-  let [snoozeItemMutation] = useSnoozeItemMutation({
+}: DueMenuProps): ReactResult {
+  let [markItemDueMutation] = useMarkItemDueMutation({
     refetchQueries: refetchQueriesForItem(item),
   });
 
-  let snoozeItem = useCallback((till: DateTime | null) => {
-    return snoozeItemMutation({
+  let markDue = useCallback((due: DateTime | null) => {
+    return markItemDueMutation({
       variables: {
         id: item.id,
-        snoozed: till,
+        due,
       },
     });
-  }, [item.id, snoozeItemMutation]);
+  }, [item.id, markItemDueMutation]);
 
-  let wakeUp = useBoundCallback(snoozeItem, null);
+  let notDue = useBoundCallback(markDue, null);
 
-  let wakesUp = useMemo(() => {
+  let whenDue = useMemo(() => {
     let now = DateTime.now();
 
-    if (!item.snoozed || item.snoozed <= now) {
+    if (!item.taskInfo?.due) {
       return null;
     }
 
-    let time = item.snoozed.toLocaleString(DateTime.TIME_SIMPLE);
+    let time = item.taskInfo.due.toLocaleString(DateTime.TIME_SIMPLE);
 
-    if (item.snoozed.hasSame(now, "day")) {
+    if (item.taskInfo.due.hasSame(now, "day")) {
       return time;
     }
 
-    let date = item.snoozed.toRelative();
+    let date = item.taskInfo.due.toRelative();
 
     return `${time} ${date}`;
   }, [item]);
 
-  if (!wakesUp) {
+  if (!whenDue) {
     return null;
   }
 
   return <List disablePadding={true}>
     <MenuItem disabled={true}>
-      <ListItemText>Wakes up at {wakesUp}</ListItemText>
+      <ListItemText>Due {whenDue}</ListItemText>
     </MenuItem>
-    <MenuItem onClick={wakeUp}>
-      <ListItemText>Wake up</ListItemText>
+    <MenuItem onClick={notDue}>
+      <ListItemText>Never Due</ListItemText>
     </MenuItem>
   </List>;
 });
 
-export const SnoozeItems = ReactMemo(function SnoozeItems({
+export const DueItems = ReactMemo(function DueItems({
   item,
   isInner,
-}: SnoozeMenuProps): ReactResult {
+}: DueMenuProps): ReactResult {
   let classes = useStyles();
   let [pickerOpen, openPicker, closePicker] = useBoolState();
 
-  let [snoozeItemMutation] = useSnoozeItemMutation({
+  let [markItemDueMutation] = useMarkItemDueMutation({
     refetchQueries: refetchQueriesForItem(item),
   });
 
-  let snoozeItem = useCallback((till: DateTime | null) => {
-    return snoozeItemMutation({
+  let markItemDue = useCallback((due: DateTime | null) => {
+    return markItemDueMutation({
       variables: {
         id: item.id,
-        snoozed: till,
+        due,
       },
     });
-  }, [item.id, snoozeItemMutation]);
+  }, [item.id, markItemDueMutation]);
 
-  let snoozeAfternoon = useMemo(() => {
+  let dueThisAfternoon = useMemo(() => {
     let afternoon = DateTime.now().set({ hour: 17 }).startOf("hour");
     if (afternoon <= DateTime.now()) {
       return null;
     }
 
-    return () => snoozeItem(afternoon);
-  }, [snoozeItem]);
+    return () => markItemDue(afternoon);
+  }, [markItemDue]);
 
-  let snoozeTomorrow = useCallback(() => {
+  let dueTomorrow = useCallback(() => {
     let tomorrow = DateTime.now().plus({ days: 1 }).set({ hour: 8 }).startOf("hour");
-    void snoozeItem(tomorrow);
-  }, [snoozeItem]);
+    void markItemDue(tomorrow);
+  }, [markItemDue]);
 
-  let snoozeNextWeek = useCallback(() => {
+  let dueNextWeek = useCallback(() => {
     let nextWeek = DateTime.now().plus({ weeks: 1 }).startOf("week").set({ hour: 8 });
-    void snoozeItem(nextWeek);
-  }, [snoozeItem]);
+    void markItemDue(nextWeek);
+  }, [markItemDue]);
 
   let className = isInner ? classes.inner : undefined;
 
   return <List disablePadding={true}>
     {
-      snoozeAfternoon && <MenuItem className={className} onClick={snoozeAfternoon}>
+      dueThisAfternoon && <MenuItem className={className} onClick={dueThisAfternoon}>
         <ListItemText>This Afternoon</ListItemText>
       </MenuItem>
     }
-    <MenuItem className={className} onClick={snoozeTomorrow}>
+    <MenuItem className={className} onClick={dueTomorrow}>
       <ListItemText>Tomorrow</ListItemText>
     </MenuItem>
-    <MenuItem className={className} onClick={snoozeNextWeek}>
+    <MenuItem className={className} onClick={dueNextWeek}>
       <ListItemText>Next Week</ListItemText>
     </MenuItem>
     <MenuItem className={className} onClick={openPicker}>
@@ -146,51 +146,51 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
     </MenuItem>
     {
       pickerOpen && <DateTimeDialog
-        onSelect={snoozeItem}
+        onSelect={markItemDue}
         onClosed={closePicker}
       />
     }
   </List>;
 });
 
-export default ReactMemo(function SnoozeMenu({
+export default ReactMemo(function DueMenu({
   item,
-}: SnoozeMenuProps): ReactResult {
-  let snoozeMenuState = useMenuState("snooze");
+}: DueMenuProps): ReactResult {
+  let dueMenuState = useMenuState("due");
 
-  let wakesUp = useMemo(() => {
+  let whenDue = useMemo(() => {
     let now = DateTime.now();
 
-    if (!item.snoozed || item.snoozed <= now) {
+    if (!item.taskInfo?.due) {
       return null;
     }
 
-    let time = item.snoozed.toLocaleString(DateTime.TIME_SIMPLE);
+    let time = item.taskInfo.due.toLocaleString(DateTime.TIME_SIMPLE);
 
-    if (item.snoozed.hasSame(now, "day")) {
+    if (item.taskInfo.due.hasSame(now, "day")) {
       return time;
     }
 
-    let date = item.snoozed.toRelative();
+    let date = item.taskInfo.due.toRelative();
 
     return `${time} ${date}`;
   }, [item]);
 
-  if (!wakesUp) {
+  if (!whenDue) {
     return null;
   }
 
   return <>
-    <Tooltip title={`Snoozed until ${wakesUp}`}>
+    <Tooltip title={`Due ${whenDue}`}>
       <IconButton
         color="primary"
-        {...bindTrigger(snoozeMenuState)}
+        {...bindTrigger(dueMenuState)}
       >
-        <Icons.Snooze/>
+        <Icons.Due/>
       </IconButton>
     </Tooltip>
     <Menu
-      state={snoozeMenuState}
+      state={dueMenuState}
       anchor={
         {
           vertical: "bottom",
@@ -198,8 +198,8 @@ export default ReactMemo(function SnoozeMenu({
         }
       }
     >
-      <WakeUpItems item={item}/>
-      <SnoozeItems item={item}/>
+      <DueItemItems item={item}/>
+      <DueItems item={item}/>
     </Menu>
   </>;
 });

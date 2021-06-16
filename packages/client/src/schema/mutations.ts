@@ -202,6 +202,17 @@ export type SnoozeItemMutation = { readonly __typename: 'Mutation', readonly sno
     & ClientItemFieldsFragment
   )> };
 
+export type MarkItemDueMutationVariables = Types.Exact<{
+  id: Types.Scalars['ID'];
+  due: Types.Maybe<Types.Scalars['DateTime']>;
+}>;
+
+
+export type MarkItemDueMutation = { readonly __typename: 'Mutation', readonly markItemDue: Types.Maybe<(
+    { readonly __typename: 'Item' }
+    & ClientItemFieldsFragment
+  )> };
+
 
 export const LoginDocument = gql`
     mutation Login($email: String!, $password: String!) {
@@ -951,3 +962,37 @@ export function useSnoozeItemMutation(baseOptions?: Apollo.MutationHookOptions<S
 export type SnoozeItemMutationHookResult = ReturnType<typeof useSnoozeItemMutation>;
 export type SnoozeItemMutationResult = Apollo.MutationResult<SnoozeItemMutation>;
 export type SnoozeItemMutationOptions = Apollo.BaseMutationOptions<SnoozeItemMutation, SnoozeItemMutationVariables>;
+export const MarkItemDueDocument = gql`
+    mutation MarkItemDue($id: ID!, $due: DateTime) {
+  markItemDue(id: $id, due: $due) {
+    ...clientItemFields
+  }
+}
+    ${ClientItemFieldsFragmentDoc}`;
+export type MarkItemDueMutationFn = Apollo.MutationFunction<MarkItemDueMutation, MarkItemDueMutationVariables>;
+
+/**
+ * __useMarkItemDueMutation__
+ *
+ * To run a mutation, you first call `useMarkItemDueMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMarkItemDueMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [markItemDueMutation, { data, loading, error }] = useMarkItemDueMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      due: // value for 'due'
+ *   },
+ * });
+ */
+export function useMarkItemDueMutation(baseOptions?: Apollo.MutationHookOptions<MarkItemDueMutation, MarkItemDueMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<MarkItemDueMutation, MarkItemDueMutationVariables>(MarkItemDueDocument, options);
+      }
+export type MarkItemDueMutationHookResult = ReturnType<typeof useMarkItemDueMutation>;
+export type MarkItemDueMutationResult = Apollo.MutationResult<MarkItemDueMutation>;
+export type MarkItemDueMutationOptions = Apollo.BaseMutationOptions<MarkItemDueMutation, MarkItemDueMutationVariables>;

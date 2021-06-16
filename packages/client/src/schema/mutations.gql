@@ -132,3 +132,9 @@ mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
     ...clientItemFields
   }
 }
+
+mutation MarkItemDue($id: ID!, $due: DateTime) {
+  markItemDue(id: $id, due: $due) {
+    ...clientItemFields
+  }
+}

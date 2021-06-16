@@ -106,6 +106,7 @@ export type Mutation = {
   readonly deleteItem: Scalars['Boolean'];
   readonly archiveItem?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
+  readonly markItemDue?: Maybe<Item>;
 };
 
 
@@ -240,6 +241,12 @@ export type MutationArchiveItemArgs = {
 export type MutationSnoozeItemArgs = {
   id: Scalars['ID'];
   snoozed?: Maybe<Scalars['DateTime']>;
+};
+
+
+export type MutationMarkItemDueArgs = {
+  id: Scalars['ID'];
+  due?: Maybe<Scalars['DateTime']>;
 };
 
 export type NoteDetail = {
@@ -405,7 +412,7 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -429,7 +436,8 @@ export type MutationFieldPolicy = {
 	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>
+	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	markItemDue?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {

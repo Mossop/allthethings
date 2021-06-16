@@ -28,6 +28,7 @@ import {
   isNoteItem,
   isPluginItem,
 } from "../utils/state";
+import { DueItemItems, DueItems } from "./DueMenu";
 import { SnoozeItems, WakeUpItems } from "./SnoozeMenu";
 
 function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
@@ -45,6 +46,7 @@ function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
 enum OpenInnerMenu {
   None,
   Snooze,
+  Due,
 }
 
 interface ItemMenuProps {
@@ -65,6 +67,7 @@ export default ReactMemo(function ItemMenu({
   }, []);
   let closeMenus = useCallback(() => setOpenInnerMenu(OpenInnerMenu.None), []);
   let toggleSnooze = useBoundCallback(toggleMenu, OpenInnerMenu.Snooze);
+  let toggleDue = useBoundCallback(toggleMenu, OpenInnerMenu.Due);
 
   let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
 
@@ -95,6 +98,14 @@ export default ReactMemo(function ItemMenu({
         }
       }
     >
+      <DueItemItems item={item}/>
+      <MenuItem onClick={toggleDue}>
+        <ListItemIcon><Icons.Due/></ListItemIcon>
+        <ListItemText>Due...</ListItemText>
+      </MenuItem>
+      <Collapse in={openInnerMenu == OpenInnerMenu.Due}>
+        <DueItems item={item} isInner={true}/>
+      </Collapse>
       <WakeUpItems item={item}/>
       <MenuItem onClick={toggleSnooze}>
         <ListItemIcon><Icons.Snooze/></ListItemIcon>

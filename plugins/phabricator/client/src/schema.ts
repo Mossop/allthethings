@@ -112,6 +112,7 @@ export type Mutation = {
   readonly editTaskInfo: Maybe<Item>;
   readonly login: Maybe<User>;
   readonly logout: Maybe<Scalars['Boolean']>;
+  readonly markItemDue: Maybe<Item>;
   readonly moveItem: Maybe<Item>;
   readonly moveProject: Maybe<Project>;
   readonly moveSection: Maybe<Section>;
@@ -235,6 +236,12 @@ export type MutationEditTaskInfoArgs = {
 export type MutationLoginArgs = {
   email: Scalars['String'];
   password: Scalars['String'];
+};
+
+
+export type MutationMarkItemDueArgs = {
+  id: Scalars['ID'];
+  due: Maybe<Scalars['DateTime']>;
 };
 
 
