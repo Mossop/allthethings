@@ -1,6 +1,5 @@
 import { TaskController } from "@allthethings/schema";
 import {
-  useBoolState,
   Icons,
   Styles,
   ReactMemo,
@@ -37,7 +36,6 @@ import {
   useSnoozeItemMutation,
 } from "../schema/mutations";
 import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import TaskDialog from "../ui/TaskDialog";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
@@ -113,18 +111,6 @@ function renderItem({
   if (isPluginItem(item))
     return <PluginItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
   return <TaskItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
-}
-
-function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
-  if (isNoteItem(item))
-    return <div/>;
-  if (isFileItem(item))
-    return <div/>;
-  if (isLinkItem(item))
-    return <div/>;
-  if (isPluginItem(item))
-    throw new Error("Cannot edit plugin items.");
-  return <TaskDialog task={item} onClosed={onClosed}/>;
 }
 
 interface TypeIconProps {
@@ -291,8 +277,6 @@ export default ReactMemo(function ItemDisplay({
     };
   }, [item]);
 
-  let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
-
   let refetchQueries: PureQueryOptions[] = [
     refetchListContextStateQuery(),
   ];
@@ -411,91 +395,81 @@ export default ReactMemo(function ItemDisplay({
     return null;
   }
 
-  return <>
-    <ListItem
-      className={clsx(classes.item, isDragging && classes.hidden, !visible && classes.hiding)}
-      disableGutters={true}
-      ref={itemRef}
-      onTransitionEnd={transitionEnd}
-    >
-      <div className={classes.dragPreview} ref={previewRef}>
-        <div className={classes.dragHandleContainer} ref={dragRef}>
-          <Icons.Drag className={classes.dragHandle}/>
-        </div>
-        <div className={classes.itemInner}>
-          {
-            renderItem({
-              item,
-              section,
-              taskList,
-              isDragging: false,
-            })
-          }
-        </div>
+  return <ListItem
+    className={clsx(classes.item, isDragging && classes.hidden, !visible && classes.hiding)}
+    disableGutters={true}
+    ref={itemRef}
+    onTransitionEnd={transitionEnd}
+  >
+    <div className={classes.dragPreview} ref={previewRef}>
+      <div className={classes.dragHandleContainer} ref={dragRef}>
+        <Icons.Drag className={classes.dragHandle}/>
       </div>
-      <div className={classes.actions}>
-        <Tooltip title={titleForType(taskController)}>
-          <IconButton {...bindTrigger(typeMenuState)}>
-            <TypeIcon controller={taskController}/>
-          </IconButton>
-        </Tooltip>
-        <Menu
-          state={typeMenuState}
-          anchor={
-            {
-              vertical: "bottom",
-              horizontal: "right",
-            }
-          }
-        >
-          <TypeMenuItem {...typeMenuItemProps} controller={null}/>
-          <TypeMenuItem {...typeMenuItemProps} controller={TaskController.Manual}/>
-          {
-            hasTaskState && <TypeMenuItem
-              {...typeMenuItemProps}
-              controller={TaskController.Plugin}
-            />
-          }
-          {
-            wasEverListed && <TypeMenuItem
-              {...typeMenuItemProps}
-              controller={TaskController.PluginList}
-            />
-          }
-        </Menu>
-        <SnoozeMenu item={item} onSnooze={snoozeItem}/>
+      <div className={classes.itemInner}>
         {
-          // eslint-disable-next-line react/jsx-no-useless-fragment
-          !isInbox(taskList) && <>
-            {
-              item.archived
-                ? <Tooltip title="Unarchive">
-                  <IconButton onClick={archiveItem} color="primary">
-                    <Icons.Unarchive/>
-                  </IconButton>
-                </Tooltip>
-                : <Tooltip title="Archive">
-                  <IconButton onClick={archiveItem}>
-                    <Icons.Archive/>
-                  </IconButton>
-                </Tooltip>
-            }
-          </>
+          renderItem({
+            item,
+            section,
+            taskList,
+            isDragging: false,
+          })
+        }
+      </div>
+    </div>
+    <div className={classes.actions}>
+      <Tooltip title={titleForType(taskController)}>
+        <IconButton {...bindTrigger(typeMenuState)}>
+          <TypeIcon controller={taskController}/>
+        </IconButton>
+      </Tooltip>
+      <Menu
+        state={typeMenuState}
+        anchor={
+          {
+            vertical: "bottom",
+            horizontal: "right",
+          }
+        }
+      >
+        <TypeMenuItem {...typeMenuItemProps} controller={null}/>
+        <TypeMenuItem {...typeMenuItemProps} controller={TaskController.Manual}/>
+        {
+          hasTaskState && <TypeMenuItem
+            {...typeMenuItemProps}
+            controller={TaskController.Plugin}
+          />
         }
         {
-          !isPluginItem(item) && <Tooltip title="Edit">
-            <IconButton onClick={openEditDialog}>
-              <Icons.Edit/>
-            </IconButton>
-          </Tooltip>
+          wasEverListed && <TypeMenuItem
+            {...typeMenuItemProps}
+            controller={TaskController.PluginList}
+          />
         }
-        <ItemMenu
-          item={item}
-          onSnooze={snoozeItem}
-          onDelete={isCurrentlyListed ? null : deleteItem}
-        />
-      </div>
-    </ListItem>
-    {editDialogOpen && renderEditDialog(item, closeEditDialog)}
-  </>;
+      </Menu>
+      <SnoozeMenu item={item} onSnooze={snoozeItem}/>
+      {
+        // eslint-disable-next-line react/jsx-no-useless-fragment
+        !isInbox(taskList) && <>
+          {
+            item.archived
+              ? <Tooltip title="Unarchive">
+                <IconButton onClick={archiveItem} color="primary">
+                  <Icons.Unarchive/>
+                </IconButton>
+              </Tooltip>
+              : <Tooltip title="Archive">
+                <IconButton onClick={archiveItem}>
+                  <Icons.Archive/>
+                </IconButton>
+              </Tooltip>
+          }
+        </>
+      }
+      <ItemMenu
+        item={item}
+        onSnooze={snoozeItem}
+        onDelete={isCurrentlyListed ? null : deleteItem}
+      />
+    </div>
+  </ListItem>;
 });
