@@ -31,16 +31,21 @@ import mergeRefs from "react-merge-refs";
 
 import {
   useArchiveItemMutation,
-  useDeleteItemMutation,
   useEditTaskControllerMutation,
-  useSnoozeItemMutation,
 } from "../schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
-import type { Inbox, Item, Item as ItemState, Section, TaskList } from "../utils/state";
-import { isInbox, isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
+import type { Item, Item as ItemState } from "../utils/state";
+import {
+  itemTaskList,
+  refetchQueriesForItem,
+  isInbox,
+  isFileItem,
+  isLinkItem,
+  isNoteItem,
+  isPluginItem,
+} from "../utils/state";
 import type { ListFilter } from "../utils/view";
 import { isVisible } from "../utils/view";
 import FileItem from "./FileItem";
@@ -98,19 +103,17 @@ const useStyles = makeStyles((theme: Theme) =>
 
 function renderItem({
   item,
-  section,
-  taskList,
   isDragging,
 }: ItemRenderProps): ReactResult {
   if (isNoteItem(item))
-    return <NoteItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
+    return <NoteItem item={item} isDragging={isDragging}/>;
   if (isFileItem(item))
-    return <FileItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
+    return <FileItem item={item} isDragging={isDragging}/>;
   if (isLinkItem(item))
-    return <LinkItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
+    return <LinkItem item={item} isDragging={isDragging}/>;
   if (isPluginItem(item))
-    return <PluginItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
-  return <TaskItem item={item} section={section} taskList={taskList} isDragging={isDragging}/>;
+    return <PluginItem item={item} isDragging={isDragging}/>;
+  return <TaskItem item={item} isDragging={isDragging}/>;
 }
 
 interface TypeIconProps {
@@ -192,23 +195,19 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
 }));
 
 interface ItemProps {
-  taskList: TaskList | Inbox;
-  section: Section | null;
   item: ItemState;
   items: ItemState[];
   index: number;
   filter: ListFilter;
 }
 
-export type ItemRenderProps = Pick<ItemProps, "item" | "section" | "taskList"> & {
+export type ItemRenderProps = Pick<ItemProps, "item"> & {
   isDragging: boolean;
 };
 
 export const ItemDragMarker = ReactMemo(function ItemDragMarker({
   item,
-  section,
-  taskList,
-}: Pick<ItemProps, "item" | "section" | "taskList">): ReactResult {
+}: Pick<ItemProps, "item">): ReactResult {
   let classes = useStyles();
 
   let result = useDragResult(DragType.Item);
@@ -235,8 +234,6 @@ export const ItemDragMarker = ReactMemo(function ItemDragMarker({
         {
           renderItem({
             item,
-            section,
-            taskList,
             isDragging: true,
           })
         }
@@ -247,8 +244,6 @@ export const ItemDragMarker = ReactMemo(function ItemDragMarker({
 
 export default ReactMemo(function ItemDisplay({
   item,
-  section,
-  taskList,
   items,
   index,
   filter,
@@ -257,13 +252,12 @@ export default ReactMemo(function ItemDisplay({
 
   let typeMenuState = useMenuState("task-type");
 
-  let { wasEverListed, isCurrentlyListed, hasTaskState, taskController } = useMemo(() => {
+  let { wasEverListed, hasTaskState, taskController } = useMemo(() => {
     let taskController = item.taskInfo?.controller ?? null;
 
     if (isPluginItem(item)) {
       return {
         taskController,
-        isCurrentlyListed: item.detail.isCurrentlyListed,
         wasEverListed: item.detail.wasEverListed,
         hasTaskState: item.detail.hasTaskState,
       };
@@ -271,30 +265,12 @@ export default ReactMemo(function ItemDisplay({
 
     return {
       taskController,
-      isCurrentlyListed: false,
       wasEverListed: false,
       hasTaskState: false,
     };
   }, [item]);
 
-  let refetchQueries: PureQueryOptions[] = [
-    refetchListContextStateQuery(),
-  ];
-
-  if (!isInbox(taskList)) {
-    refetchQueries.push(refetchListTaskListQuery({
-      taskList: taskList.id,
-    }));
-  }
-
-  let [deleteItemMutation] = useDeleteItemMutation({
-    variables: {
-      id: item.id,
-    },
-    refetchQueries,
-  });
-
-  let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
+  let refetchQueries = refetchQueriesForItem(item);
 
   let [archiveItemMutation] = useArchiveItemMutation({
     refetchQueries,
@@ -318,19 +294,6 @@ export default ReactMemo(function ItemDisplay({
     }
   }, [item, archiveItemMutation]);
 
-  let [snoozeItemMutation] = useSnoozeItemMutation({
-    refetchQueries,
-  });
-
-  let snoozeItem = useCallback((till: DateTime | null) => {
-    return snoozeItemMutation({
-      variables: {
-        id: item.id,
-        snoozed: till,
-      },
-    });
-  }, [item.id, snoozeItemMutation]);
-
   let {
     dragRef,
     previewRef,
@@ -344,7 +307,7 @@ export default ReactMemo(function ItemDisplay({
   } = useDropArea(DragType.Item, {
     getDragResult: useCallback(
       (_: DraggedItem, monitor: DropTargetMonitor): ItemDragResult | null => {
-        if (isInbox(taskList) || !elementRef.current) {
+        if (isInbox(itemTaskList(item)) || !elementRef.current) {
           return null;
         }
 
@@ -359,18 +322,18 @@ export default ReactMemo(function ItemDisplay({
         if (y < mid) {
           return {
             type: DragType.Item,
-            target: section ?? taskList,
+            target: item.parent,
             before: item,
           };
         }
 
         return {
           type: DragType.Item,
-          target: section ?? taskList,
+          target: item.parent,
           before: arrayItem(items, index + 1),
         };
       },
-      [index, item, items, section, taskList],
+      [index, item, items],
     ),
   });
 
@@ -409,8 +372,6 @@ export default ReactMemo(function ItemDisplay({
         {
           renderItem({
             item,
-            section,
-            taskList,
             isDragging: false,
           })
         }
@@ -446,10 +407,10 @@ export default ReactMemo(function ItemDisplay({
           />
         }
       </Menu>
-      <SnoozeMenu item={item} onSnooze={snoozeItem}/>
+      <SnoozeMenu item={item}/>
       {
         // eslint-disable-next-line react/jsx-no-useless-fragment
-        !isInbox(taskList) && <>
+        !isInbox(itemTaskList(item)) && <>
           {
             item.archived
               ? <Tooltip title="Unarchive">
@@ -465,11 +426,7 @@ export default ReactMemo(function ItemDisplay({
           }
         </>
       }
-      <ItemMenu
-        item={item}
-        onSnooze={snoozeItem}
-        onDelete={isCurrentlyListed ? null : deleteItem}
-      />
+      <ItemMenu item={item}/>
     </div>
   </ListItem>;
 });

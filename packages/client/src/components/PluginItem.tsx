@@ -1,15 +1,13 @@
 import type { ReactResult } from "@allthethings/ui";
 import { usePlugin, ReactMemo } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
-import type { PureQueryOptions } from "@apollo/client";
 import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import { useCallback } from "react";
 
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import type { PluginItem } from "../utils/state";
-import { isSection } from "../utils/state";
+import { refetchQueriesForItem } from "../utils/state";
 import type { ItemRenderProps } from "./Item";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -58,12 +56,7 @@ export default ReactMemo(function PluginItem({
 }: PluginItemProps): ReactResult {
   let plugin = usePlugin(item.detail.pluginId);
 
-  let refetchQueries = useCallback((): PureQueryOptions[] => [
-    refetchListContextStateQuery(),
-    refetchListTaskListQuery({
-      taskList: isSection(item.parent) ? item.parent.taskList.id : item.parent.id,
-    }),
-  ], [item.parent]);
+  let refetchQueries = useCallback(() => refetchQueriesForItem(item), [item]);
 
   if (!plugin) {
     return <div>Unknown plugin</div>;

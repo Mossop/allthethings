@@ -296,7 +296,7 @@ export default ReactMemo(function TaskList({
       {header}
       <List disablePadding={true}>
         <List disablePadding={true} ref={itemsDropRef}>
-          <ItemList items={entries.items} taskList={view.taskList} section={null} filter={filter}/>
+          <ItemList items={entries.items} section={view.taskList} filter={filter}/>
         </List>
         <List disablePadding={true}>
           {sections}

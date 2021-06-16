@@ -16,12 +16,18 @@ import {
   MenuItem,
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
-import type { DateTime } from "luxon";
 import { useCallback, useState } from "react";
 
+import { useDeleteItemMutation } from "../schema/mutations";
 import TaskDialog from "../ui/TaskDialog";
 import type { Item } from "../utils/state";
-import { isFileItem, isLinkItem, isNoteItem, isPluginItem } from "../utils/state";
+import {
+  refetchQueriesForItem,
+  isFileItem,
+  isLinkItem,
+  isNoteItem,
+  isPluginItem,
+} from "../utils/state";
 import { SnoozeItems, WakeUpItems } from "./SnoozeMenu";
 
 function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
@@ -43,14 +49,10 @@ enum OpenInnerMenu {
 
 interface ItemMenuProps {
   item: Item;
-  onSnooze: (till: DateTime | null) => void;
-  onDelete?: (() => void) | null;
 }
 
 export default ReactMemo(function ItemMenu({
   item,
-  onSnooze,
-  onDelete,
 }: ItemMenuProps): ReactResult {
   let itemMenuState = useMenuState("item");
 
@@ -65,6 +67,17 @@ export default ReactMemo(function ItemMenu({
   let toggleSnooze = useBoundCallback(toggleMenu, OpenInnerMenu.Snooze);
 
   let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
+
+  let [deleteItemMutation] = useDeleteItemMutation({
+    variables: {
+      id: item.id,
+    },
+    refetchQueries: refetchQueriesForItem(item),
+  });
+
+  let deleteItem = useCallback(() => deleteItemMutation(), [deleteItemMutation]);
+
+  let isCurrentlyListed = isPluginItem(item) ? item.detail.isCurrentlyListed : false;
 
   return <>
     <IconButton
@@ -82,13 +95,13 @@ export default ReactMemo(function ItemMenu({
         }
       }
     >
-      <WakeUpItems item={item} onSnooze={onSnooze}/>
+      <WakeUpItems item={item}/>
       <MenuItem onClick={toggleSnooze}>
         <ListItemIcon><Icons.Snooze/></ListItemIcon>
         <ListItemText>Snooze...</ListItemText>
       </MenuItem>
       <Collapse in={openInnerMenu == OpenInnerMenu.Snooze}>
-        <SnoozeItems item={item} isInner={true} onSnooze={onSnooze}/>
+        <SnoozeItems item={item} isInner={true}/>
       </Collapse>
       {
         !isPluginItem(item) && <MenuItem onClick={openEditDialog}>
@@ -97,7 +110,7 @@ export default ReactMemo(function ItemMenu({
         </MenuItem>
       }
       {
-        onDelete && <MenuItem onClick={onDelete}>
+        !isCurrentlyListed && <MenuItem onClick={deleteItem}>
           <ListItemIcon><Icons.Delete/></ListItemIcon>
           <ListItemText>Delete</ListItemText>
         </MenuItem>

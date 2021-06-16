@@ -6,11 +6,12 @@ import {
   Menu,
   useMenuState,
   bindTrigger,
+  useBoolState,
 } from "@allthethings/ui";
 import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
-import { forwardRef, useCallback, useMemo, useState } from "react";
+import { forwardRef, useCallback, useMemo } from "react";
 
 import { nameSorted } from "../utils/collections";
 import type { Context, ProjectRoot } from "../utils/state";
@@ -92,7 +93,7 @@ const ContextMenuItem = ReactMemo(
 
 export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
-  let [showCreateDialog, setShowCreateDialog] = useState(false);
+  let [showCreateDialog, openCreateDialog, closeCreateDialog] = useBoolState(false);
 
   let contextMenuState = useMenuState("context-menu");
   let contexts = useContexts();
@@ -100,14 +101,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let user = useUser();
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
-
-  let openCreateDialog = useCallback(() => {
-    setShowCreateDialog(true);
-  }, []);
-
-  let closeCreateDialog = useCallback(() => {
-    setShowCreateDialog(false);
-  }, []);
 
   return <>
     <Button

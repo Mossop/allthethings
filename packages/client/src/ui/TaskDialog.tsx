@@ -3,9 +3,8 @@ import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { useCreateTaskMutation, useEditItemMutation } from "../schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { Inbox, Section, TaskItem, TaskList } from "../utils/state";
-import { isSection } from "../utils/state";
+import { refetchQueriesForSection } from "../utils/state";
 
 type CreateTaskProps = {
   onClosed: () => void;
@@ -36,21 +35,11 @@ export default ReactMemo(function TaskDialog({
   let [isOpen,, close] = useBoolState(true);
 
   let [createTask, { loading: createLoading, error: createError }] = useCreateTaskMutation({
-    refetchQueries: [
-      refetchListTaskListQuery({
-        taskList: isSection(list) ? list.taskList.id : list.id,
-      }),
-      refetchListContextStateQuery(),
-    ],
+    refetchQueries: refetchQueriesForSection(list),
   });
 
   let [editItem, { loading: editLoading, error: editError }] = useEditItemMutation({
-    refetchQueries: [
-      refetchListTaskListQuery({
-        taskList: isSection(list) ? list.taskList.id : list.id,
-      }),
-      refetchListContextStateQuery(),
-    ],
+    refetchQueries: refetchQueriesForSection(list),
   });
 
   let submit = useCallback(async (): Promise<void> => {

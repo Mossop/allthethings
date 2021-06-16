@@ -64,7 +64,7 @@ export default ReactMemo(function Inbox(): ReactResult {
         <ItemListActions list={user.inbox}/>
       </div>
       <List disablePadding={true}>
-        <ItemList items={items} taskList={user.inbox} section={null} filter={filter}/>
+        <ItemList items={items} section={user.inbox} filter={filter}/>
       </List>
     </div>
     {

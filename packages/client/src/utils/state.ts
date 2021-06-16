@@ -1,7 +1,9 @@
 import type { Overwrite } from "@allthethings/utils";
+import type { PureQueryOptions } from "@apollo/client";
 
 import type { TaskController } from "../../../schema/dist";
 import type { ListContextStateQuery, ListTaskListQuery } from "../schema/queries";
+import { refetchListTaskListQuery, refetchListContextStateQuery } from "../schema/queries";
 import type * as Schema from "../schema/types";
 import { useView } from "./view";
 
@@ -80,6 +82,32 @@ export type WithTask<T extends Item> = Overwrite<T, {
 
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
+
+export function sectionTaskList(section: Inbox | Section | TaskList): Inbox | TaskList {
+  return isSection(section) ? section.taskList : section;
+}
+
+export function itemTaskList(item: Item): Inbox | TaskList {
+  return sectionTaskList(item.parent);
+}
+
+export function refetchQueriesForSection(section: Inbox | Section | TaskList): PureQueryOptions[] {
+  let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
+
+  let taskList = sectionTaskList(section);
+
+  if (!isInbox(taskList)) {
+    refetchQueries.push(refetchListTaskListQuery({
+      taskList: taskList.id,
+    }));
+  }
+
+  return refetchQueries;
+}
+
+export function refetchQueriesForItem(item: Item): PureQueryOptions[] {
+  return refetchQueriesForSection(item.parent);
+}
 
 interface GraphQLType {
   // eslint-disable-next-line @typescript-eslint/naming-convention

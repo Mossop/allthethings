@@ -1,5 +1,6 @@
 import type { ReactResult } from "@allthethings/ui";
 import {
+  useBoundCallback,
   useBoolState,
   useMenuState,
   bindTrigger,
@@ -21,7 +22,9 @@ import {
 import { DateTime } from "luxon";
 import { useCallback, useMemo } from "react";
 
+import { useSnoozeItemMutation } from "../schema/mutations";
 import type { Item } from "../utils/state";
+import { refetchQueriesForItem } from "../utils/state";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -32,15 +35,26 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface SnoozeMenuProps {
   item: Item;
-  onSnooze: (till: DateTime | null) => void;
   isInner?: boolean;
 }
 
 export const WakeUpItems = ReactMemo(function WakeUpItems({
   item,
-  onSnooze,
 }: SnoozeMenuProps): ReactResult {
-  let wakeUp = useCallback(() => onSnooze(null), [onSnooze]);
+  let [snoozeItemMutation] = useSnoozeItemMutation({
+    refetchQueries: refetchQueriesForItem(item),
+  });
+
+  let snoozeItem = useCallback((till: DateTime | null) => {
+    return snoozeItemMutation({
+      variables: {
+        id: item.id,
+        snoozed: till,
+      },
+    });
+  }, [item.id, snoozeItemMutation]);
+
+  let wakeUp = useBoundCallback(snoozeItem, null);
 
   let wakesUp = useMemo(() => {
     let now = DateTime.now();
@@ -75,11 +89,24 @@ export const WakeUpItems = ReactMemo(function WakeUpItems({
 });
 
 export const SnoozeItems = ReactMemo(function SnoozeItems({
-  onSnooze,
+  item,
   isInner,
 }: SnoozeMenuProps): ReactResult {
   let classes = useStyles();
   let [pickerOpen, openPicker, closePicker] = useBoolState();
+
+  let [snoozeItemMutation] = useSnoozeItemMutation({
+    refetchQueries: refetchQueriesForItem(item),
+  });
+
+  let snoozeItem = useCallback((till: DateTime | null) => {
+    return snoozeItemMutation({
+      variables: {
+        id: item.id,
+        snoozed: till,
+      },
+    });
+  }, [item.id, snoozeItemMutation]);
 
   let snoozeAfternoon = useMemo(() => {
     let afternoon = DateTime.now().set({ hour: 17 }).startOf("hour");
@@ -87,18 +114,18 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
       return null;
     }
 
-    return () => onSnooze(afternoon);
-  }, [onSnooze]);
+    return () => snoozeItem(afternoon);
+  }, [snoozeItem]);
 
   let snoozeTomorrow = useCallback(() => {
     let tomorrow = DateTime.now().plus({ days: 1 }).set({ hour: 8 }).startOf("hour");
-    onSnooze(tomorrow);
-  }, [onSnooze]);
+    void snoozeItem(tomorrow);
+  }, [snoozeItem]);
 
   let snoozeNextWeek = useCallback(() => {
     let nextWeek = DateTime.now().plus({ weeks: 1 }).startOf("week").set({ hour: 8 });
-    onSnooze(nextWeek);
-  }, [onSnooze]);
+    void snoozeItem(nextWeek);
+  }, [snoozeItem]);
 
   let className = isInner ? classes.inner : undefined;
 
@@ -119,7 +146,7 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
     </MenuItem>
     {
       pickerOpen && <DateTimeDialog
-        onSelect={onSnooze}
+        onSelect={snoozeItem}
         onClosed={closePicker}
       />
     }
@@ -128,7 +155,6 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
 
 export default ReactMemo(function SnoozeMenu({
   item,
-  onSnooze,
 }: SnoozeMenuProps): ReactResult {
   let snoozeMenuState = useMenuState("snooze");
 
@@ -172,8 +198,8 @@ export default ReactMemo(function SnoozeMenu({
         }
       }
     >
-      <WakeUpItems item={item} onSnooze={onSnooze}/>
-      <SnoozeItems item={item} onSnooze={onSnooze}/>
+      <WakeUpItems item={item}/>
+      <SnoozeItems item={item}/>
     </Menu>
   </>;
 });

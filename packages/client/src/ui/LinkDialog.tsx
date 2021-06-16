@@ -10,9 +10,8 @@ import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { useCreateLinkMutation } from "../schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { Inbox, Section, TaskList } from "../utils/state";
-import { isSection } from "../utils/state";
+import { refetchQueriesForSection } from "../utils/state";
 
 interface LinkDialogProps {
   onClosed: () => void;
@@ -35,12 +34,7 @@ export default ReactMemo(function LinkDialog({
   let [isOpen,, close] = useBoolState(true);
 
   let [createLink, { loading, error: createError }] = useCreateLinkMutation({
-    refetchQueries: [
-      refetchListTaskListQuery({
-        taskList: isSection(list) ? list.taskList.id : list.id,
-      }),
-      refetchListContextStateQuery(),
-    ],
+    refetchQueries: refetchQueriesForSection(list),
   });
 
   let submit = useCallback(async (): Promise<void> => {

@@ -1,9 +1,7 @@
 import { ReactMemo, TaskDoneToggle } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
-import type { PureQueryOptions } from "@apollo/client";
 
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
 import type { TaskItem } from "../utils/state";
 import type { ItemRenderProps } from "./Item";
 
@@ -12,14 +10,8 @@ export type TaskItemProps = Overwrite<ItemRenderProps, {
 }>;
 
 export default ReactMemo(function TaskItem({
-  taskList,
   item,
 }: TaskItemProps): ReactResult {
-  let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
-  refetchQueries.push(refetchListTaskListQuery({
-    taskList: taskList.id,
-  }));
-
   return <>
     <TaskDoneToggle item={item}/>
     <div>{item.summary}</div>
