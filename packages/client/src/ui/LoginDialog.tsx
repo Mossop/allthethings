@@ -2,8 +2,7 @@ import { TextFieldInput, ReactMemo, Dialog, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useLoginMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
+import { useLoginMutation, refetchListContextStateQuery } from "../schema";
 
 export default ReactMemo(function LoginDialog(): ReactElement {
   let [state, setState] = useState({

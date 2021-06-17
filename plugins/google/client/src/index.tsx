@@ -19,11 +19,11 @@ class GooglePlugin implements ClientPlugin {
   }
 
   public renderItem(itemProps: PluginItemProps): ReactResult {
-    let fields: GoogleFields = JSON.parse(itemProps.item.detail.fields);
+    let fields: GoogleFields = JSON.parse(itemProps.fields);
     if (fields.type == "file") {
-      return <File item={itemProps.item} file={fields}/>;
+      return <File file={fields}/>;
     }
-    return <Thread item={itemProps.item} thread={fields}/>;
+    return <Thread thread={fields}/>;
   }
 }
 

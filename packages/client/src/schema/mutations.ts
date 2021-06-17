@@ -1,9 +1,9 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ClientItemFieldsFragment, ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment } from './fragments';
+import { ClientItemFieldsFragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ClientItemFieldsFragmentDoc, ClientRootFieldsFragmentDoc } from './fragments';
+import { ClientItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
 export type LoginMutationVariables = Types.Exact<{

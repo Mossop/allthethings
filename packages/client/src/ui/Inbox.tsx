@@ -8,7 +8,9 @@ import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
-import { Filters, replaceView, useView, ViewType } from "../utils/view";
+import { useInboxContents } from "../schema";
+import { Filters } from "../utils/filter";
+import { replaceView, useView, ViewType } from "../utils/view";
 import LinkDialog from "./LinkDialog";
 import ProjectList from "./ProjectList";
 
@@ -43,7 +45,7 @@ export default ReactMemo(function Inbox(): ReactResult {
   let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(linkView !== null);
 
   let user = view.user;
-  let items = user.inbox.items;
+  let items = useInboxContents().items;
 
   let [filter, setFilter] = useState(() => Filters.Normal);
 

@@ -1,6 +1,6 @@
 import type { ThreadFields } from "@allthethings/google-server";
-import type { PluginItemProps, ReactResult } from "@allthethings/ui";
-import { Styles, TaskDoneToggle, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+import { Styles, ReactMemo } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 import UnreadMailIcon from "@material-ui/icons/Mail";
@@ -27,23 +27,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 export interface FileProps {
-  item: PluginItemProps["item"];
   thread: ThreadFields;
 }
 
 export default ReactMemo(function Thread({
-  item,
   thread,
 }: FileProps): ReactResult {
   let classes = useStyles();
 
-  return <>
-    <TaskDoneToggle item={item}/>
-    <a className={classes.link} rel="noreferrer" target="_blank" href={thread.url}>
-      <div className={classes.iconContainer}>
-        {thread.unread ? <UnreadMailIcon/> : <ReadMailIcon/>}
-      </div>
-      <div className={classes.subject}>{thread.subject}</div>
-    </a>
-  </>;
+  return <a className={classes.link} rel="noreferrer" target="_blank" href={thread.url}>
+    <div className={classes.iconContainer}>
+      {thread.unread ? <UnreadMailIcon/> : <ReadMailIcon/>}
+    </div>
+    <div className={classes.subject}>{thread.subject}</div>
+  </a>;
 });

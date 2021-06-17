@@ -46,6 +46,7 @@ module.exports = {
             NoteDetail: "../db/implementations#NoteDetail",
             PluginDetail: "../db/implementations#PluginDetail",
             PluginList: "../db/implementations#PluginList",
+            ItemSet: "../db/datasources#ItemSet",
           /* eslint-enable @typescript-eslint/naming-convention */
           },
         },

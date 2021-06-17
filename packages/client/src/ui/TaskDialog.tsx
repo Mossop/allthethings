@@ -2,9 +2,8 @@ import { TextFieldInput, ReactMemo, useBoolState, Dialog, FormState } from "@all
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateTaskMutation, useEditItemMutation } from "../schema/mutations";
-import type { Inbox, Section, TaskItem, TaskList } from "../utils/state";
-import { refetchQueriesForSection } from "../utils/state";
+import { useCreateTaskMutation, useEditItemMutation, refetchQueriesForSection } from "../schema";
+import type { Inbox, TaskList, Section, TaskItem } from "../schema";
 
 type CreateTaskProps = {
   onClosed: () => void;

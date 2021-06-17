@@ -9,7 +9,6 @@
   "typings": "./types/index.d.ts",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
-    "build-schema": "graphql-codegen",
     "build-client": "yarn build",
     "build": "webpack",
     "watch": "webpack --watch"

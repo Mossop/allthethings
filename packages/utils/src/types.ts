@@ -11,3 +11,5 @@ export type GraphQLType<T> = Omit<T, "__typename">;
 export type GraphQLResolver<T> = {
   readonly [K in keyof GraphQLType<T>]: MaybeCallable<Awaitable<T[K]>>;
 };
+
+export type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;

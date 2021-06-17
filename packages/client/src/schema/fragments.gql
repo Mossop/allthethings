@@ -1,5 +1,10 @@
 fragment clientRootFields on ProjectRoot {
-  remainingTasks
+  remainingTasks {
+    count
+  }
+  overdueItems {
+    count
+  }
   subprojects {
     id
   }
@@ -7,7 +12,9 @@ fragment clientRootFields on ProjectRoot {
     id
     stub
     name
-    remainingTasks
+    remainingTasks {
+      count
+    }
     subprojects {
       id
     }

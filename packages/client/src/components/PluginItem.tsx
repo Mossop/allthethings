@@ -5,9 +5,8 @@ import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import { useCallback } from "react";
 
-import type * as Schema from "../schema/types";
-import type { PluginItem } from "../utils/state";
-import { refetchQueriesForItem } from "../utils/state";
+import { refetchQueriesForItem } from "../schema";
+import type { PluginItem, PluginList as PluginListSchema } from "../schema";
 import type { ItemRenderProps } from "./Item";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -28,7 +27,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 interface PluginListProps {
-  list: Pick<Schema.PluginList, "name" | "url">;
+  list: Pick<PluginListSchema, "name" | "url">;
 }
 
 const PluginList = ReactMemo(function PluginList({
@@ -65,12 +64,12 @@ export default ReactMemo(function PluginItem({
   return <>
     {
       plugin.renderItem({
-        item,
+        fields: item.detail.fields,
         refetchQueries,
       })
     }
     {
-      item.detail.lists.map((list: Schema.PluginList) => <PluginList
+      item.detail.lists.map((list: PluginListSchema) => <PluginList
         key={list.id}
         list={list}
       />)

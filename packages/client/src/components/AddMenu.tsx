@@ -8,11 +8,11 @@ import {
   Tooltip,
 } from "@material-ui/core";
 
+import { isTaskList } from "../schema";
+import type { Inbox, TaskList, Section } from "../schema";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
 import LinkDialog from "../ui/LinkDialog";
 import TaskDialog from "../ui/TaskDialog";
-import type { Inbox, Section, TaskList } from "../utils/state";
-import { isTaskList } from "../utils/state";
 
 interface AddMenuProps {
   list: Inbox | TaskList | Section;

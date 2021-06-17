@@ -8,12 +8,12 @@ import { useMemo, useCallback, useRef } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
-import { useEditSectionMutation } from "../schema/mutations";
+import { useEditSectionMutation } from "../schema";
+import type { Inbox, TaskList, Item, Section } from "../schema";
 import { indexOf, item } from "../utils/collections";
 import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
-import type { Inbox, Item, Section, TaskList } from "../utils/state";
-import type { ListFilter } from "../utils/view";
+import type { ListFilter } from "../utils/filter";
 import ItemDisplay, { ItemDragMarker } from "./Item";
 import ItemListActions from "./ItemListActions";
 

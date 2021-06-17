@@ -1,45 +1,12 @@
 import type { ReactChildren, ReactResult } from "@allthethings/ui";
 import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 import type { Location, Update } from "history";
-import { DateTime } from "luxon";
 import { useState, useMemo, useEffect, createContext, useContext } from "react";
 
-import { useListContextStateQuery } from "../schema/queries";
-import type { Context, Inbox, Project, ProjectRoot, TaskList, User, Item } from "./state";
-import { buildItems, buildProjects, isContext, isUser, isProject } from "./state";
+import type { Context, Project, ProjectRoot, TaskList, User } from "../schema";
+import { isContext, isProject, isUser, useContextState } from "../schema";
 
 const ViewContext = createContext<View | null | undefined>(undefined);
-
-export interface ListFilter {
-  snoozed: boolean;
-  archived: boolean;
-  complete: boolean;
-}
-
-export const Filters: Record<string, ListFilter> = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Normal: {
-    snoozed: false,
-    archived: false,
-    complete: false,
-  },
-};
-
-export function isVisible(item: Item, filter: ListFilter): boolean {
-  if (item.taskInfo?.done) {
-    return filter.complete;
-  }
-
-  if (item.archived) {
-    return filter.archived;
-  }
-
-  if (item.snoozed && item.snoozed > DateTime.now()) {
-    return filter.snoozed;
-  }
-
-  return true;
-}
 
 export enum ViewType {
   TaskList = "tasklist",
@@ -113,6 +80,24 @@ export function useView(): View {
     throw new Error("App not initialized.");
   }
   return view;
+}
+
+export function useUser(): User {
+  return useView().user;
+}
+
+export function useContexts(): ReadonlyMap<string, Context> {
+  return useUser().contexts;
+}
+
+export function useProjectRoot(): ProjectRoot {
+  let state = useView();
+  return state.context ?? state.user;
+}
+
+export function useCurrentContext(): Context | null {
+  let state = useView();
+  return state.context ?? null;
 }
 
 /**
@@ -412,44 +397,9 @@ export function replaceView(
 }
 
 export function ViewListener({ children }: ReactChildren): ReactResult {
-  let { data } = useListContextStateQuery({
-    pollInterval: 30000,
-  });
   let [view, setView] = useState<View | null | undefined>(undefined);
-
   let navHandler = useMemo(() => new NavigationHandler(setView), []);
-
-  let user = useMemo((): User | null | undefined => {
-    if (!data) {
-      return undefined;
-    }
-
-    if (!data.user) {
-      return null;
-    }
-
-    let inbox: Inbox = {
-      ...data.user.inbox,
-      items: [],
-    };
-    inbox.items = buildItems(inbox, data.user.inbox.items);
-
-    return {
-      ...data.user,
-      inbox,
-
-      // eslint-disable-next-line @typescript-eslint/typedef
-      contexts: new Map(data.user.contexts.map((context): [string, Context] => {
-        return [context.id, {
-          ...context,
-
-          ...buildProjects(context),
-        }];
-      })),
-
-      ...buildProjects(data.user),
-    };
-  }, [data]);
+  let user = useContextState();
 
   useEffect(() => {
     return navHandler.watch(user);

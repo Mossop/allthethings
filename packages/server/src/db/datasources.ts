@@ -8,6 +8,7 @@ import { DateTime } from "luxon";
 
 import type { PluginList } from "../plugins/types";
 import type { ResolverContext } from "../schema/context";
+import type { ItemSetResolvers } from "../schema/resolvers";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";
 import type { ImplBuilder } from "./implementations";
@@ -58,6 +59,54 @@ async function count(query: Knex.QueryBuilder): Promise<number | null> {
 }
 
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
+
+export abstract class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
+  public async count(): Promise<number> {
+    return (await this.items()).length;
+  }
+
+  public abstract items(): Promise<Impl.Item[]>;
+}
+
+export class SortedItemSet extends ItemSet {
+  public constructor(private readonly inner: ItemSet) {
+    super();
+  }
+
+  public count(): Promise<number> {
+    return this.inner.count();
+  }
+
+  public async items(): Promise<Impl.Item[]> {
+    let items = await this.inner.items();
+    let created = new Map<Impl.Item, DateTime>();
+    await Promise.all(items.map(async (item: Impl.Item): Promise<void> => {
+      created.set(item, await item.created());
+    }));
+
+    items.sort(
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      (a: Impl.Item, b: Impl.Item): number => created.get(a)!.valueOf() - created.get(b)!.valueOf(),
+    );
+    return items;
+  }
+}
+
+class QueryItemSet extends ItemSet {
+  public constructor(
+    private readonly dataSources: AppDataSources,
+    private readonly query: Knex.QueryBuilder,
+  ) {
+    super();
+  }
+
+  public async items(): Promise<Impl.Item[]> {
+    let records = await this.query.select("Item.*") as DbObject<Db.ItemDbTable>[];
+    return records.map(
+      (record: DbObject<Db.ItemDbTable>): Impl.Item => new Impl.Item(this.dataSources, record),
+    );
+  }
+}
 
 export abstract class DbDataSource<
   I extends { id: () => string },
@@ -528,15 +577,41 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }
   }
 
+  private contextItems(context: string): Knex.QueryBuilder<Db.ItemDbTable, Db.ItemDbTable[]> {
+    return this.records
+      .join("Section", "Section.id", this.ref("ownerId"))
+      .join("Project", "Project.id", "Section.ownerId")
+      .where("Project.contextId", context) as Knex.QueryBuilder<Db.ItemDbTable, Db.ItemDbTable[]>;
+  }
+
+  public overdueItems(context: string): ItemSet {
+    return new QueryItemSet(
+      this.dataSources,
+      this.contextItems(context)
+        .join("TaskInfo", "TaskInfo.id", this.ref("id"))
+        .where("TaskInfo.due", "<=", DateTime.now()),
+    );
+  }
+
+  public findItems(fields: Partial<DbObject<Db.ItemDbTable>>): ItemSet {
+    return new QueryItemSet(
+      this.dataSources,
+      this.records.where(fields).orderBy("index"),
+    );
+  }
+
   public listSpecialSection(
     owner: string,
     type: SectionIndex,
-  ): Promise<Impl.Item[]> {
-    return this.buildAll(this.select(this.records
-      .join("Section", "Section.id", "Item.ownerId")
-      .where("Section.ownerId", owner)
-      .andWhere("Section.index", type)
-      .orderBy("Item.index")));
+  ): ItemSet {
+    return new QueryItemSet(
+      this.dataSources,
+      this.records
+        .join("Section", "Section.id", "Item.ownerId")
+        .where("Section.ownerId", owner)
+        .andWhere("Section.index", type)
+        .orderBy("Item.index"),
+    );
   }
 }
 
@@ -597,8 +672,9 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
     }
   }
 
-  public async taskListTaskCount(taskList: string): Promise<number> {
-    let value = await count(
+  public taskListTasks(taskList: string): ItemSet {
+    return new QueryItemSet(
+      this.dataSources,
       this.records
         .join("Item", "Item.id", this.ref("id"))
         .join("Section", "Section.id", "Item.ownerId")
@@ -610,11 +686,11 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
         })
         .andWhere("Section.index", ">=", SectionIndex.Anonymous),
     );
-    return value ?? 0;
   }
 
-  public async sectionTaskCount(section: string): Promise<number> {
-    let value = await count(
+  public sectionTasks(section: string): ItemSet {
+    return new QueryItemSet(
+      this.dataSources,
       this.records
         .join("Item", "Item.id", this.ref("id"))
         .where({
@@ -624,7 +700,6 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
           ["Item.ownerId"]: section,
         }),
     );
-    return value ?? 0;
   }
 }
 

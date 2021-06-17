@@ -2,7 +2,6 @@ import type { RevisionFields } from "@allthethings/phabricator-server";
 import type { PluginItemProps, ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,
-  TaskDoneToggle,
   Styles,
   ReactMemo,
 } from "@allthethings/ui";
@@ -51,20 +50,17 @@ const StatusMap: Record<RevisionStatus, string> = {
 };
 
 export default ReactMemo(function Revision({
-  item,
+  fields,
 }: PluginItemProps): ReactResult {
   let classes = useStyles();
 
-  let revision = JSON.parse(item.detail.fields) as RevisionFields;
+  let revision = JSON.parse(fields) as RevisionFields;
 
-  return <>
-    <TaskDoneToggle item={item}/>
-    <a className={classes.link} rel="noreferrer" target="_blank" href={revision.uri}>
-      <div className={classes.iconContainer}>
-        <ImageIcon icon={revision.icon ?? <Icon/>}/>
-      </div>
-      <div className={classes.summary}>{revision.title}</div>
-      <div className={classes.status}>{StatusMap[revision.status]}</div>
-    </a>
-  </>;
+  return <a className={classes.link} rel="noreferrer" target="_blank" href={revision.uri}>
+    <div className={classes.iconContainer}>
+      <ImageIcon icon={revision.icon ?? <Icon/>}/>
+    </div>
+    <div className={classes.summary}>{revision.title}</div>
+    <div className={classes.status}>{StatusMap[revision.status]}</div>
+  </a>;
 });

@@ -13,16 +13,11 @@ import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo } from "react";
 
+import type { Context, ProjectRoot } from "../schema";
+import { isContext } from "../schema";
 import { nameSorted } from "../utils/collections";
-import type { Context, ProjectRoot } from "../utils/state";
-import {
-  isContext,
-  useUser,
-  useCurrentContext,
-  useContexts,
-} from "../utils/state";
 import type { NavigableView } from "../utils/view";
-import { ViewType, useView, useUrl } from "../utils/view";
+import { useContexts, useCurrentContext, useUser, ViewType, useView, useUrl } from "../utils/view";
 import CreateContextDialog from "./CreateContextDialog";
 
 const useStyles = makeStyles((theme: Theme) =>

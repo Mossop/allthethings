@@ -10,23 +10,20 @@ import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
+import type { Context, Project, User, Section } from "../schema";
 import {
+  isProject,
+  isUser,
   useEditContextMutation,
   useEditProjectMutation,
-} from "../schema/mutations";
-import { useListTaskListQuery } from "../schema/queries";
+  useTaskListContents,
+} from "../schema";
 import { indexOf, item } from "../utils/collections";
 import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
 import { useDragItem, useDragResult, DragType, useDropArea, useProjectDrag } from "../utils/drag";
-import type {
-  Context,
-  Project,
-  Section,
-  User,
-} from "../utils/state";
-import { isUser, buildEntries, isProject } from "../utils/state";
-import { Filters } from "../utils/view";
-import type { TaskListView, ListFilter } from "../utils/view";
+import type { ListFilter } from "../utils/filter";
+import { Filters } from "../utils/filter";
+import type { TaskListView } from "../utils/view";
 import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -47,6 +44,7 @@ const useStyles = makeStyles((theme: Theme) =>
     heading: {
       ...Styles.flexCenteredRow,
       paddingBottom: theme.spacing(1),
+      marginBottom: theme.spacing(1),
       borderBottomWidth: 1,
       borderBottomColor: theme.palette.divider,
       borderBottomStyle: "solid",
@@ -177,18 +175,7 @@ export default ReactMemo(function TaskList({
   view,
 }: TaskListProps): ReactResult {
   let classes = useStyles();
-  let { data } = useListTaskListQuery({
-    variables: {
-      taskList: view.taskList.id,
-    },
-    pollInterval: 30000,
-  });
-
-  let entries = useMemo(
-    () => buildEntries(view.taskList, data),
-    [data, view],
-  );
-
+  let contents = useTaskListContents(view.taskList);
   let [filter, setFilter] = useState(() => Filters.Normal);
 
   let {
@@ -197,28 +184,28 @@ export default ReactMemo(function TaskList({
     getDragResult: useCallback(
       (draggedItem: DraggedSection | DraggedItem): SectionDragResult | ItemDragResult | null => {
         if (draggedItem.type == DragType.Item) {
-          if (draggedItem.item === entries.items[0]) {
+          if (draggedItem.item === contents.items[0]) {
             return null;
           }
 
           return {
             type: DragType.Item,
             target: view.taskList,
-            before: item(entries.items, 0),
+            before: item(contents.items, 0),
           };
         }
 
-        if (draggedItem.item === entries.sections[0]) {
+        if (draggedItem.item === contents.sections[0]) {
           return null;
         }
 
         return {
           type: DragType.Section,
           taskList: view.taskList,
-          before: entries.sections.length ? entries.sections[0] : null,
+          before: contents.sections.length ? contents.sections[0] : null,
         };
       },
-      [entries, view.taskList],
+      [contents, view.taskList],
     ),
   });
 
@@ -227,17 +214,17 @@ export default ReactMemo(function TaskList({
   } = useDropArea(DragType.Section, {
     getDragResult: useCallback(
       (item: DraggedSection): SectionDragResult | null => {
-        if (item.item === entries.sections[0]) {
+        if (item.item === contents.sections[0]) {
           return null;
         }
 
         return {
           type: DragType.Section,
           taskList: view.taskList,
-          before: entries.sections.length ? entries.sections[0] : null,
+          before: contents.sections.length ? contents.sections[0] : null,
         };
       },
-      [entries.sections, view.taskList],
+      [contents.sections, view.taskList],
     ),
   });
 
@@ -269,19 +256,19 @@ export default ReactMemo(function TaskList({
   }
 
   let sections = useMemo(() => {
-    let sections = entries.sections.map(
+    let sections = contents.sections.map(
       (section: Section, index: number): ReactElement => <SectionList
         key={section.id}
         section={section}
         index={index}
-        sections={entries.sections}
+        sections={contents.sections}
         filter={filter}
       />,
     );
 
     if (dragItem && (!dragResult || dragResult.taskList === view.taskList)) {
       let before = dragResult ? dragResult.before : dragItem.item;
-      let index = before ? indexOf(entries.sections, before) ?? sections.length : sections.length;
+      let index = before ? indexOf(contents.sections, before) ?? sections.length : sections.length;
       sections.splice(index, 0, <SectionDragMarker
         key="dragging"
         section={dragItem.item}
@@ -289,14 +276,14 @@ export default ReactMemo(function TaskList({
     }
 
     return sections;
-  }, [dragItem, dragResult, entries.sections, view.taskList, filter]);
+  }, [dragItem, dragResult, contents.sections, view.taskList, filter]);
 
   return <Page sidebar={<ProjectList/>}>
     <div className={classes.content}>
       {header}
       <List disablePadding={true}>
         <List disablePadding={true} ref={itemsDropRef}>
-          <ItemList items={entries.items} section={view.taskList} filter={filter}/>
+          <ItemList items={contents.items} section={view.taskList} filter={filter}/>
         </List>
         <List disablePadding={true}>
           {sections}

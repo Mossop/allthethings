@@ -1,17 +1,12 @@
-import type { Overwrite } from "@allthethings/utils";
 import type { PureQueryOptions } from "@apollo/client";
 import { useMemo, useEffect, useState } from "react";
 
-import type { Item } from "./schema";
-import type * as Schema from "./schema/types";
 import type { ReactResult } from "./types";
 
-export type PluginItem = Overwrite<Item, {
-  detail: Schema.PluginDetail;
-}>;
+export type PluginFields = string;
 
 export interface PluginItemProps {
-  item: PluginItem;
+  fields: PluginFields;
   refetchQueries: () => PureQueryOptions[];
 }
 

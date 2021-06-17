@@ -13,24 +13,15 @@ import {
 import { useMemo } from "react";
 
 import {
+  isContext, isInbox, isProject, isUser,
   useDeleteContextMutation,
   useDeleteProjectMutation,
   useDeleteSectionMutation,
-} from "../schema/mutations";
-import {
   refetchListContextStateQuery,
-  refetchListTaskListQuery,
-} from "../schema/queries";
-import type { Inbox, Section, TaskList } from "../utils/state";
-import {
-  isInbox,
-  useUser,
-  useProjectRoot,
-  isContext,
-  isUser,
-  isProject,
-} from "../utils/state";
-import { ViewType, replaceView, useView } from "../utils/view";
+  refetchQueriesForSection,
+} from "../schema";
+import type { Inbox, TaskList, Section } from "../schema";
+import { ViewType, replaceView, useView, useProjectRoot, useUser } from "../utils/view";
 import AddMenu from "./AddMenu";
 
 const useStyles = makeStyles(() =>
@@ -100,11 +91,7 @@ export default ReactMemo(function ItemListActions({
           variables: {
             id: list.id,
           },
-          refetchQueries: [
-            refetchListTaskListQuery({
-              taskList: list.taskList.id,
-            }),
-          ],
+          refetchQueries: refetchQueriesForSection(list.taskList),
         });
       }
     };

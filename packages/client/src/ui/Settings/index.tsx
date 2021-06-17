@@ -21,8 +21,7 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
-import { useProjectRoot } from "../../utils/state";
-import { pushView, useUrl, useView, ViewType } from "../../utils/view";
+import { useProjectRoot, pushView, useUrl, useView, ViewType } from "../../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

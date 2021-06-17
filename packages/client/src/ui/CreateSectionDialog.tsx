@@ -2,9 +2,8 @@ import { Dialog, useBoolState, ReactMemo, TextFieldInput } from "@allthethings/u
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateSectionMutation } from "../schema/mutations";
-import { refetchListTaskListQuery } from "../schema/queries";
-import type { TaskList } from "../utils/state";
+import type { TaskList } from "../schema";
+import { refetchQueriesForSection, useCreateSectionMutation } from "../schema";
 
 interface CreateSectionProps {
   onClosed: () => void;
@@ -26,11 +25,7 @@ export default ReactMemo(function CreateSectionDialog({
       taskList: taskList.id,
       params: state,
     },
-    refetchQueries: [
-      refetchListTaskListQuery({
-        taskList: taskList.id,
-      }),
-    ],
+    refetchQueries: refetchQueriesForSection(taskList),
   });
 
   let submit = useCallback(async (): Promise<void> => {

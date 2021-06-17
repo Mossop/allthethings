@@ -14,6 +14,8 @@ import type { ReactElement } from "react";
 import { useMemo, forwardRef, useCallback } from "react";
 import mergeRefs from "react-merge-refs";
 
+import { useInboxContents } from "../schema";
+import type { Project, TaskList, Item } from "../schema";
 import { nameSorted } from "../utils/collections";
 import type {
   DraggedItem,
@@ -24,9 +26,8 @@ import type {
   SectionDragResult,
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
-import type { Project, TaskList, Item } from "../utils/state";
-import { useCurrentContext, useProjectRoot } from "../utils/state";
-import { Filters, isVisible, useUrl, useView, ViewType } from "../utils/view";
+import { Filters, isVisible } from "../utils/filter";
+import { useCurrentContext, useProjectRoot, useUrl, useView, ViewType } from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -304,13 +305,14 @@ export default ReactMemo(function ProjectList(): ReactResult {
     ),
   });
 
+  let inboxContents = useInboxContents();
   let inboxLabel = useMemo(() => {
-    let items = view.user.inbox.items.filter(
+    let items = inboxContents.items.filter(
       (item: Item): boolean => isVisible(item, Filters.Normal),
     );
 
     return items.length ? `Inbox (${items.length})` : "Inbox";
-  }, [view]);
+  }, [inboxContents]);
 
   let {
     canDrop: canDropOnInbox,

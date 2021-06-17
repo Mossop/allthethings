@@ -9,9 +9,8 @@ import {
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateLinkMutation } from "../schema/mutations";
-import type { Inbox, Section, TaskList } from "../utils/state";
-import { refetchQueriesForSection } from "../utils/state";
+import { useCreateLinkMutation, refetchQueriesForSection } from "../schema";
+import type { Inbox, TaskList, Section } from "../schema";
 
 interface LinkDialogProps {
   onClosed: () => void;

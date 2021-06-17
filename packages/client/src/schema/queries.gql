@@ -4,9 +4,8 @@ query ListContextState {
     email
 
     inbox {
-      id
       items {
-        ...clientItemFields
+        count
       }
     }
 
@@ -22,21 +21,37 @@ query ListContextState {
   }
 }
 
+query ListInbox {
+  user {
+    inbox {
+      items {
+        items {
+          ...clientItemFields
+        }
+      }
+    }
+  }
+}
+
 query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
-    remainingTasks
-
     items {
-      ...clientItemFields
+      items {
+        ...clientItemFields
+      }
     }
 
     sections {
       id
       name
-      remainingTasks
+      remainingTasks {
+        count
+      }
 
       items {
-        ...clientItemFields
+        items {
+          ...clientItemFields
+        }
       }
     }
   }

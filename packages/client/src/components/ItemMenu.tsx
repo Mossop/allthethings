@@ -18,16 +18,16 @@ import {
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { useCallback, useState } from "react";
 
-import { useDeleteItemMutation } from "../schema/mutations";
-import TaskDialog from "../ui/TaskDialog";
-import type { Item } from "../utils/state";
+import type { Item } from "../schema";
 import {
+  useDeleteItemMutation,
   refetchQueriesForItem,
+  isNoteItem,
   isFileItem,
   isLinkItem,
-  isNoteItem,
   isPluginItem,
-} from "../utils/state";
+} from "../schema";
+import TaskDialog from "../ui/TaskDialog";
 import { DueItemItems, DueItems } from "./DueMenu";
 import { SnoozeItems, WakeUpItems } from "./SnoozeMenu";
 

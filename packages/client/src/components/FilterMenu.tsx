@@ -14,9 +14,9 @@ import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
-import type { Inbox, TaskList } from "../utils/state";
-import { isInbox } from "../utils/state";
-import type { ListFilter } from "../utils/view";
+import type { Inbox, TaskList } from "../schema";
+import { isInbox } from "../schema";
+import type { ListFilter } from "../utils/filter";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

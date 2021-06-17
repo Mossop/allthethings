@@ -2,8 +2,7 @@ import { useBoolState, ReactMemo, Dialog, TextFieldInput } from "@allthethings/u
 import type { ReactElement } from "react";
 import { useMemo, useEffect, useState } from "react";
 
-import { useCreateContextMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
+import { useCreateContextMutation, refetchListContextStateQuery } from "../schema";
 import { useView, pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {

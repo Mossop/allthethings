@@ -4,9 +4,8 @@ import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@materia
 import md5 from "md5";
 import { useCallback } from "react";
 
-import { useLogoutMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
-import type { User } from "../utils/state";
+import type { User } from "../schema";
+import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { pushView, useView, ViewType } from "../utils/view";
 
 function avatarSources(email: string): string[] {

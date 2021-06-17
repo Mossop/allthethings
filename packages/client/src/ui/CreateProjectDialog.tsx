@@ -2,11 +2,9 @@ import { ReactMemo, useBoolState, Dialog, TextFieldInput } from "@allthethings/u
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
-import { useCreateProjectMutation } from "../schema/mutations";
-import { refetchListContextStateQuery } from "../schema/queries";
-import type { TaskList } from "../utils/state";
-import { useProjectRoot } from "../utils/state";
-import { useView, pushView, ViewType } from "../utils/view";
+import type { TaskList } from "../schema";
+import { useCreateProjectMutation, refetchListContextStateQuery } from "../schema";
+import { useProjectRoot, useView, pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
   onClosed: () => void;

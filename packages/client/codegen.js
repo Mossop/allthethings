@@ -44,6 +44,9 @@ module.exports = {
           useTypeImports: true,
           onlyOperationTypes: true,
           nonOptionalTypename: true,
+          scalars: {
+            DateTime: "Types.Scalars['DateTime']",
+          },
         },
         "typescript-react-apollo": {
           useTypeImports: true,

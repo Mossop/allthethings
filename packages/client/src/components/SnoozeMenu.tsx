@@ -22,9 +22,8 @@ import {
 import { DateTime } from "luxon";
 import { useCallback, useMemo } from "react";
 
-import { useSnoozeItemMutation } from "../schema/mutations";
-import type { Item } from "../utils/state";
-import { refetchQueriesForItem } from "../utils/state";
+import { useSnoozeItemMutation, refetchQueriesForItem } from "../schema";
+import type { Item } from "../schema";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

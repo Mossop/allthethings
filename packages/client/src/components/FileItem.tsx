@@ -1,9 +1,9 @@
 import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, TaskDoneToggle } from "@allthethings/ui";
+import { ReactMemo } from "@allthethings/ui";
 import type { Overwrite } from "@allthethings/utils";
 import { createStyles, makeStyles } from "@material-ui/core";
 
-import type { FileItem } from "../utils/state";
+import type { FileItem } from "../schema";
 import type { ItemRenderProps } from "./Item";
 
 const useStyles = makeStyles(() =>
@@ -25,8 +25,5 @@ export default ReactMemo(function FileItem({
 }: FileItemProps): ReactResult {
   let classes = useStyles();
 
-  return <>
-    <TaskDoneToggle item={item}/>
-    <div className={classes.summary}>{item.summary}</div>
-  </>;
+  return <div className={classes.summary}>{item.summary}</div>;
 });

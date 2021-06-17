@@ -29,25 +29,23 @@ import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
 import type { DropTargetMonitor } from "react-dnd";
 import mergeRefs from "react-merge-refs";
 
+import type { Item } from "../schema";
 import {
+  isInbox,
   useArchiveItemMutation,
   useEditTaskControllerMutation,
-} from "../schema/mutations";
+  refetchQueriesForItem,
+  isNoteItem,
+  isFileItem,
+  isLinkItem,
+  isPluginItem,
+  itemTaskList,
+} from "../schema";
 import { item as arrayItem } from "../utils/collections";
 import type { DraggedItem, ItemDragResult } from "../utils/drag";
 import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
-import type { Item, Item as ItemState } from "../utils/state";
-import {
-  itemTaskList,
-  refetchQueriesForItem,
-  isInbox,
-  isFileItem,
-  isLinkItem,
-  isNoteItem,
-  isPluginItem,
-} from "../utils/state";
-import type { ListFilter } from "../utils/view";
-import { isVisible } from "../utils/view";
+import type { ListFilter } from "../utils/filter";
+import { isVisible } from "../utils/filter";
 import DueMenu from "./DueMenu";
 import FileItem from "./FileItem";
 import ItemMenu from "./ItemMenu";
@@ -55,6 +53,7 @@ import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import PluginItem from "./PluginItem";
 import SnoozeMenu from "./SnoozeMenu";
+import { TaskDoneToggle } from "./TaskDoneToggle";
 import TaskItem from "./TaskItem";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -196,8 +195,8 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
 }));
 
 interface ItemProps {
-  item: ItemState;
-  items: ItemState[];
+  item: Item;
+  items: Item[];
   index: number;
   filter: ListFilter;
 }
@@ -369,6 +368,7 @@ export default ReactMemo(function ItemDisplay({
       <div className={classes.dragHandleContainer} ref={dragRef}>
         <Icons.Drag className={classes.dragHandle}/>
       </div>
+      <TaskDoneToggle item={item}/>
       <div className={classes.itemInner}>
         {
           renderItem({

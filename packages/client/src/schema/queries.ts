@@ -1,49 +1,54 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ClientItemFieldsFragment, ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment } from './fragments';
+import { ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment, ClientItemFieldsFragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ClientItemFieldsFragmentDoc, ClientRootFieldsFragmentDoc } from './fragments';
+import { ClientRootFieldsFragmentDoc, ClientItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: ReadonlyArray<(
-        { readonly __typename: 'Item' }
-        & ClientItemFieldsFragment
-      )> }, readonly contexts: ReadonlyArray<(
+    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & ClientRootFields_Context_Fragment
     )> }
     & ClientRootFields_User_Fragment
   )> };
 
+export type ListInboxQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type ListInboxQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+          { readonly __typename: 'Item' }
+          & ClientItemFieldsFragment
+        )> } } }> };
+
 export type ListTaskListQueryVariables = Types.Exact<{
   taskList: Types.Scalars['ID'];
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Item' }
-      & ClientItemFieldsFragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
+export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }> } | { readonly __typename: 'Project', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Item' }
-      & ClientItemFieldsFragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+          { readonly __typename: 'Item' }
+          & ClientItemFieldsFragment
+        )> } }> } | { readonly __typename: 'Project', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }> } | { readonly __typename: 'User', readonly remainingTasks: number, readonly items: ReadonlyArray<(
-      { readonly __typename: 'Item' }
-      & ClientItemFieldsFragment
-    )>, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: number, readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+          { readonly __typename: 'Item' }
+          & ClientItemFieldsFragment
+        )> } }> } | { readonly __typename: 'User', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }> }> };
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+          { readonly __typename: 'Item' }
+          & ClientItemFieldsFragment
+        )> } }> }> };
 
 
 export const ListContextStateDocument = gql`
@@ -52,9 +57,8 @@ export const ListContextStateDocument = gql`
     id
     email
     inbox {
-      id
       items {
-        ...clientItemFields
+        count
       }
     }
     ...clientRootFields
@@ -66,8 +70,7 @@ export const ListContextStateDocument = gql`
     }
   }
 }
-    ${ClientItemFieldsFragmentDoc}
-${ClientRootFieldsFragmentDoc}`;
+    ${ClientRootFieldsFragmentDoc}`;
 
 /**
  * __useListContextStateQuery__
@@ -98,19 +101,67 @@ export type ListContextStateQueryResult = Apollo.QueryResult<ListContextStateQue
 export function refetchListContextStateQuery(variables?: ListContextStateQueryVariables) {
       return { query: ListContextStateDocument, variables: variables }
     }
+export const ListInboxDocument = gql`
+    query ListInbox {
+  user {
+    inbox {
+      items {
+        items {
+          ...clientItemFields
+        }
+      }
+    }
+  }
+}
+    ${ClientItemFieldsFragmentDoc}`;
+
+/**
+ * __useListInboxQuery__
+ *
+ * To run a query within a React component, call `useListInboxQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListInboxQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListInboxQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListInboxQuery(baseOptions?: Apollo.QueryHookOptions<ListInboxQuery, ListInboxQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListInboxQuery, ListInboxQueryVariables>(ListInboxDocument, options);
+      }
+export function useListInboxLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListInboxQuery, ListInboxQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListInboxQuery, ListInboxQueryVariables>(ListInboxDocument, options);
+        }
+export type ListInboxQueryHookResult = ReturnType<typeof useListInboxQuery>;
+export type ListInboxLazyQueryHookResult = ReturnType<typeof useListInboxLazyQuery>;
+export type ListInboxQueryResult = Apollo.QueryResult<ListInboxQuery, ListInboxQueryVariables>;
+export function refetchListInboxQuery(variables?: ListInboxQueryVariables) {
+      return { query: ListInboxDocument, variables: variables }
+    }
 export const ListTaskListDocument = gql`
     query ListTaskList($taskList: ID!) {
   taskList(id: $taskList) {
-    remainingTasks
     items {
-      ...clientItemFields
+      items {
+        ...clientItemFields
+      }
     }
     sections {
       id
       name
-      remainingTasks
+      remainingTasks {
+        count
+      }
       items {
-        ...clientItemFields
+        items {
+          ...clientItemFields
+        }
       }
     }
   }

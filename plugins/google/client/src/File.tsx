@@ -1,6 +1,6 @@
 import type { FileFields } from "@allthethings/google-server";
-import type { PluginItemProps, ReactResult } from "@allthethings/ui";
-import { Styles, TaskDoneToggle, ReactMemo } from "@allthethings/ui";
+import type { ReactResult } from "@allthethings/ui";
+import { Styles, ReactMemo } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
@@ -27,23 +27,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 export interface FileProps {
-  item: PluginItemProps["item"];
   file: FileFields;
 }
 
 export default ReactMemo(function File({
-  item,
   file,
 }: FileProps): ReactResult {
   let classes = useStyles();
 
-  return <>
-    <TaskDoneToggle item={item}/>
-    <a className={classes.link} rel="noreferrer" target="_blank" href={file.url ?? ""}>
-      <div className={classes.iconContainer}>
-        <FileIcon mimeType={file.mimeType}/>
-      </div>
-      <div className={classes.name}>{file.name}</div>
-    </a>
-  </>;
+  return <a className={classes.link} rel="noreferrer" target="_blank" href={file.url ?? ""}>
+    <div className={classes.iconContainer}>
+      <FileIcon mimeType={file.mimeType}/>
+    </div>
+    <div className={classes.name}>{file.name}</div>
+  </a>;
 });

@@ -16,14 +16,16 @@ import {
 } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
+import type { Inbox, Project, TaskList, Item, Section } from "../schema";
 import {
+  isTaskList,
   useMoveItemMutation,
   useMoveProjectMutation,
   useMoveSectionMutation,
-} from "../schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "../schema/queries";
-import type { Inbox, Item, Project, Section, TaskList } from "./state";
-import { isTaskList, isSection } from "./state";
+  refetchListContextStateQuery,
+  isSection,
+} from "../schema";
+import { refetchListTaskListQuery } from "../schema/queries";
 
 function shallowEqual<T>(a: T | null | undefined, b: T | null | undefined): boolean {
   if (Object.is(a, b)) {

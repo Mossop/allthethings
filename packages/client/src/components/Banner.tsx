@@ -5,8 +5,7 @@ import type { Theme } from "@material-ui/core";
 
 import ContextMenu from "../ui/ContextMenu";
 import UserMenu from "../ui/UserMenu";
-import { useUser } from "../utils/state";
-import { useMaybeView } from "../utils/view";
+import { useUser, useMaybeView } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

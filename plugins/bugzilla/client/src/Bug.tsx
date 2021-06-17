@@ -2,7 +2,6 @@ import type { BugFields } from "@allthethings/bugzilla-server";
 import type { PluginItemProps, ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,
-  TaskDoneToggle,
   Styles,
   ReactMemo,
 } from "@allthethings/ui";
@@ -45,21 +44,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 export default ReactMemo(function Bug({
-  item,
+  fields,
 }: PluginItemProps): ReactResult {
   let classes = useStyles();
 
-  let bug = JSON.parse(item.detail.fields) as BugFields;
+  let bug = JSON.parse(fields) as BugFields;
 
-  return <>
-    <TaskDoneToggle item={item}/>
-    <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>
-      <div className={classes.iconContainer}>
-        <ImageIcon icon={bug.icon ?? <Icon/>}/>
-      </div>
-      <div className={classes.summary}>{bug.summary}</div>
-      <div className={classes.status}>{bug.status}</div>
-      {bug.resolution && <div className={classes.resolution}>{bug.resolution}</div>}
-    </a>
-  </>;
+  return <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>
+    <div className={classes.iconContainer}>
+      <ImageIcon icon={bug.icon ?? <Icon/>}/>
+    </div>
+    <div className={classes.summary}>{bug.summary}</div>
+    <div className={classes.status}>{bug.status}</div>
+    {bug.resolution && <div className={classes.resolution}>{bug.resolution}</div>}
+  </a>;
 });

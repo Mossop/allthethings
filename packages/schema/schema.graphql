@@ -50,30 +50,41 @@ type Item {
   detail: ItemDetail
 }
 
+type ItemSet {
+  count: Int!
+  items: [Item!]!
+}
+
 interface TaskList {
-  remainingTasks: Int!
+  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
-  items: [Item!]!
+  items: ItemSet!
 }
 
 interface ProjectRoot implements TaskList {
   # TaskList
-  remainingTasks: Int!
+  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
-  items: [Item!]!
+  items: ItemSet!
+  overdueItems: ItemSet!
 
   projects: [Project!]!
   projectById(id: ID!): Project
 }
 
+type Inbox {
+  items: ItemSet!
+}
+
 type User implements ProjectRoot & TaskList {
   # TaskList
-  remainingTasks: Int!
+  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
-  items: [Item!]!
+  items: ItemSet!
+  overdueItems: ItemSet!
 
   # ProjectRoot
   projects: [Project!]!
@@ -87,10 +98,11 @@ type User implements ProjectRoot & TaskList {
 
 type Context implements ProjectRoot & TaskList {
   # TaskList
-  remainingTasks: Int!
+  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
-  items: [Item!]!
+  items: ItemSet!
+  overdueItems: ItemSet!
 
   # ProjectRoot
   projects: [Project!]!
@@ -104,10 +116,10 @@ type Context implements ProjectRoot & TaskList {
 
 type Project implements TaskList {
   # TaskList
-  remainingTasks: Int!
+  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
-  items: [Item!]!
+  items: ItemSet!
 
   id: ID!
   stub: String!
@@ -116,16 +128,11 @@ type Project implements TaskList {
 }
 
 type Section {
-  remainingTasks: Int!
-  items: [Item!]!
+  remainingTasks: ItemSet!
+  items: ItemSet!
 
   id: ID!
   name: String!
-}
-
-type Inbox {
-  id: ID!
-  items: [Item!]!
 }
 
 type Query {

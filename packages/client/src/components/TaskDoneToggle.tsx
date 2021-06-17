@@ -1,18 +1,14 @@
 import { TaskController } from "@allthethings/schema";
-import type { Overwrite } from "@allthethings/utils";
-import type { PureQueryOptions } from "@apollo/client";
+import type { ReactResult } from "@allthethings/ui";
+import { Icons, ReactMemo } from "@allthethings/ui";
 import { IconButton } from "@material-ui/core";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
-import * as Icons from "./Icons";
-import type { Item, TaskInfo } from "./schema";
-import { useEditTaskInfoMutation } from "./schema/mutations";
-import { refetchListContextStateQuery, refetchListTaskListQuery } from "./schema/queries";
-import type { ReactResult } from "./types";
-import { ReactMemo } from "./types";
+import { useEditTaskInfoMutation, refetchQueriesForItem } from "../schema";
+import type { Item } from "../schema";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,10 +17,6 @@ const useStyles = makeStyles((theme: Theme) =>
       height: `calc(${theme.spacing(3)}px + 1.5rem)`,
     },
   }));
-
-export type TaskItem = Overwrite<Item, {
-  taskInfo: TaskInfo;
-}>;
 
 export interface TaskDoneToggleProps {
   item: Item;
@@ -37,19 +29,8 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
 }: TaskDoneToggleProps): ReactResult {
   let classes = useStyles();
 
-  let refetchQueries: PureQueryOptions[] = [refetchListContextStateQuery()];
-  if (item.parent.__typename == "Section") {
-    refetchQueries.push(refetchListTaskListQuery({
-      taskList: item.parent.taskList.id,
-    }));
-  } else if (item.parent.__typename != "Inbox") {
-    refetchQueries.push(refetchListTaskListQuery({
-      taskList: item.parent.id,
-    }));
-  }
-
   let [toggleDone] = useEditTaskInfoMutation({
-    refetchQueries,
+    refetchQueries: refetchQueriesForItem(item),
   });
 
   let toggle = useCallback(() => {

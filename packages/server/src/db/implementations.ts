@@ -1,5 +1,3 @@
-import type { DateTime } from "luxon";
-
 import PluginManager from "../plugins";
 import type { User as PluginUser } from "../plugins/types";
 import type * as Rslv from "../schema/resolvers";
@@ -112,8 +110,8 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
 abstract class TaskListImpl<
   T extends Db.DbTable,
 > extends BaseImpl<T> implements Omit<Rslv.TaskListResolvers, "__resolveType"> {
-  public async remainingTasks(): Promise<number> {
-    return this.dataSources.taskInfo.taskListTaskCount(this._id);
+  public async remainingTasks(): Promise<Src.ItemSet> {
+    return this.dataSources.taskInfo.taskListTasks(this._id);
   }
 
   public async subprojects(): Promise<Project[]> {
@@ -128,7 +126,7 @@ abstract class TaskListImpl<
     });
   }
 
-  public async items(): Promise<readonly Item[]> {
+  public async items(): Promise<Src.ItemSet> {
     return this.dataSources.items.listSpecialSection(this._id, Src.SectionIndex.Anonymous);
   }
 }
@@ -152,6 +150,10 @@ abstract class ProjectRootImpl<
     });
 
     return results.length ? results[0] : null;
+  }
+
+  public async overdueItems(): Promise<Src.ItemSet> {
+    return this.dataSources.items.overdueItems(this.id());
   }
 }
 
@@ -262,28 +264,20 @@ abstract class SpecialSection {
     return this.dbObject.id;
   }
 
-  public async remainingTasks(): Promise<number> {
-    return this.dataSources.taskInfo.sectionTaskCount(this.id());
+  public async remainingTasks(): Promise<Src.ItemSet> {
+    return this.dataSources.taskInfo.sectionTasks(this.id());
   }
 
-  public async items(): Promise<Item[]> {
-    return this.dataSources.items.find({
+  public async items(): Promise<Src.ItemSet> {
+    return this.dataSources.items.findItems({
       ownerId: this.id(),
     });
   }
 }
 
 export class Inbox extends SpecialSection implements Rslv.InboxResolvers {
-  public async items(): Promise<Item[]> {
-    let items = await super.items();
-    let created = new Map<Item, DateTime>();
-    await Promise.all(items.map(async (item: Item): Promise<void> => {
-      created.set(item, await item.created());
-    }));
-
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    items.sort((a: Item, b: Item): number => created.get(a)!.valueOf() - created.get(b)!.valueOf());
-    return items;
+  public async items(): Promise<Src.ItemSet> {
+    return new Src.SortedItemSet(await super.items());
   }
 }
 
@@ -293,12 +287,12 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     return this.dataSources.sections;
   }
 
-  public async remainingTasks(): Promise<number> {
-    return this.dataSources.taskInfo.sectionTaskCount(this._id);
+  public async remainingTasks(): Promise<Src.ItemSet> {
+    return this.dataSources.taskInfo.sectionTasks(this._id);
   }
 
-  public async items(): Promise<readonly Item[]> {
-    return this.dataSources.items.find({
+  public async items(): Promise<Src.ItemSet> {
+    return this.dataSources.items.findItems({
       ownerId: this._id,
     });
   }
