@@ -44,7 +44,11 @@ export interface PluginContext {
   table<TRecord extends {} = any>(name: string): Knex.QueryBuilder<TRecord, TRecord[]>;
 
   createItem(user: string, props: CreatePluginItemParams): Promise<string>;
-  setItemTaskDone(id: string, done: DateTime | boolean | null): Promise<void>;
+  setItemTaskDone(
+    id: string,
+    done: DateTime | boolean | null,
+    due?: DateTime | null,
+  ): Promise<void>;
   setItemSummary(id: string, summary: string): Promise<void>;
   disconnectItem(id: string, url?: string | null, icon?: string | null): Promise<void>;
   deleteItem(id: string): Promise<void>;

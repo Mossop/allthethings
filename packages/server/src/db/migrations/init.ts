@@ -209,6 +209,8 @@ export async function up(knex: Knex): Promise<void> {
 
     table.timestamp("due", { useTz: true })
       .nullable();
+    table.timestamp("manualDue", { useTz: true })
+      .nullable();
     table.timestamp("done", { useTz: true })
       .nullable();
     table.text("controller")
@@ -253,6 +255,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
     table.timestamp("taskDone", { useTz: true })
       .nullable();
+    table.timestamp("taskDue", { useTz: true })
+      .nullable();
 
     table.unique(["id", "pluginId"]);
   });
@@ -279,8 +283,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
     table.boolean("present")
       .notNullable();
-
-    table.unique(["itemId", "listId"]);
+    table.timestamp("due", { useTz: true })
+      .nullable();
 
     table.foreign(["pluginId", "itemId"])
       .references(["pluginId", "id"])

@@ -35,6 +35,7 @@ async function baseCreateItem(
     await ctx.dataSources.taskInfo.create(item, {
       ...taskInfo,
       due: taskInfo.due ?? null,
+      manualDue: taskInfo.due ?? null,
       done: taskInfo.done ?? null,
       controller: TaskController.Manual,
     });
@@ -348,23 +349,27 @@ const resolvers: MutationResolvers = {
       return item;
     }
 
-    let taskInfo = taskInfoParams
-      ? {
-        ...taskInfoParams,
-        due: taskInfoParams.due ?? null,
-        done: taskInfoParams.done ?? null,
-      }
-      : null;
+    if (!taskInfoParams) {
+      await ctx.dataSources.taskInfo.delete(id);
+      return item;
+    }
 
-    await ctx.dataSources.taskInfo.setItemTaskInfo(
-      item,
-      taskInfo
-        ? {
-          ...taskInfo,
-          controller: TaskController.Manual,
-        }
-        : null,
-    );
+    if (!existing) {
+      await ctx.dataSources.taskInfo.insert({
+        id,
+        due: taskInfoParams.due ?? null,
+        manualDue: taskInfoParams.due ?? null,
+        done: taskInfoParams.done ?? null,
+        controller: TaskController.Manual,
+      });
+    } else {
+      await ctx.dataSources.taskInfo.updateOne(id, {
+        due: taskInfoParams.due ?? null,
+        manualDue: taskInfoParams.due ?? null,
+        done: taskInfoParams.done ?? null,
+        controller: TaskController.Manual,
+      });
+    }
 
     return item;
   }),
@@ -386,10 +391,11 @@ const resolvers: MutationResolvers = {
     }
 
     if (!controller) {
-      await ctx.dataSources.taskInfo.setItemTaskInfo(item, null);
+      await ctx.dataSources.taskInfo.delete(id);
     } else {
       let taskInfo = {
-        due: existing ? await existing.due() : null,
+        due: null as DateTime | null,
+        manualDue: existing ? await existing.manualDue() : null,
         done: existing ? await existing.done() : null,
         controller: controller as TaskController,
       };
@@ -413,6 +419,9 @@ const resolvers: MutationResolvers = {
             } else if (!taskInfo.done) {
               taskInfo.done = DateTime.now();
             }
+
+            taskInfo.due = taskInfo.manualDue ??
+              await ctx.dataSources.pluginList.getItemDue(item.id());
             break;
           }
           case TaskController.Plugin: {
@@ -421,12 +430,22 @@ const resolvers: MutationResolvers = {
             }
 
             taskInfo.done = await detail.taskDone();
+            taskInfo.due = taskInfo.manualDue ?? await detail.taskDue();
             break;
           }
         }
+      } else {
+        taskInfo.due = taskInfo.manualDue;
       }
 
-      await ctx.dataSources.taskInfo.setItemTaskInfo(item, taskInfo);
+      if (existing) {
+        await ctx.dataSources.taskInfo.updateOne(id, taskInfo);
+      } else {
+        await ctx.dataSources.taskInfo.insert({
+          id,
+          ...taskInfo,
+        });
+      }
     }
 
     return item;
@@ -499,11 +518,43 @@ const resolvers: MutationResolvers = {
     args: { id, due },
     ctx,
   }: AuthedParams<unknown, Types.MutationMarkItemDueArgs>): Promise<Item | null> => {
-    await ctx.dataSources.taskInfo.updateOne(id, {
-      due: due ?? null,
-    });
+    let item = await ctx.dataSources.items.getImpl(id);
+    if (!item) {
+      return null;
+    }
 
-    return ctx.dataSources.items.getImpl(id);
+    let existing = await ctx.dataSources.taskInfo.getRecord(id);
+    if (!existing) {
+      return null;
+    }
+
+    if (due) {
+      await ctx.dataSources.taskInfo.updateOne(id, {
+        due,
+        manualDue: due,
+      });
+    } else {
+      let due: DateTime | null = null;
+      if (existing.controller != TaskController.Manual) {
+        let detail = await item.detail();
+        if (!(detail instanceof PluginDetail)) {
+          throw new Error("Invalid task controller.");
+        }
+
+        if (existing.controller == TaskController.Plugin) {
+          due = await detail.taskDue();
+        } else {
+          due = await ctx.dataSources.pluginList.getItemDue(id);
+        }
+      }
+
+      await ctx.dataSources.taskInfo.updateOne(id, {
+        due,
+        manualDue: null,
+      });
+    }
+
+    return item;
   }),
 };
 

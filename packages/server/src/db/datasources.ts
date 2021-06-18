@@ -1,5 +1,4 @@
 import { TaskController } from "@allthethings/schema";
-import type { MakeRequired } from "@allthethings/utils";
 import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
@@ -14,7 +13,6 @@ import { id } from "./connection";
 import type { ImplBuilder } from "./implementations";
 import * as Impl from "./implementations";
 import * as Db from "./types";
-import type { DbUpdateObject } from "./types";
 
 type PromiseLike<T> = T | Promise<T>;
 type Maybe<T> = T | null | undefined;
@@ -45,12 +43,20 @@ function classBuilder<I, T>(
   ) => new cls(dataSources, dbObject);
 }
 
-async function max<D>(
+async function max<D, C extends keyof DbObject<D>>(
   query: Knex.QueryBuilder<D, D[]>,
-  col: keyof DbObject<D>,
-): Promise<number | null> {
-  let result: { max: number | null } | undefined = await query.max(col).first();
+  col: C,
+): Promise<DbObject<D>[C] | null> {
+  let result: { max: DbObject<D>[C] | null } | undefined = await query.max(col).first();
   return result ? result.max : null;
+}
+
+async function min<D, C extends keyof DbObject<D>>(
+  query: Knex.QueryBuilder<D, D[]>,
+  col: C,
+): Promise<DbObject<D>[C] | null> {
+  let result: { min: DbObject<D>[C] | null } | undefined = await query.min(col).first();
+  return result ? result.min : null;
 }
 
 async function count(query: Knex.QueryBuilder): Promise<number | null> {
@@ -653,25 +659,6 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
       });
   }
 
-  public async setItemTaskInfo(
-    item: Impl.Item,
-    taskInfo: MakeRequired<DbUpdateObject<Db.TaskInfoDbTable>, "controller"> | null,
-  ): Promise<void> {
-    if (!taskInfo) {
-      return this.delete(item.id());
-    }
-
-    let record = await this.updateOne(item.id(), taskInfo);
-    if (!record) {
-      await this.insert({
-        ...taskInfo,
-        due: taskInfo.due ?? null,
-        done: taskInfo.done ?? null,
-        id: item.id(),
-      });
-    }
-  }
-
   public taskListTasks(taskList: string): ItemSet {
     return new QueryItemSet(
       this.dataSources,
@@ -787,6 +774,14 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
   public tableName = "PluginList";
   protected builder = classBuilder<Impl.PluginList, Db.PluginListDbTable>(Impl.PluginList);
 
+  public async getItemDue(itemId: string): Promise<DateTime | null> {
+    return min(
+      this.knex.from<Db.PluginListItemsDbTable>("PluginListItems")
+        .where("itemId", itemId),
+      "due",
+    );
+  }
+
   public async getListsForItem(itemId: string): Promise<Impl.PluginList[]> {
     return this.buildAll(
       this.records
@@ -828,6 +823,7 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
         listId,
         itemId,
         present: true,
+        due: null,
       }));
 
       await this.knex
@@ -880,6 +876,7 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
           listId: id,
           itemId,
           present: true,
+          due: null,
         }));
 
         await this.knex

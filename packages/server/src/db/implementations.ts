@@ -369,6 +369,7 @@ export class TaskInfo extends BaseImpl<Db.TaskInfoDbTable>
     return this.dataSources.taskInfo;
   }
 
+  public readonly manualDue = fields<Db.TaskInfoDbTable>()("manualDue");
   public readonly due = fields<Db.TaskInfoDbTable>()("due");
   public readonly done = fields<Db.TaskInfoDbTable>()("done");
   public readonly controller = fields<Db.TaskInfoDbTable>()("controller");
@@ -451,6 +452,7 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
   public readonly pluginId = fields<Db.PluginDetailDbTable>()("pluginId");
   public readonly hasTaskState = fields<Db.PluginDetailDbTable>()("hasTaskState");
   public readonly taskDone = fields<Db.PluginDetailDbTable>()("taskDone");
+  public readonly taskDue = fields<Db.PluginDetailDbTable>()("taskDue");
 }
 
 export class PluginList extends BaseImpl<Db.PluginListDbTable>

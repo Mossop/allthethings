@@ -117,17 +117,20 @@ export function buildPluginContext(
         pluginId: plugin.id,
         hasTaskState: done !== undefined,
         taskDone: done ?? null,
+        taskDue: due ?? null,
       });
 
       if (done !== undefined && controller == TaskController.Plugin) {
         await dataSources.taskInfo.create(itemImpl, {
           due: due ?? null,
+          manualDue: null,
           done,
           controller,
         });
       } else if (controller) {
         await dataSources.taskInfo.create(itemImpl, {
-          due: due ?? null,
+          due: null,
+          manualDue: null,
           done: null,
           controller,
         });
@@ -136,7 +139,11 @@ export function buildPluginContext(
       return itemImpl.id();
     },
 
-    async setItemTaskDone(id: string, done: DateTime | boolean | null): Promise<void> {
+    async setItemTaskDone(
+      id: string,
+      done: DateTime | boolean | null,
+      due: DateTime | undefined | null,
+    ): Promise<void> {
       let item = await dataSources.items.getImpl(id);
       if (!item) {
         throw new Error("Unknown item.");
@@ -158,8 +165,13 @@ export function buildPluginContext(
         done = null;
       }
 
+      if (due === undefined) {
+        due = await detail.taskDue();
+      }
+
       await dataSources.pluginDetail.updateOne(id, {
         taskDone: done,
+        taskDue: due,
       });
 
       let existing = await item.taskInfo();
@@ -167,8 +179,9 @@ export function buildPluginContext(
         return;
       }
 
-      return dataSources.taskInfo.setItemTaskInfo(item, {
+      await dataSources.taskInfo.updateOne(id, {
         done,
+        due: await existing.manualDue() ?? due,
         controller: TaskController.Plugin,
       });
     },
@@ -207,9 +220,13 @@ export function buildPluginContext(
       }
 
       let taskInfo = await item.taskInfo();
-      let controller = taskInfo ? await taskInfo.controller() : TaskController.Manual;
-      if (controller != TaskController.Manual) {
-        await dataSources.taskInfo.setItemTaskInfo(item, {
+      if (!taskInfo) {
+        return;
+      }
+
+      if (await taskInfo.controller() != TaskController.Manual) {
+        await dataSources.taskInfo.updateOne(id, {
+          due: await taskInfo.manualDue(),
           controller: TaskController.Manual,
         });
       }

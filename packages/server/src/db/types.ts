@@ -100,6 +100,7 @@ export type ItemDbTable = DbTable<IndexedDbEntity & {
 // Task data for an item. id is a foreign key to ItemDbTable.id
 export type TaskInfoDbTable = DbTable<{
   due: DateTime | null;
+  manualDue: DateTime | null;
   done: DateTime | null;
   controller: TaskController;
 }>;
@@ -128,6 +129,7 @@ export type PluginDetailDbTable = DbTable<{
   pluginId: string;
   hasTaskState: boolean;
   taskDone: DateTime | null;
+  taskDue: DateTime | null;
 }>;
 
 // Data for a plugin list.
@@ -141,6 +143,7 @@ export interface PluginListItem {
   pluginId: string;
   listId: string;
   itemId: string;
+  due: DateTime | null;
   present: boolean;
 }
 
