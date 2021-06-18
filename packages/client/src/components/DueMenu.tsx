@@ -1,4 +1,4 @@
-import type { ReactResult } from "@allthethings/ui";
+import type { ReactRef, ReactResult } from "@allthethings/ui";
 import {
   useBoundCallback,
   useBoolState,
@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 import { DateTime } from "luxon";
-import { useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useMemo } from "react";
 
 import { useMarkItemDueMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
@@ -37,9 +37,9 @@ interface DueMenuProps {
   isInner?: boolean;
 }
 
-export const DueItemItems = ReactMemo(function DueItemItems({
+export const DueItemItems = ReactMemo(forwardRef(function DueItemItems({
   item,
-}: DueMenuProps): ReactResult {
+}: DueMenuProps, ref: ReactRef | null): ReactResult {
   let [markItemDueMutation] = useMarkItemDueMutation({
     refetchQueries: refetchQueriesForItem(item),
   });
@@ -77,7 +77,7 @@ export const DueItemItems = ReactMemo(function DueItemItems({
     return null;
   }
 
-  return <List disablePadding={true}>
+  return <List ref={ref} disablePadding={true}>
     <MenuItem disabled={true}>
       <ListItemText>Due {whenDue}</ListItemText>
     </MenuItem>
@@ -85,12 +85,12 @@ export const DueItemItems = ReactMemo(function DueItemItems({
       <ListItemText>Never Due</ListItemText>
     </MenuItem>
   </List>;
-});
+}));
 
-export const DueItems = ReactMemo(function DueItems({
+export const DueItems = ReactMemo(forwardRef(function DueItems({
   item,
   isInner,
-}: DueMenuProps): ReactResult {
+}: DueMenuProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
   let [pickerOpen, openPicker, closePicker] = useBoolState();
 
@@ -128,7 +128,7 @@ export const DueItems = ReactMemo(function DueItems({
 
   let className = isInner ? classes.inner : undefined;
 
-  return <List disablePadding={true}>
+  return <List ref={ref} disablePadding={true}>
     {
       dueThisAfternoon && <MenuItem className={className} onClick={dueThisAfternoon}>
         <ListItemText>This Afternoon</ListItemText>
@@ -150,7 +150,7 @@ export const DueItems = ReactMemo(function DueItems({
       />
     }
   </List>;
-});
+}));
 
 export default ReactMemo(function DueMenu({
   item,

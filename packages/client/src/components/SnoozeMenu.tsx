@@ -1,4 +1,4 @@
-import type { ReactResult } from "@allthethings/ui";
+import type { ReactRef, ReactResult } from "@allthethings/ui";
 import {
   useBoundCallback,
   useBoolState,
@@ -20,7 +20,7 @@ import {
   Tooltip,
 } from "@material-ui/core";
 import { DateTime } from "luxon";
-import { useCallback, useMemo } from "react";
+import { forwardRef, useCallback, useMemo } from "react";
 
 import { useSnoozeItemMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
@@ -37,9 +37,9 @@ interface SnoozeMenuProps {
   isInner?: boolean;
 }
 
-export const WakeUpItems = ReactMemo(function WakeUpItems({
+export const WakeUpItems = ReactMemo(forwardRef(function WakeUpItems({
   item,
-}: SnoozeMenuProps): ReactResult {
+}: SnoozeMenuProps, ref: ReactRef | null): ReactResult {
   let [snoozeItemMutation] = useSnoozeItemMutation({
     refetchQueries: refetchQueriesForItem(item),
   });
@@ -77,7 +77,7 @@ export const WakeUpItems = ReactMemo(function WakeUpItems({
     return null;
   }
 
-  return <List disablePadding={true}>
+  return <List ref={ref} disablePadding={true}>
     <MenuItem disabled={true}>
       <ListItemText>Wakes up at {wakesUp}</ListItemText>
     </MenuItem>
@@ -85,12 +85,12 @@ export const WakeUpItems = ReactMemo(function WakeUpItems({
       <ListItemText>Wake up</ListItemText>
     </MenuItem>
   </List>;
-});
+}));
 
-export const SnoozeItems = ReactMemo(function SnoozeItems({
+export const SnoozeItems = ReactMemo(forwardRef(function SnoozeItems({
   item,
   isInner,
-}: SnoozeMenuProps): ReactResult {
+}: SnoozeMenuProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
   let [pickerOpen, openPicker, closePicker] = useBoolState();
 
@@ -128,7 +128,7 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
 
   let className = isInner ? classes.inner : undefined;
 
-  return <List disablePadding={true}>
+  return <List ref={ref} disablePadding={true}>
     {
       snoozeAfternoon && <MenuItem className={className} onClick={snoozeAfternoon}>
         <ListItemText>This Afternoon</ListItemText>
@@ -150,7 +150,7 @@ export const SnoozeItems = ReactMemo(function SnoozeItems({
       />
     }
   </List>;
-});
+}));
 
 export default ReactMemo(function SnoozeMenu({
   item,
