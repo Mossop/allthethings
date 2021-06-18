@@ -506,6 +506,18 @@ const resolvers: MutationResolvers = {
     await user.delete();
     return true;
   }),
+
+  changePassword: authed(
+    async (ctx, { id, currentPassword, newPassword }): Promise<User | null> => {
+      id = id ?? ctx.userId;
+
+      if (id != ctx.userId) {
+        await ctx.dataSources.users.assertIsAdmin(ctx.userId);
+      }
+
+      return ctx.dataSources.users.changePassword(id, currentPassword, newPassword);
+    },
+  ),
 };
 
 export default {

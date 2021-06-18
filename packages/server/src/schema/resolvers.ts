@@ -235,6 +235,7 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   markItemDue: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMarkItemDueArgs, 'id'>>;
   createUser: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<Schema.MutationCreateUserArgs, 'email' | 'password'>>;
   deleteUser: Resolver<Schema.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<Schema.MutationDeleteUserArgs, 'id'>>;
+  changePassword: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<Schema.MutationChangePasswordArgs, 'currentPassword' | 'newPassword'>>;
 }>;
 
 export type NoteDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NoteDetail'] = ResolversParentTypes['NoteDetail']> = ResolversObject<{

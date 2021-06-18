@@ -148,3 +148,9 @@ mutation CreateUser($email: String!, $password: String!, $isAdmin: Boolean) {
 mutation DeleteUser($id: ID!) {
   deleteUser(id: $id)
 }
+
+mutation ChangePassword($currentPassword: String!, $newPassword: String!) {
+  changePassword(currentPassword: $currentPassword, newPassword: $newPassword) {
+    id
+  }
+}

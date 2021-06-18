@@ -210,4 +210,5 @@ type Mutation {
 
   createUser(email: String!, password: String!, isAdmin: Boolean): User!
   deleteUser(id: ID!): Boolean
+  changePassword(id: ID, currentPassword: String!, newPassword: String!): User
 }

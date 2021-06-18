@@ -115,6 +115,7 @@ export type Mutation = {
   readonly markItemDue?: Maybe<Item>;
   readonly createUser: User;
   readonly deleteUser?: Maybe<Scalars['Boolean']>;
+  readonly changePassword?: Maybe<User>;
 };
 
 
@@ -267,6 +268,13 @@ export type MutationCreateUserArgs = {
 
 export type MutationDeleteUserArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationChangePasswordArgs = {
+  id?: Maybe<Scalars['ID']>;
+  currentPassword: Scalars['String'];
+  newPassword: Scalars['String'];
 };
 
 export type NoteDetail = {
@@ -441,7 +449,7 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | 'createUser' | 'deleteUser' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | 'createUser' | 'deleteUser' | 'changePassword' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -468,7 +476,8 @@ export type MutationFieldPolicy = {
 	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	markItemDue?: FieldPolicy<any> | FieldReadFunction<any>,
 	createUser?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteUser?: FieldPolicy<any> | FieldReadFunction<any>
+	deleteUser?: FieldPolicy<any> | FieldReadFunction<any>,
+	changePassword?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {

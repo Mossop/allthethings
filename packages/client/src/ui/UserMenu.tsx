@@ -1,5 +1,6 @@
 import type { ReactResult } from "@allthethings/ui";
 import {
+  useBoolState,
   pushUrl,
   useResetStore,
   ReactMemo,
@@ -14,6 +15,7 @@ import { useCallback } from "react";
 import type { User } from "../schema";
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { pushView, useView, ViewType } from "../utils/view";
+import ChangePasswordDialog from "./ChangePasswordDialog";
 
 function avatarSources(email: string): string[] {
   let hash = md5(email);
@@ -46,6 +48,7 @@ export default ReactMemo(function UserMenu({
   });
   let userMenuState = useMenuState("user-menu");
   let resetStore = useResetStore();
+  let [changePasswordOpen, showChangePassword, closeChangePassword] = useBoolState();
 
   let doLogout = useCallback(async (): Promise<void> => {
     pushUrl(new URL("/", document.documentURI));
@@ -78,7 +81,9 @@ export default ReactMemo(function UserMenu({
       }
     >
       <MenuItem id="user-menu-settings" onClick={doSettings}>Settings</MenuItem>
+      <MenuItem id="user-menu-password" onClick={showChangePassword}>Change Password...</MenuItem>
       <MenuItem id="user-menu-logout" onClick={doLogout}>Logout</MenuItem>
     </Menu>
+    {changePasswordOpen && <ChangePasswordDialog onClosed={closeChangePassword}/>}
   </>;
 });

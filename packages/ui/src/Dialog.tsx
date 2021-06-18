@@ -22,6 +22,7 @@ export interface DialogProps {
   submitLabel?: string;
   cancelLabel?: string | null;
   formState?: FormState;
+  canSubmit?: boolean;
 }
 
 export const Dialog = ReactMemo(function Dialog({
@@ -34,6 +35,7 @@ export const Dialog = ReactMemo(function Dialog({
   submitLabel = "Submit",
   cancelLabel = "Cancel",
   formState = FormState.Default,
+  canSubmit = true,
   children,
 }: DialogProps & ReactChildren): ReactResult {
   let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
@@ -50,7 +52,14 @@ export const Dialog = ReactMemo(function Dialog({
           {children}
         </DialogContent>
         <DialogActions>
-          <Button type="submit" variant="contained" color="primary">{submitLabel}</Button>
+          <Button
+            type="submit"
+            disabled={!canSubmit}
+            variant="contained"
+            color="primary"
+          >
+            {submitLabel}
+          </Button>
           {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
         </DialogActions>
       </form>

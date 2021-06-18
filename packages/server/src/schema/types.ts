@@ -114,6 +114,7 @@ export type Mutation = {
   readonly markItemDue?: Maybe<Item>;
   readonly createUser: User;
   readonly deleteUser?: Maybe<Scalars['Boolean']>;
+  readonly changePassword?: Maybe<User>;
 };
 
 
@@ -266,6 +267,13 @@ export type MutationCreateUserArgs = {
 
 export type MutationDeleteUserArgs = {
   id: Scalars['ID'];
+};
+
+
+export type MutationChangePasswordArgs = {
+  id?: Maybe<Scalars['ID']>;
+  currentPassword: Scalars['String'];
+  newPassword: Scalars['String'];
 };
 
 export type NoteDetail = {

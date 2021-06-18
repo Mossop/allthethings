@@ -5,7 +5,7 @@ import {
   BooleanCheckboxInput,
 } from "@allthethings/ui";
 import type { ReactElement } from "react";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useCreateUserMutation } from "../../schema";
 import { refetchListUsersQuery } from "../../schema/queries";
@@ -25,12 +25,17 @@ export default ReactMemo(function CreateUserDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createUser, { error }] = useCreateUserMutation({
+  let [createUserMutation, { error }] = useCreateUserMutation({
     variables: state,
     refetchQueries: [
       refetchListUsersQuery(),
     ],
   });
+
+  let createUser = useCallback(async () => {
+    await createUserMutation();
+    onClosed();
+  }, [createUserMutation, onClosed]);
 
   return <Dialog
     title="Create User"

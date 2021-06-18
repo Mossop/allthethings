@@ -98,6 +98,7 @@ export type LinkDetailParams = {
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly archiveItem: Maybe<Item>;
+  readonly changePassword: Maybe<User>;
   readonly createContext: Context;
   readonly createLink: Item;
   readonly createNote: Item;
@@ -132,6 +133,13 @@ export type Mutation = {
 export type MutationArchiveItemArgs = {
   id: Scalars['ID'];
   archived: Maybe<Scalars['DateTime']>;
+};
+
+
+export type MutationChangePasswordArgs = {
+  id: Maybe<Scalars['ID']>;
+  currentPassword: Scalars['String'];
+  newPassword: Scalars['String'];
 };
 
 

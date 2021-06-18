@@ -369,6 +369,13 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
   public tableName = "User";
   protected builder = classBuilder<Impl.User, Db.UserDbTable>(Impl.User);
 
+  public async assertIsAdmin(userId: string): Promise<void> {
+    let record = await this.getRecord(userId);
+    if (!record?.isAdmin) {
+      throw new Error("Not an admin user.");
+    }
+  }
+
   public async verifyUser(email: string, password: string): Promise<Impl.User | null> {
     let user = await this.first(this.table.where({
       email,
@@ -383,6 +390,26 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
     }
 
     return null;
+  }
+
+  public async changePassword(
+    id: string,
+    oldPass: string,
+    newPass: string,
+  ): Promise<Impl.User | null> {
+    let record = await this.getRecord(id);
+    if (!record) {
+      return null;
+    }
+
+    if (await bcryptCompare(oldPass, record.password)) {
+      await this.updateOne(id, {
+        password: await bcryptHash(newPass, 12),
+      });
+      return this.build(record);
+    }
+
+    throw new Error("Invalid password.");
   }
 
   public async create(params: Omit<Db.DbInsertObject<Db.UserDbTable>, "id">): Promise<Impl.User> {
