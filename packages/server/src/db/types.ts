@@ -144,7 +144,7 @@ export interface PluginListItem {
   listId: string;
   itemId: string;
   due: DateTime | null;
-  present: boolean;
+  present: DateTime | null;
 }
 
 export type PluginListItemsDbTable = Knex.CompositeTableType<

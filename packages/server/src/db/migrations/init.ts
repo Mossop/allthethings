@@ -281,8 +281,8 @@ export async function up(knex: Knex): Promise<void> {
       .notNullable();
     table.text("listId")
       .notNullable();
-    table.boolean("present")
-      .notNullable();
+    table.timestamp("present", { useTz: true })
+      .nullable();
     table.timestamp("due", { useTz: true })
       .nullable();
 

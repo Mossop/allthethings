@@ -5,7 +5,7 @@ import type { TaskController } from "@allthethings/schema";
 import type { Awaitable, MaybeCallable } from "@allthethings/utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
-import type { DateTime } from "luxon";
+import type { DateTime, Duration } from "luxon";
 
 import type { TaskManager } from "../utils/tasks";
 import type { PluginDbMigration, PluginKnex, TableRef } from "./db";
@@ -14,6 +14,7 @@ export interface PluginList {
   name: string;
   url: string | null;
   items?: string[];
+  due?: Duration | null;
 }
 
 export interface CreatePluginItemParams {

@@ -1,6 +1,7 @@
 import type { URL } from "url";
 
 import type { Awaitable } from "@allthethings/utils";
+import type { Duration } from "luxon";
 
 import type { AuthedPluginContext, PluginContext, PluginItem, ServerPlugin } from "./types";
 
@@ -138,6 +139,10 @@ export abstract class BaseList<SR> extends Base implements IList {
 
   public abstract get name(): string;
 
+  public get due(): Duration | null | undefined {
+    return undefined;
+  }
+
   public get url(): string | null | undefined {
     return undefined;
   }
@@ -148,6 +153,7 @@ export abstract class BaseList<SR> extends Base implements IList {
       name: this.name,
       url: this.url,
       items: items.map((item: PluginItem): string => item.id),
+      due: this.due,
     });
     return items;
   }

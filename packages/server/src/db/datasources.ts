@@ -3,6 +3,7 @@ import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import type { Knex } from "knex";
+import type { Duration } from "luxon";
 import { DateTime } from "luxon";
 
 import type { PluginList } from "../plugins/types";
@@ -568,7 +569,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   public async deleteCompleteInboxTasks(): Promise<void> {
     let itemsInLists = this.knex
       .from<Db.PluginListItemsDbTable>("PluginListItems")
-      .where("present", true)
+      .whereNotNull("present")
       .distinct("itemId");
 
     let items = await this.select(this.records
@@ -633,30 +634,6 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
       ...params,
       id: item.id(),
     }));
-  }
-
-  public async cleanupMissingLists(): Promise<void> {
-    // The ids of items no longer in any list.
-    let ids = this.records
-      .leftJoin("PluginListItems", this.ref("id"), "PluginListItems.itemId")
-      .whereNull("PluginListItems.listId")
-      .andWhere(this.ref("controller"), TaskController.PluginList)
-      .select(this.ref("id"));
-
-    // Make them manually controlled.
-    await this.records
-      .whereIn(this.ref("id"), ids)
-      .update({
-        controller: TaskController.Manual,
-      });
-
-    // Mark items as done.
-    await this.records
-      .whereIn(this.ref("id"), ids)
-      .whereNull(this.ref("done"))
-      .update({
-        done: DateTime.now(),
-      });
   }
 
   public taskListTasks(taskList: string): ItemSet {
@@ -802,9 +779,102 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
     return await count(this.knex
       .from("PluginListItems")
       .where("itemId", id)
-      .where("present", true))
+      .whereNotNull("present"))
       ? true
       : false;
+  }
+
+  private async updateDue(listId: string, ids: string[], due: Duration | null): Promise<void> {
+    if (!due) {
+      await this.knex
+        .into<Db.PluginListItemsDbTable>("PluginListItems")
+        .where("listId", listId)
+        .whereIn("id", ids)
+        .update({
+          due: null,
+        });
+      return;
+    }
+
+    let records = await this.knex
+      .from<Db.PluginListItemsDbTable>("PluginListItems")
+      .where("listId", listId)
+      .whereIn("id", ids)
+      .whereNotNull("present");
+
+    for (let record of records) {
+      await this.knex
+        .into<Db.PluginListItemsDbTable>("PluginListItems")
+        .where({
+          listId,
+          itemId: record.itemId,
+        })
+        .update({
+          due: record.present?.plus(due) ?? null,
+        });
+    }
+  }
+
+  public async updateTaskStates(): Promise<void> {
+    interface Record {
+      id: string;
+      done: DateTime | null;
+      manualDue: DateTime | null;
+      due: DateTime | null;
+      presentCount: number | null;
+      pluginDue: DateTime | null;
+    }
+
+    let now = DateTime.now();
+
+    let presentItems = this.knex
+      .from<Db.PluginListItemsDbTable>("PluginListItems")
+      .groupBy("itemId")
+      .select({
+        itemId: "itemId",
+        presentCount: this.knex.raw("COUNT(??)", "present"),
+        pluginDue: this.knex.raw("MIN(??)", "due"),
+      })
+      .as("PresentItems");
+
+    let records = await this.knex
+      .from("TaskInfo")
+      .leftJoin(presentItems, "TaskInfo.id", "PresentItems.itemId")
+      .where("TaskInfo.controller", TaskController.PluginList)
+      .select({
+        id: "TaskInfo.id",
+        done: "TaskInfo.done",
+        manualDue: "TaskInfo.manualDue",
+        due: "TaskInfo.due",
+        presentCount: "PresentItems.presentCount",
+        pluginDue: "PresentItems.pluginDue",
+      }) as Record[];
+
+    for (let record of records) {
+      if (record.presentCount === null) {
+        // No lists left.
+        await this.dataSources.taskInfo.updateOne(record.id, {
+          done: now,
+          due: record.manualDue,
+          controller: TaskController.Manual,
+        });
+      } else if (record.presentCount > 0) {
+        // Item is not done
+        let due = record.manualDue ?? record.pluginDue;
+        if (record.done || record.due != due) {
+          await this.dataSources.taskInfo.updateOne(record.id, {
+            done: null,
+            due,
+          });
+        }
+      } else if (!record.done) {
+        // Item is done.
+        await this.dataSources.taskInfo.updateOne(record.id, {
+          done: now,
+          due: record.manualDue ?? record.pluginDue,
+        });
+      }
+    }
   }
 
   public async addList(pluginId: string, list: PluginList): Promise<string> {
@@ -818,26 +888,22 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
     });
 
     if (list.items) {
+      let now = DateTime.now();
+      let due: DateTime | null = null;
+      if (list.due) {
+        due = now.plus(list.due);
+      }
       let records = list.items.map((itemId: string): Db.PluginListItem => ({
         pluginId,
         listId,
         itemId,
-        present: true,
-        due: null,
+        present: now,
+        due,
       }));
 
       await this.knex
-        .into("PluginListItems")
+        .into<Db.PluginListItemsDbTable>("PluginListItems")
         .insert(records);
-
-      await this.knex
-        .into("TaskInfo")
-        .whereIn("id", list.items)
-        .where("controller", TaskController.PluginList)
-        .whereNotNull("done")
-        .update({
-          done: null,
-        });
     }
 
     return listId;
@@ -856,68 +922,123 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
         });
     }
 
+    let alreadyPresentIds: string[] = [];
+
     if (list.items) {
-      let present = await this.knex
+      let itemIdsToUpdate = new Set(list.items);
+
+      let now = DateTime.now();
+      let due: DateTime | null = null;
+      if (list.due) {
+        due = now.plus(list.due);
+      }
+
+      // These are items that were already present for this list. We must update their due states.
+      let existingPresentRecords = await this.knex
+        .from<Db.PluginListItemsDbTable>("PluginListItems")
+        .whereIn("itemId", list.items)
+        .andWhere({
+          pluginId,
+          listId: id,
+        })
+        .whereNotNull("present");
+
+      for (let record of existingPresentRecords) {
+        itemIdsToUpdate.delete(record.itemId);
+
+        if (list.due !== undefined) {
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          let due = list.due ? record.present!.plus(list.due) : null;
+          if (record.due != due) {
+            await this.knex
+              .into<Db.PluginListItemsDbTable>("PluginListItems")
+              .where({
+                itemId: record.itemId,
+                listId: id,
+              })
+              .update({
+                due,
+              });
+          }
+        }
+      }
+
+      // Update any existing items that are newly present. We can set their due date directly.
+      let existingNotPresentItemIds = await this.knex
         .into<Db.PluginListItemsDbTable>("PluginListItems")
         .whereIn("itemId", list.items)
         .andWhere({
           pluginId,
           listId: id,
         })
+        .whereNull("present")
         .update({
-          present: true,
+          present: now,
+          due,
         })
-        .returning("itemId");
+        .returning("itemId") as string[];
 
-      let newItems = list.items.filter((id: string): boolean => !present.includes(id));
-      if (newItems.length) {
-        let records = newItems.map((itemId: string): Db.PluginListItem => ({
+      for (let itemId of existingNotPresentItemIds) {
+        itemIdsToUpdate.delete(itemId);
+      }
+
+      // Create any new records.
+      if (itemIdsToUpdate.size) {
+        let records = Array.from(itemIdsToUpdate, (itemId: string): Db.PluginListItem => ({
           pluginId,
           listId: id,
           itemId,
-          present: true,
-          due: null,
+          present: now,
+          due,
         }));
 
         await this.knex
-          .into("PluginListItems")
+          .into<Db.PluginListItemsDbTable>("PluginListItems")
           .insert(records);
       }
 
+      // Mark anything else as no longer present.
       await this.knex
-        .into("PluginListItems")
+        .into<Db.PluginListItemsDbTable>("PluginListItems")
         .whereNotIn("itemId", list.items)
         .andWhere({
           pluginId,
           listId: id,
         })
         .update({
-          present: false,
+          present: null,
+          due: null,
         });
+    } else if (list.due !== undefined) {
+      // Must update all due states.
+      let records = await this.knex
+        .from<Db.PluginListItemsDbTable>("PluginListItems")
+        .where({
+          pluginId,
+          listId: id,
+        })
+        .whereNotNull("present");
 
-      await this.knex
-        .into("TaskInfo")
-        .whereIn("id", list.items)
-        .where("controller", TaskController.PluginList)
-        .whereNotNull("done")
-        .update({
-          done: null,
-        });
+      for (let record of records) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        let due = list.due ? record.present!.plus(list.due) : null;
+        if (record.due != due) {
+          await this.knex
+            .into<Db.PluginListItemsDbTable>("PluginListItems")
+            .where({
+              pluginId,
+              listId: id,
+              itemId: record.itemId,
+            })
+            .update({
+              due,
+            });
+        }
+      }
+    }
 
-      let presentIds = this.knex
-        .from("PluginListItems")
-        .where("present", true)
-        .distinct("itemId");
-
-      let done = DateTime.now();
-      await this.knex
-        .into("TaskInfo")
-        .whereNotIn("id", presentIds)
-        .where("controller", TaskController.PluginList)
-        .whereNull("done")
-        .update({
-          done,
-        });
+    if (list.due !== undefined) {
+      await this.updateDue(id, alreadyPresentIds, list.due);
     }
   }
 
@@ -930,13 +1051,13 @@ export class PluginListSource extends DbDataSource<Impl.PluginList, Db.PluginLis
       .delete();
 
     let presentIds = this.knex
-      .from("PluginListItems")
-      .where("present", true)
+      .from<Db.PluginListItemsDbTable>("PluginListItems")
+      .whereNotNull("present")
       .distinct("itemId");
 
     let done = DateTime.now();
     await this.knex
-      .into("TaskInfo")
+      .into<Db.TaskInfoDbTable>("TaskInfo")
       .whereNotIn("id", presentIds)
       .where("controller", TaskController.PluginList)
       .whereNull("done")
@@ -982,7 +1103,7 @@ export class AppDataSources {
   }
 
   public async ensureSanity(): Promise<void> {
-    await this.taskInfo.cleanupMissingLists();
+    await this.pluginList.updateTaskStates();
     await this.items.deleteCompleteInboxTasks();
   }
 }
