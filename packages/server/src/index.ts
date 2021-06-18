@@ -30,7 +30,10 @@ async function init(): Promise<void> {
 
     if (existing.length == 0) {
       console.log(`Creating admin user ${config.admin.email}`);
-      await dataSources.users.create(config.admin);
+      await dataSources.users.create({
+        ...config.admin,
+        isAdmin: true,
+      });
     }
   }
 

@@ -138,3 +138,13 @@ mutation MarkItemDue($id: ID!, $due: DateTime) {
     ...clientItemFields
   }
 }
+
+mutation CreateUser($email: String!, $password: String!, $isAdmin: Boolean) {
+  createUser(email: $email, password: $password, isAdmin: $isAdmin) {
+    id
+  }
+}
+
+mutation DeleteUser($id: ID!) {
+  deleteUser(id: $id)
+}

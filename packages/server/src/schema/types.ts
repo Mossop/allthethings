@@ -112,6 +112,8 @@ export type Mutation = {
   readonly archiveItem?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
   readonly markItemDue?: Maybe<Item>;
+  readonly createUser: User;
+  readonly deleteUser?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -254,6 +256,18 @@ export type MutationMarkItemDueArgs = {
   due?: Maybe<Scalars['DateTime']>;
 };
 
+
+export type MutationCreateUserArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+  isAdmin?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationDeleteUserArgs = {
+  id: Scalars['ID'];
+};
+
 export type NoteDetail = {
   readonly __typename?: 'NoteDetail';
   readonly note: Scalars['String'];
@@ -315,6 +329,7 @@ export type ProjectRootProjectByIdArgs = {
 export type Query = {
   readonly __typename?: 'Query';
   readonly user?: Maybe<User>;
+  readonly users: ReadonlyArray<User>;
   readonly taskList?: Maybe<TaskList>;
   readonly root?: Maybe<ProjectRoot>;
 };
@@ -373,6 +388,7 @@ export type User = ProjectRoot & TaskList & {
   readonly email: Scalars['String'];
   readonly contexts: ReadonlyArray<Context>;
   readonly inbox: Inbox;
+  readonly isAdmin: Scalars['Boolean'];
 };
 
 

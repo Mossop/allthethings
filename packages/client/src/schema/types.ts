@@ -113,6 +113,8 @@ export type Mutation = {
   readonly archiveItem?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
   readonly markItemDue?: Maybe<Item>;
+  readonly createUser: User;
+  readonly deleteUser?: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -255,6 +257,18 @@ export type MutationMarkItemDueArgs = {
   due?: Maybe<Scalars['DateTime']>;
 };
 
+
+export type MutationCreateUserArgs = {
+  email: Scalars['String'];
+  password: Scalars['String'];
+  isAdmin?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type MutationDeleteUserArgs = {
+  id: Scalars['ID'];
+};
+
 export type NoteDetail = {
   readonly __typename: 'NoteDetail';
   readonly note: Scalars['String'];
@@ -316,6 +330,7 @@ export type ProjectRootProjectByIdArgs = {
 export type Query = {
   readonly __typename: 'Query';
   readonly user?: Maybe<User>;
+  readonly users: ReadonlyArray<User>;
   readonly taskList?: Maybe<TaskList>;
   readonly root?: Maybe<ProjectRoot>;
 };
@@ -374,6 +389,7 @@ export type User = ProjectRoot & TaskList & {
   readonly email: Scalars['String'];
   readonly contexts: ReadonlyArray<Context>;
   readonly inbox: Inbox;
+  readonly isAdmin: Scalars['Boolean'];
 };
 
 
@@ -425,7 +441,7 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | 'createUser' | 'deleteUser' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -450,7 +466,9 @@ export type MutationFieldPolicy = {
 	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	markItemDue?: FieldPolicy<any> | FieldReadFunction<any>
+	markItemDue?: FieldPolicy<any> | FieldReadFunction<any>,
+	createUser?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteUser?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {
@@ -493,9 +511,10 @@ export type ProjectRootFieldPolicy = {
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'taskList' | 'root' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'root' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	users?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	root?: FieldPolicy<any> | FieldReadFunction<any>
 };
@@ -519,7 +538,7 @@ export type TaskListFieldPolicy = {
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'overdueItems' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'overdueItems' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -531,7 +550,8 @@ export type UserFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
-	inbox?: FieldPolicy<any> | FieldReadFunction<any>
+	inbox?: FieldPolicy<any> | FieldReadFunction<any>,
+	isAdmin?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
 	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {

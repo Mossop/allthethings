@@ -233,6 +233,8 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   archiveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationArchiveItemArgs, 'id'>>;
   snoozeItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationSnoozeItemArgs, 'id'>>;
   markItemDue: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMarkItemDueArgs, 'id'>>;
+  createUser: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<Schema.MutationCreateUserArgs, 'email' | 'password'>>;
+  deleteUser: Resolver<Schema.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<Schema.MutationDeleteUserArgs, 'id'>>;
 }>;
 
 export type NoteDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NoteDetail'] = ResolversParentTypes['NoteDetail']> = ResolversObject<{
@@ -283,6 +285,7 @@ export type ProjectRootResolvers<ContextType = ResolverContext, ParentType exten
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
   user: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  users: Resolver<ReadonlyArray<ResolversTypes['User']>, ParentType, ContextType>;
   taskList: Resolver<Schema.Maybe<ResolversTypes['TaskList']>, ParentType, ContextType, RequireFields<Schema.QueryTaskListArgs, 'id'>>;
   root: Resolver<Schema.Maybe<ResolversTypes['ProjectRoot']>, ParentType, ContextType, RequireFields<Schema.QueryRootArgs, 'id'>>;
 }>;
@@ -322,6 +325,7 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   contexts: Resolver<ReadonlyArray<ResolversTypes['Context']>, ParentType, ContextType>;
   inbox: Resolver<ResolversTypes['Inbox'], ParentType, ContextType>;
+  isAdmin: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

@@ -94,6 +94,7 @@ type User implements ProjectRoot & TaskList {
   email: String!
   contexts: [Context!]!
   inbox: Inbox!
+  isAdmin: Boolean!
 }
 
 type Context implements ProjectRoot & TaskList {
@@ -138,6 +139,7 @@ type Section {
 type Query {
   user: User
 
+  users: [User!]!
   taskList(id: ID!): TaskList
   root(id: ID!): ProjectRoot
 }
@@ -205,4 +207,7 @@ type Mutation {
   archiveItem(id: ID!, archived: DateTime): Item
   snoozeItem(id: ID!, snoozed: DateTime): Item
   markItemDue(id: ID!, due: DateTime): Item
+
+  createUser(email: String!, password: String!, isAdmin: Boolean): User!
+  deleteUser(id: ID!): Boolean
 }

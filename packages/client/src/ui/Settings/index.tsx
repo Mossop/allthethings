@@ -17,11 +17,13 @@ import {
   Paper,
   List,
 } from "@material-ui/core";
+import AdminIcon from "@material-ui/icons/BusinessCenter";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
-import { useProjectRoot, pushView, useUrl, useView, ViewType } from "../../utils/view";
+import { useProjectRoot, pushView, useUrl, useView, ViewType, useUser } from "../../utils/view";
+import AdminPage from "./AdminPage";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -55,6 +57,8 @@ function SettingsSidebar(): ReactResult {
     taskList: useProjectRoot(),
   });
 
+  let user = useUser();
+
   return <Paper
     elevation={2}
     component="nav"
@@ -74,6 +78,14 @@ function SettingsSidebar(): ReactResult {
       >
         General
       </SettingsPageItem>
+      {
+        user.isAdmin && <SettingsPageItem
+          page="admin"
+          icon={<AdminIcon/>}
+        >
+          Administration
+        </SettingsPageItem>
+      }
       {
         plugins.map((plugin: ClientPlugin) => plugin.renderPluginSettingsPageList
           ? <Fragment key={plugin.serverId}>
@@ -112,6 +124,8 @@ const SettingsPage = ReactMemo(function SettingsPage({
     switch (page) {
       case "general":
         return <Text>General settings.</Text>;
+      case "admin":
+        return <AdminPage/>;
     }
   }
 

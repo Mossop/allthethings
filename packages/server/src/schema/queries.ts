@@ -1,13 +1,10 @@
+/* eslint-disable @typescript-eslint/typedef */
 import type { ProjectRoot, TaskList, User } from "../db";
-import type { AuthedParams, ResolverParams } from "./context";
-import { authed, resolver } from "./context";
+import { admin, authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
-import type { QueryRootArgs, QueryTaskListArgs } from "./types";
 
 const resolvers: QueryResolvers = {
-  user: resolver(async ({
-    ctx,
-  }: ResolverParams): Promise<User | null> => {
+  user: resolver(async (ctx): Promise<User | null> => {
     if (!ctx.userId) {
       return null;
     }
@@ -21,17 +18,15 @@ const resolvers: QueryResolvers = {
     return user;
   }),
 
-  root: authed(({
-    ctx,
-    args: { id },
-  }: AuthedParams<unknown, QueryRootArgs>): Promise<ProjectRoot | null> => {
+  users: admin(async (ctx): Promise<User[]> => {
+    return ctx.dataSources.users.find({});
+  }),
+
+  root: authed((ctx, { id }): Promise<ProjectRoot | null> => {
     return ctx.getRoot(id);
   }),
 
-  taskList: authed(({
-    ctx,
-    args: { id },
-  }: AuthedParams<unknown, QueryTaskListArgs>): Promise<TaskList | null> => {
+  taskList: authed((ctx, { id }): Promise<TaskList | null> => {
     return ctx.getTaskList(id);
   }),
 };

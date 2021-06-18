@@ -178,6 +178,7 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
   }
 
   public readonly email = fields<Db.UserDbTable>()("email");
+  public readonly isAdmin = fields<Db.UserDbTable>()("isAdmin");
 }
 
 export class Context

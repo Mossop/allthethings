@@ -1,3 +1,5 @@
+import type { Awaitable, Overwrite } from "@allthethings/utils";
+
 import type { ProjectRoot, AppDataSources, TaskList, User } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { WebServerContext } from "../webserver/context";
@@ -13,9 +15,9 @@ export interface ResolverContext {
   logout: () => void;
 }
 
-export type AuthedResolverContext = Omit<ResolverContext, "userId"> & {
+export type AuthedResolverContext = Overwrite<ResolverContext, {
   userId: string;
-};
+}>;
 
 interface Params<TContext, TParent, TArgs> {
   outer: TParent;
@@ -32,8 +34,26 @@ export type AuthedParams<
   TArgs = unknown,
 > = Params<AuthedResolverContext, TParent, TArgs>;
 
+export function admin<TResult, TParent, TArgs>(
+  resolver: (ctx: AuthedResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
+): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
+  return async (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> => {
+    let { userId } = ctx;
+    if (!userId) {
+      throw new Error("Not logged in.");
+    }
+
+    let userRecord = await ctx.dataSources.users.getRecord(userId);
+    if (!userRecord?.isAdmin) {
+      throw new Error("Not an admin.");
+    }
+
+    return resolver(ctx as AuthedResolverContext, args, outer);
+  };
+}
+
 export function authed<TResult, TParent, TArgs>(
-  resolver: (params: AuthedParams<TParent, TArgs>) => Promise<TResult> | TResult,
+  resolver: (ctx: AuthedResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
 ): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
   return (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
     let { userId } = ctx;
@@ -41,26 +61,15 @@ export function authed<TResult, TParent, TArgs>(
       throw new Error("Not logged in.");
     }
 
-    return resolver({
-      outer,
-      args,
-      ctx: {
-        ...ctx,
-        userId,
-      },
-    });
+    return resolver(ctx as AuthedResolverContext, args, outer);
   };
 }
 
 export function resolver<TResult, TParent, TArgs>(
-  resolver: (params: ResolverParams<TParent, TArgs>) => Promise<TResult> | TResult,
+  resolver: (ctx: ResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
 ): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
   return (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
-    return resolver({
-      outer,
-      args,
-      ctx,
-    });
+    return resolver(ctx, args, outer);
   };
 }
 

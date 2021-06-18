@@ -39,6 +39,8 @@ export type UserDbTable = DbTable<{
   email: string;
   // This is the hashed password.
   password: string;
+  // Whether the user is an admin or not.
+  isAdmin: boolean;
 }>;
 
 // Every user has at least one anonymous context. Its id will match the user's and its name will

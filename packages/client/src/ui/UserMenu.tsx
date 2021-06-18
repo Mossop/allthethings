@@ -1,5 +1,12 @@
 import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, Menu, useMenuState, bindTrigger } from "@allthethings/ui";
+import {
+  pushUrl,
+  useResetStore,
+  ReactMemo,
+  Menu,
+  useMenuState,
+  bindTrigger,
+} from "@allthethings/ui";
 import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import md5 from "md5";
 import { useCallback } from "react";
@@ -38,10 +45,13 @@ export default ReactMemo(function UserMenu({
     refetchQueries: [refetchListContextStateQuery()],
   });
   let userMenuState = useMenuState("user-menu");
+  let resetStore = useResetStore();
 
   let doLogout = useCallback(async (): Promise<void> => {
-    void logout();
-  }, [logout]);
+    pushUrl(new URL("/", document.documentURI));
+    await logout();
+    await resetStore();
+  }, [logout, resetStore]);
 
   let doSettings = useCallback((): void => {
     pushView({

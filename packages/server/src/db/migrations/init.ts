@@ -28,6 +28,8 @@ export async function up(knex: Knex): Promise<void> {
       .unique();
     table.text("password")
       .notNullable();
+    table.boolean("isAdmin")
+      .notNullable();
   });
 
   await knex.schema.createTable("Context", (table: Knex.CreateTableBuilder): void => {

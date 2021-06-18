@@ -10,12 +10,17 @@ export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never;
 
 
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
+    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & ClientRootFields_Context_Fragment
     )> }
     & ClientRootFields_User_Fragment
   )> };
+
+export type ListUsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
+
+
+export type ListUsersQuery = { readonly __typename: 'Query', readonly users: ReadonlyArray<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean }> };
 
 export type ListInboxQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
@@ -56,6 +61,7 @@ export const ListContextStateDocument = gql`
   user {
     id
     email
+    isAdmin
     inbox {
       items {
         count
@@ -100,6 +106,45 @@ export type ListContextStateLazyQueryHookResult = ReturnType<typeof useListConte
 export type ListContextStateQueryResult = Apollo.QueryResult<ListContextStateQuery, ListContextStateQueryVariables>;
 export function refetchListContextStateQuery(variables?: ListContextStateQueryVariables) {
       return { query: ListContextStateDocument, variables: variables }
+    }
+export const ListUsersDocument = gql`
+    query ListUsers {
+  users {
+    id
+    email
+    isAdmin
+  }
+}
+    `;
+
+/**
+ * __useListUsersQuery__
+ *
+ * To run a query within a React component, call `useListUsersQuery` and pass it any options that fit your needs.
+ * When your component renders, `useListUsersQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useListUsersQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useListUsersQuery(baseOptions?: Apollo.QueryHookOptions<ListUsersQuery, ListUsersQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<ListUsersQuery, ListUsersQueryVariables>(ListUsersDocument, options);
+      }
+export function useListUsersLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListUsersQuery, ListUsersQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<ListUsersQuery, ListUsersQueryVariables>(ListUsersDocument, options);
+        }
+export type ListUsersQueryHookResult = ReturnType<typeof useListUsersQuery>;
+export type ListUsersLazyQueryHookResult = ReturnType<typeof useListUsersLazyQuery>;
+export type ListUsersQueryResult = Apollo.QueryResult<ListUsersQuery, ListUsersQueryVariables>;
+export function refetchListUsersQuery(variables?: ListUsersQueryVariables) {
+      return { query: ListUsersDocument, variables: variables }
     }
 export const ListInboxDocument = gql`
     query ListInbox {

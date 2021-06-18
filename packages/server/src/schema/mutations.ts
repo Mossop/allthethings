@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/typedef */
 import { URL } from "url";
 
 import { TaskController } from "@allthethings/schema";
@@ -9,8 +10,8 @@ import { PluginDetail } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
 import { bestIcon, loadPageInfo } from "../utils/page";
-import type { AuthedParams, AuthedResolverContext, ResolverParams } from "./context";
-import { resolver, authed } from "./context";
+import type { AuthedResolverContext } from "./context";
+import { admin, resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
 
@@ -45,10 +46,7 @@ async function baseCreateItem(
 }
 
 const resolvers: MutationResolvers = {
-  login: resolver(async ({
-    args: { email, password },
-    ctx,
-  }: ResolverParams<unknown, Types.MutationLoginArgs>): Promise<User | null> => {
+  login: resolver(async (ctx, { email, password }): Promise<User | null> => {
     let user = await ctx.dataSources.users.verifyUser(email, password);
 
     if (!user) {
@@ -60,17 +58,12 @@ const resolvers: MutationResolvers = {
     return user;
   }),
 
-  logout: authed(async ({
-    ctx,
-  }: AuthedParams): Promise<boolean> => {
+  logout: authed(async (ctx): Promise<boolean> => {
     ctx.logout();
     return true;
   }),
 
-  createContext: authed(async ({
-    args: { params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateContextArgs>): Promise<Context> => {
+  createContext: authed(async (ctx, { params }): Promise<Context> => {
     let user = await ctx.dataSources.users.getImpl(ctx.userId);
     if (!user) {
       throw new Error("Unknown user.");
@@ -78,10 +71,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.contexts.create(user, params);
   }),
 
-  editContext: authed(async ({
-    args: { id, params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditContextArgs>): Promise<Context | null> => {
+  editContext: authed(async (ctx, { id, params }): Promise<Context | null> => {
     let context = await ctx.dataSources.contexts.getImpl(id);
     if (!context) {
       return null;
@@ -92,18 +82,12 @@ const resolvers: MutationResolvers = {
     return context;
   }),
 
-  deleteContext: authed(async ({
-    args: { id },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationDeleteContextArgs>): Promise<boolean> => {
+  deleteContext: authed(async (ctx, { id }): Promise<boolean> => {
     await ctx.dataSources.contexts.delete(id);
     return true;
   }),
 
-  createProject: authed(async ({
-    args: { taskList: taskListId, params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateProjectArgs>): Promise<Project> => {
+  createProject: authed(async (ctx, { taskList: taskListId, params }): Promise<Project> => {
     let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
     if (!taskList) {
       throw new Error("Unknown task list.");
@@ -112,10 +96,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.projects.create(taskList, params);
   }),
 
-  editProject: authed(async ({
-    args: { id, params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditProjectArgs>): Promise<Project | null> => {
+  editProject: authed(async (ctx, { id, params }): Promise<Project | null> => {
     let project = await ctx.dataSources.projects.getImpl(id);
 
     if (!project) {
@@ -127,10 +108,7 @@ const resolvers: MutationResolvers = {
     return project;
   }),
 
-  moveProject: authed(async ({
-    args: { id, taskList },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationMoveProjectArgs>): Promise<Project | null> => {
+  moveProject: authed(async (ctx, { id, taskList }): Promise<Project | null> => {
     let project = await ctx.dataSources.projects.getImpl(id);
     if (!project) {
       return null;
@@ -145,10 +123,7 @@ const resolvers: MutationResolvers = {
     return project;
   }),
 
-  deleteProject: authed(async ({
-    args: { id },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationDeleteProjectArgs>): Promise<boolean> => {
+  deleteProject: authed(async (ctx, { id }): Promise<boolean> => {
     let project = await ctx.dataSources.projects.getImpl(id);
     if (!project) {
       return false;
@@ -158,10 +133,7 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createSection: authed(async ({
-    args: { taskList: taskListId, before, params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateSectionArgs>): Promise<Section> => {
+  createSection: authed(async (ctx, { taskList: taskListId, before, params }): Promise<Section> => {
     let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
     if (!taskList) {
       throw new Error("Unknown task list.");
@@ -170,10 +142,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.sections.create(taskList, before ?? null, params);
   }),
 
-  editSection: authed(async ({
-    args: { id, params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditSectionArgs>): Promise<Section | null> => {
+  editSection: authed(async (ctx, { id, params }): Promise<Section | null> => {
     let section = await ctx.dataSources.sections.getImpl(id);
 
     if (!section) {
@@ -185,10 +154,7 @@ const resolvers: MutationResolvers = {
     return section;
   }),
 
-  moveSection: authed(async ({
-    args: { id, before, taskList },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationMoveSectionArgs>): Promise<Section | null> => {
+  moveSection: authed(async (ctx, { id, before, taskList }): Promise<Section | null> => {
     let section = await ctx.dataSources.sections.getImpl(id);
     if (!section) {
       return null;
@@ -203,10 +169,7 @@ const resolvers: MutationResolvers = {
     return section;
   }),
 
-  deleteSection: authed(async ({
-    args: { id },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationDeleteSectionArgs>): Promise<boolean> => {
+  deleteSection: authed(async (ctx, { id }): Promise<boolean> => {
     let section = await ctx.dataSources.sections.getImpl(id);
     if (!section) {
       return false;
@@ -216,10 +179,7 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createTask: authed(async ({
-    args: { list: listId, ...args },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateTaskArgs>): Promise<Item> => {
+  createTask: authed(async (ctx, { list: listId, ...args }): Promise<Item> => {
     let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
     if (!list && listId) {
       list = await ctx.dataSources.sections.getImpl(listId);
@@ -239,64 +199,60 @@ const resolvers: MutationResolvers = {
     }, null);
   }),
 
-  createLink: authed(async ({
-    args: { detail: { url }, list: listId, isTask, ...args },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateLinkArgs>): Promise<Item> => {
-    let targetUrl: URL;
-    try {
-      targetUrl = new URL(url);
-    } catch (e) {
-      throw new Error("Invalid url.");
-    }
+  createLink: authed(
+    async (ctx, { detail: { url }, list: listId, isTask, ...args }): Promise<Item> => {
+      let targetUrl: URL;
+      try {
+        targetUrl = new URL(url);
+      } catch (e) {
+        throw new Error("Invalid url.");
+      }
 
-    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
-    if (!list && listId) {
-      list = await ctx.dataSources.sections.getImpl(listId);
-    }
+      let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+      if (!list && listId) {
+        list = await ctx.dataSources.sections.getImpl(listId);
+      }
 
-    if (!list) {
-      throw new Error("Unknown task list.");
-    }
+      if (!list) {
+        throw new Error("Unknown task list.");
+      }
 
-    let item = await PluginManager.createItemFromURL(ctx, targetUrl, isTask);
-    if (item) {
-      await item.move(list, null);
+      let item = await PluginManager.createItemFromURL(ctx, targetUrl, isTask);
+      if (item) {
+        await item.move(list, null);
+        return item;
+      }
+
+      let pageInfo = await loadPageInfo(targetUrl);
+
+      let summary = args.item.summary;
+      if (!summary) {
+        summary = pageInfo.title ?? targetUrl.toString();
+      }
+
+      item = await baseCreateItem(ctx, {
+        ...args,
+        list,
+        item: {
+          ...args.item,
+          summary,
+        },
+        taskInfo: isTask ? { due: null, done: null } : null,
+      }, ItemType.Link);
+
+      let icons = [...pageInfo.icons];
+      let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
+
+      await ctx.dataSources.linkDetail.create(item, {
+        url,
+        icon,
+      });
+
       return item;
-    }
+    },
+  ),
 
-    let pageInfo = await loadPageInfo(targetUrl);
-
-    let summary = args.item.summary;
-    if (!summary) {
-      summary = pageInfo.title ?? targetUrl.toString();
-    }
-
-    item = await baseCreateItem(ctx, {
-      ...args,
-      list,
-      item: {
-        ...args.item,
-        summary,
-      },
-      taskInfo: isTask ? { due: null, done: null } : null,
-    }, ItemType.Link);
-
-    let icons = [...pageInfo.icons];
-    let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
-
-    await ctx.dataSources.linkDetail.create(item, {
-      url,
-      icon,
-    });
-
-    return item;
-  }),
-
-  createNote: authed(async ({
-    args: { detail, list: listId, ...args },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationCreateNoteArgs>): Promise<Item> => {
+  createNote: authed(async (ctx, { detail, list: listId, ...args }): Promise<Item> => {
     let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
     if (!list && listId) {
       list = await ctx.dataSources.sections.getImpl(listId);
@@ -315,10 +271,7 @@ const resolvers: MutationResolvers = {
     return item;
   }),
 
-  editItem: authed(async ({
-    args: { id, item: params },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditItemArgs>): Promise<Item | null> => {
+  editItem: authed(async (ctx, { id, item: params }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
@@ -334,10 +287,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.items.getImpl(id);
   }),
 
-  editTaskInfo: authed(async ({
-    args: { id, taskInfo: taskInfoParams },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditTaskInfoArgs>): Promise<Item | null> => {
+  editTaskInfo: authed(async (ctx, { id, taskInfo: taskInfoParams }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
@@ -374,10 +324,7 @@ const resolvers: MutationResolvers = {
     return item;
   }),
 
-  editTaskController: authed(async ({
-    args: { id, controller },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationEditTaskControllerArgs>): Promise<Item | null> => {
+  editTaskController: authed(async (ctx, { id, controller }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
@@ -451,10 +398,7 @@ const resolvers: MutationResolvers = {
     return item;
   }),
 
-  moveItem: authed(async ({
-    args: { id, parent, before },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationMoveItemArgs>): Promise<Item | null> => {
+  moveItem: authed(async (ctx, { id, parent, before }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
@@ -477,10 +421,7 @@ const resolvers: MutationResolvers = {
     return item;
   }),
 
-  deleteItem: authed(async ({
-    args: { id },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationDeleteItemArgs>): Promise<boolean> => {
+  deleteItem: authed(async (ctx, { id }): Promise<boolean> => {
     let item = await ctx.dataSources.items.getImpl(id);
     if (!item) {
       return false;
@@ -490,10 +431,7 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  archiveItem: authed(async ({
-    args: { id, archived },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationArchiveItemArgs>): Promise<Item | null> => {
+  archiveItem: authed(async (ctx, { id, archived }): Promise<Item | null> => {
     await ctx.dataSources.items.updateOne(id, {
       archived: archived ?? null,
       snoozed: null,
@@ -502,10 +440,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.items.getImpl(id);
   }),
 
-  snoozeItem: authed(async ({
-    args: { id, snoozed },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationSnoozeItemArgs>): Promise<Item | null> => {
+  snoozeItem: authed(async (ctx, { id, snoozed }): Promise<Item | null> => {
     await ctx.dataSources.items.updateOne(id, {
       archived: null,
       snoozed: snoozed ?? null,
@@ -514,10 +449,7 @@ const resolvers: MutationResolvers = {
     return ctx.dataSources.items.getImpl(id);
   }),
 
-  markItemDue: authed(async ({
-    args: { id, due },
-    ctx,
-  }: AuthedParams<unknown, Types.MutationMarkItemDueArgs>): Promise<Item | null> => {
+  markItemDue: authed(async (ctx, { id, due }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
     if (!item) {
       return null;
@@ -555,6 +487,24 @@ const resolvers: MutationResolvers = {
     }
 
     return item;
+  }),
+
+  createUser: admin((ctx, { email, password, isAdmin }): Promise<User> => {
+    return ctx.dataSources.users.create({
+      email,
+      password,
+      isAdmin: isAdmin ?? false,
+    });
+  }),
+
+  deleteUser: admin(async (ctx, { id }): Promise<boolean> => {
+    let user = await ctx.dataSources.users.getImpl(id);
+    if (!user) {
+      return false;
+    }
+
+    await user.delete();
+    return true;
   }),
 };
 
