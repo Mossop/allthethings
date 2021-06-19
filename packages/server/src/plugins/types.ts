@@ -32,7 +32,7 @@ export interface PluginItem {
 }
 
 export interface PluginContext {
-  baseUrl: URL;
+  rootUrl: URL;
   pluginUrl: URL;
 
   settingsPageUrl(page: string): URL;

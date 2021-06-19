@@ -52,20 +52,16 @@ export function buildPluginContext(
   let db = dataSources.users.connection;
 
   return {
-    get baseUrl(): URL {
-      let { protocol, hostname, port } = plugin.serverConfig;
-
-      return new URL(`${protocol}://${hostname}:${port}/`);
+    get rootUrl(): URL {
+      return plugin.serverConfig.rootUrl;
     },
 
     get pluginUrl(): URL {
-      let { protocol, hostname, port } = plugin.serverConfig;
-
-      return new URL(`${protocol}://${hostname}:${port}/plugin/${plugin.schema}/`);
+      return new URL(`plugin/${plugin.schema}/`, this.rootUrl);
     },
 
     settingsPageUrl(page: string): URL {
-      let url = new URL(`settings/${page}`, this.baseUrl);
+      let url = new URL(`settings/${page}`, this.rootUrl);
       url.searchParams.set("plugin", plugin.id);
       return url;
     },

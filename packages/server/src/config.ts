@@ -1,11 +1,7 @@
 import { promises as fs } from "fs";
+import { URL } from "url";
 
 import { JsonDecoder } from "ts.data.json";
-
-export enum Protocol {
-  Http = "http",
-  Https = "https",
-}
 
 export interface DatabaseConfig {
   host: string;
@@ -16,8 +12,7 @@ export interface DatabaseConfig {
 }
 
 export interface ServerConfig {
-  protocol: Protocol;
-  hostname: string;
+  rootUrl: URL;
   port: number;
   admin?: Admin;
   database: DatabaseConfig;
@@ -31,13 +26,12 @@ interface Admin {
 }
 
 interface ConfigFile {
-  protocol?: Protocol;
-  hostname: string;
+  rootUrl: URL;
   port: number;
   admin?: Admin;
   database: Partial<DatabaseConfig>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  plugins?: Record<string, any>;
+  plugins: Record<string, any>;
 }
 
 const DatabaseConfigDecoder = JsonDecoder.object<Partial<DatabaseConfig>>({
@@ -54,12 +48,16 @@ const AdminDecoder = JsonDecoder.object<Admin>({
 }, "Admin");
 
 const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
-  protocol: JsonDecoder.optional(JsonDecoder.enumeration<Protocol>(Protocol, "protocol")),
-  hostname: JsonDecoder.string,
+  rootUrl: JsonDecoder.string.map((url: string): URL => {
+    if (!url.endsWith("/")) {
+      url += "/";
+    }
+    return new URL(url);
+  }),
   port: JsonDecoder.number,
   admin: JsonDecoder.optional(AdminDecoder),
   database: JsonDecoder.failover({}, DatabaseConfigDecoder),
-  plugins: JsonDecoder.optional(JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
+  plugins: JsonDecoder.failover({}, JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
 }, "ConfigFile");
 
 export async function parseConfig(path: string): Promise<ServerConfig> {
@@ -71,8 +69,6 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
 
   return {
     ...config,
-    protocol: config.protocol ?? Protocol.Https,
-    plugins: config.plugins ?? {},
     database: {
       host: config.database.host ?? "localhost",
       port: config.database.port ?? 5432,
