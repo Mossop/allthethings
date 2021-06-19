@@ -35,7 +35,7 @@ interface ConfigFile {
   hostname: string;
   port: number;
   admin?: Admin;
-  database?: Partial<DatabaseConfig>;
+  database: Partial<DatabaseConfig>;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   plugins?: Record<string, any>;
 }
@@ -58,7 +58,7 @@ const ConfigFileDecoder = JsonDecoder.object<ConfigFile>({
   hostname: JsonDecoder.string,
   port: JsonDecoder.number,
   admin: JsonDecoder.optional(AdminDecoder),
-  database: JsonDecoder.optional(DatabaseConfigDecoder),
+  database: JsonDecoder.failover({}, DatabaseConfigDecoder),
   plugins: JsonDecoder.optional(JsonDecoder.dictionary(JsonDecoder.succeed, "PluginConfig")),
 }, "ConfigFile");
 
@@ -74,12 +74,11 @@ export async function parseConfig(path: string): Promise<ServerConfig> {
     protocol: config.protocol ?? Protocol.Https,
     plugins: config.plugins ?? {},
     database: {
-      host: "localhost",
-      port: 5432,
-      database: "allthethings",
-      username: "allthethings",
-      password: "allthethings",
-      ...config.database ?? {},
+      host: config.database.host ?? "localhost",
+      port: config.database.port ?? 5432,
+      database: config.database.database ?? "allthethings",
+      username: config.database.username ?? "allthethings",
+      password: config.database.password ?? "allthethings",
     },
   };
 }
