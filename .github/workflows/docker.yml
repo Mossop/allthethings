@@ -1,9 +1,6 @@
 name: Build container
 
-on:
-  push:
-    tags:
-      - "*"
+on: [push]
 
 jobs:
   build-container:
