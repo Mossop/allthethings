@@ -15,3 +15,5 @@ A set of plugins allows you to pull items from elsewhere. Think GitHub issues, E
 Currently supported plugins:
 
 * Bugzilla
+* Google (Gmail and Docs)
+* Phabricator
