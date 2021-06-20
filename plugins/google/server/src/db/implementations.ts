@@ -185,15 +185,27 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
       refresh_token: refreshToken,
     } = credentials;
 
-    if (!accessToken || !refreshToken || !expiry) {
-      throw new Error("Failed to authenticate correctly.");
+    if (!accessToken) {
+      console.error("Bad credentials", credentials);
+      throw new Error("Failed to authenticate correctly, missing access token.");
+    }
+
+    if (!refreshToken) {
+      console.error("Bad credentials", credentials);
+      throw new Error("Failed to authenticate correctly, missing refresh token.");
+    }
+
+    if (!expiry) {
+      console.error("Bad credentials", credentials);
+      throw new Error("Failed to authenticate correctly, missing expiry.");
     }
 
     client.setCredentials(credentials);
 
     let tokenInfo = await client.getTokenInfo(accessToken);
     if (!tokenInfo.email) {
-      throw new Error("Failed to authenticate correctly.");
+      console.error("Bad token info", tokenInfo);
+      throw new Error("Failed to authenticate correctly, bad token info.");
     }
 
     let userInfo = await getAccountInfo(client);
