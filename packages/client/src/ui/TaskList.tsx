@@ -23,8 +23,7 @@ import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } f
 import { useDragItem, useDragResult, DragType, useDropArea, useProjectDrag } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { Filters } from "../utils/filter";
-import type { TaskListView } from "../utils/view";
-import ProjectList from "./ProjectList";
+import type { TaskListState } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -168,7 +167,7 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
 }));
 
 interface TaskListProps {
-  view: TaskListView;
+  view: TaskListState;
 }
 
 export default ReactMemo(function TaskList({
@@ -278,7 +277,7 @@ export default ReactMemo(function TaskList({
     return sections;
   }, [dragItem, dragResult, contents.sections, view.taskList, filter]);
 
-  return <Page sidebar={<ProjectList/>}>
+  return <Page>
     <div className={classes.content}>
       {header}
       <List disablePadding={true}>

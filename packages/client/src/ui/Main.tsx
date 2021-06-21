@@ -6,10 +6,9 @@ import { useCallback, Suspense } from "react";
 
 import Page from "../components/Page";
 import { useDropArea, AllDragTypes } from "../utils/drag";
-import { useMaybeView, ViewType } from "../utils/view";
+import { useView, ViewType } from "../utils/view";
 import Inbox from "./Inbox";
-import LoginDialog from "./LoginDialog";
-import NotFound from "./NotFound";
+import MarkdownPage from "./MarkdownPage";
 import Settings from "./Settings";
 import TaskList from "./TaskList";
 
@@ -29,7 +28,7 @@ const useStyles = makeStyles(() =>
   }));
 
 function MainContent(): ReactResult {
-  let view = useMaybeView();
+  let view = useView();
   let classes = useStyles();
 
   if (view === undefined) {
@@ -38,10 +37,8 @@ function MainContent(): ReactResult {
     </Page>;
   }
 
-  if (!view) {
-    return <Page>
-      <LoginDialog/>
-    </Page>;
+  if (view.type == ViewType.Page) {
+    return <MarkdownPage path={view.path}/>;
   }
 
   switch (view.type) {
@@ -50,8 +47,6 @@ function MainContent(): ReactResult {
       return <Inbox/>;
     case ViewType.TaskList:
       return <TaskList view={view}/>;
-    case ViewType.NotFound:
-      return <NotFound/>;
     case ViewType.Settings:
       return <Settings page={view.page} pluginId={view.pluginId}/>;
   }

@@ -1,27 +1,38 @@
-import { TextFieldInput, ReactMemo, Dialog, FormState } from "@allthethings/ui";
+import { TextFieldInput, ReactMemo, Dialog, FormState, useBoolState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { useLoginMutation, refetchListContextStateQuery } from "../schema";
 
-export default ReactMemo(function LoginDialog(): ReactElement {
+interface LoginDialogProps {
+  onClosed: () => void;
+}
+
+export default ReactMemo(function LoginDialog({
+  onClosed,
+}: LoginDialogProps): ReactElement {
   let [state, setState] = useState({
     email: "",
     password: "",
   });
+
+  let [isOpen,, close] = useBoolState(true);
 
   let [login, { error, loading }] = useLoginMutation({
     variables: state,
     refetchQueries: [refetchListContextStateQuery()],
   });
 
-  let submit = useCallback(() => {
-    void login();
-  }, [login]);
+  let submit = useCallback(async () => {
+    await login();
+    close();
+  }, [login, close]);
 
   return <Dialog
-    isOpen={true}
+    isOpen={isOpen}
+    onClose={close}
     onSubmit={submit}
+    onClosed={onClosed}
     title="Login"
     submitLabel="Login"
     cancelLabel={null}

@@ -289,6 +289,7 @@ export type QueryResolvers<ContextType = ResolverContext, ParentType extends Res
   users: Resolver<ReadonlyArray<ResolversTypes['User']>, ParentType, ContextType>;
   taskList: Resolver<Schema.Maybe<ResolversTypes['TaskList']>, ParentType, ContextType, RequireFields<Schema.QueryTaskListArgs, 'id'>>;
   root: Resolver<Schema.Maybe<ResolversTypes['ProjectRoot']>, ParentType, ContextType, RequireFields<Schema.QueryRootArgs, 'id'>>;
+  pageContent: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<Schema.QueryPageContentArgs, 'path'>>;
 }>;
 
 export type SectionResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Section'] = ResolversParentTypes['Section']> = ResolversObject<{

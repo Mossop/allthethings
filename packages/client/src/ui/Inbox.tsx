@@ -10,9 +10,8 @@ import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
 import { useInboxContents } from "../schema";
 import { Filters } from "../utils/filter";
-import { replaceView, useView, ViewType } from "../utils/view";
+import { replaceView, useLoggedInView, ViewType } from "../utils/view";
 import LinkDialog from "./LinkDialog";
-import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -40,7 +39,7 @@ const useStyles = makeStyles((theme: Theme) =>
 export default ReactMemo(function Inbox(): ReactResult {
   let classes = useStyles();
 
-  let view = useView();
+  let view = useLoggedInView();
   let [linkView] = useState(view.type == ViewType.AddLink ? view : null);
   let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(linkView !== null);
 
@@ -57,7 +56,7 @@ export default ReactMemo(function Inbox(): ReactResult {
     }
   }, [view]);
 
-  return <Page sidebar={<ProjectList/>}>
+  return <Page>
     <div className={classes.content}>
       <div className={classes.heading}>
         <Icons.Inbox/>

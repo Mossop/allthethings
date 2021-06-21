@@ -368,10 +368,16 @@ export type ProjectRootProjectByIdArgs = {
 export type Query = {
   readonly __typename?: 'Query';
   readonly googleLoginUrl: Scalars['String'];
+  readonly pageContent: Scalars['String'];
   readonly root: Maybe<ProjectRoot>;
   readonly taskList: Maybe<TaskList>;
   readonly user: Maybe<User>;
   readonly users: ReadonlyArray<User>;
+};
+
+
+export type QueryPageContentArgs = {
+  path: Scalars['String'];
 };
 
 

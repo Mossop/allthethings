@@ -27,7 +27,13 @@ import type {
 } from "../utils/drag";
 import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import { Filters, isVisible } from "../utils/filter";
-import { useCurrentContext, useProjectRoot, useUrl, useView, ViewType } from "../utils/view";
+import {
+  useCurrentContext,
+  useProjectRoot,
+  useUrl,
+  useLoggedInView,
+  ViewType,
+} from "../utils/view";
 import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
@@ -239,7 +245,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
 export default ReactMemo(function ProjectList(): ReactResult {
   let classes = useStyles({ depth: 0 });
 
-  let view = useView();
+  let view = useLoggedInView();
   let root = useProjectRoot();
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;

@@ -21,7 +21,7 @@ import {
   refetchQueriesForSection,
 } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
-import { ViewType, replaceView, useView, useProjectRoot, useUser } from "../utils/view";
+import { ViewType, replaceView, useLoggedInView, useProjectRoot, useUser } from "../utils/view";
 import AddMenu from "./AddMenu";
 
 const useStyles = makeStyles(() =>
@@ -42,7 +42,7 @@ export default ReactMemo(function ItemListActions({
 }: ItemListActionsProps): ReactResult {
   let classes = useStyles();
   let root = useProjectRoot();
-  let view = useView();
+  let view = useLoggedInView();
   let user = useUser();
 
   let [deleteSection] = useDeleteSectionMutation();

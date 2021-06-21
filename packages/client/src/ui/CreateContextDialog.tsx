@@ -3,7 +3,7 @@ import type { ReactElement } from "react";
 import { useMemo, useEffect, useState } from "react";
 
 import { useCreateContextMutation, refetchListContextStateQuery } from "../schema";
-import { useView, pushView, ViewType } from "../utils/view";
+import { useLoggedInView, pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
   onClosed: () => void;
@@ -15,7 +15,7 @@ export default ReactMemo(function CreateContextDialog({
   let [state, setState] = useState({
     name: "",
   });
-  let view = useView();
+  let view = useLoggedInView();
   let user = view.user;
 
   let [isOpen,, close] = useBoolState(true);

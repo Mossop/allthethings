@@ -1,20 +1,21 @@
-import { Styles, ReactMemo } from "@allthethings/ui";
+import { Styles, ReactMemo, useBoolState, Link } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
-import { AppBar, createStyles, makeStyles } from "@material-ui/core";
+import { AppBar, Button, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
 import ContextMenu from "../ui/ContextMenu";
+import LoginDialog from "../ui/LoginDialog";
 import UserMenu from "../ui/UserMenu";
-import { useUser, useMaybeView } from "../utils/view";
+import { useUser, useView } from "../utils/view";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     banner: {
+      ...Styles.flexCenteredRow,
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
       paddingLeft: theme.spacing(2),
       paddingRight: theme.spacing(2),
-      ...Styles.flexCenteredRow,
       justifyContent: "space-between",
     },
     title: {
@@ -40,7 +41,8 @@ const PageControls = ReactMemo(function PageControls(): ReactResult {
 
 export default function Banner(): ReactResult {
   let classes = useStyles();
-  let view = useMaybeView();
+  let view = useView();
+  let [loginDialogShown, showLoginDialog, closeLoginDialog] = useBoolState();
 
   return <AppBar
     className={classes.banner}
@@ -48,7 +50,12 @@ export default function Banner(): ReactResult {
     elevation={1}
     role="banner"
   >
-    <h1 className={classes.title}>AllTheThings</h1>
-    {view && <PageControls/>}
+    <h1 className={classes.title}><Link href="/">AllTheThings</Link></h1>
+    {
+      view?.user
+        ? <PageControls/>
+        : <Button onClick={showLoginDialog}>Login</Button>
+    }
+    {loginDialogShown && <LoginDialog onClosed={closeLoginDialog}/>}
   </AppBar>;
 }

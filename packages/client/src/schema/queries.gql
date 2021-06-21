@@ -22,6 +22,10 @@ query ListContextState {
   }
 }
 
+query PageContent($path: String!) {
+  pageContent(path: $path)
+}
+
 query ListUsers {
   users {
     id

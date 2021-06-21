@@ -399,6 +399,7 @@ export type Query = {
   readonly users: ReadonlyArray<User>;
   readonly taskList: Maybe<TaskList>;
   readonly root: Maybe<ProjectRoot>;
+  readonly pageContent: Scalars['String'];
 };
 
 
@@ -409,6 +410,11 @@ export type QueryTaskListArgs = {
 
 export type QueryRootArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryPageContentArgs = {
+  path: Scalars['String'];
 };
 
 export type Section = {

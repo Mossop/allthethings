@@ -16,8 +16,15 @@ import { forwardRef, useCallback, useMemo } from "react";
 import type { Context, ProjectRoot } from "../schema";
 import { isContext } from "../schema";
 import { nameSorted } from "../utils/collections";
-import type { NavigableView } from "../utils/view";
-import { useContexts, useCurrentContext, useUser, ViewType, useView, useUrl } from "../utils/view";
+import type { LoggedInState } from "../utils/view";
+import {
+  useContexts,
+  useCurrentContext,
+  useUser,
+  ViewType,
+  useLoggedInView,
+  useUrl,
+} from "../utils/view";
 import CreateContextDialog from "./CreateContextDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -49,25 +56,26 @@ const ContextMenuItem = ReactMemo(
     { target, name, selected }: ContextMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let view = useView();
+    let view = useLoggedInView();
 
-    let targetView: NavigableView;
+    let targetView: LoggedInState;
+    let context: Context | null;
     switch (view.type) {
       case ViewType.Inbox:
         targetView = {
           type: ViewType.Inbox,
-          context: isContext(target) ? target : null,
         };
+        context = isContext(target) ? target : null;
         break;
       default:
         targetView = {
           type: ViewType.TaskList,
           taskList: target,
-          context: isContext(target) ? target : null,
         };
+        context = isContext(target) ? target : null;
     }
 
-    let url = useUrl(targetView);
+    let url = useUrl(targetView, context);
 
     let click = useCallback((event: React.MouseEvent) => {
       event.preventDefault();

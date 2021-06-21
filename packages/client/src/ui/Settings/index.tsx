@@ -22,7 +22,14 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
-import { useProjectRoot, pushView, useUrl, useView, ViewType, useUser } from "../../utils/view";
+import {
+  useProjectRoot,
+  pushView,
+  useUrl,
+  useLoggedInView,
+  ViewType,
+  useUser,
+} from "../../utils/view";
 import AdminPage from "./AdminPage";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -142,7 +149,7 @@ export default ReactMemo(function Settings({
   pluginId,
 }: SettingsProps): ReactResult {
   let classes = useStyles();
-  let view = useView();
+  let view = useLoggedInView();
 
   let updateSection = useCallback((page: string, pluginId?: string): void => {
     pushView({

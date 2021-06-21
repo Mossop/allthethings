@@ -341,6 +341,7 @@ export type Query = {
   readonly users: ReadonlyArray<User>;
   readonly taskList?: Maybe<TaskList>;
   readonly root?: Maybe<ProjectRoot>;
+  readonly pageContent: Scalars['String'];
 };
 
 
@@ -351,6 +352,11 @@ export type QueryTaskListArgs = {
 
 export type QueryRootArgs = {
   id: Scalars['ID'];
+};
+
+
+export type QueryPageContentArgs = {
+  path: Scalars['String'];
 };
 
 export type Section = {
@@ -520,12 +526,13 @@ export type ProjectRootFieldPolicy = {
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'root' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'root' | 'pageContent' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	users?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
-	root?: FieldPolicy<any> | FieldReadFunction<any>
+	root?: FieldPolicy<any> | FieldReadFunction<any>,
+	pageContent?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type SectionKeySpecifier = ('remainingTasks' | 'items' | 'id' | 'name' | SectionKeySpecifier)[];
 export type SectionFieldPolicy = {

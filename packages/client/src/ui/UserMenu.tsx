@@ -1,8 +1,6 @@
 import type { ReactResult } from "@allthethings/ui";
 import {
   useBoolState,
-  pushUrl,
-  useResetStore,
   ReactMemo,
   Menu,
   useMenuState,
@@ -14,7 +12,7 @@ import { useCallback } from "react";
 
 import type { User } from "../schema";
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
-import { pushView, useView, ViewType } from "../utils/view";
+import { pushView, useLoggedInView, ViewType } from "../utils/view";
 import ChangePasswordDialog from "./ChangePasswordDialog";
 
 function avatarSources(email: string): string[] {
@@ -41,20 +39,17 @@ interface UserMenuProps {
 export default ReactMemo(function UserMenu({
   user,
 }: UserMenuProps): ReactResult {
-  let view = useView();
+  let view = useLoggedInView();
   let classes = useStyles();
   let [logout] = useLogoutMutation({
     refetchQueries: [refetchListContextStateQuery()],
   });
   let userMenuState = useMenuState("user-menu");
-  let resetStore = useResetStore();
   let [changePasswordOpen, showChangePassword, closeChangePassword] = useBoolState();
 
   let doLogout = useCallback(async (): Promise<void> => {
-    pushUrl(new URL("/", document.documentURI));
     await logout();
-    await resetStore();
-  }, [logout, resetStore]);
+  }, [logout]);
 
   let doSettings = useCallback((): void => {
     pushView({

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { TaskList } from "../schema";
 import { useCreateProjectMutation, refetchListContextStateQuery } from "../schema";
-import { useProjectRoot, useView, pushView, ViewType } from "../utils/view";
+import { useProjectRoot, useLoggedInView, pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
   onClosed: () => void;
@@ -19,7 +19,7 @@ export default ReactMemo(function CreateProjectDialog({
     name: "",
   });
   let root = useProjectRoot();
-  let view = useView();
+  let view = useLoggedInView();
 
   let [isOpen,, close] = useBoolState(true);
 

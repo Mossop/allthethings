@@ -142,6 +142,7 @@ type Query {
   users: [User!]!
   taskList(id: ID!): TaskList
   root(id: ID!): ProjectRoot
+  pageContent(path: String!): String!
 }
 
 input ContextParams {

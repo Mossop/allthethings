@@ -1,4 +1,4 @@
-import { useView } from "../utils/view";
+import { useLoggedInView } from "../utils/view";
 import { useListInboxQuery } from "./queries";
 import type { Item } from "./taskListState";
 import { buildItem } from "./taskListState";
@@ -12,7 +12,7 @@ export function useInboxContents(): InboxContents {
     pollInterval: 30000,
   });
 
-  let view = useView();
+  let view = useLoggedInView();
 
   if (!data?.user) {
     return {

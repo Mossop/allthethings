@@ -1,14 +1,15 @@
 import type { ReactChildren, ReactResult } from "@allthethings/ui";
 import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 import type { Location, Update } from "history";
-import { useState, useMemo, useEffect, createContext, useContext } from "react";
+import { useState, useMemo, useEffect, createContext, useContext as useReactContext } from "react";
 
 import type { Context, Project, ProjectRoot, TaskList, User } from "../schema";
-import { isContext, isProject, isUser, useContextState } from "../schema";
+import { isProject, useContextState } from "../schema";
 
-const ViewContext = createContext<View | null | undefined>(undefined);
+const ViewContext = createContext<View | undefined>(undefined);
 
 export enum ViewType {
+  Page = "page",
   TaskList = "tasklist",
   Inbox = "inbox",
   NotFound = "notfound",
@@ -16,74 +17,89 @@ export enum ViewType {
   AddLink = "addlink",
 }
 
-export interface BaseView {
+export interface LoggedInViewState {
   readonly user: User;
   readonly context: Context | null;
 }
 
-export interface NotFoundView {
-  readonly type: ViewType.NotFound;
+export interface LoggedOutViewState {
+  readonly user: null;
+  readonly context: null;
 }
 
-export interface InboxView {
+export interface PageView {
+  readonly type: ViewType.Page;
+  readonly path: string;
+}
+
+export interface InboxState {
   readonly type: ViewType.Inbox;
 }
 
-export interface AddLinkView {
+export interface AddLinkState {
   readonly type: ViewType.AddLink;
   readonly url: string;
   readonly title: string | null;
 }
 
-export interface TaskListView {
+export interface TaskListState {
   readonly type: ViewType.TaskList;
   readonly taskList: TaskList;
 }
 
-export interface SettingsView {
+export interface SettingsState {
   readonly type: ViewType.Settings;
   readonly page: string;
   readonly pluginId?: string;
 }
 
-export type View = BaseView & (LinkableView | NotFoundView);
+export type LoggedInState = InboxState | AddLinkState | TaskListState | SettingsState | PageView;
+export type LoggedInView = LoggedInState & LoggedInViewState;
+export type LoggedOutState = PageView;
+export type LoggedOutView = LoggedOutState & LoggedOutViewState;
 
-export type LinkableView =
-  InboxView |
-  TaskListView |
-  SettingsView |
-  AddLinkView;
+export type View = LoggedInView | LoggedOutView;
 
-export type NavigableView = LinkableView & {
-  context?: Context | null;
-};
-
-export function useUrl(view: NavigableView): URL {
+export function useUrl(view: LoggedInState | LoggedOutState, context?: Context | null): URL {
   let currentView = useView();
+  if (!currentView) {
+    // Uninitialized.
+    return new URL("/", document.documentURI);
+  }
 
-  let newView = {
-    user: currentView.user,
-    context: currentView.context,
+  if (currentView.user) {
+    return viewToUrl({
+      user: currentView.user,
+      context: context ?? currentView.context,
+      ...view,
+    });
+  }
+
+  if (view.type != ViewType.Page) {
+    throw new Error("Cannot generate an authenticated URL when not logged in.");
+  }
+
+  return viewToUrl({
     ...view,
-  };
-
-  return viewToUrl(newView);
+    user: null,
+    context: null,
+  });
 }
 
-export function useMaybeView(): View | undefined | null {
-  return useContext(ViewContext);
+export function useView(): View | undefined {
+  return useReactContext(ViewContext);
 }
 
-export function useView(): View {
-  let view = useMaybeView();
-  if (!view) {
-    throw new Error("App not initialized.");
+export function useLoggedInView(): LoggedInView {
+  let view = useView();
+  if (!view || !view.user) {
+    throw new Error("Not logged in.");
   }
   return view;
 }
 
 export function useUser(): User {
-  return useView().user;
+  return useLoggedInView().user;
 }
 
 export function useContexts(): ReadonlyMap<string, Context> {
@@ -91,72 +107,16 @@ export function useContexts(): ReadonlyMap<string, Context> {
 }
 
 export function useProjectRoot(): ProjectRoot {
-  let state = useView();
+  let state = useLoggedInView();
   return state.context ?? state.user;
 }
 
 export function useCurrentContext(): Context | null {
-  let state = useView();
+  let state = useLoggedInView();
   return state.context ?? null;
 }
 
-/**
- * After the state updates we replace the current view with a new view.
- *
- * @param {View} view The previous view including the old state.
- * @param {User} user The new user state.
- * @returns The new view including the new state.
- */
-function updateView(view: View, user: User): View {
-  let base: BaseView = {
-    user,
-    context: view.context ? user.contexts.get(view.context.id) ?? null : null,
-  };
-
-  switch (view.type) {
-    case ViewType.NotFound:
-    case ViewType.Inbox:
-    case ViewType.AddLink:
-    case ViewType.Settings:
-      return {
-        ...view,
-        ...base,
-      };
-    case ViewType.TaskList: {
-      let taskList: TaskList;
-
-      if (isUser(view.taskList)) {
-        taskList = user;
-      } else if (isContext(view.taskList)) {
-        let context = user.contexts.get(view.taskList.id);
-        if (!context) {
-          return {
-            ...base,
-            type: ViewType.NotFound,
-          };
-        }
-        taskList = context;
-      } else {
-        let project = (base.context ?? base.user).projects.get(view.taskList.id);
-        if (!project) {
-          return {
-            ...base,
-            type: ViewType.NotFound,
-          };
-        }
-        taskList = project;
-      }
-
-      return {
-        ...base,
-        type: view.type,
-        taskList: taskList,
-      };
-    }
-  }
-}
-
-export function viewToUrl(view: LinkableView & BaseView): URL {
+export function viewToUrl(view: View): URL {
   let path: string;
   let searchParams = new URLSearchParams();
 
@@ -165,6 +125,9 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
   }
 
   switch (view.type) {
+    case ViewType.Page:
+      path = view.path;
+      break;
     case ViewType.Inbox:
       path = "/inbox";
       break;
@@ -202,7 +165,7 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
       break;
   }
 
-  let url = new URL(`${path}`, document.URL);
+  let url = new URL(path, document.URL);
   let search = searchParams.toString();
   if (search) {
     url.search = `${search}`;
@@ -210,7 +173,16 @@ export function viewToUrl(view: LinkableView & BaseView): URL {
   return url;
 }
 
-export function urlToView(user: User, url: URL): View {
+export function urlToView(user: User | null, url: URL): View {
+  if (!user) {
+    return {
+      type: ViewType.Page,
+      user,
+      context: null,
+      path: url.pathname,
+    };
+  }
+
   let pathParts = url.pathname.substring(1).split("/");
 
   let root: ProjectRoot = user;
@@ -226,10 +198,11 @@ export function urlToView(user: User, url: URL): View {
     }
   }
 
-  let notFound: View = {
-    type: ViewType.NotFound,
+  let notFound: LoggedInView = {
+    type: ViewType.Page,
     user,
     context,
+    path: url.pathname,
   };
 
   switch (pathParts.shift()) {
@@ -320,19 +293,19 @@ function urlForLocation(location: Location): URL {
 
 export class NavigationHandler {
   private user: User | null | undefined = undefined;
-  private view: View | null | undefined = undefined;
+  private view: View | undefined = undefined;
 
-  public constructor(private callback: (view: View | null) => void) {
+  public constructor(private callback: (view: View) => void) {
     this.update(history.location);
   }
 
-  private setView(view: View | null): void {
+  private setView(view: View): void {
     this.view = view;
     this.callback(view);
   }
 
   private update(location: Location): void {
-    if (!this.user) {
+    if (this.user === undefined) {
       return;
     }
 
@@ -342,20 +315,25 @@ export class NavigationHandler {
   }
 
   public watch(user: User | null | undefined): void | (() => void) {
-    this.user = user;
-    if (!user) {
-      if (user === null) {
-        this.setView(null);
-      }
+    if (user === undefined) {
       return;
     }
 
-    if (this.view && this.view.type != ViewType.NotFound) {
-      let newView = updateView(this.view, user);
+    let wasLoggedIn = Boolean(this.user);
+    let isLoggedIn = Boolean(user);
+
+    this.user = user;
+
+    if (wasLoggedIn && !isLoggedIn) {
+      // Logged out.
+      let newView: LoggedOutView = {
+        user: null,
+        context: null,
+        type: ViewType.Page,
+        path: "/",
+      };
+      replaceUrl(viewToUrl(newView));
       this.setView(newView);
-      if (newView.type != ViewType.NotFound) {
-        replaceUrl(viewToUrl(newView));
-      }
     } else {
       this.update(history.location);
     }
@@ -364,40 +342,53 @@ export class NavigationHandler {
   }
 }
 
+interface ContextChange {
+  readonly context?: Context | null;
+}
+
 function buildView(
-  args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View],
-): LinkableView & BaseView {
-  if (args.length == 2) {
-    let [newView, currentView] = args;
+  view: (LoggedInState & ContextChange) | LoggedOutState,
+  currentView?: LoggedInView,
+): View {
+  if (!currentView) {
     return {
-      user: currentView.user,
-      context: currentView.context,
-      ...newView,
+      user: null,
+      context: null,
+      ...(view as LoggedOutState),
     };
-  } else {
-    let [view] = args;
-    return view;
   }
+
+  return {
+    user: currentView.user,
+    context: currentView.context,
+    ...view,
+  };
 }
 
+export function pushView(view: LoggedOutState): void;
+export function pushView(view: (LoggedInState & ContextChange), currentView: LoggedInView): void;
 export function pushView(
-  ...args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View]
+  view: (LoggedInState & ContextChange) | LoggedOutState,
+  currentView?: LoggedInView,
 ): void {
-  let view = buildView(args);
+  let newView = buildView(view, currentView);
 
-  pushUrl(viewToUrl(view));
+  pushUrl(viewToUrl(newView));
 }
 
+export function replaceView(view: LoggedOutState): void;
+export function replaceView(view: (LoggedInState & ContextChange), currentView: LoggedInView): void;
 export function replaceView(
-  ...args: [view: LinkableView & BaseView] | [view: NavigableView, currentView: View]
+  view: (LoggedInState & ContextChange) | LoggedOutState,
+  currentView?: LoggedInView,
 ): void {
-  let view = buildView(args);
+  let newView = buildView(view, currentView);
 
-  replaceUrl(viewToUrl(view));
+  replaceUrl(viewToUrl(newView));
 }
 
 export function ViewListener({ children }: ReactChildren): ReactResult {
-  let [view, setView] = useState<View | null | undefined>(undefined);
+  let [view, setView] = useState<View | undefined>(undefined);
   let navHandler = useMemo(() => new NavigationHandler(setView), []);
   let user = useContextState();
 
