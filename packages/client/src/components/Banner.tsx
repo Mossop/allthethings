@@ -7,6 +7,7 @@ import ContextMenu from "../ui/ContextMenu";
 import LoginDialog from "../ui/LoginDialog";
 import UserMenu from "../ui/UserMenu";
 import { useUser, useView } from "../utils/view";
+import Logo from "./Logo";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -21,6 +22,13 @@ const useStyles = makeStyles((theme: Theme) =>
     title: {
       fontSize: "1.5rem",
       fontWeight: "bold",
+    },
+    link: {
+      ...Styles.flexCenteredRow,
+    },
+    logo: {
+      paddingRight: theme.spacing(1),
+      fontSize: "3rem",
     },
     pageControls: {
       fontSize: "1rem",
@@ -50,7 +58,12 @@ export default function Banner(): ReactResult {
     elevation={1}
     role="banner"
   >
-    <h1 className={classes.title}><Link href="/">AllTheThings</Link></h1>
+    <h1 className={classes.title}>
+      <Link href="/" className={classes.link}>
+        <Logo className={classes.logo}/>
+        <span>AllTheThings</span>
+      </Link>
+    </h1>
     {
       view?.user
         ? <PageControls/>

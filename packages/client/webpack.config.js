@@ -35,6 +35,9 @@ module.exports = {
           projectReferences: true,
         },
       }],
+    }, {
+      test: /\.svg$/,
+      use: ["@svgr/webpack"],
     }],
   },
   externals: sharedPackages(),

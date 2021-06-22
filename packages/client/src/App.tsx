@@ -24,7 +24,7 @@ const baseTheme = (theme: Theme): Theme => createMuiTheme({
       contrastText: "#000000",
     },
     secondary: {
-      main: "#b3afa7",
+      main: "#7EACCE",
       contrastText: "#000000",
     },
   },
