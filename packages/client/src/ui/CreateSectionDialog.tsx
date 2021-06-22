@@ -1,4 +1,4 @@
-import { Dialog, useBoolState, ReactMemo, TextFieldInput } from "@allthethings/ui";
+import { Dialog, useBoolState, ReactMemo, TextFieldInput, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
@@ -20,7 +20,7 @@ export default ReactMemo(function CreateSectionDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createSection, { error }] = useCreateSectionMutation({
+  let [createSection, { loading, error }] = useCreateSectionMutation({
     variables: {
       taskList: taskList.id,
       params: state,
@@ -41,6 +41,7 @@ export default ReactMemo(function CreateSectionDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={submit}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="name"

@@ -1,4 +1,4 @@
-import { useBoolState, ReactMemo, Dialog, TextFieldInput } from "@allthethings/ui";
+import { useBoolState, ReactMemo, Dialog, TextFieldInput, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useMemo, useEffect, useState } from "react";
 
@@ -20,7 +20,7 @@ export default ReactMemo(function CreateContextDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createContext, { data, error }] = useCreateContextMutation({
+  let [createContext, { data, loading, error }] = useCreateContextMutation({
     variables: {
       params: state,
     },
@@ -59,6 +59,7 @@ export default ReactMemo(function CreateContextDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={createContext}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       autoFocus={true}

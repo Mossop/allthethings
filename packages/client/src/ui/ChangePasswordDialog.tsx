@@ -2,6 +2,7 @@ import {
   useBoolState,
   ReactMemo, Dialog,
   TextFieldInput,
+  FormState,
 } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useCallback, useState } from "react";
@@ -23,7 +24,7 @@ export default ReactMemo(function ChangePasswordDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [changePasswordMutation, { error }] = useChangePasswordMutation({
+  let [changePasswordMutation, { loading, error }] = useChangePasswordMutation({
     variables: {
       currentPassword: state.currentPassword,
       newPassword: state.newPassword,
@@ -48,6 +49,7 @@ export default ReactMemo(function ChangePasswordDialog({
     onClosed={onClosed}
     onSubmit={changePassword}
     canSubmit={state.newPassword.length > 0 && state.newPassword == state.newPasswordAgain}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       autoFocus={true}

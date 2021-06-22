@@ -1,4 +1,4 @@
-import { ReactMemo, useBoolState, Dialog, TextFieldInput } from "@allthethings/ui";
+import { ReactMemo, useBoolState, Dialog, TextFieldInput, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
 import { useEffect, useMemo, useState } from "react";
 
@@ -23,7 +23,7 @@ export default ReactMemo(function CreateProjectDialog({
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createProject, { data, error }] = useCreateProjectMutation({
+  let [createProject, { data, loading, error }] = useCreateProjectMutation({
     variables: {
       taskList: taskList.id,
       params: state,
@@ -62,6 +62,7 @@ export default ReactMemo(function CreateProjectDialog({
     onClose={close}
     onClosed={onClosed}
     onSubmit={createProject}
+    formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
       id="name"
