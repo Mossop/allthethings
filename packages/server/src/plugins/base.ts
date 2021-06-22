@@ -43,7 +43,6 @@ export abstract class BasePlugin implements ServerPlugin {
   protected abstract readonly listProviders: ListProvider[];
 
   protected async update(context: PluginContext): Promise<void> {
-    console.log("Update", this.constructor.name);
     let seenIds = new Set<string>();
 
     for (let provider of this.listProviders) {
@@ -150,7 +149,6 @@ export abstract class BaseList<SR> extends Base implements IList {
 
   public async update(results?: SR): Promise<PluginItem[]> {
     let items = await this.listItems(results);
-    console.log("Update", this.constructor.name, `Found ${items.length} items.`);
     await this.context.updateList(this.id, {
       name: this.name,
       url: this.url,
