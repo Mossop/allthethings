@@ -6,7 +6,7 @@ import type { Overwrite } from "@allthethings/utils";
 import { DateTime } from "luxon";
 
 import type { User, Context, Project, Section, TaskList, Item } from "../db";
-import { PluginDetail } from "../db";
+import { PluginDetail, Inbox } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
 import { bestIcon, loadPageInfo } from "../utils/page";
@@ -16,7 +16,7 @@ import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
 
 type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
-  list: TaskList | Section;
+  list: TaskList | Section | Inbox;
   taskInfo?: Types.TaskInfoParams | null;
 }>;
 
@@ -180,7 +180,7 @@ const resolvers: MutationResolvers = {
   }),
 
   createTask: authed(async (ctx, { list: listId, ...args }): Promise<Item> => {
-    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    let list: TaskList | Section | Inbox | null = await ctx.getTaskList(listId ?? null);
     if (!list && listId) {
       list = await ctx.dataSources.sections.getImpl(listId);
     }
@@ -208,7 +208,7 @@ const resolvers: MutationResolvers = {
         throw new Error("Invalid url.");
       }
 
-      let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+      let list: TaskList | Section | Inbox | null = await ctx.getTaskList(listId ?? null);
       if (!list && listId) {
         list = await ctx.dataSources.sections.getImpl(listId);
       }
@@ -219,7 +219,9 @@ const resolvers: MutationResolvers = {
 
       let item = await PluginManager.createItemFromURL(ctx, targetUrl, isTask);
       if (item) {
-        await item.move(list, null);
+        if (!(list instanceof Inbox)) {
+          await item.move(list, null);
+        }
         return item;
       }
 
@@ -253,7 +255,7 @@ const resolvers: MutationResolvers = {
   ),
 
   createNote: authed(async (ctx, { detail, list: listId, ...args }): Promise<Item> => {
-    let list: TaskList | Section | null = await ctx.getTaskList(listId ?? ctx.userId);
+    let list: TaskList | Section | Inbox | null = await ctx.getTaskList(listId ?? null);
     if (!list && listId) {
       list = await ctx.dataSources.sections.getImpl(listId);
     }

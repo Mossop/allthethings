@@ -1,6 +1,6 @@
 import type { Awaitable, Overwrite } from "@allthethings/utils";
 
-import type { ProjectRoot, AppDataSources, TaskList, User } from "../db";
+import type { ProjectRoot, AppDataSources, TaskList, User, Inbox } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { WebServerContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
@@ -10,7 +10,8 @@ export interface ResolverContext {
   userId: string | null;
   dataSources: AppDataSources;
   getRoot: (id: string) => Promise<ProjectRoot | null>;
-  getTaskList: (id: string) => Promise<TaskList | null>;
+  getTaskList(id: string): Promise<TaskList | null>;
+  getTaskList(id: string | null): Promise<TaskList | Inbox | null>;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -103,7 +104,21 @@ export async function buildResolverContext({
       return null;
     },
 
-    async getTaskList(this: ResolverContext, id: string): Promise<TaskList | null> {
+    // @ts-ignore
+    async getTaskList(this: ResolverContext, id: string | null): Promise<TaskList | Inbox | null> {
+      if (!this.userId) {
+        throw new Error("Can only call on an authenticated context.");
+      }
+
+      let user = await this.dataSources.users.getImpl(this.userId);
+      if (!user) {
+        throw new Error("User is unknown.");
+      }
+
+      if (!id) {
+        return user.inbox();
+      }
+
       let project = await this.dataSources.projects.getImpl(id);
       if (project) {
         return project;
