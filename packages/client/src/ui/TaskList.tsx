@@ -53,6 +53,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     tasksHeading: {
       padding: theme.spacing(1) + 2,
+      whiteSpace: "nowrap",
     },
     headingInput: TextStyles.heading,
   }));
