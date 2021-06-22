@@ -43,6 +43,7 @@ export abstract class BasePlugin implements ServerPlugin {
   protected readonly listProviders: ListProvider[] = [];
 
   protected async update(context: PluginContext): Promise<void> {
+    console.log("Update", this.constructor.name);
     let seenIds = new Set<string>();
 
     for (let provider of this.listProviders) {
