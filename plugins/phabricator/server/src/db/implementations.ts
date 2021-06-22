@@ -318,6 +318,7 @@ abstract class ReviewQuery extends Query {
   protected getConstraints(): Differential$Revision$Search$Constraints {
     return {
       reviewerPHIDs: [this.account.phid],
+      statuses: [RevisionStatus.NeedsReview],
     };
   }
 }
