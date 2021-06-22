@@ -1,6 +1,7 @@
 const path = require("path");
 
 const { externalTags, sharedPackages } = require("@allthethings/ui/externals");
+const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 
@@ -70,6 +71,12 @@ module.exports = {
           },
         },
       ],
+    }),
+    new CopyPlugin({
+      patterns: [{
+        from: path.join(__dirname, "static"),
+        to: path.join(__dirname, "dist", "static"),
+      }],
     }),
   ],
   optimization: {
