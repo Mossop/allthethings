@@ -421,7 +421,7 @@ export class Bug extends BaseItem {
   public get url(): string {
     let baseUrl = new URL(this.account.url);
 
-    return new URL(`show_bug.cgi?id=${this.record.id}`, baseUrl).toString();
+    return new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString();
   }
 
   public get icon(): string | null {
