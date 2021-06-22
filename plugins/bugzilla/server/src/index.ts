@@ -31,7 +31,7 @@ class BugzillaPlugin extends BasePlugin implements ServerPlugin {
     Bug,
   ];
 
-  public readonly searchProviders = [
+  public readonly listProviders = [
     Search,
   ];
 

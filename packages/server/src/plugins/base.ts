@@ -39,8 +39,8 @@ interface ListProvider {
 }
 
 export abstract class BasePlugin implements ServerPlugin {
-  protected readonly itemProviders: ItemProvider[] = [];
-  protected readonly listProviders: ListProvider[] = [];
+  protected abstract readonly itemProviders: ItemProvider[];
+  protected abstract readonly listProviders: ListProvider[];
 
   protected async update(context: PluginContext): Promise<void> {
     console.log("Update", this.constructor.name);

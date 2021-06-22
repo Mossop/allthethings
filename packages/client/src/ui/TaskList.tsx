@@ -55,7 +55,10 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1) + 2,
       whiteSpace: "nowrap",
     },
-    headingInput: TextStyles.heading,
+    headingInput: {
+      ...TextStyles.heading,
+      whiteSpace: "nowrap",
+    },
   }));
 
 interface UserHeaderProps {

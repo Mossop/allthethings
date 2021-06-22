@@ -44,7 +44,7 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
 
   private static _config: GooglePluginConfig | null = null;
 
-  protected readonly searchProviders = [
+  protected readonly listProviders = [
     MailSearch,
   ];
 
