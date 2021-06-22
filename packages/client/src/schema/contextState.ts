@@ -137,7 +137,7 @@ function buildState(queryResult: StateQuery): User | null {
 
 export function useContextState(): User | null | undefined {
   let { data } = useListContextStateQuery({
-    pollInterval: 30000,
+    pollInterval: 5000,
   });
 
   return useMemo(() => data ? buildState(data) : undefined, [data]);

@@ -9,7 +9,7 @@ export interface InboxContents {
 
 export function useInboxContents(): InboxContents {
   let { data } = useListInboxQuery({
-    pollInterval: 30000,
+    pollInterval: 5000,
   });
 
   let view = useLoggedInView();

@@ -144,7 +144,7 @@ export function useTaskListContents(taskList: TaskList): TaskListContents {
     variables: {
       taskList: taskList.id,
     },
-    pollInterval: 30000,
+    pollInterval: 5000,
   });
 
   if (!data?.taskList) {
