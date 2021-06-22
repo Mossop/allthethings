@@ -2,7 +2,12 @@ import { TextFieldInput, ReactMemo, useBoolState, Dialog, FormState } from "@all
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateTaskMutation, useEditItemMutation, refetchQueriesForSection } from "../schema";
+import {
+  useCreateTaskMutation,
+  useEditItemMutation,
+  refetchQueriesForSection,
+  isInbox,
+} from "../schema";
 import type { Inbox, TaskList, Section, TaskItem } from "../schema";
 
 type CreateTaskProps = {
@@ -56,7 +61,7 @@ export default ReactMemo(function TaskDialog({
     } else {
       await createTask({
         variables: {
-          list: list.id,
+          list: isInbox(list) ? null : list.id,
           item: {
             ...state,
             archived: null,
@@ -67,7 +72,7 @@ export default ReactMemo(function TaskDialog({
     }
 
     close();
-  }, [close, createTask, editItem, list.id, state, task]);
+  }, [close, createTask, editItem, list, state, task]);
 
   return <Dialog
     title={task ? "Edit Task" : "Create Task"}

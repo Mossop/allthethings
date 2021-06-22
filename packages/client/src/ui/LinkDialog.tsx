@@ -9,7 +9,7 @@ import {
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { useCreateLinkMutation, refetchQueriesForSection } from "../schema";
+import { useCreateLinkMutation, refetchQueriesForSection, isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
 
 interface LinkDialogProps {
@@ -39,7 +39,7 @@ export default ReactMemo(function LinkDialog({
   let submit = useCallback(async (): Promise<void> => {
     await createLink({
       variables: {
-        list: list.id,
+        list: isInbox(list) ? null : list.id,
         item: {
           summary: title ?? "",
           archived: null,
@@ -53,7 +53,7 @@ export default ReactMemo(function LinkDialog({
     });
 
     close();
-  }, [close, createLink, list.id, state, title]);
+  }, [close, createLink, list, state, title]);
 
   return <Dialog
     title="Create Link"
