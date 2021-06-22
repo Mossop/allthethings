@@ -70,7 +70,7 @@ export function useUrl(view: LoggedInState | LoggedOutState, context?: Context |
   if (currentView.user) {
     return viewToUrl({
       user: currentView.user,
-      context: context ?? currentView.context,
+      context: context == undefined ? currentView.context : context,
       ...view,
     });
   }
