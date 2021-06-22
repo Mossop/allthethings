@@ -150,6 +150,7 @@ export abstract class BaseList<SR> extends Base implements IList {
 
   public async update(results?: SR): Promise<PluginItem[]> {
     let items = await this.listItems(results);
+    console.log("Update", this.constructor.name, `Found ${items.length} items.`);
     await this.context.updateList(this.id, {
       name: this.name,
       url: this.url,
