@@ -1,0 +1,23 @@
+type JiraAccount {
+  id: ID!
+  serverName: String!
+  userName: String!
+  url: String!
+  email: String!
+  apiToken: String!
+}
+
+input JiraAccountParams {
+  url: String!,
+  email: String!
+  apiToken: String!
+}
+
+type User {
+  jiraAccounts: [JiraAccount!]!
+}
+
+type Mutation {
+  createJiraAccount(params: JiraAccountParams!): JiraAccount!
+  deleteJiraAccount(account: ID!): Boolean
+}

@@ -1,0 +1,29 @@
+query ListJiraAccounts {
+  user {
+    id
+    jiraAccounts {
+      id
+      serverName
+      userName
+      url
+      email
+      apiToken
+    }
+  }
+}
+
+mutation CreateJiraAccount($params: JiraAccountParams!) {
+  createJiraAccount(params: $params) {
+    id
+    serverName
+    userName
+    url
+    email
+    apiToken
+  }
+}
+
+mutation DeleteJiraAccount($account: ID!) {
+  deleteJiraAccount(account: $account)
+}
+
