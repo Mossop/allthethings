@@ -59,23 +59,20 @@ const ContextMenuItem = ReactMemo(
     let view = useLoggedInView();
 
     let targetView: LoggedInState;
-    let context: Context | null;
     switch (view.type) {
       case ViewType.Inbox:
         targetView = {
           type: ViewType.Inbox,
         };
-        context = isContext(target) ? target : null;
         break;
       default:
         targetView = {
           type: ViewType.TaskList,
           taskList: target,
         };
-        context = isContext(target) ? target : null;
     }
 
-    let url = useUrl(targetView, context);
+    let url = useUrl(targetView, isContext(target) ? target : null);
 
     let click = useCallback((event: React.MouseEvent) => {
       event.preventDefault();
