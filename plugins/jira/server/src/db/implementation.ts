@@ -1,13 +1,14 @@
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
+  BaseList,
   BaseItem,
   classBuilder,
   BaseAccount,
   ItemsTable,
   OwnedItemsTable,
 } from "@allthethings/server";
-import type { GraphQLResolver } from "@allthethings/utils";
+import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
@@ -15,9 +16,10 @@ import { DateTime } from "luxon";
 import type {
   JiraAccount,
   JiraAccountParams,
+  JiraSearch,
 } from "../schema";
 import type { IssueFields } from "../types";
-import type { JiraAccountRecord, JiraIssueRecord } from "./types";
+import type { JiraAccountRecord, JiraIssueRecord, JiraSearchRecord } from "./types";
 
 type JiraIssue = Version3Models.IssueBean;
 
@@ -61,6 +63,12 @@ export class Account extends BaseAccount implements GraphQLResolver<JiraAccount>
 
   public get apiToken(): string {
     return this.record.apiToken;
+  }
+
+  public get searches(): Promise<Search[]> {
+    return Search.store.list(this.context, {
+      ownerId: this.id,
+    });
   }
 
   public async items(): Promise<[]> {
@@ -126,6 +134,108 @@ export class Account extends BaseAccount implements GraphQLResolver<JiraAccount>
     };
 
     return Account.store.insert(context, record);
+  }
+}
+
+export class Search extends BaseList<JiraIssue[]> implements GraphQLType<JiraSearch> {
+  public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Search), "Search");
+
+  public constructor(
+    private readonly account: Account,
+    private record: JiraSearchRecord,
+  ) {
+    super(account.context);
+  }
+
+  public async onRecordUpdate(record: JiraSearchRecord): Promise<void> {
+    this.record = record;
+  }
+
+  public get owner(): Account {
+    return this.account;
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
+  public get name(): string {
+    return this.record.name;
+  }
+
+  public get query(): string {
+    return this.record.query;
+  }
+
+  public get url(): string {
+    let url = new URL("/issues/", this.account.url);
+    url.searchParams.set("jql", this.query);
+
+    return url.toString();
+  }
+
+  public async delete(): Promise<void> {
+    await super.delete();
+    await Search.store.delete(this.context, this.id);
+  }
+
+  public async listItems(issues?: JiraIssue[]): Promise<Issue[]> {
+    if (!issues) {
+      issues = await Search.getIssues(this.account, this.query);
+    }
+
+    let instances: Issue[] = [];
+
+    for (let issue of issues) {
+      if (!issue.key) {
+        continue;
+      }
+
+      let instance = await Issue.store.first(this.context, { issueKey: issue.key });
+
+      if (!instance) {
+        instance = await Issue.create(this.account, issue, TaskController.PluginList);
+      } else {
+        await instance.update(issue);
+      }
+
+      instances.push(instance);
+    }
+
+    return instances;
+  }
+
+  public static async getIssues(
+    account: Account,
+    query: string,
+  ): Promise<JiraIssue[]> {
+    let results = await account.apiClient.issueSearch.searchForIssuesUsingJqlPost({
+      jql: query,
+    });
+
+    return results.issues ?? [];
+  }
+
+  public static async create(
+    account: Account,
+    record: Omit<JiraSearchRecord, "id">,
+  ): Promise<Search> {
+    let issues = await Search.getIssues(account, record.query);
+
+    let id = await account.context.addList({
+      name: record.name,
+      url: null,
+    });
+
+    let dbRecord = {
+      ...record,
+      id,
+    };
+
+    let search = await Search.store.insert(account.context, dbRecord);
+    await search.update(issues);
+
+    return search;
   }
 }
 

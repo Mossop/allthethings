@@ -2,7 +2,7 @@ import type { GraphQLType } from "@allthethings/utils";
 
 import type { JiraAccount } from "../schema";
 
-export type JiraAccountRecord = GraphQLType<JiraAccount> & {
+export type JiraAccountRecord = Omit<GraphQLType<JiraAccount>, "searches"> & {
   userId: string;
 };
 
@@ -13,4 +13,11 @@ export interface JiraIssueRecord {
   icon: string | null;
   summary: string;
   status: string;
+}
+
+export interface JiraSearchRecord {
+  ownerId: string;
+  id: string;
+  name: string;
+  query: string;
 }

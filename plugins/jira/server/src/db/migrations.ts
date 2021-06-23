@@ -30,6 +30,26 @@ class BaseMigration implements PluginDbMigration {
         .notNullable();
     });
 
+    await knex.schema.createTable("Search", (table: Knex.CreateTableBuilder): void => {
+      helper.listRef(table, "id")
+        .notNullable()
+        .unique()
+        .primary();
+
+      helper.idColumn(table, "ownerId")
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"))
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
+
+      table.text("name")
+        .notNullable();
+
+      table.text("query")
+        .notNullable();
+    });
+
     await knex.schema.createTable("Issue", (table: Knex.CreateTableBuilder): void => {
       helper.itemRef(table, "id")
         .notNullable()
@@ -61,6 +81,7 @@ class BaseMigration implements PluginDbMigration {
 
   public async down(knex: PluginKnex): Promise<void> {
     await knex.schema.dropTableIfExists("Issue");
+    await knex.schema.dropTableIfExists("Query");
     await knex.schema.dropTableIfExists("Account");
   }
 }

@@ -22,6 +22,7 @@ export type JiraAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiToken: Scalars['String'];
+  readonly searches: ReadonlyArray<JiraSearch>;
 };
 
 export type JiraAccountParams = {
@@ -30,10 +31,25 @@ export type JiraAccountParams = {
   readonly apiToken: Scalars['String'];
 };
 
+export type JiraSearch = {
+  readonly __typename?: 'JiraSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type JiraSearchParams = {
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+};
+
 export type Mutation = {
   readonly __typename?: 'Mutation';
   readonly createJiraAccount: JiraAccount;
   readonly deleteJiraAccount: Maybe<Scalars['Boolean']>;
+  readonly createJiraSearch: JiraSearch;
+  readonly deleteJiraSearch: Maybe<Scalars['Boolean']>;
 };
 
 
@@ -44,6 +60,17 @@ export type MutationCreateJiraAccountArgs = {
 
 export type MutationDeleteJiraAccountArgs = {
   account: Scalars['ID'];
+};
+
+
+export type MutationCreateJiraSearchArgs = {
+  account: Scalars['ID'];
+  params: JiraSearchParams;
+};
+
+
+export type MutationDeleteJiraSearchArgs = {
+  search: Scalars['ID'];
 };
 
 export type User = {
@@ -134,6 +161,8 @@ export type ResolversTypes = ResolversObject<{
   ID: ResolverTypeWrapper<Scalars['ID']>;
   String: ResolverTypeWrapper<Scalars['String']>;
   JiraAccountParams: JiraAccountParams;
+  JiraSearch: ResolverTypeWrapper<JiraSearch>;
+  JiraSearchParams: JiraSearchParams;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Scalars['Boolean']>;
   User: ResolverTypeWrapper<User>;
@@ -145,6 +174,8 @@ export type ResolversParentTypes = ResolversObject<{
   ID: Scalars['ID'];
   String: Scalars['String'];
   JiraAccountParams: JiraAccountParams;
+  JiraSearch: JiraSearch;
+  JiraSearchParams: JiraSearchParams;
   Mutation: {};
   Boolean: Scalars['Boolean'];
   User: User;
@@ -157,12 +188,23 @@ export type JiraAccountResolvers<ContextType = any, ParentType extends Resolvers
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   apiToken: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  searches: Resolver<ReadonlyArray<ResolversTypes['JiraSearch']>, ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+}>;
+
+export type JiraSearchResolvers<ContextType = any, ParentType extends ResolversParentTypes['JiraSearch'] = ResolversParentTypes['JiraSearch']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  query: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
   createJiraAccount: Resolver<ResolversTypes['JiraAccount'], ParentType, ContextType, RequireFields<MutationCreateJiraAccountArgs, 'params'>>;
   deleteJiraAccount: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteJiraAccountArgs, 'account'>>;
+  createJiraSearch: Resolver<ResolversTypes['JiraSearch'], ParentType, ContextType, RequireFields<MutationCreateJiraSearchArgs, 'account' | 'params'>>;
+  deleteJiraSearch: Resolver<Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<MutationDeleteJiraSearchArgs, 'search'>>;
 }>;
 
 export type UserResolvers<ContextType = any, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
@@ -172,6 +214,7 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type Resolvers<ContextType = any> = ResolversObject<{
   JiraAccount: JiraAccountResolvers<ContextType>;
+  JiraSearch: JiraSearchResolvers<ContextType>;
   Mutation: MutationResolvers<ContextType>;
   User: UserResolvers<ContextType>;
 }>;

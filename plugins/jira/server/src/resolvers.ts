@@ -1,8 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 
-import { Account } from "./db/implementation";
-import type { MutationCreateJiraAccountArgs, MutationDeleteJiraAccountArgs } from "./schema";
+import { Account, Search } from "./db/implementation";
+import type {
+  MutationCreateJiraAccountArgs,
+  MutationCreateJiraSearchArgs,
+  MutationDeleteJiraAccountArgs,
+  MutationDeleteJiraSearchArgs,
+} from "./schema";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
@@ -35,6 +40,37 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       }
 
       await account.delete();
+      return true;
+    },
+
+    async createJiraSearch(
+      outer: unknown,
+      { account: accountId, params: { name, query } }: MutationCreateJiraSearchArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<Search> {
+      let account = await Account.store.get(ctx, accountId);
+      if (!account) {
+        throw new Error("Unknown account.");
+      }
+
+      return Search.create(account, {
+        name,
+        ownerId: account.id,
+        query,
+      });
+    },
+
+    async deleteJiraSearch(
+      outer: unknown,
+      { search: searchId }: MutationDeleteJiraSearchArgs,
+      ctx: AuthedPluginContext,
+    ): Promise<boolean> {
+      let search = await Search.store.get(ctx, searchId);
+      if (!search) {
+        return false;
+      }
+
+      await search.delete();
       return true;
     },
   },

@@ -87,12 +87,26 @@ export type JiraAccount = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiToken: Scalars['String'];
+  readonly searches: ReadonlyArray<JiraSearch>;
 };
 
 export type JiraAccountParams = {
   readonly url: Scalars['String'];
   readonly email: Scalars['String'];
   readonly apiToken: Scalars['String'];
+};
+
+export type JiraSearch = {
+  readonly __typename?: 'JiraSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type JiraSearchParams = {
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
 };
 
 export type LinkDetail = {
@@ -111,6 +125,7 @@ export type Mutation = {
   readonly changePassword: Maybe<User>;
   readonly createContext: Context;
   readonly createJiraAccount: JiraAccount;
+  readonly createJiraSearch: JiraSearch;
   readonly createLink: Item;
   readonly createNote: Item;
   readonly createProject: Project;
@@ -120,6 +135,7 @@ export type Mutation = {
   readonly deleteContext: Scalars['Boolean'];
   readonly deleteItem: Scalars['Boolean'];
   readonly deleteJiraAccount: Maybe<Scalars['Boolean']>;
+  readonly deleteJiraSearch: Maybe<Scalars['Boolean']>;
   readonly deleteProject: Scalars['Boolean'];
   readonly deleteSection: Scalars['Boolean'];
   readonly deleteUser: Maybe<Scalars['Boolean']>;
@@ -159,6 +175,12 @@ export type MutationCreateContextArgs = {
 
 export type MutationCreateJiraAccountArgs = {
   params: JiraAccountParams;
+};
+
+
+export type MutationCreateJiraSearchArgs = {
+  account: Scalars['ID'];
+  params: JiraSearchParams;
 };
 
 
@@ -216,6 +238,11 @@ export type MutationDeleteItemArgs = {
 
 export type MutationDeleteJiraAccountArgs = {
   account: Scalars['ID'];
+};
+
+
+export type MutationDeleteJiraSearchArgs = {
+  search: Scalars['ID'];
 };
 
 
@@ -445,14 +472,14 @@ export type UserProjectByIdArgs = {
 export type ListJiraAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListJiraAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly jiraAccounts: ReadonlyArray<{ readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string }> }> };
+export type ListJiraAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly jiraAccounts: ReadonlyArray<{ readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string, readonly searches: ReadonlyArray<{ readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
 
 export type CreateJiraAccountMutationVariables = Exact<{
   params: JiraAccountParams;
 }>;
 
 
-export type CreateJiraAccountMutation = { readonly __typename: 'Mutation', readonly createJiraAccount: { readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string } };
+export type CreateJiraAccountMutation = { readonly __typename: 'Mutation', readonly createJiraAccount: { readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string, readonly searches: ReadonlyArray<{ readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> } };
 
 export type DeleteJiraAccountMutationVariables = Exact<{
   account: Scalars['ID'];
@@ -460,6 +487,21 @@ export type DeleteJiraAccountMutationVariables = Exact<{
 
 
 export type DeleteJiraAccountMutation = { readonly __typename: 'Mutation', readonly deleteJiraAccount: Maybe<boolean> };
+
+export type CreateJiraSearchMutationVariables = Exact<{
+  account: Scalars['ID'];
+  params: JiraSearchParams;
+}>;
+
+
+export type CreateJiraSearchMutation = { readonly __typename: 'Mutation', readonly createJiraSearch: { readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string } };
+
+export type DeleteJiraSearchMutationVariables = Exact<{
+  id: Scalars['ID'];
+}>;
+
+
+export type DeleteJiraSearchMutation = { readonly __typename: 'Mutation', readonly deleteJiraSearch: Maybe<boolean> };
 
 
 export const ListJiraAccountsDocument = gql`
@@ -473,6 +515,12 @@ export const ListJiraAccountsDocument = gql`
       url
       email
       apiToken
+      searches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
@@ -516,6 +564,12 @@ export const CreateJiraAccountDocument = gql`
     url
     email
     apiToken
+    searches {
+      id
+      name
+      query
+      url
+    }
   }
 }
     `;
@@ -576,3 +630,71 @@ export function useDeleteJiraAccountMutation(baseOptions?: Apollo.MutationHookOp
 export type DeleteJiraAccountMutationHookResult = ReturnType<typeof useDeleteJiraAccountMutation>;
 export type DeleteJiraAccountMutationResult = Apollo.MutationResult<DeleteJiraAccountMutation>;
 export type DeleteJiraAccountMutationOptions = Apollo.BaseMutationOptions<DeleteJiraAccountMutation, DeleteJiraAccountMutationVariables>;
+export const CreateJiraSearchDocument = gql`
+    mutation CreateJiraSearch($account: ID!, $params: JiraSearchParams!) {
+  createJiraSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
+}
+    `;
+export type CreateJiraSearchMutationFn = Apollo.MutationFunction<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>;
+
+/**
+ * __useCreateJiraSearchMutation__
+ *
+ * To run a mutation, you first call `useCreateJiraSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateJiraSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createJiraSearchMutation, { data, loading, error }] = useCreateJiraSearchMutation({
+ *   variables: {
+ *      account: // value for 'account'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateJiraSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>(CreateJiraSearchDocument, options);
+      }
+export type CreateJiraSearchMutationHookResult = ReturnType<typeof useCreateJiraSearchMutation>;
+export type CreateJiraSearchMutationResult = Apollo.MutationResult<CreateJiraSearchMutation>;
+export type CreateJiraSearchMutationOptions = Apollo.BaseMutationOptions<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>;
+export const DeleteJiraSearchDocument = gql`
+    mutation DeleteJiraSearch($id: ID!) {
+  deleteJiraSearch(search: $id)
+}
+    `;
+export type DeleteJiraSearchMutationFn = Apollo.MutationFunction<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>;
+
+/**
+ * __useDeleteJiraSearchMutation__
+ *
+ * To run a mutation, you first call `useDeleteJiraSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteJiraSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteJiraSearchMutation, { data, loading, error }] = useDeleteJiraSearchMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteJiraSearchMutation(baseOptions?: Apollo.MutationHookOptions<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>(DeleteJiraSearchDocument, options);
+      }
+export type DeleteJiraSearchMutationHookResult = ReturnType<typeof useDeleteJiraSearchMutation>;
+export type DeleteJiraSearchMutationResult = Apollo.MutationResult<DeleteJiraSearchMutation>;
+export type DeleteJiraSearchMutationOptions = Apollo.BaseMutationOptions<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>;

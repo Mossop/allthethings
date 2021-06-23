@@ -8,6 +8,12 @@ query ListJiraAccounts {
       url
       email
       apiToken
+      searches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
@@ -20,6 +26,12 @@ mutation CreateJiraAccount($params: JiraAccountParams!) {
     url
     email
     apiToken
+    searches {
+      id
+      name
+      query
+      url
+    }
   }
 }
 
@@ -27,3 +39,15 @@ mutation DeleteJiraAccount($account: ID!) {
   deleteJiraAccount(account: $account)
 }
 
+mutation CreateJiraSearch($account: ID!, $params: JiraSearchParams!) {
+  createJiraSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
+}
+
+mutation DeleteJiraSearch($id: ID!) {
+  deleteJiraSearch(search: $id)
+}
