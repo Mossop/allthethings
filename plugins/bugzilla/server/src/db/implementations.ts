@@ -8,8 +8,8 @@ import {
   BaseList,
   ItemsTable,
   OwnedItemsTable,
+  classBuilder,
 } from "@allthethings/server";
-import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver, GraphQLType } from "@allthethings/utils";
 import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";

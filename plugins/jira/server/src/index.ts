@@ -16,11 +16,13 @@ import {
 } from "@allthethings/server";
 import koaStatic from "koa-static";
 
-import { Account } from "./db/implementation";
+import { Account, Issue } from "./db/implementation";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
 const UPDATE_DELAY = 60000;
+
+export * from "./types";
 
 export class JiraPlugin extends BasePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
@@ -31,6 +33,7 @@ export class JiraPlugin extends BasePlugin implements ServerPlugin {
   ];
 
   protected readonly itemProviders = [
+    Issue,
   ];
 
   public constructor(

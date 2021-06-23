@@ -1,17 +1,25 @@
-import type { PluginContext } from "@allthethings/server";
+import { TaskController } from "@allthethings/schema";
+import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
+  BaseItem,
+  classBuilder,
   BaseAccount,
   ItemsTable,
+  OwnedItemsTable,
 } from "@allthethings/server";
-import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver } from "@allthethings/utils";
+import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
+import { DateTime } from "luxon";
 
 import type {
   JiraAccount,
   JiraAccountParams,
 } from "../schema";
-import type { JiraAccountRecord } from "./types";
+import type { IssueFields } from "../types";
+import type { JiraAccountRecord, JiraIssueRecord } from "./types";
+
+type JiraIssue = Version3Models.IssueBean;
 
 export class Account extends BaseAccount implements GraphQLResolver<JiraAccount> {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
@@ -29,6 +37,10 @@ export class Account extends BaseAccount implements GraphQLResolver<JiraAccount>
 
   public get id(): string {
     return this.record.id;
+  }
+
+  public get userId(): string {
+    return this.record.userId;
   }
 
   public get serverName(): string {
@@ -114,5 +126,145 @@ export class Account extends BaseAccount implements GraphQLResolver<JiraAccount>
     };
 
     return Account.store.insert(context, record);
+  }
+}
+
+function recordFromIssue(issue: JiraIssue): Omit<JiraIssueRecord, "id" | "ownerId"> {
+  if (!issue.key) {
+    throw new Error("Invalid issue: no key.");
+  }
+
+  return {
+    issueKey: issue.key,
+    icon: issue.fields.issuetype?.iconUrl ?? null,
+    summary: issue.fields.summary,
+    status: issue.fields.status.name ?? "Unknown",
+  };
+}
+
+export class Issue extends BaseItem {
+  public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Issue), "Issue");
+
+  public constructor(
+    private readonly account: Account,
+    private record: JiraIssueRecord,
+  ) {
+    super(account.context);
+  }
+
+  public async onRecordUpdate(record: JiraIssueRecord): Promise<void> {
+    this.record = record;
+  }
+
+  public get owner(): Account {
+    return this.account;
+  }
+
+  public static async createItemFromURL(
+    context: AuthedPluginContext,
+    url: URL,
+    isTask: boolean,
+  ): Promise<Issue | null> {
+    for (let account of await Account.store.list(context, { userId: context.userId })) {
+      let base = new URL("/browse/", account.url);
+      if (base.origin != url.origin) {
+        continue;
+      }
+
+      if (!url.pathname.startsWith(base.pathname)) {
+        continue;
+      }
+
+      let issueIdOrKey = url.pathname.substring(base.pathname.length);
+      try {
+        let issue = await account.apiClient.issues.getIssue({
+          issueIdOrKey,
+        });
+
+        let controller = isTask ? TaskController.Plugin : null;
+        if (controller && issue.fields.resolutiondate) {
+          controller = TaskController.Manual;
+        }
+
+        return Issue.create(account, issue, controller);
+      } catch (e) {
+        // Probably an unknown issue.
+      }
+    }
+
+    return null;
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
+  public get issueKey(): string {
+    return this.record.issueKey;
+  }
+
+  public get url(): string {
+    let baseUrl = new URL(this.account.url);
+
+    return new URL(`browse/${this.issueKey}`, baseUrl).toString();
+  }
+
+  public get icon(): string | null {
+    return this.record.icon;
+  }
+
+  public async update(issue?: JiraIssue): Promise<void> {
+    if (!issue) {
+      issue = await this.account.apiClient.issues.getIssue({
+        issueIdOrKey: this.issueKey,
+      });
+
+      if (!issue) {
+        throw new Error("Unknown issue.");
+      }
+    }
+
+    await Issue.store.update(this.context, {
+      ...recordFromIssue(issue),
+      id: this.id,
+      ownerId: this.account.id,
+    });
+
+    let done = issue.fields.resolutiondate ? DateTime.fromISO(issue.fields.resolutiondate) : null;
+    await this.context.setItemTaskDone(this.id, done);
+    await this.context.setItemSummary(this.id, issue.fields.summary);
+  }
+
+  public async fields(): Promise<IssueFields> {
+    return {
+      accountId: this.account.id,
+      issueKey: this.record.issueKey,
+      summary: this.record.summary,
+      url: this.url,
+      icon: this.record.icon,
+      status: this.record.status,
+    };
+  }
+
+  public static async create(
+    account: Account,
+    issue: JiraIssue,
+    controller: TaskController | null,
+  ): Promise<Issue> {
+    let id = await account.context.createItem(account.userId, {
+      summary: issue.fields.summary,
+      archived: null,
+      snoozed: null,
+      done: issue.fields.resolutiondate ? DateTime.fromISO(issue.fields.resolutiondate) : null,
+      controller,
+    });
+
+    let record = {
+      ...recordFromIssue(issue),
+      id,
+      ownerId: account.id,
+    };
+
+    return Issue.store.insert(account.context, record);
   }
 }

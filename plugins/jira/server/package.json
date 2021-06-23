@@ -17,7 +17,8 @@
   "dependencies": {
     "@allthethings/server": "^1.0.0",
     "jira.js": "^2.4.0",
-    "koa-static": "^5.0.0"
+    "koa-static": "^5.0.0",
+    "luxon": "^1.27.0"
   },
   "devDependencies": {
     "@types/koa-static": "^4.0.1",

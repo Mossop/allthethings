@@ -1,6 +1,7 @@
 export {
   ItemsTable,
   OwnedItemsTable,
+  classBuilder,
 } from "./plugins/tables";
 export {
   BaseAccount,

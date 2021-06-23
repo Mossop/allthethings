@@ -7,12 +7,12 @@ import {
   BaseList,
   ItemsTable,
   OwnedItemsTable,
+  classBuilder,
 } from "@allthethings/server";
 import type {
   AuthedPluginContext,
   PluginContext,
 } from "@allthethings/server";
-import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver } from "@allthethings/utils";
 import type { gmail_v1, Auth } from "googleapis";
 import { DateTime } from "luxon";

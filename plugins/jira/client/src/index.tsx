@@ -1,6 +1,8 @@
+import type { IssueFields } from "@allthethings/jira-server";
 import { PluginManager } from "@allthethings/ui";
-import type { ClientPlugin, ReactResult } from "@allthethings/ui";
+import type { ClientPlugin, ReactResult, PluginItemProps } from "@allthethings/ui";
 
+import Issue from "./Issue";
 import { SettingsPage, SettingsPages } from "./Settings";
 
 class JiraPlugin implements ClientPlugin {
@@ -15,8 +17,8 @@ class JiraPlugin implements ClientPlugin {
     return <SettingsPages/>;
   }
 
-  public renderItem(): ReactResult {
-    return null;
+  public renderItem(itemProps: PluginItemProps): ReactResult {
+    return <Issue issue={JSON.parse(itemProps.fields) as IssueFields}/>;
   }
 }
 

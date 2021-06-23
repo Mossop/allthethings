@@ -8,8 +8,8 @@ import {
   BaseList,
   BaseAccount,
   ItemsTable,
+  classBuilder,
 } from "@allthethings/server";
-import { classBuilder } from "@allthethings/server/dist/plugins/tables";
 import type { GraphQLResolver } from "@allthethings/utils";
 import type {
   Conduit,
