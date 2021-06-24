@@ -3,13 +3,13 @@ import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
-import type { Dispatch, ReactElement, SetStateAction } from "react";
-import { useState, forwardRef, useCallback, useMemo } from "react";
+import type { Dispatch, SetStateAction } from "react";
+import { useState, forwardRef, useCallback } from "react";
 
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
-import SectionList, { SectionDragMarker, ItemList } from "../components/SectionList";
+import SectionList, { ItemList } from "../components/SectionList";
 import type { Context, Project, User, Section } from "../schema";
 import {
   isProject,
@@ -18,9 +18,6 @@ import {
   useEditProjectMutation,
   useTaskListContents,
 } from "../schema";
-import { indexOf, item } from "../utils/collections";
-import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
-import { useDragItem, useDragResult, DragType, useDropArea, useProjectDrag } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { Filters } from "../utils/filter";
 import type { TaskListState } from "../utils/view";
@@ -32,9 +29,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dragHandle: {
       cursor: "grab",
-    },
-    dragging: {
-      display: "none",
     },
     content: {
       ...Styles.pageStyles(theme),
@@ -149,14 +143,9 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
     });
   }, [editProject, project]);
 
-  let {
-    dragRef,
-    previewRef,
-  } = useProjectDrag(project);
-
   return <div ref={ref} className={clsx(classes.heading)}>
-    <div className={classes.headingDragPreview} ref={previewRef}>
-      <div ref={dragRef} className={classes.icon}>
+    <div className={classes.headingDragPreview}>
+      <div className={classes.icon}>
         <Icons.Project className={classes.dragHandle}/>
       </div>
       <HiddenInput
@@ -181,115 +170,42 @@ export default ReactMemo(function TaskList({
   let contents = useTaskListContents(view.taskList);
   let [filter, setFilter] = useState(() => Filters.Normal);
 
-  let {
-    dropRef: headingDropRef,
-  } = useDropArea([DragType.Section, DragType.Item], {
-    getDragResult: useCallback(
-      (draggedItem: DraggedSection | DraggedItem): SectionDragResult | ItemDragResult | null => {
-        if (draggedItem.type == DragType.Item) {
-          if (draggedItem.item === contents.items[0]) {
-            return null;
-          }
-
-          return {
-            type: DragType.Item,
-            target: view.taskList,
-            before: item(contents.items, 0),
-          };
-        }
-
-        if (draggedItem.item === contents.sections[0]) {
-          return null;
-        }
-
-        return {
-          type: DragType.Section,
-          taskList: view.taskList,
-          before: contents.sections.length ? contents.sections[0] : null,
-        };
-      },
-      [contents, view.taskList],
-    ),
-  });
-
-  let {
-    dropRef: itemsDropRef,
-  } = useDropArea(DragType.Section, {
-    getDragResult: useCallback(
-      (item: DraggedSection): SectionDragResult | null => {
-        if (item.item === contents.sections[0]) {
-          return null;
-        }
-
-        return {
-          type: DragType.Section,
-          taskList: view.taskList,
-          before: contents.sections.length ? contents.sections[0] : null,
-        };
-      },
-      [contents.sections, view.taskList],
-    ),
-  });
-
-  let dragItem = useDragItem(DragType.Section);
-  let dragResult = useDragResult(DragType.Section);
-
   let header: ReactResult;
   if (isUser(view.taskList)) {
     header = <UserHeader
-      ref={headingDropRef}
       user={view.taskList}
       filter={filter}
       setFilter={setFilter}
     />;
   } else if (isProject(view.taskList)) {
     header = <ProjectHeader
-      ref={headingDropRef}
       project={view.taskList}
       filter={filter}
       setFilter={setFilter}
     />;
   } else {
     header = <ContextHeader
-      ref={headingDropRef}
       context={view.taskList}
       filter={filter}
       setFilter={setFilter}
     />;
   }
 
-  let sections = useMemo(() => {
-    let sections = contents.sections.map(
-      (section: Section, index: number): ReactElement => <SectionList
-        key={section.id}
-        section={section}
-        index={index}
-        sections={contents.sections}
-        filter={filter}
-      />,
-    );
-
-    if (dragItem && (!dragResult || dragResult.taskList === view.taskList)) {
-      let before = dragResult ? dragResult.before : dragItem.item;
-      let index = before ? indexOf(contents.sections, before) ?? sections.length : sections.length;
-      sections.splice(index, 0, <SectionDragMarker
-        key="dragging"
-        section={dragItem.item}
-      />);
-    }
-
-    return sections;
-  }, [dragItem, dragResult, contents.sections, view.taskList, filter]);
-
   return <Page>
     <div className={classes.content}>
       {header}
       <List disablePadding={true}>
-        <List disablePadding={true} ref={itemsDropRef}>
-          <ItemList items={contents.items} section={view.taskList} filter={filter}/>
+        <List disablePadding={true}>
+          <ItemList items={contents.items} filter={filter}/>
         </List>
         <List disablePadding={true}>
-          {sections}
+          {
+            contents.sections.map((section: Section) => <SectionList
+              key={section.id}
+              section={section}
+              filter={filter}
+            />)
+          }
         </List>
       </List>
     </div>

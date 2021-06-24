@@ -25,9 +25,7 @@ import {
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import { DateTime } from "luxon";
-import { forwardRef, useCallback, useMemo, useRef, useState } from "react";
-import type { DropTargetMonitor } from "react-dnd";
-import mergeRefs from "react-merge-refs";
+import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import type { Item } from "../schema";
 import {
@@ -41,9 +39,6 @@ import {
   isPluginItem,
   itemTaskList,
 } from "../schema";
-import { item as arrayItem } from "../utils/collections";
-import type { DraggedItem, ItemDragResult } from "../utils/drag";
-import { useDragResult, DragType, useDropArea, useItemDrag } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { isVisible } from "../utils/filter";
 import DueMenu from "./DueMenu";
@@ -73,12 +68,6 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
       ...Styles.flexCenteredRow,
       overflow: "hidden",
-    },
-    hidden: {
-      display: "none",
-    },
-    dragging: {
-      ...Styles.dragging,
     },
     dragHandleContainer: {
       ...Styles.flexCentered,
@@ -196,8 +185,6 @@ const TypeMenuItem = ReactMemo(forwardRef(function TypeMenuItem({
 
 interface ItemProps {
   item: Item;
-  items: Item[];
-  index: number;
   filter: ListFilter;
 }
 
@@ -205,47 +192,8 @@ export type ItemRenderProps = Pick<ItemProps, "item"> & {
   isDragging: boolean;
 };
 
-export const ItemDragMarker = ReactMemo(function ItemDragMarker({
-  item,
-}: Pick<ItemProps, "item">): ReactResult {
-  let classes = useStyles();
-
-  let result = useDragResult(DragType.Item);
-
-  let {
-    dropRef,
-  } = useDropArea(DragType.Item, {
-    getDragResult: useCallback(
-      () => result,
-      [result],
-    ),
-  });
-
-  return <ListItem
-    className={clsx(classes.item, classes.dragging)}
-    disableGutters={true}
-    ref={dropRef}
-  >
-    <div className={classes.dragPreview}>
-      <div className={classes.dragHandleContainer}>
-        <Icons.Drag className={classes.dragHandle}/>
-      </div>
-      <div className={classes.itemInner}>
-        {
-          renderItem({
-            item,
-            isDragging: true,
-          })
-        }
-      </div>
-    </div>
-  </ListItem>;
-});
-
 export default ReactMemo(function ItemDisplay({
   item,
-  items,
-  index,
   filter,
 }: ItemProps): ReactResult {
   let classes = useStyles();
@@ -294,51 +242,6 @@ export default ReactMemo(function ItemDisplay({
     }
   }, [item, archiveItemMutation]);
 
-  let {
-    dragRef,
-    previewRef,
-    isDragging,
-  } = useItemDrag(item);
-
-  let elementRef = useRef<Element>(null);
-
-  let {
-    dropRef,
-  } = useDropArea(DragType.Item, {
-    getDragResult: useCallback(
-      (_: DraggedItem, monitor: DropTargetMonitor): ItemDragResult | null => {
-        if (isInbox(itemTaskList(item)) || !elementRef.current) {
-          return null;
-        }
-
-        let offset = monitor.getClientOffset();
-        if (!offset) {
-          return null;
-        }
-
-        let { top, bottom } = elementRef.current.getBoundingClientRect();
-        let mid = (top + bottom) / 2;
-        let { y } = offset;
-        if (y < mid) {
-          return {
-            type: DragType.Item,
-            target: item.parent,
-            before: item,
-          };
-        }
-
-        return {
-          type: DragType.Item,
-          target: item.parent,
-          before: arrayItem(items, index + 1),
-        };
-      },
-      [index, item, items],
-    ),
-  });
-
-  let itemRef = mergeRefs([dropRef, elementRef]);
-
   let typeMenuItemProps: Omit<TypeMenuItemProps, "controller"> = {
     refetchQueries,
     selectedController: taskController,
@@ -359,13 +262,12 @@ export default ReactMemo(function ItemDisplay({
   }
 
   return <ListItem
-    className={clsx(classes.item, isDragging && classes.hidden, !visible && classes.hiding)}
+    className={clsx(classes.item, !visible && classes.hiding)}
     disableGutters={true}
-    ref={itemRef}
     onTransitionEnd={transitionEnd}
   >
-    <div className={classes.dragPreview} ref={previewRef}>
-      <div className={classes.dragHandleContainer} ref={dragRef}>
+    <div className={classes.dragPreview}>
+      <div className={classes.dragHandleContainer}>
         <Icons.Drag className={classes.dragHandle}/>
       </div>
       <TaskDoneToggle item={item}/>

@@ -10,7 +10,6 @@ import {
 import type { Theme } from "@material-ui/core";
 
 import Main from "./ui/Main";
-import { DragTracker } from "./utils/drag";
 import { ViewListener } from "./utils/view";
 
 const base = createMuiTheme();
@@ -127,9 +126,7 @@ export default function App({
         <CssBaseline/>
         <UIProvider>
           <ViewListener>
-            <DragTracker>
-              <Main/>
-            </DragTracker>
+            <Main/>
           </ViewListener>
         </UIProvider>
       </ApolloProvider>

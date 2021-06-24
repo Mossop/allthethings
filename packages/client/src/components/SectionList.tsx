@@ -1,20 +1,15 @@
 import type { ReactResult } from "@allthethings/ui";
-import { ReactMemo, HiddenInput, Icons, Styles, TextStyles, SubHeading } from "@allthethings/ui";
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "@allthethings/ui";
 import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement } from "react";
-import { useMemo, useCallback, useRef } from "react";
-import type { DropTargetMonitor } from "react-dnd";
-import mergeRefs from "react-merge-refs";
+import { useCallback } from "react";
 
 import { useEditSectionMutation } from "../schema";
-import type { Inbox, TaskList, Item, Section } from "../schema";
-import { indexOf, item } from "../utils/collections";
-import type { DraggedItem, DraggedSection, ItemDragResult, SectionDragResult } from "../utils/drag";
-import { useDragItem, DragType, useDragResult, useDropArea, useSectionDrag } from "../utils/drag";
+import type { Item, Section } from "../schema";
 import type { ListFilter } from "../utils/filter";
-import ItemDisplay, { ItemDragMarker } from "./Item";
+import ItemDisplay from "./Item";
 import ItemListActions from "./ItemListActions";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -24,12 +19,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dragHandle: {
       cursor: "grab",
-    },
-    dragging: {
-      ...Styles.dragging,
-    },
-    hidden: {
-      display: "none",
     },
     section: {
       paddingLeft: theme.spacing(2),
@@ -53,93 +42,35 @@ const useStyles = makeStyles((theme: Theme) =>
   }));
 
 export interface ItemListProps {
-  section: Section | TaskList | Inbox;
   filter: ListFilter;
   items: Item[];
 }
 
 export const ItemList = ReactMemo(function ItemList({
   items,
-  section,
   filter,
 }: ItemListProps): ReactResult {
-  let dragItem = useDragItem(DragType.Item);
-  let dragResult = useDragResult(DragType.Item);
-
-  let displayItems = useMemo(() => {
-    let displayItems = items
-      .map(
-        (item: Item, index: number): ReactElement => <ItemDisplay
-          key={item.id}
-          item={item}
-          items={items}
-          index={index}
-          filter={filter}
-        />,
-      );
-
-    if (dragItem && (dragResult?.target ?? dragItem.item.parent) == section) {
-      let before = dragResult ? dragResult.before : dragItem.item;
-      let index = before ? indexOf(items, before) ?? items.length : items.length;
-      displayItems.splice(index, 0, <ItemDragMarker
-        key="dragging"
-        item={dragItem.item}
-      />);
+  return <>
+    {
+      items
+        .map(
+          (item: Item): ReactElement => <ItemDisplay
+            key={item.id}
+            item={item}
+            filter={filter}
+          />,
+        )
     }
-
-    return displayItems;
-  }, [dragItem, dragResult, items, filter, section]);
-
-  // @ts-ignore
-  return displayItems;
+  </>;
 });
 
 interface SectionListProps {
   section: Section;
-  index: number;
-  sections: Section[];
   filter: ListFilter;
-}
-
-export function SectionDragMarker({
-  section,
-}: Pick<SectionListProps, "section">): ReactResult {
-  let classes = useStyles();
-
-  let result = useDragResult(DragType.Section);
-
-  let {
-    dropRef,
-  } = useDropArea([DragType.Section], {
-    getDragResult: useCallback(
-      () => result,
-      [result],
-    ),
-  });
-
-  return <List
-    disablePadding={true}
-    className={clsx(classes.section, classes.dragging)}
-    ref={dropRef}
-  >
-    <ListSubheader
-      disableGutters={true}
-      className={clsx(classes.sectionHeading)}
-    >
-      <div className={classes.sectionDragPreview}>
-        <div className={classes.icon}>
-          <Icons.Section className={classes.dragHandle}/>
-        </div>
-        <SubHeading className={classes.sectionDragHeading}>{section.name}</SubHeading>
-      </div>
-    </ListSubheader>
-  </List>;
 }
 
 export default ReactMemo(function SectionList({
   section,
-  index,
-  sections,
   filter,
 }: SectionListProps): ReactResult {
   let classes = useStyles();
@@ -157,82 +88,16 @@ export default ReactMemo(function SectionList({
     });
   }, [section, editSection]);
 
-  let elementRef = useRef<Element>(null);
-
-  let {
-    dropRef: headingDropRef,
-  } = useDropArea(DragType.Item, {
-    getDragResult: useCallback(
-      (draggedItem: DraggedItem): ItemDragResult | null => {
-        if (draggedItem.item === section.items[0]) {
-          return null;
-        }
-
-        return {
-          type: DragType.Item,
-          target: section,
-          before: item(section.items, 0),
-        };
-      },
-      [section],
-    ),
-  });
-
-  let {
-    dropRef: listDropRef,
-  } = useDropArea(DragType.Section, {
-    getDragResult: useCallback(
-      (_: DraggedSection, monitor: DropTargetMonitor): SectionDragResult | null => {
-        if (!elementRef.current) {
-          return null;
-        }
-
-        let offset = monitor.getClientOffset();
-        if (!offset) {
-          return null;
-        }
-
-        let { top, bottom } = elementRef.current.getBoundingClientRect();
-        let mid = (top + bottom) / 2;
-        let { y } = offset;
-        if (y < mid) {
-          return {
-            type: DragType.Section,
-            taskList: section.taskList,
-            before: section,
-          };
-        }
-
-        return {
-          type: DragType.Section,
-          taskList: section.taskList,
-          before: item(sections, index + 1),
-        };
-      },
-      [section, sections, index],
-    ),
-  });
-
-  let {
-    dragRef,
-    previewRef,
-    isDragging,
-  } = useSectionDrag(section);
-
-  let sectionRef = mergeRefs([listDropRef, elementRef]);
-
   return <List
     disablePadding={true}
-    className={clsx(classes.section, isDragging && classes.hidden)}
-    ref={sectionRef}
+    className={classes.section}
   >
     <ListSubheader
       disableGutters={true}
       className={clsx(classes.sectionHeading)}
-      ref={headingDropRef}
     >
-      <div className={classes.sectionDragPreview} ref={previewRef}>
-        <div className={classes.icon} ref={dragRef}>
+      <div className={classes.sectionDragPreview}>
+        <div className={classes.icon}>
           <Icons.Section className={classes.dragHandle}/>
         </div>
         <HiddenInput
@@ -244,6 +109,6 @@ export default ReactMemo(function SectionList({
       <ItemListActions list={section}/>
     </ListSubheader>
     {section.items.length > 0 && <Divider/>}
-    <ItemList items={section.items} section={section} filter={filter}/>
+    <ItemList items={section.items} filter={filter}/>
   </List>;
 });

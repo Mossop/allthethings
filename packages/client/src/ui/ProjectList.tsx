@@ -1,4 +1,4 @@
-import { Icons, Styles, SelectableListItem, useBoolState, ReactMemo } from "@allthethings/ui";
+import { Icons, SelectableListItem, useBoolState, ReactMemo } from "@allthethings/ui";
 import type { ReactResult, ReactRef } from "@allthethings/ui";
 import {
   Divider,
@@ -9,23 +9,12 @@ import {
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
-import alpha from "color-alpha";
 import type { ReactElement } from "react";
-import { useMemo, forwardRef, useCallback } from "react";
-import mergeRefs from "react-merge-refs";
+import { useMemo, forwardRef } from "react";
 
 import { useInboxContents } from "../schema";
 import type { Project, TaskList, Item } from "../schema";
 import { nameSorted } from "../utils/collections";
-import type {
-  DraggedItem,
-  DraggedProject,
-  DraggedSection,
-  ItemDragResult,
-  ProjectDragResult,
-  SectionDragResult,
-} from "../utils/drag";
-import { useDragItem, useProjectDrag, useDropArea, DragType } from "../utils/drag";
 import { Filters, isVisible } from "../utils/filter";
 import {
   useCurrentContext,
@@ -70,12 +59,6 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(3 + depth * 2),
       paddingRight: theme.spacing(3),
     }),
-    dragging: {
-      ...Styles.dragging,
-    },
-    dropping: {
-      backgroundColor: alpha(theme.palette.text.secondary, 0.2),
-    },
     selectedItem: {
       backgroundColor: theme.palette.text.secondary,
       color: theme.palette.getContrastText(theme.palette.text.secondary),
@@ -111,11 +94,10 @@ const TreeItem = ReactMemo(forwardRef(function TreeItem({
   taskCount,
 }: TreeItemProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles({ depth });
-  let displaySelected = !useDragItem() && selected;
 
   let className = clsx(
     classes.item,
-    displaySelected ? classes.selectedItem : classes.selectableItem,
+    selected ? classes.selectedItem : classes.selectableItem,
     providedClass,
   );
 
@@ -153,79 +135,16 @@ const ProjectItem = ReactMemo(function ProjectItem({
     taskList: project,
   });
 
-  let {
-    isDragging,
-    dragRef,
-  } = useProjectDrag(project);
-
-  let {
-    canDrop,
-    isShallowOver,
-    dropRef,
-  } = useDropArea([DragType.Project, DragType.Section, DragType.Item], {
-    getDragResult: useCallback(
-      (
-        item: DraggedProject | DraggedSection | DraggedItem,
-      ): ProjectDragResult | SectionDragResult | ItemDragResult | null => {
-        if (item.type == DragType.Item) {
-          if (item.item.parent === project) {
-            return null;
-          }
-
-          return {
-            type: DragType.Item,
-            target: project,
-            before: null,
-          };
-        }
-
-        if (item.type == DragType.Section) {
-          if (item.item.taskList == project) {
-            return null;
-          }
-
-          return {
-            type: DragType.Section,
-            taskList: project,
-            before: null,
-          };
-        }
-
-        if (item.item == project || item.item.parent == project) {
-          return null;
-        }
-
-        let parent = project.parent;
-        while (parent) {
-          if (parent == item.item) {
-            return null;
-          }
-          parent = parent.parent;
-        }
-
-        return {
-          type: DragType.Project,
-          taskList: project,
-        };
-      },
-      [project],
-    ),
-  });
-
-  let ref = mergeRefs([dragRef, dropRef]);
-
   let classes = useStyles({ depth });
 
   return <>
     <TreeItem
-      ref={ref}
       url={url}
       label={project.name}
       selected={selected}
       depth={depth}
       taskCount={project.remainingTasks}
       icon={<Icons.Project className={classes.grabHandle}/>}
-      className={clsx(isDragging && classes.dragging, isShallowOver && canDrop && classes.dropping)}
     />
     {
       project.subprojects.length > 0 && <List className={classes.innerList}>
@@ -264,53 +183,6 @@ export default ReactMemo(function ProjectList(): ReactResult {
     taskList: root,
   });
 
-  let {
-    canDrop: canDropOnRoot,
-    isShallowOver: isShallowOverRoot,
-    isOver,
-    dropRef,
-  } = useDropArea([DragType.Project, DragType.Section, DragType.Item], {
-    getDragResult: useCallback(
-      (
-        item: DraggedProject | DraggedSection | DraggedItem,
-      ): ProjectDragResult | SectionDragResult | ItemDragResult | null => {
-        if (item.type == DragType.Item) {
-          if (item.item.parent === root) {
-            return null;
-          }
-
-          return {
-            type: DragType.Item,
-            target: root,
-            before: null,
-          };
-        }
-
-        if (item.type == DragType.Section) {
-          if (item.item.taskList === root) {
-            return null;
-          }
-
-          return {
-            type: DragType.Section,
-            taskList: root,
-            before: null,
-          };
-        }
-
-        if (item.item.parent == null) {
-          return null;
-        }
-
-        return {
-          type: DragType.Project,
-          taskList: root,
-        };
-      },
-      [root],
-    ),
-  });
-
   let inboxContents = useInboxContents();
   let inboxLabel = useMemo(() => {
     let items = inboxContents.items.filter(
@@ -320,32 +192,10 @@ export default ReactMemo(function ProjectList(): ReactResult {
     return items.length ? `Inbox (${items.length})` : "Inbox";
   }, [inboxContents]);
 
-  let {
-    canDrop: canDropOnInbox,
-    isShallowOver: isShallowOverInbox,
-    dropRef: inboxDropRef,
-  } = useDropArea(DragType.Item, {
-    getDragResult: useCallback(
-      (item: DraggedItem): ItemDragResult | null => {
-        if (item.item.parent == view.user.inbox) {
-          return null;
-        }
-
-        return {
-          type: DragType.Item,
-          target: view.user.inbox,
-          before: null,
-        };
-      },
-      [view.user.inbox],
-    ),
-  });
-
   return <Paper
     elevation={2}
     component="nav"
     square={true}
-    ref={dropRef}
     className={classes.nav}
   >
     <List component="div" className={classes.list}>
@@ -353,15 +203,12 @@ export default ReactMemo(function ProjectList(): ReactResult {
         url={inboxUrl}
         icon={<Icons.Inbox/>}
         selected={view.type == ViewType.Inbox}
-        className={clsx(canDropOnInbox && isShallowOverInbox && classes.dropping)}
         label={inboxLabel}
         depth={0}
-        ref={inboxDropRef}
       />
       <TreeItem
         url={tasksUrl}
         icon={<Icons.Project/>}
-        className={clsx(canDropOnRoot && isShallowOverRoot && classes.dropping)}
         selected={view.type == ViewType.TaskList && taskList?.id == root.id}
         taskCount={root.remainingTasks}
         label={context?.name ?? "Tasks"}
@@ -372,7 +219,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
         nameSorted(root.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
-          taskList={isOver ? null : taskList}
+          taskList={taskList}
           depth={0}
         />)
       }

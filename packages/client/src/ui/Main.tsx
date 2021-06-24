@@ -2,10 +2,9 @@ import { Loading, Styles } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
-import { useCallback, Suspense } from "react";
+import { Suspense } from "react";
 
 import Page from "../components/Page";
-import { useDropArea, AllDragTypes } from "../utils/drag";
 import { useView, ViewType } from "../utils/view";
 import Inbox from "./Inbox";
 import MarkdownPage from "./MarkdownPage";
@@ -55,13 +54,7 @@ function MainContent(): ReactResult {
 export default function Main(): ReactResult {
   let classes = useStyles();
 
-  let {
-    dropRef,
-  } = useDropArea(AllDragTypes, {
-    getDragResult: useCallback(() => null, []),
-  });
-
-  return <div className={clsx(classes.outer)} ref={dropRef}>
+  return <div className={clsx(classes.outer)}>
     <Suspense fallback={<Loading className={classes.loading}/>}>
       <MainContent/>
     </Suspense>
