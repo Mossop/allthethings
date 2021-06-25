@@ -4,8 +4,28 @@ import { ReactMemo } from "@allthethings/ui";
 import type { Ref } from "react";
 import { useState, useMemo, useEffect, useRef, createContext, useContext } from "react";
 
-import type { GraphQLType, Project, Inbox, Item, Section, TaskList } from "../schema";
-import { isTaskList, isInbox, isProject, isSection, isItem } from "../schema";
+import type {
+  GraphQLType,
+  Project,
+  Item,
+  Section,
+  TaskList,
+  MoveProjectMutationVariables,
+  MoveProjectMutation,
+  MoveItemMutation,
+  MoveItemMutationVariables,
+} from "../schema";
+import {
+  refetchQueriesForItem,
+  MoveItemDocument,
+  refetchListContextStateQuery,
+  MoveProjectDocument,
+  isTaskList,
+  isProject,
+  isSection,
+  isItem,
+  client as ApolloClient,
+} from "../schema";
 import { SharedState, useAsyncSharedState } from "./sharedstate";
 
 interface BaseDrag {
@@ -25,7 +45,7 @@ type SectionDrag = BaseDrag & {
 
 type ItemDrag = BaseDrag & {
   dragSource: Item;
-  dropTarget: Section | TaskList | Inbox | null;
+  dropTarget: Section | TaskList | null;
 };
 
 type Drag = ProjectDrag | SectionDrag | ItemDrag;
@@ -78,23 +98,34 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
   }
 
   public async completeDrag(): Promise<void> {
+    await ApolloClient.mutate<MoveItemMutation, MoveItemMutationVariables>({
+      mutation: MoveItemDocument,
+      variables: {
+        id: this.dragSource.id,
+        parent: this.state.dropTarget?.id ?? null,
+        before: null,
+      },
+      awaitRefetchQueries: true,
+      refetchQueries: refetchQueriesForItem(this.dragSource),
+    });
+
     return;
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
-    if (isTaskList(dropTarget) || isSection(dropTarget) || isInbox(dropTarget)) {
-      this.state = {
-        ...this.state,
-        dropElement,
-        dropTarget: dropTarget,
-      };
-    } else {
-      this.state = {
-        ...this.state,
-        dropElement: null,
-        dropTarget: null,
-      };
+    if (!isTaskList(dropTarget) && !isSection(dropTarget)) {
+      return this.targetLeave();
     }
+
+    if (this.dragSource.parent === dropTarget) {
+      return this.targetLeave();
+    }
+
+    this.state = {
+      ...this.state,
+      dropElement,
+      dropTarget: dropTarget,
+    };
   }
 
   public targetLeave(): void {
@@ -124,23 +155,47 @@ class ProjectDragOperation extends BaseDragOperation<ProjectDrag> {
   }
 
   public async completeDrag(): Promise<void> {
-    return;
+    await ApolloClient.mutate<MoveProjectMutation, MoveProjectMutationVariables>({
+      mutation: MoveProjectDocument,
+      variables: {
+        id: this.dragSource.id,
+        taskList: this.state.dropTarget?.id ?? null,
+      },
+      awaitRefetchQueries: true,
+      refetchQueries: [
+        refetchListContextStateQuery(),
+      ],
+    });
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
-    if (isTaskList(dropTarget)) {
-      this.state = {
-        ...this.state,
-        dropElement,
-        dropTarget: dropTarget,
-      };
-    } else {
-      this.state = {
-        ...this.state,
-        dropElement: null,
-        dropTarget: null,
-      };
+    if (!isTaskList(dropTarget)) {
+      return this.targetLeave();
     }
+
+    if (this.dragSource.parent === dropTarget) {
+      return this.targetLeave();
+    }
+
+    if (!this.dragSource.parent && !isProject(dropTarget)) {
+      return this.targetLeave();
+    }
+
+    if (isProject(dropTarget)) {
+      let project: Project | null = dropTarget;
+      while (project) {
+        if (project === this.dragSource) {
+          return this.targetLeave();
+        }
+        project = project.parent;
+      }
+    }
+
+    this.state = {
+      ...this.state,
+      dropElement,
+      dropTarget: dropTarget,
+    };
   }
 
   public targetLeave(): void {
@@ -174,19 +229,19 @@ class SectionDragOperation extends BaseDragOperation<SectionDrag> {
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
-    if (isTaskList(dropTarget)) {
-      this.state = {
-        ...this.state,
-        dropElement,
-        dropTarget: dropTarget,
-      };
-    } else {
-      this.state = {
-        ...this.state,
-        dropElement: null,
-        dropTarget: null,
-      };
+    if (!isTaskList(dropTarget)) {
+      return this.targetLeave();
     }
+
+    if (dropTarget === this.dragSource.taskList) {
+      return this.targetLeave();
+    }
+
+    this.state = {
+      ...this.state,
+      dropElement,
+      dropTarget: dropTarget,
+    };
   }
 
   public targetLeave(): void {
@@ -287,11 +342,9 @@ class DragManager {
     }
 
     if (!event.currentTarget || !(event.currentTarget instanceof HTMLElement)) {
-      console.log("Not an element");
       return;
     }
 
-    console.log("Checking drag target", drag.dragSource.__typename, dropTarget.__typename);
     this.operation.targetEnter(dropTarget, event.currentTarget);
 
     if (this.state.value?.dropTarget) {
