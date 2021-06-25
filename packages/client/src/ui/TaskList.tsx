@@ -18,6 +18,7 @@ import {
   useEditProjectMutation,
   useTaskListContents,
 } from "../schema";
+import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { Filters } from "../utils/filter";
 import type { TaskListState } from "../utils/view";
@@ -53,6 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
       ...TextStyles.heading,
       whiteSpace: "nowrap",
     },
+    dragging: Styles.dragging,
   }));
 
 interface UserHeaderProps {
@@ -143,9 +145,18 @@ const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
     });
   }, [editProject, project]);
 
+  let {
+    isDragging,
+    dragRef,
+    previewRef,
+  } = useDragSource(project);
+
   return <div ref={ref} className={clsx(classes.heading)}>
-    <div className={classes.headingDragPreview}>
-      <div className={classes.icon}>
+    <div
+      className={clsx(classes.headingDragPreview, isDragging && classes.dragging)}
+      ref={previewRef}
+    >
+      <div className={classes.icon} ref={dragRef}>
         <Icons.Project className={classes.dragHandle}/>
       </div>
       <HiddenInput

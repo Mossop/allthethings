@@ -2,6 +2,7 @@
 import type { Overwrite } from "@allthethings/utils";
 import { useMemo } from "react";
 
+import type { GraphQLType } from ".";
 import type { ListContextStateQuery } from "./queries";
 import { useListContextStateQuery } from "./queries";
 
@@ -44,11 +45,6 @@ export type Inbox = Overwrite<Omit<StateQuery$User$Inbox, "items">, {
 
 export type TaskList = User | Project | Context;
 export type ProjectRoot = User | Context;
-
-interface GraphQLType {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __typename: string;
-}
 
 export function isInbox(val: GraphQLType): val is Inbox {
   return val.__typename == "Inbox";

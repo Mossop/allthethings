@@ -8,6 +8,7 @@ import { useCallback } from "react";
 
 import { useEditSectionMutation } from "../schema";
 import type { Item, Section } from "../schema";
+import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import ItemDisplay from "./Item";
 import ItemListActions from "./ItemListActions";
@@ -39,6 +40,7 @@ const useStyles = makeStyles((theme: Theme) =>
     sectionDragHeading: {
       padding: theme.spacing(1) + 2,
     },
+    dragging: Styles.dragging,
   }));
 
 export interface ItemListProps {
@@ -88,16 +90,22 @@ export default ReactMemo(function SectionList({
     });
   }, [section, editSection]);
 
+  let {
+    isDragging,
+    dragRef,
+    previewRef,
+  } = useDragSource(section);
+
   return <List
     disablePadding={true}
     className={classes.section}
   >
     <ListSubheader
       disableGutters={true}
-      className={clsx(classes.sectionHeading)}
+      className={clsx(classes.sectionHeading, isDragging && classes.dragging)}
     >
-      <div className={classes.sectionDragPreview}>
-        <div className={classes.icon}>
+      <div className={classes.sectionDragPreview} ref={previewRef}>
+        <div className={classes.icon} ref={dragRef}>
           <Icons.Section className={classes.dragHandle}/>
         </div>
         <HiddenInput

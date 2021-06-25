@@ -2,6 +2,7 @@ import { ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
 import type { ForwardedRef, ReactNode } from "react";
 import { forwardRef } from "react";
 
+import { ReactMemo } from "./types";
 import type { ReactResult } from "./types";
 import { pushClickedLink } from "./url";
 
@@ -15,7 +16,7 @@ export interface SelectableListItemProps {
   href?: string;
 }
 
-export const SelectableListItem = forwardRef(function SelectableListItem(
+export const SelectableListItem = ReactMemo(forwardRef(function SelectableListItem(
   {
     selected,
     className,
@@ -63,4 +64,4 @@ export const SelectableListItem = forwardRef(function SelectableListItem(
       <ListItemText>{children}</ListItemText>
     </ListItem>;
   }
-});
+}));

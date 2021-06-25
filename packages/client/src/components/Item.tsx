@@ -39,6 +39,7 @@ import {
   isPluginItem,
   itemTaskList,
 } from "../schema";
+import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { isVisible } from "../utils/filter";
 import DueMenu from "./DueMenu";
@@ -87,6 +88,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     hiding: {
       opacity: 0,
+    },
+    dragging: {
+      display: "none",
     },
   }));
 
@@ -257,17 +261,23 @@ export default ReactMemo(function ItemDisplay({
 
   let transitionEnd = useCallback(() => setCurrentlyVisible(visible), [visible]);
 
+  let {
+    isDragging,
+    dragRef,
+    previewRef,
+  } = useDragSource(item);
+
   if (!visible && !currentlyVisible) {
     return null;
   }
 
   return <ListItem
-    className={clsx(classes.item, !visible && classes.hiding)}
+    className={clsx(classes.item, !visible && classes.hiding, isDragging && classes.dragging)}
     disableGutters={true}
     onTransitionEnd={transitionEnd}
   >
-    <div className={classes.dragPreview}>
-      <div className={classes.dragHandleContainer}>
+    <div className={classes.dragPreview} ref={previewRef}>
+      <div ref={dragRef} className={classes.dragHandleContainer}>
         <Icons.Drag className={classes.dragHandle}/>
       </div>
       <TaskDoneToggle item={item}/>

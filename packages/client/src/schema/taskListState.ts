@@ -1,6 +1,7 @@
 import type { TaskController } from "@allthethings/schema";
 import type { Overwrite, ArrayContents } from "@allthethings/utils";
 
+import type { GraphQLType } from ".";
 import type { Inbox, TaskList } from "./contextState";
 import type { ClientItemFieldsFragment } from "./fragments";
 import type { ListTaskListQuery } from "./queries";
@@ -65,11 +66,6 @@ export type Item = TaskItem | LinkItem | NoteItem | FileItem | PluginItem;
 export type WithTask<T extends Item> = Overwrite<T, {
   taskInfo: TaskInfo;
 }>;
-
-interface GraphQLType {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __typename: string;
-}
 
 export function isSection(val: GraphQLType): val is Section {
   return val.__typename == "Section";
