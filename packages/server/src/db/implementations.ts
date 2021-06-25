@@ -332,7 +332,10 @@ export class Item extends BaseImpl<Db.ItemDbTable>
     return super.delete();
   }
 
-  public async move(parent: TaskList | Section, before: string | null): Promise<void> {
+  public async move(
+    parent: TaskList | Section | SpecialSection,
+    before: string | null,
+  ): Promise<void> {
     await this.dbObjectDataSource.move(this._id, parent.id(), before);
 
     this._dbObject = null;

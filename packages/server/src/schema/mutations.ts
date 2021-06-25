@@ -407,19 +407,26 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    if (!parent) {
-      parent = ctx.userId;
+    if (parent) {
+      let owner: TaskList | Section | null = await ctx.getTaskList(parent);
+      if (!owner) {
+        owner = await ctx.dataSources.sections.getImpl(parent);
+      }
+      if (!owner) {
+        throw new Error("Owner not found.");
+      }
+
+      await item.move(owner, before ?? null);
+    } else {
+      let user = await ctx.dataSources.users.getImpl(ctx.userId);
+      if (!user) {
+        throw new Error("Owner not found.");
+      }
+
+      let inbox = await user.inbox();
+      await item.move(inbox, null);
     }
 
-    let owner: TaskList | Section | null = await ctx.getTaskList(parent);
-    if (!owner) {
-      owner = await ctx.dataSources.sections.getImpl(parent);
-    }
-    if (!owner) {
-      throw new Error("Owner not found.");
-    }
-
-    await item.move(owner, before ?? null);
     return item;
   }),
 

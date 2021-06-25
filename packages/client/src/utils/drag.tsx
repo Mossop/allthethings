@@ -14,8 +14,11 @@ import type {
   MoveProjectMutation,
   MoveItemMutation,
   MoveItemMutationVariables,
+  Inbox,
 } from "../schema";
 import {
+  isInbox,
+
   refetchQueriesForItem,
   MoveItemDocument,
   refetchListContextStateQuery,
@@ -45,7 +48,7 @@ type SectionDrag = BaseDrag & {
 
 type ItemDrag = BaseDrag & {
   dragSource: Item;
-  dropTarget: Section | TaskList | null;
+  dropTarget: Section | TaskList | Inbox | null;
 };
 
 type Drag = ProjectDrag | SectionDrag | ItemDrag;
@@ -98,11 +101,17 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
   }
 
   public async completeDrag(): Promise<void> {
+    if (!this.state.dropTarget) {
+      return;
+    }
+
+    let parent = isInbox(this.state.dropTarget) ? null : this.state.dropTarget.id;
+
     await ApolloClient.mutate<MoveItemMutation, MoveItemMutationVariables>({
       mutation: MoveItemDocument,
       variables: {
         id: this.dragSource.id,
-        parent: this.state.dropTarget?.id ?? null,
+        parent,
         before: null,
       },
       awaitRefetchQueries: true,
@@ -113,7 +122,7 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
-    if (!isTaskList(dropTarget) && !isSection(dropTarget)) {
+    if (!isTaskList(dropTarget) && !isSection(dropTarget) && !isInbox(dropTarget)) {
       return this.targetLeave();
     }
 
