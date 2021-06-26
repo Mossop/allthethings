@@ -16,7 +16,7 @@ import {
 } from "@allthethings/server";
 import koaStatic from "koa-static";
 
-import { Account, Issue } from "./db/implementation";
+import { Account, Issue, Search } from "./db/implementation";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -30,6 +30,7 @@ export class JiraPlugin extends BasePlugin implements ServerPlugin {
   private readonly clientPath: string;
 
   protected readonly listProviders = [
+    Search,
   ];
 
   protected readonly itemProviders = [
