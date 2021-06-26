@@ -11,6 +11,7 @@ export interface JiraIssueRecord {
   issueKey: string;
   id: string;
   icon: string | null;
+  type: string;
   summary: string;
   status: string;
 }

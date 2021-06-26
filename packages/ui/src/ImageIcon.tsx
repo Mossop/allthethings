@@ -1,8 +1,9 @@
 import { createStyles, makeStyles } from "@material-ui/core";
 import type { ReactElement } from "react";
+import { cloneElement, forwardRef } from "react";
 
 import { Styles } from ".";
-import type { ReactResult } from "./types";
+import type { ReactRef, ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
 export const useStyles = makeStyles(() =>
@@ -15,6 +16,8 @@ export const useStyles = makeStyles(() =>
     icon: {
       maxWidth: "100%",
       maxHeight: "100%",
+      minWidth: "90%",
+      minHeight: "90%",
       objectFit: "contain",
       objectPosition: "center center",
     },
@@ -24,9 +27,10 @@ export interface ImageIconProps {
   icon: ReactElement | string | URL;
 }
 
-export const ImageIcon = ReactMemo(function ImageIcon({
+export const ImageIcon = ReactMemo(forwardRef(function ImageIcon({
   icon,
-}: ImageIconProps): ReactResult {
+  ...props
+}: ImageIconProps, ref: ReactRef | null): ReactResult {
   let classes = useStyles();
 
   if (icon instanceof URL) {
@@ -34,10 +38,10 @@ export const ImageIcon = ReactMemo(function ImageIcon({
   }
 
   if (typeof icon == "string") {
-    return <div className={classes.iconContainer}>
+    return <div ref={ref} className={classes.iconContainer} {...props}>
       <img className={classes.icon} src={icon}/>
     </div>;
   } else {
-    return icon;
+    return cloneElement(icon, { ref });
   }
-});
+}));

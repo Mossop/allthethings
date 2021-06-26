@@ -249,6 +249,7 @@ function recordFromIssue(issue: JiraIssue): Omit<JiraIssueRecord, "id" | "ownerI
     icon: issue.fields.issuetype?.iconUrl ?? null,
     summary: issue.fields.summary,
     status: issue.fields.status.name ?? "Unknown",
+    type: issue.fields.issuetype?.name ?? "Unknown",
   };
 }
 
@@ -353,6 +354,7 @@ export class Issue extends BaseItem {
       url: this.url,
       icon: this.record.icon,
       status: this.record.status,
+      type: this.record.type,
     };
   }
 

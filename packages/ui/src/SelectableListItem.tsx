@@ -1,9 +1,9 @@
 import { ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
-import type { ForwardedRef, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { forwardRef } from "react";
 
 import { ReactMemo } from "./types";
-import type { ReactResult } from "./types";
+import type { ReactResult, ReactRef } from "./types";
 import { pushClickedLink } from "./url";
 
 export interface SelectableListItemProps {
@@ -26,8 +26,7 @@ export const SelectableListItem = ReactMemo(forwardRef(function SelectableListIt
     href,
     children,
   }: SelectableListItemProps,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ref: ForwardedRef<any>,
+  ref: ReactRef | null,
 ): ReactResult {
   if (selected) {
     return <ListItem

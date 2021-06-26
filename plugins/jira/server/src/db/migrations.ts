@@ -75,13 +75,16 @@ class BaseMigration implements PluginDbMigration {
       table.text("status")
         .notNullable();
 
+      table.text("type")
+        .notNullable();
+
       table.unique(["ownerId", "issueKey"]);
     });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
     await knex.schema.dropTableIfExists("Issue");
-    await knex.schema.dropTableIfExists("Query");
+    await knex.schema.dropTableIfExists("Search");
     await knex.schema.dropTableIfExists("Account");
   }
 }

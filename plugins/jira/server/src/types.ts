@@ -4,5 +4,6 @@ export interface IssueFields {
   summary: string;
   url: string;
   icon: string | null;
+  type: string;
   status: string;
 }

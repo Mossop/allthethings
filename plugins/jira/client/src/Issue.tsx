@@ -9,6 +9,7 @@ import type { Theme } from "@material-ui/core";
 import {
   makeStyles,
   createStyles,
+  Tooltip,
 } from "@material-ui/core";
 
 import Icon from "./Icon";
@@ -48,9 +49,11 @@ export default ReactMemo(function Issue({
   let classes = useStyles();
 
   return <a className={classes.link} rel="noreferrer" target="_blank" href={issue.url}>
-    <div className={classes.iconContainer}>
-      <ImageIcon icon={issue.icon ?? <Icon/>}/>
-    </div>
+    <Tooltip title={issue.type}>
+      <div className={classes.iconContainer}>
+        <ImageIcon icon={issue.icon ?? <Icon/>}/>
+      </div>
+    </Tooltip>
     <div className={classes.summary}>{issue.summary}</div>
     <div className={classes.status}>{issue.status}</div>
   </a>;
