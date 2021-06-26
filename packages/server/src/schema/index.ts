@@ -101,6 +101,11 @@ export async function createGqlServer(): Promise<ApolloServer> {
       baseSchema,
       ...await PluginManager.getSchemas(),
     ]),
+
+    // See https://github.com/apollographql/apollo-server/issues/4398
+    mocks: true,
+    mockEntireSchema: false,
+
     // @ts-ignore
     resolvers: mergeResolvers([
       rootResolvers,

@@ -128,7 +128,7 @@ function buildSection(taskList: TaskList, queryResult: StateQuery$TaskList$Secti
     ...queryResult,
     taskList,
     items: [],
-    remainingTasks: queryResult.remainingTasks.count,
+    remainingTasks: queryResult.items.remaining.count,
   };
 
   section.items = queryResult.items.items.map(buildItem.bind(null, section));

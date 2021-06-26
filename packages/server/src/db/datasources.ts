@@ -9,6 +9,12 @@ import { DateTime } from "luxon";
 import type { PluginList } from "../plugins/types";
 import type { ResolverContext } from "../schema/context";
 import type { ItemSetResolvers } from "../schema/resolvers";
+import type {
+  ItemSetArchivedArgs,
+  ItemSetDueArgs,
+  ItemSetIsTaskArgs,
+  ItemSetSnoozedArgs,
+} from "../schema/types";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";
 import type { ImplBuilder } from "./implementations";
@@ -67,50 +73,132 @@ async function count(query: Knex.QueryBuilder): Promise<number | null> {
 
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
-export abstract class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
-  public async count(): Promise<number> {
-    return (await this.items()).length;
-  }
-
-  public abstract items(): Promise<Impl.Item[]>;
+interface ItemSetState {
+  taskJoined?: boolean;
 }
 
-export class SortedItemSet extends ItemSet {
-  public constructor(private readonly inner: ItemSet) {
-    super();
-  }
-
-  public count(): Promise<number> {
-    return this.inner.count();
-  }
-
-  public async items(): Promise<Impl.Item[]> {
-    let items = await this.inner.items();
-    let created = new Map<Impl.Item, DateTime>();
-    await Promise.all(items.map(async (item: Impl.Item): Promise<void> => {
-      created.set(item, await item.created());
-    }));
-
-    items.sort(
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      (a: Impl.Item, b: Impl.Item): number => created.get(a)!.valueOf() - created.get(b)!.valueOf(),
-    );
-    return items;
-  }
-}
-
-class QueryItemSet extends ItemSet {
+export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
   public constructor(
-    private readonly dataSources: AppDataSources,
-    private readonly query: Knex.QueryBuilder,
+    protected readonly query: Knex.QueryBuilder,
+    protected readonly state: ItemSetState = {},
   ) {
-    super();
   }
 
-  public async items(): Promise<Impl.Item[]> {
+  protected inner(query: Knex.QueryBuilder, state: Partial<ItemSetState> = {}): ItemSet {
+    return new ItemSet(query, {
+      ...this.state,
+      ...state,
+    });
+  }
+
+  public async count(
+    parent: ItemSet,
+    args: unknown,
+    context: ResolverContext,
+  ): Promise<number> {
+    return (await this.items(parent, args, context)).length;
+  }
+
+  public async items(
+    parent: ItemSet,
+    args: unknown,
+    context: ResolverContext,
+  ): Promise<Impl.Item[]> {
     let records = await this.query.select("Item.*") as DbObject<Db.ItemDbTable>[];
     return records.map(
-      (record: DbObject<Db.ItemDbTable>): Impl.Item => new Impl.Item(this.dataSources, record),
+      (record: DbObject<Db.ItemDbTable>): Impl.Item => new Impl.Item(context.dataSources, record),
+    );
+  }
+
+  public snoozed(
+    parent: ItemSet,
+    { isSnoozed }: ItemSetSnoozedArgs,
+  ): ItemSet {
+    isSnoozed = isSnoozed ?? true;
+
+    if (isSnoozed) {
+      return this.inner(
+        this.query.clone()
+          .whereNotNull("Item.snoozed")
+          .where("Item.snoozed", ">", DateTime.now()),
+      );
+    }
+
+    return this.inner(
+      this.query.clone()
+        .where((builder: Knex.QueryBuilder) => {
+          void builder.whereNull("Item.snoozed")
+            .orWhere("Item.snoozed", "<=", DateTime.now());
+        }),
+    );
+  }
+
+  public archived(
+    parent: ItemSet,
+    { isArchived }: ItemSetArchivedArgs,
+  ): ItemSet {
+    isArchived = isArchived ?? true;
+
+    if (isArchived) {
+      return this.inner(
+        this.query.clone()
+          .whereNotNull("Item.archived"),
+      );
+    }
+
+    return this.inner(
+      this.query.clone()
+        .whereNull("Item.archived"),
+    );
+  }
+
+  public due(
+    parent: ItemSet,
+    { before, after }: ItemSetDueArgs,
+  ): ItemSet {
+    if (!before && !after) {
+      before = DateTime.now();
+    }
+
+    let query = this.query.clone();
+
+    if (!this.state.taskJoined) {
+      query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
+    }
+
+    if (before) {
+      query = query.where("TaskInfo.due", "<=", before);
+    }
+
+    if (after) {
+      query = query.where("TaskInfo.due", ">", after);
+    }
+
+    return this.inner(query, { taskJoined: true });
+  }
+
+  public isTask(
+    parent: ItemSet,
+    { done }: ItemSetIsTaskArgs,
+  ): ItemSet {
+    let query = this.query.clone();
+
+    if (!this.state.taskJoined) {
+      query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
+    }
+
+    if (done === true) {
+      query = query.whereNotNull("TaskInfo.done");
+    } else if (done === false) {
+      query = query.whereNull("TaskInfo.done");
+    }
+
+    return this.inner(query, { taskJoined: true });
+  }
+
+  public sortBy(field: keyof DbObject<Db.ItemDbTable>, descending: boolean = false): ItemSet {
+    return this.inner(
+      this.query.clone().orderBy(field, descending ? "desc" : "asc"),
     );
   }
 }
@@ -629,26 +717,39 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }
   }
 
-  private contextItems(context: string): Knex.QueryBuilder<Db.ItemDbTable, Db.ItemDbTable[]> {
-    return this.records
-      .join("Section", "Section.id", this.ref("ownerId"))
-      .join("Project", "Project.id", "Section.ownerId")
-      .where("Project.contextId", context) as Knex.QueryBuilder<Db.ItemDbTable, Db.ItemDbTable[]>;
-  }
-
-  public overdueItems(context: string): ItemSet {
-    return new QueryItemSet(
-      this.dataSources,
-      this.contextItems(context)
-        .join("TaskInfo", "TaskInfo.id", this.ref("id"))
-        .where("TaskInfo.due", "<=", DateTime.now()),
+  public findItems(fields: Partial<DbObject<Db.ItemDbTable>>): ItemSet {
+    return new ItemSet(
+      this.records.where(fields).orderBy("index"),
     );
   }
 
-  public findItems(fields: Partial<DbObject<Db.ItemDbTable>>): ItemSet {
-    return new QueryItemSet(
-      this.dataSources,
-      this.records.where(fields).orderBy("index"),
+  public projectItems(project: string): ItemSet {
+    return new ItemSet(
+      this.records
+        .join("Section", "Section.id", "Item.ownerId")
+        .join("Project", "Project.id", "Section.ownerId")
+        .where("Project.id", project),
+    );
+  }
+
+  public contextItems(context: string): ItemSet {
+    return new ItemSet(
+      this.records
+        .join("Section", "Section.id", "Item.ownerId")
+        .join("Project", "Project.id", "Section.ownerId")
+        .join("Context", "Context.id", "Project.contextId")
+        .where("Context.id", context),
+    );
+  }
+
+  public userItems(user: string): ItemSet {
+    return new ItemSet(
+      this.records
+        .join("Section", "Section.id", "Item.ownerId")
+        .join("Project", "Project.id", "Section.ownerId")
+        .join("Context", "Context.id", "Project.contextId")
+        .join("User", "User.id", "Context.userId")
+        .where("User.id", user),
     );
   }
 
@@ -656,8 +757,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     owner: string,
     type: SectionIndex,
   ): ItemSet {
-    return new QueryItemSet(
-      this.dataSources,
+    return new ItemSet(
       this.records
         .join("Section", "Section.id", "Item.ownerId")
         .where("Section.ownerId", owner)
@@ -679,36 +779,6 @@ export class TaskInfoSource extends DbDataSource<Impl.TaskInfo, Db.TaskInfoDbTab
       ...params,
       id: item.id(),
     }));
-  }
-
-  public taskListTasks(taskList: string): ItemSet {
-    return new QueryItemSet(
-      this.dataSources,
-      this.records
-        .join("Item", "Item.id", this.ref("id"))
-        .join("Section", "Section.id", "Item.ownerId")
-        .where({
-          [this.ref("done")]: null,
-          ["Item.snoozed"]: null,
-          ["Item.archived"]: null,
-          ["Section.ownerId"]: taskList,
-        })
-        .andWhere("Section.index", ">=", SectionIndex.Anonymous),
-    );
-  }
-
-  public sectionTasks(section: string): ItemSet {
-    return new QueryItemSet(
-      this.dataSources,
-      this.records
-        .join("Item", "Item.id", this.ref("id"))
-        .where({
-          [this.ref("done")]: null,
-          ["Item.snoozed"]: null,
-          ["Item.archived"]: null,
-          ["Item.ownerId"]: section,
-        }),
-    );
   }
 }
 

@@ -2,9 +2,9 @@
 import * as Types from './types';
 
 import { gql } from '@apollo/client';
-export type ClientRootFields_Context_Fragment = { readonly __typename: 'Context', readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly overdueItems: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
+export type ClientRootFields_Context_Fragment = { readonly __typename: 'Context', readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
-export type ClientRootFields_User_Fragment = { readonly __typename: 'User', readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly overdueItems: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
+export type ClientRootFields_User_Fragment = { readonly __typename: 'User', readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> };
 
 export type ClientRootFieldsFragment = ClientRootFields_Context_Fragment | ClientRootFields_User_Fragment;
 
@@ -12,11 +12,10 @@ export type ClientItemFieldsFragment = { readonly __typename: 'Item', readonly i
 
 export const ClientRootFieldsFragmentDoc = gql`
     fragment clientRootFields on ProjectRoot {
-  remainingTasks {
-    count
-  }
-  overdueItems {
-    count
+  remainingTasks: items {
+    isTask(done: false) {
+      count
+    }
   }
   subprojects {
     id
@@ -25,8 +24,10 @@ export const ClientRootFieldsFragmentDoc = gql`
     id
     stub
     name
-    remainingTasks {
-      count
+    remainingTasks: items {
+      isTask(done: false) {
+        count
+      }
     }
     subprojects {
       id

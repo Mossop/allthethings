@@ -110,10 +110,6 @@ abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
 abstract class TaskListImpl<
   T extends Db.DbTable,
 > extends BaseImpl<T> implements Omit<Rslv.TaskListResolvers, "__resolveType"> {
-  public async remainingTasks(): Promise<Src.ItemSet> {
-    return this.dataSources.taskInfo.taskListTasks(this._id);
-  }
-
   public async subprojects(): Promise<Project[]> {
     return this.dataSources.projects.find({
       parentId: this._id,
@@ -126,7 +122,7 @@ abstract class TaskListImpl<
     });
   }
 
-  public async items(): Promise<Src.ItemSet> {
+  public items(): Src.ItemSet {
     return this.dataSources.items.listSpecialSection(this._id, Src.SectionIndex.Anonymous);
   }
 }
@@ -152,8 +148,8 @@ abstract class ProjectRootImpl<
     return results.length ? results[0] : null;
   }
 
-  public async overdueItems(): Promise<Src.ItemSet> {
-    return this.dataSources.items.overdueItems(this.id());
+  public rootItems(): Src.ItemSet {
+    return this.dataSources.items.contextItems(this.id());
   }
 }
 
@@ -175,6 +171,10 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
     );
 
     return new Inbox(this.dataSources, record);
+  }
+
+  public allItems(): Src.ItemSet {
+    return this.dataSources.items.userItems(this.id());
   }
 
   public readonly email = fields<Db.UserDbTable>()("email");
@@ -265,11 +265,7 @@ export abstract class SpecialSection {
     return this.dbObject.id;
   }
 
-  public async remainingTasks(): Promise<Src.ItemSet> {
-    return this.dataSources.taskInfo.sectionTasks(this.id());
-  }
-
-  public async items(): Promise<Src.ItemSet> {
+  public items(): Src.ItemSet {
     return this.dataSources.items.findItems({
       ownerId: this.id(),
     });
@@ -277,8 +273,8 @@ export abstract class SpecialSection {
 }
 
 export class Inbox extends SpecialSection implements Rslv.InboxResolvers {
-  public async items(): Promise<Src.ItemSet> {
-    return new Src.SortedItemSet(await super.items());
+  public items(): Src.ItemSet {
+    return super.items().sortBy("created", true);
   }
 }
 
@@ -288,11 +284,7 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     return this.dataSources.sections;
   }
 
-  public async remainingTasks(): Promise<Src.ItemSet> {
-    return this.dataSources.taskInfo.sectionTasks(this._id);
-  }
-
-  public async items(): Promise<Src.ItemSet> {
+  public items(): Src.ItemSet {
     return this.dataSources.items.findItems({
       ownerId: this._id,
     });

@@ -45,19 +45,19 @@ export type ListTaskListQueryVariables = Types.Exact<{
 export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
         )> } }> } | { readonly __typename: 'Project', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
         )> } }> } | { readonly __typename: 'User', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
         )> } }> }> };
@@ -244,10 +244,10 @@ export const ListTaskListDocument = gql`
     sections {
       id
       name
-      remainingTasks {
-        count
-      }
       items {
+        remaining: isTask(done: false) {
+          count
+        }
         items {
           ...clientItemFields
         }

@@ -5,8 +5,7 @@ import type { ItemSet } from '../db/datasources';
 import type { ResolverContext } from './context';
 import * as Schema from './types';
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
-export type WithIndex<TObject> = TObject & Record<string, any>;
-export type ResolversObject<TObject> = WithIndex<TObject>;
+
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -83,7 +82,7 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 ) => TResult | Promise<TResult>;
 
 /** Mapping between all available schema types and the resolvers types */
-export type ResolversTypes = ResolversObject<{
+export type ResolversTypes = {
   Context: ResolverTypeWrapper<Context>;
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
@@ -96,10 +95,10 @@ export type ResolversTypes = ResolversObject<{
   ItemDetail: ResolversTypes['PluginDetail'] | ResolversTypes['LinkDetail'] | ResolversTypes['NoteDetail'] | ResolversTypes['FileDetail'];
   ItemParams: Schema.ItemParams;
   ItemSet: ResolverTypeWrapper<ItemSet>;
+  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   LinkDetail: ResolverTypeWrapper<LinkDetail>;
   LinkDetailParams: Schema.LinkDetailParams;
   Mutation: ResolverTypeWrapper<{}>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: ResolverTypeWrapper<PluginDetail>;
@@ -114,10 +113,10 @@ export type ResolversTypes = ResolversObject<{
   TaskInfoParams: Schema.TaskInfoParams;
   TaskList: ResolverTypeWrapper<TaskList>;
   User: ResolverTypeWrapper<User>;
-}>;
+};
 
 /** Mapping between all available schema types and the resolvers parents */
-export type ResolversParentTypes = ResolversObject<{
+export type ResolversParentTypes = {
   Context: Context;
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
@@ -130,10 +129,10 @@ export type ResolversParentTypes = ResolversObject<{
   ItemDetail: ResolversParentTypes['PluginDetail'] | ResolversParentTypes['LinkDetail'] | ResolversParentTypes['NoteDetail'] | ResolversParentTypes['FileDetail'];
   ItemParams: Schema.ItemParams;
   ItemSet: ItemSet;
+  Boolean: Schema.Scalars['Boolean'];
   LinkDetail: LinkDetail;
   LinkDetailParams: Schema.LinkDetailParams;
   Mutation: {};
-  Boolean: Schema.Scalars['Boolean'];
   NoteDetail: NoteDetail;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: PluginDetail;
@@ -148,14 +147,13 @@ export type ResolversParentTypes = ResolversObject<{
   TaskInfoParams: Schema.TaskInfoParams;
   TaskList: TaskList;
   User: User;
-}>;
+};
 
-export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = ResolversObject<{
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+export type ContextResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Context'] = ResolversParentTypes['Context']> = {
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
-  overdueItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+  rootItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   projects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   projectById: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.ContextProjectByIdArgs, 'id'>>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -163,26 +161,26 @@ export type ContextResolvers<ContextType = ResolverContext, ParentType extends R
   stub: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
 export interface DateTimeScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['DateTime'], any> {
   name: 'DateTime';
 }
 
-export type FileDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['FileDetail'] = ResolversParentTypes['FileDetail']> = ResolversObject<{
+export type FileDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['FileDetail'] = ResolversParentTypes['FileDetail']> = {
   filename: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   mimetype: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   size: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type InboxResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Inbox'] = ResolversParentTypes['Inbox']> = ResolversObject<{
+export type InboxResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Inbox'] = ResolversParentTypes['Inbox']> = {
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = ResolversObject<{
+export type ItemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Item'] = ResolversParentTypes['Item']> = {
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   summary: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   created: Resolver<ResolversTypes['DateTime'], ParentType, ContextType>;
@@ -191,25 +189,29 @@ export type ItemResolvers<ContextType = ResolverContext, ParentType extends Reso
   taskInfo: Resolver<Schema.Maybe<ResolversTypes['TaskInfo']>, ParentType, ContextType>;
   detail: Resolver<Schema.Maybe<ResolversTypes['ItemDetail']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type ItemDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = ResolversObject<{
+export type ItemDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ItemDetail'] = ResolversParentTypes['ItemDetail']> = {
   __resolveType: TypeResolveFn<'PluginDetail' | 'LinkDetail' | 'NoteDetail' | 'FileDetail', ParentType, ContextType>;
-}>;
+};
 
-export type ItemSetResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ItemSet'] = ResolversParentTypes['ItemSet']> = ResolversObject<{
+export type ItemSetResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ItemSet'] = ResolversParentTypes['ItemSet']> = {
   count: Resolver<ResolversTypes['Int'], ParentType, ContextType>;
   items: Resolver<ReadonlyArray<ResolversTypes['Item']>, ParentType, ContextType>;
+  snoozed: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType, RequireFields<Schema.ItemSetSnoozedArgs, never>>;
+  archived: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType, RequireFields<Schema.ItemSetArchivedArgs, never>>;
+  due: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType, RequireFields<Schema.ItemSetDueArgs, never>>;
+  isTask: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType, RequireFields<Schema.ItemSetIsTaskArgs, never>>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type LinkDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['LinkDetail'] = ResolversParentTypes['LinkDetail']> = ResolversObject<{
+export type LinkDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['LinkDetail'] = ResolversParentTypes['LinkDetail']> = {
   icon: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type MutationResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = ResolversObject<{
+export type MutationResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
   login: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<Schema.MutationLoginArgs, 'email' | 'password'>>;
   logout: Resolver<Schema.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType>;
   createContext: Resolver<ResolversTypes['Context'], ParentType, ContextType, RequireFields<Schema.MutationCreateContextArgs, 'params'>>;
@@ -237,14 +239,14 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   createUser: Resolver<ResolversTypes['User'], ParentType, ContextType, RequireFields<Schema.MutationCreateUserArgs, 'email' | 'password'>>;
   deleteUser: Resolver<Schema.Maybe<ResolversTypes['Boolean']>, ParentType, ContextType, RequireFields<Schema.MutationDeleteUserArgs, 'id'>>;
   changePassword: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType, RequireFields<Schema.MutationChangePasswordArgs, 'currentPassword' | 'newPassword'>>;
-}>;
+};
 
-export type NoteDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NoteDetail'] = ResolversParentTypes['NoteDetail']> = ResolversObject<{
+export type NoteDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['NoteDetail'] = ResolversParentTypes['NoteDetail']> = {
   note: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type PluginDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginDetail'] = ResolversParentTypes['PluginDetail']> = ResolversObject<{
+export type PluginDetailResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginDetail'] = ResolversParentTypes['PluginDetail']> = {
   pluginId: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   hasTaskState: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
   wasEverListed: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
@@ -252,18 +254,17 @@ export type PluginDetailResolvers<ContextType = ResolverContext, ParentType exte
   fields: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   lists: Resolver<ReadonlyArray<ResolversTypes['PluginList']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type PluginListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginList'] = ResolversParentTypes['PluginList']> = ResolversObject<{
+export type PluginListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['PluginList'] = ResolversParentTypes['PluginList']> = {
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   pluginId: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   url: Resolver<Schema.Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = ResolversObject<{
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
@@ -272,56 +273,52 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   taskList: Resolver<ResolversTypes['TaskList'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type ProjectRootResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ProjectRoot'] = ResolversParentTypes['ProjectRoot']> = ResolversObject<{
+export type ProjectRootResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['ProjectRoot'] = ResolversParentTypes['ProjectRoot']> = {
   __resolveType: TypeResolveFn<'Context' | 'User', ParentType, ContextType>;
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
-  overdueItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+  rootItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   projects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   projectById: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.ProjectRootProjectByIdArgs, 'id'>>;
-}>;
+};
 
-export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = ResolversObject<{
+export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   user: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   users: Resolver<ReadonlyArray<ResolversTypes['User']>, ParentType, ContextType>;
   taskList: Resolver<Schema.Maybe<ResolversTypes['TaskList']>, ParentType, ContextType, RequireFields<Schema.QueryTaskListArgs, 'id'>>;
   root: Resolver<Schema.Maybe<ResolversTypes['ProjectRoot']>, ParentType, ContextType, RequireFields<Schema.QueryRootArgs, 'id'>>;
   pageContent: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<Schema.QueryPageContentArgs, 'path'>>;
-}>;
+};
 
-export type SectionResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Section'] = ResolversParentTypes['Section']> = ResolversObject<{
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+export type SectionResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Section'] = ResolversParentTypes['Section']> = {
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type TaskInfoResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskInfo'] = ResolversParentTypes['TaskInfo']> = ResolversObject<{
+export type TaskInfoResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskInfo'] = ResolversParentTypes['TaskInfo']> = {
   due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   controller: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type TaskListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskList'] = ResolversParentTypes['TaskList']> = ResolversObject<{
+export type TaskListResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskList'] = ResolversParentTypes['TaskList']> = {
   __resolveType: TypeResolveFn<'Context' | 'Project' | 'User', ParentType, ContextType>;
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
-}>;
+};
 
-export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = ResolversObject<{
-  remainingTasks: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+export type UserResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['User'] = ResolversParentTypes['User']> = {
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
-  overdueItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
+  rootItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   projects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   projectById: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.UserProjectByIdArgs, 'id'>>;
   id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
@@ -329,10 +326,11 @@ export type UserResolvers<ContextType = ResolverContext, ParentType extends Reso
   contexts: Resolver<ReadonlyArray<ResolversTypes['Context']>, ParentType, ContextType>;
   inbox: Resolver<ResolversTypes['Inbox'], ParentType, ContextType>;
   isAdmin: Resolver<ResolversTypes['Boolean'], ParentType, ContextType>;
+  allItems: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-}>;
+};
 
-export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
+export type Resolvers<ContextType = ResolverContext> = {
   Context: ContextResolvers<ContextType>;
   DateTime: GraphQLScalarType;
   FileDetail: FileDetailResolvers<ContextType>;
@@ -352,7 +350,7 @@ export type Resolvers<ContextType = ResolverContext> = ResolversObject<{
   TaskInfo: TaskInfoResolvers<ContextType>;
   TaskList: TaskListResolvers<ContextType>;
   User: UserResolvers<ContextType>;
-}>;
+};
 
 
 /**

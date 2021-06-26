@@ -19,11 +19,10 @@ export type Scalars = {
 
 export type Context = ProjectRoot & TaskList & {
   readonly __typename?: 'Context';
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
+  readonly rootItems: ItemSet;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById: Maybe<Project>;
   readonly id: Scalars['ID'];
@@ -84,6 +83,31 @@ export type ItemSet = {
   readonly __typename?: 'ItemSet';
   readonly count: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
+  readonly snoozed: ItemSet;
+  readonly archived: ItemSet;
+  readonly due: ItemSet;
+  readonly isTask: ItemSet;
+};
+
+
+export type ItemSetSnoozedArgs = {
+  isSnoozed: Maybe<Scalars['Boolean']>;
+};
+
+
+export type ItemSetArchivedArgs = {
+  isArchived: Maybe<Scalars['Boolean']>;
+};
+
+
+export type ItemSetDueArgs = {
+  before: Maybe<Scalars['DateTime']>;
+  after: Maybe<Scalars['DateTime']>;
+};
+
+
+export type ItemSetIsTaskArgs = {
+  done: Maybe<Scalars['Boolean']>;
 };
 
 export type LinkDetail = {
@@ -351,7 +375,6 @@ export type PluginList = {
 
 export type Project = TaskList & {
   readonly __typename?: 'Project';
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
@@ -366,11 +389,10 @@ export type ProjectParams = {
 };
 
 export type ProjectRoot = {
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
+  readonly rootItems: ItemSet;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById: Maybe<Project>;
 };
@@ -406,7 +428,6 @@ export type QueryPageContentArgs = {
 
 export type Section = {
   readonly __typename?: 'Section';
-  readonly remainingTasks: ItemSet;
   readonly items: ItemSet;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
@@ -429,7 +450,6 @@ export type TaskInfoParams = {
 };
 
 export type TaskList = {
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
@@ -443,18 +463,18 @@ export type UpdatePhabricatorAccountParams = {
 
 export type User = ProjectRoot & TaskList & {
   readonly __typename?: 'User';
+  readonly allItems: ItemSet;
   readonly contexts: ReadonlyArray<Context>;
   readonly email: Scalars['String'];
   readonly id: Scalars['ID'];
   readonly inbox: Inbox;
   readonly isAdmin: Scalars['Boolean'];
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
   readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
   readonly projectById: Maybe<Project>;
   readonly projects: ReadonlyArray<Project>;
-  readonly remainingTasks: ItemSet;
+  readonly rootItems: ItemSet;
   readonly sections: ReadonlyArray<Section>;
   readonly subprojects: ReadonlyArray<Project>;
 };

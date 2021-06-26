@@ -53,10 +53,14 @@ type Item {
 type ItemSet {
   count: Int!
   items: [Item!]!
+
+  snoozed(isSnoozed: Boolean): ItemSet!
+  archived(isArchived: Boolean): ItemSet!
+  due(before: DateTime, after: DateTime): ItemSet!
+  isTask(done: Boolean): ItemSet!
 }
 
 interface TaskList {
-  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
@@ -64,11 +68,10 @@ interface TaskList {
 
 interface ProjectRoot implements TaskList {
   # TaskList
-  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
-  overdueItems: ItemSet!
+  rootItems: ItemSet!
 
   projects: [Project!]!
   projectById(id: ID!): Project
@@ -81,11 +84,10 @@ type Inbox {
 
 type User implements ProjectRoot & TaskList {
   # TaskList
-  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
-  overdueItems: ItemSet!
+  rootItems: ItemSet!
 
   # ProjectRoot
   projects: [Project!]!
@@ -96,15 +98,15 @@ type User implements ProjectRoot & TaskList {
   contexts: [Context!]!
   inbox: Inbox!
   isAdmin: Boolean!
+  allItems: ItemSet!
 }
 
 type Context implements ProjectRoot & TaskList {
   # TaskList
-  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
-  overdueItems: ItemSet!
+  rootItems: ItemSet!
 
   # ProjectRoot
   projects: [Project!]!
@@ -118,7 +120,6 @@ type Context implements ProjectRoot & TaskList {
 
 type Project implements TaskList {
   # TaskList
-  remainingTasks: ItemSet!
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
@@ -130,7 +131,6 @@ type Project implements TaskList {
 }
 
 type Section {
-  remainingTasks: ItemSet!
   items: ItemSet!
 
   id: ID!

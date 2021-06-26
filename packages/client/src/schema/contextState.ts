@@ -21,7 +21,6 @@ export type User = Overwrite<StateQuery$User, {
   readonly projects: ReadonlyMap<string, Project>;
   readonly contexts: ReadonlyMap<string, Context>;
   readonly remainingTasks: number;
-  readonly overdueItems: number;
   readonly inbox: Inbox;
 }>;
 
@@ -29,7 +28,6 @@ export type Context = Overwrite<StateQuery$User$Context, {
   readonly projects: ReadonlyMap<string, Project>;
   readonly subprojects: readonly Project[];
   readonly remainingTasks: number;
-  readonly overdueItems: number;
 }>;
 
 export type Project = Overwrite<StateQuery$User$Project, {
@@ -78,7 +76,7 @@ function buildProjectRoot(
       state.id,
       {
         ...state,
-        remainingTasks: state.remainingTasks.count,
+        remainingTasks: state.remainingTasks.isTask.count,
         subprojects: [],
         parent: null,
       },
@@ -95,8 +93,7 @@ function buildProjectRoot(
 
   return {
     id: queryResult.id,
-    remainingTasks: queryResult.remainingTasks.count,
-    overdueItems: queryResult.overdueItems.count,
+    remainingTasks: queryResult.remainingTasks.isTask.count,
     projects,
     subprojects: queryResult.subprojects.map(({ id }: StateId) => projects.get(id)!),
   };

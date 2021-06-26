@@ -25,7 +25,7 @@ module.exports = {
       plugins: {
         "typescript-resolvers": {
           contextType: "./context#ResolverContext",
-          useIndexSignature: true,
+          useIndexSignature: false,
           useTypeImports: true,
           immutableTypes: true,
           avoidOptionals: true,

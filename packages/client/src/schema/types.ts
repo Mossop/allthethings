@@ -17,11 +17,10 @@ export type Scalars = {
 
 export type Context = ProjectRoot & TaskList & {
   readonly __typename: 'Context';
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
+  readonly rootItems: ItemSet;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
@@ -76,6 +75,31 @@ export type ItemSet = {
   readonly __typename: 'ItemSet';
   readonly count: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
+  readonly snoozed: ItemSet;
+  readonly archived: ItemSet;
+  readonly due: ItemSet;
+  readonly isTask: ItemSet;
+};
+
+
+export type ItemSetSnoozedArgs = {
+  isSnoozed?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type ItemSetArchivedArgs = {
+  isArchived?: Maybe<Scalars['Boolean']>;
+};
+
+
+export type ItemSetDueArgs = {
+  before?: Maybe<Scalars['DateTime']>;
+  after?: Maybe<Scalars['DateTime']>;
+};
+
+
+export type ItemSetIsTaskArgs = {
+  done?: Maybe<Scalars['Boolean']>;
 };
 
 export type LinkDetail = {
@@ -307,7 +331,6 @@ export type PluginList = {
 
 export type Project = TaskList & {
   readonly __typename: 'Project';
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
@@ -322,11 +345,10 @@ export type ProjectParams = {
 };
 
 export type ProjectRoot = {
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
+  readonly rootItems: ItemSet;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
 };
@@ -362,7 +384,6 @@ export type QueryPageContentArgs = {
 
 export type Section = {
   readonly __typename: 'Section';
-  readonly remainingTasks: ItemSet;
   readonly items: ItemSet;
   readonly id: Scalars['ID'];
   readonly name: Scalars['String'];
@@ -385,7 +406,6 @@ export type TaskInfoParams = {
 };
 
 export type TaskList = {
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
@@ -393,11 +413,10 @@ export type TaskList = {
 
 export type User = ProjectRoot & TaskList & {
   readonly __typename: 'User';
-  readonly remainingTasks: ItemSet;
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly overdueItems: ItemSet;
+  readonly rootItems: ItemSet;
   readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
@@ -405,6 +424,7 @@ export type User = ProjectRoot & TaskList & {
   readonly contexts: ReadonlyArray<Context>;
   readonly inbox: Inbox;
   readonly isAdmin: Scalars['Boolean'];
+  readonly allItems: ItemSet;
 };
 
 
@@ -412,13 +432,12 @@ export type UserProjectByIdArgs = {
   id: Scalars['ID'];
 };
 
-export type ContextKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'overdueItems' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	overdueItems?: FieldPolicy<any> | FieldReadFunction<any>,
+	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -447,10 +466,14 @@ export type ItemFieldPolicy = {
 	taskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	detail?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ItemSetKeySpecifier = ('count' | 'items' | ItemSetKeySpecifier)[];
+export type ItemSetKeySpecifier = ('count' | 'items' | 'snoozed' | 'archived' | 'due' | 'isTask' | ItemSetKeySpecifier)[];
 export type ItemSetFieldPolicy = {
 	count?: FieldPolicy<any> | FieldReadFunction<any>,
-	items?: FieldPolicy<any> | FieldReadFunction<any>
+	items?: FieldPolicy<any> | FieldReadFunction<any>,
+	snoozed?: FieldPolicy<any> | FieldReadFunction<any>,
+	archived?: FieldPolicy<any> | FieldReadFunction<any>,
+	due?: FieldPolicy<any> | FieldReadFunction<any>,
+	isTask?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type LinkDetailKeySpecifier = ('icon' | 'url' | LinkDetailKeySpecifier)[];
 export type LinkDetailFieldPolicy = {
@@ -507,9 +530,8 @@ export type PluginListFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
+export type ProjectKeySpecifier = ('subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -518,13 +540,12 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectRootKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'overdueItems' | 'projects' | 'projectById' | ProjectRootKeySpecifier)[];
+export type ProjectRootKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | ProjectRootKeySpecifier)[];
 export type ProjectRootFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	overdueItems?: FieldPolicy<any> | FieldReadFunction<any>,
+	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
@@ -536,9 +557,8 @@ export type QueryFieldPolicy = {
 	root?: FieldPolicy<any> | FieldReadFunction<any>,
 	pageContent?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type SectionKeySpecifier = ('remainingTasks' | 'items' | 'id' | 'name' | SectionKeySpecifier)[];
+export type SectionKeySpecifier = ('items' | 'id' | 'name' | SectionKeySpecifier)[];
 export type SectionFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	name?: FieldPolicy<any> | FieldReadFunction<any>
@@ -549,27 +569,26 @@ export type TaskInfoFieldPolicy = {
 	done?: FieldPolicy<any> | FieldReadFunction<any>,
 	controller?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type TaskListKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];
+export type TaskListKeySpecifier = ('subprojects' | 'sections' | 'items' | TaskListKeySpecifier)[];
 export type TaskListFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('remainingTasks' | 'subprojects' | 'sections' | 'items' | 'overdueItems' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | 'allItems' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
-	remainingTasks?: FieldPolicy<any> | FieldReadFunction<any>,
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	overdueItems?: FieldPolicy<any> | FieldReadFunction<any>,
+	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
 	projects?: FieldPolicy<any> | FieldReadFunction<any>,
 	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
 	inbox?: FieldPolicy<any> | FieldReadFunction<any>,
-	isAdmin?: FieldPolicy<any> | FieldReadFunction<any>
+	isAdmin?: FieldPolicy<any> | FieldReadFunction<any>,
+	allItems?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
 	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {
