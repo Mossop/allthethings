@@ -5,6 +5,7 @@ query ListContextState {
     isAdmin
 
     inbox {
+      id
       items {
         count
       }

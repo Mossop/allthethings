@@ -57,6 +57,7 @@ export type FileDetail = {
 
 export type Inbox = {
   readonly __typename?: 'Inbox';
+  readonly id: Scalars['ID'];
   readonly items: ItemSet;
 };
 
@@ -149,7 +150,7 @@ export type MutationCreateContextArgs = {
 
 
 export type MutationCreateLinkArgs = {
-  list: Maybe<Scalars['ID']>;
+  list: Scalars['ID'];
   item: ItemParams;
   detail: LinkDetailParams;
   isTask: Scalars['Boolean'];
@@ -157,7 +158,7 @@ export type MutationCreateLinkArgs = {
 
 
 export type MutationCreateNoteArgs = {
-  list: Maybe<Scalars['ID']>;
+  list: Scalars['ID'];
   item: ItemParams;
   detail: NoteDetailParams;
   isTask: Scalars['Boolean'];
@@ -170,20 +171,20 @@ export type MutationCreatePhabricatorAccountArgs = {
 
 
 export type MutationCreateProjectArgs = {
-  taskList: Maybe<Scalars['ID']>;
+  taskList: Scalars['ID'];
   params: ProjectParams;
 };
 
 
 export type MutationCreateSectionArgs = {
-  taskList: Maybe<Scalars['ID']>;
+  taskList: Scalars['ID'];
   before: Maybe<Scalars['ID']>;
   params: SectionParams;
 };
 
 
 export type MutationCreateTaskArgs = {
-  list: Maybe<Scalars['ID']>;
+  list: Scalars['ID'];
   item: ItemParams;
 };
 
@@ -275,20 +276,20 @@ export type MutationMarkItemDueArgs = {
 
 export type MutationMoveItemArgs = {
   id: Scalars['ID'];
-  parent: Maybe<Scalars['ID']>;
+  list: Scalars['ID'];
   before: Maybe<Scalars['ID']>;
 };
 
 
 export type MutationMoveProjectArgs = {
   id: Scalars['ID'];
-  taskList: Maybe<Scalars['ID']>;
+  taskList: Scalars['ID'];
 };
 
 
 export type MutationMoveSectionArgs = {
   id: Scalars['ID'];
-  taskList: Maybe<Scalars['ID']>;
+  taskList: Scalars['ID'];
   before: Maybe<Scalars['ID']>;
 };
 

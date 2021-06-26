@@ -254,7 +254,7 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
   }
 }
 
-abstract class SpecialSection {
+export abstract class SpecialSection {
   public constructor(
     protected readonly dataSources: Src.AppDataSources,
     protected readonly dbObject: Db.DbObject<Db.SectionDbTable>,

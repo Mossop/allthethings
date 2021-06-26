@@ -42,7 +42,7 @@ export type DeleteContextMutationVariables = Types.Exact<{
 export type DeleteContextMutation = { readonly __typename: 'Mutation', readonly deleteContext: boolean };
 
 export type CreateSectionMutationVariables = Types.Exact<{
-  taskList: Types.Maybe<Types.Scalars['ID']>;
+  taskList: Types.Scalars['ID'];
   params: Types.SectionParams;
 }>;
 
@@ -59,7 +59,7 @@ export type EditSectionMutation = { readonly __typename: 'Mutation', readonly ed
 
 export type MoveSectionMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  taskList: Types.Maybe<Types.Scalars['ID']>;
+  taskList: Types.Scalars['ID'];
   before: Types.Maybe<Types.Scalars['ID']>;
 }>;
 
@@ -74,7 +74,7 @@ export type DeleteSectionMutationVariables = Types.Exact<{
 export type DeleteSectionMutation = { readonly __typename: 'Mutation', readonly deleteSection: boolean };
 
 export type CreateProjectMutationVariables = Types.Exact<{
-  taskList: Types.Maybe<Types.Scalars['ID']>;
+  taskList: Types.Scalars['ID'];
   params: Types.ProjectParams;
 }>;
 
@@ -91,7 +91,7 @@ export type EditProjectMutation = { readonly __typename: 'Mutation', readonly ed
 
 export type MoveProjectMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  taskList: Types.Maybe<Types.Scalars['ID']>;
+  taskList: Types.Scalars['ID'];
 }>;
 
 
@@ -105,7 +105,7 @@ export type DeleteProjectMutationVariables = Types.Exact<{
 export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly deleteProject: boolean };
 
 export type CreateTaskMutationVariables = Types.Exact<{
-  list: Types.Maybe<Types.Scalars['ID']>;
+  list: Types.Scalars['ID'];
   item: Types.ItemParams;
 }>;
 
@@ -116,7 +116,7 @@ export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly cre
   ) };
 
 export type CreateLinkMutationVariables = Types.Exact<{
-  list: Types.Maybe<Types.Scalars['ID']>;
+  list: Types.Scalars['ID'];
   item: Types.ItemParams;
   detail: Types.LinkDetailParams;
   isTask: Types.Scalars['Boolean'];
@@ -163,7 +163,7 @@ export type EditTaskControllerMutation = { readonly __typename: 'Mutation', read
 
 export type MoveItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  parent: Types.Maybe<Types.Scalars['ID']>;
+  list: Types.Scalars['ID'];
   before: Types.Maybe<Types.Scalars['ID']>;
 }>;
 
@@ -405,7 +405,7 @@ export type DeleteContextMutationHookResult = ReturnType<typeof useDeleteContext
 export type DeleteContextMutationResult = Apollo.MutationResult<DeleteContextMutation>;
 export type DeleteContextMutationOptions = Apollo.BaseMutationOptions<DeleteContextMutation, DeleteContextMutationVariables>;
 export const CreateSectionDocument = gql`
-    mutation CreateSection($taskList: ID, $params: SectionParams!) {
+    mutation CreateSection($taskList: ID!, $params: SectionParams!) {
   createSection(taskList: $taskList, params: $params) {
     id
     name
@@ -475,7 +475,7 @@ export type EditSectionMutationHookResult = ReturnType<typeof useEditSectionMuta
 export type EditSectionMutationResult = Apollo.MutationResult<EditSectionMutation>;
 export type EditSectionMutationOptions = Apollo.BaseMutationOptions<EditSectionMutation, EditSectionMutationVariables>;
 export const MoveSectionDocument = gql`
-    mutation MoveSection($id: ID!, $taskList: ID, $before: ID) {
+    mutation MoveSection($id: ID!, $taskList: ID!, $before: ID) {
   moveSection(id: $id, taskList: $taskList, before: $before) {
     id
     name
@@ -542,7 +542,7 @@ export type DeleteSectionMutationHookResult = ReturnType<typeof useDeleteSection
 export type DeleteSectionMutationResult = Apollo.MutationResult<DeleteSectionMutation>;
 export type DeleteSectionMutationOptions = Apollo.BaseMutationOptions<DeleteSectionMutation, DeleteSectionMutationVariables>;
 export const CreateProjectDocument = gql`
-    mutation CreateProject($taskList: ID, $params: ProjectParams!) {
+    mutation CreateProject($taskList: ID!, $params: ProjectParams!) {
   createProject(taskList: $taskList, params: $params) {
     id
     name
@@ -614,7 +614,7 @@ export type EditProjectMutationHookResult = ReturnType<typeof useEditProjectMuta
 export type EditProjectMutationResult = Apollo.MutationResult<EditProjectMutation>;
 export type EditProjectMutationOptions = Apollo.BaseMutationOptions<EditProjectMutation, EditProjectMutationVariables>;
 export const MoveProjectDocument = gql`
-    mutation MoveProject($id: ID!, $taskList: ID) {
+    mutation MoveProject($id: ID!, $taskList: ID!) {
   moveProject(id: $id, taskList: $taskList) {
     id
     name
@@ -681,7 +681,7 @@ export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProject
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const CreateTaskDocument = gql`
-    mutation CreateTask($list: ID, $item: ItemParams!) {
+    mutation CreateTask($list: ID!, $item: ItemParams!) {
   createTask(list: $list, item: $item) {
     ...clientItemFields
   }
@@ -715,7 +715,7 @@ export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutati
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
 export const CreateLinkDocument = gql`
-    mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+    mutation CreateLink($list: ID!, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
   createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
     ...clientItemFields
   }
@@ -853,8 +853,8 @@ export type EditTaskControllerMutationHookResult = ReturnType<typeof useEditTask
 export type EditTaskControllerMutationResult = Apollo.MutationResult<EditTaskControllerMutation>;
 export type EditTaskControllerMutationOptions = Apollo.BaseMutationOptions<EditTaskControllerMutation, EditTaskControllerMutationVariables>;
 export const MoveItemDocument = gql`
-    mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
-  moveItem(id: $id, parent: $parent, before: $before) {
+    mutation MoveItem($id: ID!, $list: ID!, $before: ID) {
+  moveItem(id: $id, list: $list, before: $before) {
     ...clientItemFields
   }
 }
@@ -875,7 +875,7 @@ export type MoveItemMutationFn = Apollo.MutationFunction<MoveItemMutation, MoveI
  * const [moveItemMutation, { data, loading, error }] = useMoveItemMutation({
  *   variables: {
  *      id: // value for 'id'
- *      parent: // value for 'parent'
+ *      list: // value for 'list'
  *      before: // value for 'before'
  *   },
  * });

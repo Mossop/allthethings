@@ -17,6 +17,8 @@ import type {
   Inbox,
 } from "../schema";
 import {
+  refetchQueriesForSection,
+
   isInbox,
 
   refetchQueriesForItem,
@@ -105,17 +107,17 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
       return;
     }
 
-    let parent = isInbox(this.state.dropTarget) ? null : this.state.dropTarget.id;
-
     await ApolloClient.mutate<MoveItemMutation, MoveItemMutationVariables>({
       mutation: MoveItemDocument,
       variables: {
         id: this.dragSource.id,
-        parent,
+        list: this.state.dropTarget.id,
         before: null,
       },
-      awaitRefetchQueries: true,
-      refetchQueries: refetchQueriesForItem(this.dragSource),
+      refetchQueries: [
+        ...refetchQueriesForItem(this.dragSource),
+        ...refetchQueriesForSection(this.state.dropTarget),
+      ],
     });
 
     return;
@@ -164,13 +166,16 @@ class ProjectDragOperation extends BaseDragOperation<ProjectDrag> {
   }
 
   public async completeDrag(): Promise<void> {
+    if (!this.state.dropTarget) {
+      return;
+    }
+
     await ApolloClient.mutate<MoveProjectMutation, MoveProjectMutationVariables>({
       mutation: MoveProjectDocument,
       variables: {
         id: this.dragSource.id,
-        taskList: this.state.dropTarget?.id ?? null,
+        taskList: this.state.dropTarget.id,
       },
-      awaitRefetchQueries: true,
       refetchQueries: [
         refetchListContextStateQuery(),
       ],

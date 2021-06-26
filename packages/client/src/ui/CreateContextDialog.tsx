@@ -27,7 +27,6 @@ export default ReactMemo(function CreateContextDialog({
     refetchQueries: [
       refetchListContextStateQuery(),
     ],
-    awaitRefetchQueries: true,
   });
 
   let newContext = useMemo(() => {

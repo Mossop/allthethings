@@ -77,6 +77,11 @@ export const client = new ApolloClient({
     ...introspection,
     typePolicies,
   }),
+  defaultOptions: {
+    mutate: {
+      awaitRefetchQueries: true,
+    },
+  },
 });
 
 export function connect(): ApolloClient<unknown> {

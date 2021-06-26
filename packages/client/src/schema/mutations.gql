@@ -28,7 +28,7 @@ mutation DeleteContext($id: ID!) {
   deleteContext(id: $id)
 }
 
-mutation CreateSection($taskList: ID, $params: SectionParams!) {
+mutation CreateSection($taskList: ID!, $params: SectionParams!) {
   createSection(taskList: $taskList, params: $params) {
     id
     name
@@ -42,7 +42,7 @@ mutation EditSection($id: ID!, $params: SectionParams!) {
   }
 }
 
-mutation MoveSection($id: ID!, $taskList: ID, $before: ID) {
+mutation MoveSection($id: ID!, $taskList: ID!, $before: ID) {
   moveSection(id: $id, taskList: $taskList, before: $before) {
     id
     name
@@ -53,7 +53,7 @@ mutation DeleteSection($id: ID!) {
   deleteSection(id: $id)
 }
 
-mutation CreateProject($taskList: ID, $params: ProjectParams!) {
+mutation CreateProject($taskList: ID!, $params: ProjectParams!) {
   createProject(taskList: $taskList, params: $params) {
     id
     name
@@ -69,7 +69,7 @@ mutation EditProject($id: ID!, $params: ProjectParams!) {
   }
 }
 
-mutation MoveProject($id: ID!, $taskList: ID) {
+mutation MoveProject($id: ID!, $taskList: ID!) {
   moveProject(id: $id, taskList: $taskList) {
     id
     name
@@ -81,13 +81,13 @@ mutation DeleteProject($id: ID!) {
   deleteProject(id: $id)
 }
 
-mutation CreateTask($list: ID, $item: ItemParams!) {
+mutation CreateTask($list: ID!, $item: ItemParams!) {
   createTask(list: $list, item: $item) {
     ...clientItemFields
   }
 }
 
-mutation CreateLink($list: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+mutation CreateLink($list: ID!, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
   createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
     ...clientItemFields
   }
@@ -111,8 +111,8 @@ mutation EditTaskController($id: ID!, $controller: String) {
   }
 }
 
-mutation MoveItem($id: ID!, $parent: ID, $before: ID) {
-  moveItem(id: $id, parent: $parent, before: $before) {
+mutation MoveItem($id: ID!, $list: ID!, $before: ID) {
+  moveItem(id: $id, list: $list, before: $before) {
     ...clientItemFields
   }
 }

@@ -10,7 +10,7 @@ export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never;
 
 
 export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
+    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
       { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
       & ClientRootFields_Context_Fragment
     )> }
@@ -70,6 +70,7 @@ export const ListContextStateDocument = gql`
     email
     isAdmin
     inbox {
+      id
       items {
         count
       }

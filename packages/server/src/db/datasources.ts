@@ -513,6 +513,24 @@ export class SectionDataSource extends IndexedDbDataSource<
     return this.table.where("index", ">=", 0);
   }
 
+  public async getSection(id: string): Promise<Impl.Section | Impl.Inbox | null> {
+    let record = await this.getRecord(id);
+    if (!record) {
+      return null;
+    }
+
+    if (record.index >= SectionIndex.Anonymous) {
+      return new Impl.Section(this.dataSources, record);
+    }
+
+    switch (record.index) {
+      case SectionIndex.Inbox:
+        return new Impl.Inbox(this.dataSources, record);
+    }
+
+    return null;
+  }
+
   public async getSpecialSection(
     ownerId: string,
     type: SectionIndex,
@@ -1127,6 +1145,39 @@ export class AppDataSources {
         }
       }
     }
+  }
+
+  public async getItemTarget(
+    id: string,
+  ): Promise<Impl.TaskList | Impl.Section | Impl.Inbox | null> {
+    let section = await this.sections.getSection(id);
+    if (!section || section instanceof Impl.Inbox) {
+      return section;
+    }
+
+    if (await section.index() != SectionIndex.Anonymous) {
+      return section;
+    }
+
+    let project = await this.projects.getRecord(id);
+    if (!project) {
+      return null;
+    }
+
+    if (project.contextId != id) {
+      return new Impl.Project(this, project);
+    }
+
+    let context = await this.contexts.getRecord(id);
+    if (!context) {
+      return null;
+    }
+
+    if (context.userId != id) {
+      return new Impl.Context(this, context);
+    }
+
+    return this.users.getImpl(id);
   }
 
   public async ensureSanity(): Promise<void> {

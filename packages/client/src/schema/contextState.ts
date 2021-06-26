@@ -39,7 +39,6 @@ export type Project = Overwrite<StateQuery$User$Project, {
 }>;
 
 export type Inbox = Overwrite<Omit<StateQuery$User$Inbox, "items">, {
-  readonly id: "inbox";
   readonly itemCount: number;
 }>;
 
@@ -115,7 +114,6 @@ function buildUser(queryResult: StateQuery$User): User {
     ...queryResult,
     inbox: {
       ...queryResult.inbox,
-      id: "inbox",
       itemCount: queryResult.inbox.items.count,
     },
     ...buildProjectRoot(queryResult),

@@ -177,6 +177,7 @@ export type FileDetailResolvers<ContextType = ResolverContext, ParentType extend
 }>;
 
 export type InboxResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Inbox'] = ResolversParentTypes['Inbox']> = ResolversObject<{
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
   items: Resolver<ResolversTypes['ItemSet'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
@@ -214,21 +215,21 @@ export type MutationResolvers<ContextType = ResolverContext, ParentType extends 
   createContext: Resolver<ResolversTypes['Context'], ParentType, ContextType, RequireFields<Schema.MutationCreateContextArgs, 'params'>>;
   editContext: Resolver<Schema.Maybe<ResolversTypes['Context']>, ParentType, ContextType, RequireFields<Schema.MutationEditContextArgs, 'id' | 'params'>>;
   deleteContext: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteContextArgs, 'id'>>;
-  createProject: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<Schema.MutationCreateProjectArgs, 'params'>>;
-  moveProject: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationMoveProjectArgs, 'id'>>;
+  createProject: Resolver<ResolversTypes['Project'], ParentType, ContextType, RequireFields<Schema.MutationCreateProjectArgs, 'taskList' | 'params'>>;
+  moveProject: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationMoveProjectArgs, 'id' | 'taskList'>>;
   editProject: Resolver<Schema.Maybe<ResolversTypes['Project']>, ParentType, ContextType, RequireFields<Schema.MutationEditProjectArgs, 'id' | 'params'>>;
   deleteProject: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteProjectArgs, 'id'>>;
-  createSection: Resolver<ResolversTypes['Section'], ParentType, ContextType, RequireFields<Schema.MutationCreateSectionArgs, 'params'>>;
-  moveSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationMoveSectionArgs, 'id'>>;
+  createSection: Resolver<ResolversTypes['Section'], ParentType, ContextType, RequireFields<Schema.MutationCreateSectionArgs, 'taskList' | 'params'>>;
+  moveSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationMoveSectionArgs, 'id' | 'taskList'>>;
   editSection: Resolver<Schema.Maybe<ResolversTypes['Section']>, ParentType, ContextType, RequireFields<Schema.MutationEditSectionArgs, 'id' | 'params'>>;
   deleteSection: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteSectionArgs, 'id'>>;
-  createTask: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'item'>>;
-  createNote: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateNoteArgs, 'item' | 'detail' | 'isTask'>>;
-  createLink: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateLinkArgs, 'item' | 'detail' | 'isTask'>>;
+  createTask: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateTaskArgs, 'list' | 'item'>>;
+  createNote: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateNoteArgs, 'list' | 'item' | 'detail' | 'isTask'>>;
+  createLink: Resolver<ResolversTypes['Item'], ParentType, ContextType, RequireFields<Schema.MutationCreateLinkArgs, 'list' | 'item' | 'detail' | 'isTask'>>;
   editItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditItemArgs, 'id' | 'item'>>;
   editTaskInfo: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditTaskInfoArgs, 'id'>>;
   editTaskController: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationEditTaskControllerArgs, 'id'>>;
-  moveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMoveItemArgs, 'id'>>;
+  moveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationMoveItemArgs, 'id' | 'list'>>;
   deleteItem: Resolver<ResolversTypes['Boolean'], ParentType, ContextType, RequireFields<Schema.MutationDeleteItemArgs, 'id'>>;
   archiveItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationArchiveItemArgs, 'id'>>;
   snoozeItem: Resolver<Schema.Maybe<ResolversTypes['Item']>, ParentType, ContextType, RequireFields<Schema.MutationSnoozeItemArgs, 'id'>>;

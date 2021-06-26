@@ -75,6 +75,7 @@ interface ProjectRoot implements TaskList {
 }
 
 type Inbox {
+  id: ID!
   items: ItemSet!
 }
 
@@ -184,25 +185,25 @@ type Mutation {
   editContext(id: ID!, params: ContextParams!): Context
   deleteContext(id: ID!): Boolean!
 
-  createProject(taskList: ID, params: ProjectParams!): Project!
-  moveProject(id: ID!, taskList: ID): Project
+  createProject(taskList: ID!, params: ProjectParams!): Project!
+  moveProject(id: ID!, taskList: ID!): Project
   editProject(id: ID!, params: ProjectParams!): Project
   deleteProject(id: ID!): Boolean!
 
-  createSection(taskList: ID, before: ID, params: SectionParams!): Section!
-  moveSection(id: ID!, taskList: ID, before: ID): Section
+  createSection(taskList: ID!, before: ID, params: SectionParams!): Section!
+  moveSection(id: ID!, taskList: ID!, before: ID): Section
   editSection(id: ID!, params: SectionParams!): Section
   deleteSection(id: ID!): Boolean!
 
-  createTask(list: ID, item: ItemParams!): Item!
-  createNote(list: ID, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
-  createLink(list: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
+  createTask(list: ID!, item: ItemParams!): Item!
+  createNote(list: ID!, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
+  createLink(list: ID!, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
   editTaskController(id: ID!, controller: String): Item
 
-  moveItem(id: ID!, parent: ID, before: ID): Item
+  moveItem(id: ID!, list: ID!, before: ID): Item
   deleteItem(id: ID!): Boolean!
 
   archiveItem(id: ID!, archived: DateTime): Item
