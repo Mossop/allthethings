@@ -13,7 +13,9 @@ import {
 import { useMemo } from "react";
 
 import {
-  isContext, isInbox, isProject, isUser,
+  isContext,
+  isInbox,
+  isProject,
   useDeleteContextMutation,
   useDeleteProjectMutation,
   useDeleteSectionMutation,
@@ -21,7 +23,7 @@ import {
   refetchQueriesForSection,
 } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
-import { ViewType, replaceView, useLoggedInView, useProjectRoot, useUser } from "../utils/view";
+import { ViewType, replaceView, useLoggedInView, useUser } from "../utils/view";
 import AddMenu from "./AddMenu";
 
 const useStyles = makeStyles(() =>
@@ -41,7 +43,6 @@ export default ReactMemo(function ItemListActions({
   list,
 }: ItemListActionsProps): ReactResult {
   let classes = useStyles();
-  let root = useProjectRoot();
   let view = useLoggedInView();
   let user = useUser();
 
@@ -58,7 +59,7 @@ export default ReactMemo(function ItemListActions({
   });
 
   let deleteList = useMemo(() => {
-    if (isUser(list) || isInbox(list)) {
+    if (isContext(list) && list === user.defaultContext || isInbox(list)) {
       return null;
     }
 
@@ -66,7 +67,7 @@ export default ReactMemo(function ItemListActions({
       if (isProject(list)) {
         replaceView({
           type: ViewType.TaskList,
-          taskList: list.parent ?? root,
+          taskList: list.parent ?? view.context,
         }, view);
 
         void deleteProject({
@@ -77,8 +78,8 @@ export default ReactMemo(function ItemListActions({
       } else if (isContext(list)) {
         replaceView({
           type: ViewType.TaskList,
-          taskList: user,
-          context: null,
+          taskList: user.defaultContext,
+          context: user.defaultContext,
         }, view);
 
         void deleteContext({
@@ -95,7 +96,7 @@ export default ReactMemo(function ItemListActions({
         });
       }
     };
-  }, [deleteContext, deleteProject, deleteSection, list, root, view, user]);
+  }, [deleteContext, deleteProject, deleteSection, list, view, user]);
 
   return <div className={classes.actions}>
     <AddMenu list={list}/>

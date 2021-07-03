@@ -23,12 +23,12 @@ import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
 import {
-  useProjectRoot,
   pushView,
   useUrl,
   useLoggedInView,
   ViewType,
   useUser,
+  useCurrentContext,
 } from "../../utils/view";
 import AdminPage from "./AdminPage";
 
@@ -61,7 +61,7 @@ function SettingsSidebar(): ReactResult {
 
   let taskLink = useUrl({
     type: ViewType.TaskList,
-    taskList: useProjectRoot(),
+    taskList: useCurrentContext(),
   });
 
   let user = useUser();

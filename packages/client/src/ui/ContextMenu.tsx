@@ -13,14 +13,12 @@ import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo } from "react";
 
-import type { Context, ProjectRoot } from "../schema";
-import { isContext } from "../schema";
+import type { Context } from "../schema";
 import { nameSorted } from "../utils/collections";
 import type { LoggedInState } from "../utils/view";
 import {
   useContexts,
   useCurrentContext,
-  useUser,
   ViewType,
   useLoggedInView,
   useUrl,
@@ -47,7 +45,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 interface ContextMenuItemProps {
   name: string;
-  target: ProjectRoot;
+  target: Context;
   selected: boolean;
 }
 
@@ -72,7 +70,7 @@ const ContextMenuItem = ReactMemo(
         };
     }
 
-    let url = useUrl(targetView, isContext(target) ? target : null);
+    let url = useUrl(targetView, target);
 
     let click = useCallback((event: React.MouseEvent) => {
       event.preventDefault();
@@ -98,7 +96,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let contextMenuState = useMenuState("context-menu");
   let contexts = useContexts();
   let currentContext = useCurrentContext();
-  let user = useUser();
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
 
@@ -115,7 +112,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       {...bindTrigger(contextMenuState)}
     >
       <Icons.Context className={classes.icon}/>
-      {currentContext && <div className={classes.context}>{currentContext.name}</div>}
+      <div className={classes.context}>{currentContext.name}</div>
     </Button>
     <Menu
       state={contextMenuState}
@@ -126,17 +123,12 @@ export default ReactMemo(function ContextMenu(): ReactResult {
         }
       }
     >
-      <ContextMenuItem
-        name="No Context."
-        selected={!currentContext}
-        target={user}
-      />
       {
         sorted.map((context: Context) => <ContextMenuItem
           key={context.id}
           name={context.name}
           target={context}
-          selected={context.id == currentContext?.id}
+          selected={context.id == currentContext.id}
         />)
       }
       <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>

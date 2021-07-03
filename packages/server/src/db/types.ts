@@ -30,6 +30,7 @@ export interface DbEntity {
 
 export interface IndexedDbEntity {
   ownerId: string;
+  userId: string;
   index: number;
 }
 
@@ -65,6 +66,8 @@ export type ContextDbTable = DbTable<{
 export type ProjectDbTable = DbTable<{
   // Foreign key to ContextDbTable.id.
   contextId: string;
+  // Foreign key to UserDbTable.id.
+  userId: string;
   parentId: string | null;
   // This will be empty for the anonymous project for the context. In this case contextId == id and
   // parentId == null.
@@ -90,7 +93,9 @@ export type SectionDbTable = DbTable<IndexedDbEntity & {
 }>;
 
 // Every item.
-export type ItemDbTable = DbTable<IndexedDbEntity & {
+export type ItemDbTable = DbTable<{
+  // Foreign key to UserDbTable.id.
+  userId: string;
   summary: string;
   archived: DateTime | null;
   snoozed: DateTime | null;
@@ -98,6 +103,8 @@ export type ItemDbTable = DbTable<IndexedDbEntity & {
 }, {
   created: DateTime;
 }>;
+
+export type SectionItemsDbTable = DbTable<IndexedDbEntity>;
 
 // Task data for an item. id is a foreign key to ItemDbTable.id
 export type TaskInfoDbTable = DbTable<{

@@ -5,8 +5,8 @@ import { TaskController } from "@allthethings/schema";
 import type { Overwrite } from "@allthethings/utils";
 import { DateTime } from "luxon";
 
-import type { User, Context, Project, Section, TaskList, Item } from "../db";
-import { PluginDetail, Inbox } from "../db";
+import type { User, Context, Project, Section, Item, ItemHolder } from "../db";
+import { PluginDetail } from "../db";
 import { ItemType } from "../db/types";
 import PluginManager from "../plugins";
 import { bestIcon, loadPageInfo } from "../utils/page";
@@ -16,16 +16,17 @@ import type { MutationResolvers } from "./resolvers";
 import type * as Types from "./types";
 
 type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
-  list: TaskList | Section | Inbox;
+  user: User;
+  section: ItemHolder | null;
   taskInfo?: Types.TaskInfoParams | null;
 }>;
 
 async function baseCreateItem(
   ctx: AuthedResolverContext,
-  { list, item: itemParams, taskInfo }: ItemCreateArgs,
+  { user, section, item: itemParams, taskInfo }: ItemCreateArgs,
   type: ItemType | null,
 ): Promise<Item> {
-  let item = await ctx.dataSources.items.create(list, {
+  let item = await ctx.dataSources.items.create(user, section, {
     ...itemParams,
     archived: itemParams.archived ?? null,
     snoozed: itemParams.snoozed ?? null,
@@ -83,12 +84,22 @@ const resolvers: MutationResolvers = {
   }),
 
   deleteContext: authed(async (ctx, { id }): Promise<boolean> => {
+    let record = await ctx.dataSources.contexts.getRecord(id);
+    if (!record) {
+      return false;
+    }
+
+    let userContexts = await ctx.dataSources.contexts.find({ userId: record.userId });
+    if (userContexts.length < 2) {
+      throw new Error("Cannot delete the last context.");
+    }
+
     await ctx.dataSources.contexts.delete(id);
     return true;
   }),
 
   createProject: authed(async (ctx, { taskList: taskListId, params }): Promise<Project> => {
-    let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
+    let taskList = await ctx.getTaskList(taskListId);
     if (!taskList) {
       throw new Error("Unknown task list.");
     }
@@ -114,7 +125,7 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    let list = await ctx.getTaskList(taskList ?? ctx.userId);
+    let list = await ctx.getTaskList(taskList);
     if (list === null) {
       throw new Error("TaskList not found.");
     }
@@ -134,7 +145,7 @@ const resolvers: MutationResolvers = {
   }),
 
   createSection: authed(async (ctx, { taskList: taskListId, before, params }): Promise<Section> => {
-    let taskList = await ctx.getTaskList(taskListId ?? ctx.userId);
+    let taskList = await ctx.getTaskList(taskListId);
     if (!taskList) {
       throw new Error("Unknown task list.");
     }
@@ -160,7 +171,7 @@ const resolvers: MutationResolvers = {
       return null;
     }
 
-    let list = await ctx.getTaskList(taskList ?? ctx.userId);
+    let list = await ctx.getTaskList(taskList);
     if (list === null) {
       throw new Error("TaskList not found.");
     }
@@ -179,14 +190,21 @@ const resolvers: MutationResolvers = {
     return true;
   }),
 
-  createTask: authed(async (ctx, { list: listId, ...args }): Promise<Item> => {
-    let list = await ctx.dataSources.getItemTarget(listId);
-    if (!list) {
-      throw new Error("Unknown list list.");
+  createTask: authed(async (ctx, { user: userId, section: sectionId, ...args }): Promise<Item> => {
+    let user = await ctx.getUser(userId ?? null);
+
+    let section: ItemHolder | null = null;
+    if (sectionId) {
+      section = await ctx.getSection(sectionId);
+
+      if (!section) {
+        throw new Error("Unknown section.");
+      }
     }
 
     return baseCreateItem(ctx, {
-      list,
+      user,
+      section,
       ...args,
       taskInfo: {
         due: null,
@@ -196,7 +214,15 @@ const resolvers: MutationResolvers = {
   }),
 
   createLink: authed(
-    async (ctx, { detail: { url }, list: listId, isTask, ...args }): Promise<Item> => {
+    async (ctx, {
+      detail: { url },
+      section: sectionId,
+      user: userId,
+      isTask,
+      ...args
+    }): Promise<Item> => {
+      let user = await ctx.getUser(userId ?? null);
+
       let targetUrl: URL;
       try {
         targetUrl = new URL(url);
@@ -204,16 +230,21 @@ const resolvers: MutationResolvers = {
         throw new Error("Invalid url.");
       }
 
-      let list = await ctx.dataSources.getItemTarget(listId);
-      if (!list) {
-        throw new Error("Unknown list list.");
+      let section: ItemHolder | null = null;
+      if (sectionId) {
+        section = await ctx.getSection(sectionId);
+
+        if (!section) {
+          throw new Error("Unknown section.");
+        }
       }
 
       let item = await PluginManager.createItemFromURL(ctx, targetUrl, isTask);
       if (item) {
-        if (!(list instanceof Inbox)) {
-          await item.move(list, null);
+        if (section) {
+          await item.move(section, null);
         }
+
         return item;
       }
 
@@ -226,7 +257,8 @@ const resolvers: MutationResolvers = {
 
       item = await baseCreateItem(ctx, {
         ...args,
-        list,
+        user,
+        section,
         item: {
           ...args.item,
           summary,
@@ -246,13 +278,24 @@ const resolvers: MutationResolvers = {
     },
   ),
 
-  createNote: authed(async (ctx, { detail, list: listId, ...args }): Promise<Item> => {
-    let list = await ctx.dataSources.getItemTarget(listId);
-    if (!list) {
-      throw new Error("Unknown list list.");
+  createNote: authed(async (ctx, {
+    detail,
+    user: userId,
+    section: sectionId,
+    ...args
+  }): Promise<Item> => {
+    let user = await ctx.getUser(userId ?? null);
+
+    let section: ItemHolder | null = null;
+    if (sectionId) {
+      section = await ctx.getSection(sectionId);
+
+      if (!section) {
+        throw new Error("Unknown section.");
+      }
     }
 
-    let item = await baseCreateItem(ctx, { list, ...args }, ItemType.Note);
+    let item = await baseCreateItem(ctx, { user, section, ...args }, ItemType.Note);
 
     await ctx.dataSources.noteDetail.create(item, {
       ...detail,
@@ -388,19 +431,23 @@ const resolvers: MutationResolvers = {
     return item;
   }),
 
-  moveItem: authed(async (ctx, { id, list, before }): Promise<Item | null> => {
+  moveItem: authed(async (ctx, { id, section: sectionId, before }): Promise<Item | null> => {
     let item = await ctx.dataSources.items.getImpl(id);
 
     if (!item) {
       return null;
     }
 
-    let owner = await ctx.dataSources.getItemTarget(list);
-    if (!owner) {
-      throw new Error("Unknown list.");
+    let section: ItemHolder | null = null;
+    if (sectionId) {
+      section = await ctx.getSection(sectionId);
+
+      if (!section) {
+        throw new Error("Unknown section.");
+      }
     }
 
-    await item.move(owner, before ?? null);
+    await item.move(section, before ?? null);
 
     return item;
   }),
@@ -482,11 +529,7 @@ const resolvers: MutationResolvers = {
   }),
 
   deleteUser: admin(async (ctx, { id }): Promise<boolean> => {
-    let user = await ctx.dataSources.users.getImpl(id);
-    if (!user) {
-      return false;
-    }
-
+    let user = await ctx.getUser(id ?? null);
     await user.delete();
     return true;
   }),

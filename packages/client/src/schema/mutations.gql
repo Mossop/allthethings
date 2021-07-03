@@ -81,14 +81,14 @@ mutation DeleteProject($id: ID!) {
   deleteProject(id: $id)
 }
 
-mutation CreateTask($list: ID!, $item: ItemParams!) {
-  createTask(list: $list, item: $item) {
+mutation CreateTask($section: ID, $item: ItemParams!) {
+  createTask(section: $section, item: $item) {
     ...clientItemFields
   }
 }
 
-mutation CreateLink($list: ID!, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
-  createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
+mutation CreateLink($section: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+  createLink(section: $section, item: $item, detail: $detail, isTask: $isTask) {
     ...clientItemFields
   }
 }
@@ -111,8 +111,8 @@ mutation EditTaskController($id: ID!, $controller: String) {
   }
 }
 
-mutation MoveItem($id: ID!, $list: ID!, $before: ID) {
-  moveItem(id: $id, list: $list, before: $before) {
+mutation MoveItem($id: ID!, $section: ID, $before: ID) {
+  moveItem(id: $id, section: $section, before: $before) {
     ...clientItemFields
   }
 }

@@ -102,9 +102,7 @@ export function buildPluginContext(
         done = null;
       }
 
-      let inbox = await user.inbox();
-
-      let itemImpl = await dataSources.items.create(inbox, {
+      let itemImpl = await dataSources.items.create(user, null, {
         ...item,
         type: ItemType.Plugin,
       });
@@ -372,6 +370,10 @@ class PluginManager {
 
   public async rollbackDbMigrations(knex: Knex, all: boolean = false): Promise<void> {
     await this.withAll(async (plugin: PluginInstance): Promise<void> => {
+      if (all) {
+        return knex.raw("DROP SCHEMA IF EXISTS ?? CASCADE", [plugin.schema]);
+      }
+
       let migrations = await plugin.getDbMigrations();
       if (!migrations.length) {
         return;

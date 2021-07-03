@@ -20,7 +20,6 @@ import { useDragSource, useDragState, useDropTarget } from "../utils/drag";
 import { Filters, isVisible } from "../utils/filter";
 import {
   useCurrentContext,
-  useProjectRoot,
   useUrl,
   useLoggedInView,
   ViewType,
@@ -190,7 +189,6 @@ export default ReactMemo(function ProjectList(): ReactResult {
   let classes = useStyles({ depth: 0 });
 
   let view = useLoggedInView();
-  let root = useProjectRoot();
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
 
@@ -205,7 +203,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
   });
   let tasksUrl = useUrl({
     type: ViewType.TaskList,
-    taskList: root,
+    taskList: context,
   });
 
   let {
@@ -216,7 +214,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
   let {
     isDropping: isRootDropping,
     dropRef: rootDropRef,
-  } = useDropTarget(context ?? view.user);
+  } = useDropTarget(context);
 
   let inboxContents = useInboxContents();
   let inboxLabel = useMemo(() => {
@@ -247,15 +245,15 @@ export default ReactMemo(function ProjectList(): ReactResult {
         ref={rootDropRef}
         url={tasksUrl}
         icon={<Icons.Project/>}
-        selected={view.type == ViewType.TaskList && taskList?.id == root.id}
-        taskCount={root.remainingTasks}
-        label={context?.name ?? "Tasks"}
+        selected={view.type == ViewType.TaskList && taskList?.id == context.id}
+        taskCount={context.remainingTasks}
+        label={context.name}
         depth={0}
         className={clsx(isRootDropping && classes.dropping)}
       />
       <Divider className={classes.divider}/>
       {
-        nameSorted(root.subprojects).map((project: Project) => <ProjectItem
+        nameSorted(context.subprojects).map((project: Project) => <ProjectItem
           key={project.id}
           project={project}
           taskList={taskList}
@@ -272,7 +270,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
     {
       showCreateProjectDialog && <CreateProjectDialog
         onClosed={closeCreateProjectDialog}
-        taskList={taskList ?? root}
+        taskList={taskList ?? context}
       />
     }
   </Paper>;

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 
 import type { TaskList } from "../schema";
 import { useCreateProjectMutation, refetchListContextStateQuery } from "../schema";
-import { useProjectRoot, useLoggedInView, pushView, ViewType } from "../utils/view";
+import { useLoggedInView, pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
   onClosed: () => void;
@@ -18,7 +18,6 @@ export default ReactMemo(function CreateProjectDialog({
   let [state, setState] = useState({
     name: "",
   });
-  let root = useProjectRoot();
   let view = useLoggedInView();
 
   let [isOpen,, close] = useBoolState(true);
@@ -38,8 +37,8 @@ export default ReactMemo(function CreateProjectDialog({
       return null;
     }
 
-    return root.projects.get(data.createProject.id) ?? null;
-  }, [data, root]);
+    return view.context.projects.get(data.createProject.id) ?? null;
+  }, [data, view.context]);
 
   useEffect(() => {
     if (!newProject) {
@@ -67,6 +66,7 @@ export default ReactMemo(function CreateProjectDialog({
     <TextFieldInput
       id="name"
       label="Name:"
+      autoFocus={true}
       state={state}
       setState={setState}
       stateKey="name"

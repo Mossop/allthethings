@@ -37,8 +37,6 @@ module.exports = {
             Project: "../db/implementations#Project",
             Section: "../db/implementations#Section",
             TaskList: "../db/implementations#TaskList",
-            ProjectRoot: "../db/implementations#ProjectRoot",
-            Inbox: "../db/implementations#Inbox",
             Item: "../db/implementations#Item",
             TaskInfo: "../db/implementations#TaskInfo",
             LinkDetail: "../db/implementations#LinkDetail",

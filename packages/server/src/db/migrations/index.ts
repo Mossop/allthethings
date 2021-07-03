@@ -36,4 +36,5 @@ class ModuleMigration implements DbMigration {
 
 export default new DbMigrationSource([
   new ModuleMigration("./init", "Init"),
+  new ModuleMigration("./noDefaultContext", "No Default Context"),
 ]);

@@ -15,18 +15,18 @@ export type Scalars = {
   DateTime: DateTime;
 };
 
-export type Context = ProjectRoot & TaskList & {
+export type Context = TaskList & {
   readonly __typename: 'Context';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
   readonly rootItems: ItemSet;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
   readonly user: User;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
+  readonly projects: ReadonlyArray<Project>;
+  readonly projectById?: Maybe<Project>;
 };
 
 
@@ -44,12 +44,6 @@ export type FileDetail = {
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
-};
-
-export type Inbox = {
-  readonly __typename: 'Inbox';
-  readonly id: Scalars['ID'];
-  readonly items: ItemSet;
 };
 
 export type Item = {
@@ -151,6 +145,7 @@ export type MutationLoginArgs = {
 
 
 export type MutationCreateContextArgs = {
+  user?: Maybe<Scalars['ID']>;
   params: ContextParams;
 };
 
@@ -215,13 +210,15 @@ export type MutationDeleteSectionArgs = {
 
 
 export type MutationCreateTaskArgs = {
-  list: Scalars['ID'];
+  user?: Maybe<Scalars['ID']>;
+  section?: Maybe<Scalars['ID']>;
   item: ItemParams;
 };
 
 
 export type MutationCreateNoteArgs = {
-  list: Scalars['ID'];
+  user?: Maybe<Scalars['ID']>;
+  section?: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: NoteDetailParams;
   isTask: Scalars['Boolean'];
@@ -229,7 +226,8 @@ export type MutationCreateNoteArgs = {
 
 
 export type MutationCreateLinkArgs = {
-  list: Scalars['ID'];
+  user?: Maybe<Scalars['ID']>;
+  section?: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: LinkDetailParams;
   isTask: Scalars['Boolean'];
@@ -256,7 +254,7 @@ export type MutationEditTaskControllerArgs = {
 
 export type MutationMoveItemArgs = {
   id: Scalars['ID'];
-  list: Scalars['ID'];
+  section?: Maybe<Scalars['ID']>;
   before?: Maybe<Scalars['ID']>;
 };
 
@@ -292,7 +290,7 @@ export type MutationCreateUserArgs = {
 
 
 export type MutationDeleteUserArgs = {
-  id: Scalars['ID'];
+  id?: Maybe<Scalars['ID']>;
 };
 
 
@@ -344,36 +342,16 @@ export type ProjectParams = {
   readonly name: Scalars['String'];
 };
 
-export type ProjectRoot = {
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ItemSet;
-  readonly rootItems: ItemSet;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById?: Maybe<Project>;
-};
-
-
-export type ProjectRootProjectByIdArgs = {
-  id: Scalars['ID'];
-};
-
 export type Query = {
   readonly __typename: 'Query';
   readonly user?: Maybe<User>;
   readonly users: ReadonlyArray<User>;
   readonly taskList?: Maybe<TaskList>;
-  readonly root?: Maybe<ProjectRoot>;
   readonly pageContent: Scalars['String'];
 };
 
 
 export type QueryTaskListArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type QueryRootArgs = {
   id: Scalars['ID'];
 };
 
@@ -411,50 +389,34 @@ export type TaskList = {
   readonly items: ItemSet;
 };
 
-export type User = ProjectRoot & TaskList & {
+export type User = {
   readonly __typename: 'User';
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ItemSet;
-  readonly rootItems: ItemSet;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById?: Maybe<Project>;
   readonly id: Scalars['ID'];
   readonly email: Scalars['String'];
   readonly contexts: ReadonlyArray<Context>;
-  readonly inbox: Inbox;
+  readonly inbox: ItemSet;
   readonly isAdmin: Scalars['Boolean'];
   readonly allItems: ItemSet;
 };
 
-
-export type UserProjectByIdArgs = {
-  id: Scalars['ID'];
-};
-
-export type ContextKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | 'id' | 'user' | 'stub' | 'name' | ContextKeySpecifier)[];
+export type ContextKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'id' | 'user' | 'stub' | 'name' | 'projects' | 'projectById' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>,
 	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
-	projects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	stub?: FieldPolicy<any> | FieldReadFunction<any>,
-	name?: FieldPolicy<any> | FieldReadFunction<any>
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	projects?: FieldPolicy<any> | FieldReadFunction<any>,
+	projectById?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type FileDetailKeySpecifier = ('filename' | 'mimetype' | 'size' | FileDetailKeySpecifier)[];
 export type FileDetailFieldPolicy = {
 	filename?: FieldPolicy<any> | FieldReadFunction<any>,
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
-};
-export type InboxKeySpecifier = ('id' | 'items' | InboxKeySpecifier)[];
-export type InboxFieldPolicy = {
-	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ItemKeySpecifier = ('id' | 'summary' | 'created' | 'archived' | 'snoozed' | 'taskInfo' | 'detail' | ItemKeySpecifier)[];
 export type ItemFieldPolicy = {
@@ -540,21 +502,11 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ProjectRootKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | ProjectRootKeySpecifier)[];
-export type ProjectRootFieldPolicy = {
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	sections?: FieldPolicy<any> | FieldReadFunction<any>,
-	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
-	projects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectById?: FieldPolicy<any> | FieldReadFunction<any>
-};
-export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'root' | 'pageContent' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'pageContent' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	users?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
-	root?: FieldPolicy<any> | FieldReadFunction<any>,
 	pageContent?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type SectionKeySpecifier = ('items' | 'id' | 'name' | SectionKeySpecifier)[];
@@ -575,14 +527,8 @@ export type TaskListFieldPolicy = {
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'projects' | 'projectById' | 'id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | 'allItems' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | 'allItems' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
-	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
-	sections?: FieldPolicy<any> | FieldReadFunction<any>,
-	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	rootItems?: FieldPolicy<any> | FieldReadFunction<any>,
-	projects?: FieldPolicy<any> | FieldReadFunction<any>,
-	projectById?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -598,10 +544,6 @@ export type TypedTypePolicies = TypePolicies & {
 	FileDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | FileDetailKeySpecifier | (() => undefined | FileDetailKeySpecifier),
 		fields?: FileDetailFieldPolicy,
-	},
-	Inbox?: Omit<TypePolicy, "fields" | "keyFields"> & {
-		keyFields?: false | InboxKeySpecifier | (() => undefined | InboxKeySpecifier),
-		fields?: InboxFieldPolicy,
 	},
 	Item?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ItemKeySpecifier | (() => undefined | ItemKeySpecifier),
@@ -634,10 +576,6 @@ export type TypedTypePolicies = TypePolicies & {
 	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),
 		fields?: ProjectFieldPolicy,
-	},
-	ProjectRoot?: Omit<TypePolicy, "fields" | "keyFields"> & {
-		keyFields?: false | ProjectRootKeySpecifier | (() => undefined | ProjectRootKeySpecifier),
-		fields?: ProjectRootFieldPolicy,
 	},
 	Query?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | QueryKeySpecifier | (() => undefined | QueryKeySpecifier),
@@ -674,14 +612,9 @@ export type TypedTypePolicies = TypePolicies & {
       "NoteDetail",
       "FileDetail"
     ],
-    "ProjectRoot": [
-      "Context",
-      "User"
-    ],
     "TaskList": [
       "Context",
-      "Project",
-      "User"
+      "Project"
     ]
   }
 };

@@ -2,7 +2,7 @@ import PluginManager from "../plugins";
 import type { User as PluginUser } from "../plugins/types";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
-import * as Src from "./datasources";
+import type * as Src from "./datasources";
 import * as Db from "./types";
 
 export type ImplBuilder<I, T> = (dataSources: Src.AppDataSources, dbObject: Db.DbObject<T>) => I;
@@ -42,8 +42,8 @@ function fields<T extends Db.DbTable>(): FieldGetter<T> {
   };
 }
 
-export type TaskList = User | Project | Context;
-export type ProjectRoot = User | Context;
+export type TaskList = Project | Context;
+export type ItemHolder = TaskList | Section;
 export type ItemDetail = NoteDetail | LinkDetail | PluginDetail | FileDetail;
 
 abstract class BaseImpl<T extends Db.DbTable = Db.DbTable> {
@@ -123,37 +123,11 @@ abstract class TaskListImpl<
   }
 
   public items(): Src.ItemSet {
-    return this.dataSources.items.listSpecialSection(this._id, Src.SectionIndex.Anonymous);
+    return this.dataSources.items.sectionItems(this._id);
   }
 }
 
-abstract class ProjectRootImpl<
-  T extends Db.DbTable,
-> extends TaskListImpl<T> implements Omit<Rslv.ProjectRootResolvers, "__resolveType"> {
-  public async projects(): Promise<readonly Project[]> {
-    return this.dataSources.projects.find({
-      contextId: this._id,
-    });
-  }
-
-  public async projectById(
-    parent: unknown,
-    args: Schema.ProjectRootProjectByIdArgs,
-  ): Promise<Project | null> {
-    let results = await this.dataSources.projects.find({
-      contextId: this._id,
-      id: args.id,
-    });
-
-    return results.length ? results[0] : null;
-  }
-
-  public rootItems(): Src.ItemSet {
-    return this.dataSources.items.contextItems(this.id());
-  }
-}
-
-export class User extends ProjectRootImpl<Db.UserDbTable>
+export class User extends BaseImpl<Db.UserDbTable>
   implements Rslv.UserResolvers, PluginUser {
   protected get dbObjectDataSource(): Src.UserDataSource {
     return this.dataSources.users;
@@ -165,12 +139,8 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
     });
   }
 
-  public async inbox(): Promise<Inbox> {
-    let record = assertValid(
-      await this.dataSources.sections.getSpecialSection(this._id, Src.SectionIndex.Inbox),
-    );
-
-    return new Inbox(this.dataSources, record);
+  public async inbox(): Promise<Src.ItemSet> {
+    return this.dataSources.items.sectionItems(null);
   }
 
   public allItems(): Src.ItemSet {
@@ -182,9 +152,31 @@ export class User extends ProjectRootImpl<Db.UserDbTable>
 }
 
 export class Context
-  extends ProjectRootImpl<Db.ContextDbTable> implements Rslv.ContextResolvers {
+  extends TaskListImpl<Db.ContextDbTable> implements Rslv.ContextResolvers {
   protected get dbObjectDataSource(): Src.ContextDataSource {
     return this.dataSources.contexts;
+  }
+
+  public async projects(): Promise<readonly Project[]> {
+    return this.dataSources.projects.find({
+      contextId: this._id,
+    });
+  }
+
+  public async projectById(
+    parent: unknown,
+    args: Schema.ContextProjectByIdArgs,
+  ): Promise<Project | null> {
+    let results = await this.dataSources.projects.find({
+      contextId: this._id,
+      id: args.id,
+    });
+
+    return results.length ? results[0] : null;
+  }
+
+  public rootItems(): Src.ItemSet {
+    return this.dataSources.items.contextItems(this.id());
   }
 
   public async edit(
@@ -238,43 +230,14 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
   public readonly stub = fields<Db.ProjectDbTable>()("stub");
   public readonly name = fields<Db.ProjectDbTable>()("name");
 
-  public async taskList(): Promise<Project | User | Context> {
+  public async taskList(): Promise<Project | Context> {
     let { parentId, contextId } = await this.dbObject;
     if (parentId) {
       return new Project(this.dataSources, parentId);
     }
 
     let context = await this.dataSources.contexts.getImpl(contextId);
-    if (context) {
-      return context;
-    }
-
-    let user = await this.dataSources.users.getImpl(contextId);
-    return assertValid(user);
-  }
-}
-
-export abstract class SpecialSection {
-  public constructor(
-    protected readonly dataSources: Src.AppDataSources,
-    protected readonly dbObject: Db.DbObject<Db.SectionDbTable>,
-  ) {
-  }
-
-  public id(): string {
-    return this.dbObject.id;
-  }
-
-  public items(): Src.ItemSet {
-    return this.dataSources.items.findItems({
-      ownerId: this.id(),
-    });
-  }
-}
-
-export class Inbox extends SpecialSection implements Rslv.InboxResolvers {
-  public items(): Src.ItemSet {
-    return super.items().sortBy("created", true);
+    return assertValid(context);
   }
 }
 
@@ -285,9 +248,7 @@ export class Section extends BaseImpl<Db.SectionDbTable>
   }
 
   public items(): Src.ItemSet {
-    return this.dataSources.items.findItems({
-      ownerId: this._id,
-    });
+    return this.dataSources.items.sectionItems(this._id);
   }
 
   public async edit(
@@ -297,10 +258,11 @@ export class Section extends BaseImpl<Db.SectionDbTable>
   }
 
   public async move(
-    taskList: User | Context | Project,
+    holder: Context | Project,
     before: string | null,
   ): Promise<void> {
-    await this.dbObjectDataSource.move(this._id, taskList.id(), before);
+    let { userId } = await this.dbObject;
+    await this.dbObjectDataSource.move(this._id, userId, holder.id(), before);
 
     this._dbObject = null;
   }
@@ -325,10 +287,16 @@ export class Item extends BaseImpl<Db.ItemDbTable>
   }
 
   public async move(
-    parent: TaskList | Section | SpecialSection,
+    parent: ItemHolder | null,
     before: string | null,
   ): Promise<void> {
-    await this.dbObjectDataSource.move(this._id, parent.id(), before);
+    let { userId } = await this.dbObject;
+
+    if (parent) {
+      await this.dbObjectDataSource.move(this._id, userId, parent.id(), before);
+    } else {
+      await this.dbObjectDataSource.remove(this._id);
+    }
 
     this._dbObject = null;
   }

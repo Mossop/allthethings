@@ -48,18 +48,18 @@ export type BugzillaSearchParams = {
   readonly query: Scalars['String'];
 };
 
-export type Context = ProjectRoot & TaskList & {
+export type Context = TaskList & {
   readonly __typename?: 'Context';
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
   readonly rootItems: ItemSet;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById: Maybe<Project>;
   readonly id: Scalars['ID'];
   readonly user: User;
   readonly stub: Scalars['String'];
   readonly name: Scalars['String'];
+  readonly projects: ReadonlyArray<Project>;
+  readonly projectById: Maybe<Project>;
 };
 
 
@@ -77,12 +77,6 @@ export type FileDetail = {
   readonly filename: Scalars['String'];
   readonly mimetype: Scalars['String'];
   readonly size: Scalars['Int'];
-};
-
-export type Inbox = {
-  readonly __typename?: 'Inbox';
-  readonly id: Scalars['ID'];
-  readonly items: ItemSet;
 };
 
 export type Item = {
@@ -206,12 +200,14 @@ export type MutationCreateBugzillaSearchArgs = {
 
 
 export type MutationCreateContextArgs = {
+  user: Maybe<Scalars['ID']>;
   params: ContextParams;
 };
 
 
 export type MutationCreateLinkArgs = {
-  list: Scalars['ID'];
+  user: Maybe<Scalars['ID']>;
+  section: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: LinkDetailParams;
   isTask: Scalars['Boolean'];
@@ -219,7 +215,8 @@ export type MutationCreateLinkArgs = {
 
 
 export type MutationCreateNoteArgs = {
-  list: Scalars['ID'];
+  user: Maybe<Scalars['ID']>;
+  section: Maybe<Scalars['ID']>;
   item: ItemParams;
   detail: NoteDetailParams;
   isTask: Scalars['Boolean'];
@@ -240,7 +237,8 @@ export type MutationCreateSectionArgs = {
 
 
 export type MutationCreateTaskArgs = {
-  list: Scalars['ID'];
+  user: Maybe<Scalars['ID']>;
+  section: Maybe<Scalars['ID']>;
   item: ItemParams;
 };
 
@@ -283,7 +281,7 @@ export type MutationDeleteSectionArgs = {
 
 
 export type MutationDeleteUserArgs = {
-  id: Scalars['ID'];
+  id: Maybe<Scalars['ID']>;
 };
 
 
@@ -337,7 +335,7 @@ export type MutationMarkItemDueArgs = {
 
 export type MutationMoveItemArgs = {
   id: Scalars['ID'];
-  list: Scalars['ID'];
+  section: Maybe<Scalars['ID']>;
   before: Maybe<Scalars['ID']>;
 };
 
@@ -402,36 +400,16 @@ export type ProjectParams = {
   readonly name: Scalars['String'];
 };
 
-export type ProjectRoot = {
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ItemSet;
-  readonly rootItems: ItemSet;
-  readonly projects: ReadonlyArray<Project>;
-  readonly projectById: Maybe<Project>;
-};
-
-
-export type ProjectRootProjectByIdArgs = {
-  id: Scalars['ID'];
-};
-
 export type Query = {
   readonly __typename?: 'Query';
   readonly user: Maybe<User>;
   readonly users: ReadonlyArray<User>;
   readonly taskList: Maybe<TaskList>;
-  readonly root: Maybe<ProjectRoot>;
   readonly pageContent: Scalars['String'];
 };
 
 
 export type QueryTaskListArgs = {
-  id: Scalars['ID'];
-};
-
-
-export type QueryRootArgs = {
   id: Scalars['ID'];
 };
 
@@ -469,26 +447,15 @@ export type TaskList = {
   readonly items: ItemSet;
 };
 
-export type User = ProjectRoot & TaskList & {
+export type User = {
   readonly __typename?: 'User';
   readonly allItems: ItemSet;
   readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
   readonly contexts: ReadonlyArray<Context>;
   readonly email: Scalars['String'];
   readonly id: Scalars['ID'];
-  readonly inbox: Inbox;
+  readonly inbox: ItemSet;
   readonly isAdmin: Scalars['Boolean'];
-  readonly items: ItemSet;
-  readonly projectById: Maybe<Project>;
-  readonly projects: ReadonlyArray<Project>;
-  readonly rootItems: ItemSet;
-  readonly sections: ReadonlyArray<Section>;
-  readonly subprojects: ReadonlyArray<Project>;
-};
-
-
-export type UserProjectByIdArgs = {
-  id: Scalars['ID'];
 };
 
 export type ListBugzillaAccountsQueryVariables = Exact<{ [key: string]: never; }>;

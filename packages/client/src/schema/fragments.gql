@@ -1,31 +1,3 @@
-fragment clientRootFields on ProjectRoot {
-  remainingTasks: items {
-    isTask(done: false) {
-      count
-    }
-  }
-
-  subprojects {
-    id
-  }
-
-  projects {
-    id
-    stub
-    name
-
-    remainingTasks: items {
-      isTask(done: false) {
-        count
-      }
-    }
-
-    subprojects {
-      id
-    }
-  }
-}
-
 fragment clientItemFields on Item {
   id
   summary

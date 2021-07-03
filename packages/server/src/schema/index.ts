@@ -15,7 +15,7 @@ import ServerPlugin from "./plugin";
 import QueryResolvers from "./queries";
 import type { Resolvers } from "./resolvers";
 
-type UnionTypes = "TaskList" | "ProjectRoot" | "ItemDetail";
+type UnionTypes = "TaskList" | "ItemDetail";
 
 type CustomTypes = "DateTime";
 type BaseResolvers = "Query" | "Mutation";
@@ -44,26 +44,12 @@ const rootResolvers: RootResolvers = {
   }),
 
   TaskList: {
-    __resolveType(parent: Db.TaskList): "User" | "Context" | "Project" {
-      if (parent instanceof Db.User) {
-        return "User";
-      }
-
+    __resolveType(parent: Db.TaskList): "Context" | "Project" {
       if (parent instanceof Db.Context) {
         return "Context";
       }
 
       return "Project";
-    },
-  },
-
-  ProjectRoot: {
-    __resolveType(parent: Db.ProjectRoot): "User" | "Context" {
-      if (parent instanceof Db.User) {
-        return "User";
-      }
-
-      return "Context";
     },
   },
 

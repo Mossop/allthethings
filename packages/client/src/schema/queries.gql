@@ -4,21 +4,40 @@ query ListContextState {
     email
     isAdmin
 
-    inbox {
-      id
-      items {
-        count
-      }
+    inbox{
+      count
     }
-
-    ...clientRootFields
 
     contexts {
       id
       stub
       name
 
-      ...clientRootFields
+      remainingTasks: items {
+        isTask(done: false) {
+          count
+        }
+      }
+
+      subprojects {
+        id
+      }
+
+      projects {
+        id
+        stub
+        name
+
+        remainingTasks: items {
+          isTask(done: false) {
+            count
+          }
+        }
+
+        subprojects {
+          id
+        }
+      }
     }
   }
 }
@@ -39,9 +58,7 @@ query ListInbox {
   user {
     inbox {
       items {
-        items {
-          ...clientItemFields
-        }
+        ...clientItemFields
       }
     }
   }

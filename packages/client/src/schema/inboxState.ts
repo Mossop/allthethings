@@ -21,6 +21,6 @@ export function useInboxContents(): InboxContents {
   }
 
   return {
-    items: data.user.inbox.items.items.map(buildItem.bind(null, view.user.inbox)),
+    items: data.user.inbox.items.map(buildItem.bind(null, view.user.inbox)),
   };
 }

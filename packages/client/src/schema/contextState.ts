@@ -12,16 +12,13 @@ interface StateId {
 }
 type StateQuery = ListContextStateQuery;
 type StateQuery$User = NonNullable<StateQuery["user"]>;
-type StateQuery$User$Inbox = StateQuery$User["inbox"];
 type StateQuery$User$Context = ArrayContents<StateQuery$User["contexts"]>;
-type StateQuery$User$Project = ArrayContents<StateQuery$User["projects"]>;
+type StateQuery$User$Project = ArrayContents<StateQuery$User$Context["projects"]>;
 
 export type User = Overwrite<StateQuery$User, {
-  readonly subprojects: readonly Project[];
-  readonly projects: ReadonlyMap<string, Project>;
   readonly contexts: ReadonlyMap<string, Context>;
-  readonly remainingTasks: number;
   readonly inbox: Inbox;
+  readonly defaultContext: Context;
 }>;
 
 export type Context = Overwrite<StateQuery$User$Context, {
@@ -36,12 +33,13 @@ export type Project = Overwrite<StateQuery$User$Project, {
   readonly subprojects: readonly Project[];
 }>;
 
-export type Inbox = Overwrite<Omit<StateQuery$User$Inbox, "items">, {
+export interface Inbox {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  __typename: "Inbox";
   readonly itemCount: number;
-}>;
+}
 
-export type TaskList = User | Project | Context;
-export type ProjectRoot = User | Context;
+export type TaskList = Project | Context;
 
 export function isInbox(val: GraphQLType): val is Inbox {
   return val.__typename == "Inbox";
@@ -60,12 +58,10 @@ export function isUser(val: GraphQLType): val is User {
 }
 
 export function isTaskList(val: GraphQLType): val is TaskList {
-  return isUser(val) || isProject(val) || isContext(val);
+  return isProject(val) || isContext(val);
 }
 
-function buildProjectRoot(
-  queryResult: StateQuery$User | StateQuery$User$Context,
-): Pick<User, Exclude<Extract<keyof User, keyof Context>, "__typename">> {
+function buildContext(queryResult: StateQuery$User$Context): Context {
   type TempProject = Overwrite<Project, {
     subprojects: TempProject[];
     parent: TempProject | null;
@@ -92,6 +88,7 @@ function buildProjectRoot(
   }
 
   return {
+    ...queryResult,
     id: queryResult.id,
     remainingTasks: queryResult.remainingTasks.isTask.count,
     projects,
@@ -99,24 +96,23 @@ function buildProjectRoot(
   };
 }
 
-function buildContext(queryResult: StateQuery$User$Context): Context {
-  return {
-    ...queryResult,
-    ...buildProjectRoot(queryResult),
-  };
-}
-
 function buildUser(queryResult: StateQuery$User): User {
+  let contexts = queryResult.contexts.map(buildContext);
+  if (contexts.length == 0) {
+    throw new Error("Invalid user.");
+  }
+
   return {
     ...queryResult,
     inbox: {
-      ...queryResult.inbox,
-      itemCount: queryResult.inbox.items.count,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      __typename: "Inbox",
+      itemCount: queryResult.inbox.count,
     },
-    ...buildProjectRoot(queryResult),
+    defaultContext: contexts[0],
     contexts: new Map(
-      queryResult.contexts.map(
-        (state: StateQuery$User$Context): [string, Context] => [state.id, buildContext(state)],
+      contexts.map(
+        (context: Context): [string, Context] => [context.id, context],
       ),
     ),
   };

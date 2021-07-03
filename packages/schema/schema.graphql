@@ -66,56 +66,29 @@ interface TaskList {
   items: ItemSet!
 }
 
-interface ProjectRoot implements TaskList {
-  # TaskList
-  subprojects: [Project!]!
-  sections: [Section!]!
-  items: ItemSet!
-  rootItems: ItemSet!
-
-  projects: [Project!]!
-  projectById(id: ID!): Project
-}
-
-type Inbox {
-  id: ID!
-  items: ItemSet!
-}
-
-type User implements ProjectRoot & TaskList {
-  # TaskList
-  subprojects: [Project!]!
-  sections: [Section!]!
-  items: ItemSet!
-  rootItems: ItemSet!
-
-  # ProjectRoot
-  projects: [Project!]!
-  projectById(id: ID!): Project
-
+type User {
   id: ID!
   email: String!
   contexts: [Context!]!
-  inbox: Inbox!
+  inbox: ItemSet!
   isAdmin: Boolean!
   allItems: ItemSet!
 }
 
-type Context implements ProjectRoot & TaskList {
+type Context implements TaskList {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
   items: ItemSet!
   rootItems: ItemSet!
-
-  # ProjectRoot
-  projects: [Project!]!
-  projectById(id: ID!): Project
 
   id: ID!
   user: User!
   stub: String!
   name: String!
+
+  projects: [Project!]!
+  projectById(id: ID!): Project
 }
 
 type Project implements TaskList {
@@ -142,7 +115,6 @@ type Query {
 
   users: [User!]!
   taskList(id: ID!): TaskList
-  root(id: ID!): ProjectRoot
   pageContent(path: String!): String!
 }
 
@@ -181,7 +153,7 @@ type Mutation {
   login(email: String!, password: String!): User
   logout: Boolean
 
-  createContext(params: ContextParams!): Context!
+  createContext(user: ID, params: ContextParams!): Context!
   editContext(id: ID!, params: ContextParams!): Context
   deleteContext(id: ID!): Boolean!
 
@@ -195,15 +167,15 @@ type Mutation {
   editSection(id: ID!, params: SectionParams!): Section
   deleteSection(id: ID!): Boolean!
 
-  createTask(list: ID!, item: ItemParams!): Item!
-  createNote(list: ID!, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
-  createLink(list: ID!, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
+  createTask(user: ID, section: ID, item: ItemParams!): Item!
+  createNote(user: ID, section: ID, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
+  createLink(user: ID, section: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
   editTaskController(id: ID!, controller: String): Item
 
-  moveItem(id: ID!, list: ID!, before: ID): Item
+  moveItem(id: ID!, section: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!
 
   archiveItem(id: ID!, archived: DateTime): Item
@@ -211,6 +183,6 @@ type Mutation {
   markItemDue(id: ID!, due: DateTime): Item
 
   createUser(email: String!, password: String!, isAdmin: Boolean): User!
-  deleteUser(id: ID!): Boolean
+  deleteUser(id: ID): Boolean
   changePassword(id: ID, currentPassword: String!, newPassword: String!): User
 }

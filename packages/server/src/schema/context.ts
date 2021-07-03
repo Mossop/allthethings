@@ -1,6 +1,6 @@
 import type { Awaitable, Overwrite } from "@allthethings/utils";
 
-import type { ProjectRoot, AppDataSources, TaskList, User, Inbox } from "../db";
+import type { AppDataSources, TaskList, User, ItemHolder } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { WebServerContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
@@ -9,9 +9,9 @@ export interface ResolverContext {
   db: DatabaseConnection;
   userId: string | null;
   dataSources: AppDataSources;
-  getRoot: (id: string) => Promise<ProjectRoot | null>;
+  getUser(id: string | null): Promise<User>;
   getTaskList(id: string): Promise<TaskList | null>;
-  getTaskList(id: string | null): Promise<TaskList | Inbox | null>;
+  getSection(id: string): Promise<ItemHolder | null>;
   login: (user: User) => void;
   logout: () => void;
 }
@@ -90,22 +90,21 @@ export async function buildResolverContext({
       return ctx.db;
     },
 
-    async getRoot(this: ResolverContext, id: string): Promise<ProjectRoot | null> {
-      let context = await this.dataSources.contexts.getImpl(id);
-      if (context) {
-        return context;
+    async getUser(this: ResolverContext, id: string | null): Promise<User> {
+      if (!this.userId) {
+        throw new Error("Can only call on an authenticated context.");
       }
 
+      id = id ?? this.userId;
       let user = await this.dataSources.users.getImpl(id);
-      if (user) {
-        return user;
+      if (!user) {
+        throw new Error("Unknown user.");
       }
 
-      return null;
+      return user;
     },
 
-    // @ts-ignore
-    async getTaskList(this: ResolverContext, id: string | null): Promise<TaskList | Inbox | null> {
+    async getTaskList(this: ResolverContext, id: string): Promise<TaskList | null> {
       if (!this.userId) {
         throw new Error("Can only call on an authenticated context.");
       }
@@ -115,16 +114,26 @@ export async function buildResolverContext({
         throw new Error("User is unknown.");
       }
 
-      if (!id) {
-        return user.inbox();
-      }
-
       let project = await this.dataSources.projects.getImpl(id);
       if (project) {
         return project;
       }
 
-      return this.getRoot(id);
+      let context = await this.dataSources.contexts.getImpl(id);
+      if (context) {
+        return context;
+      }
+
+      return null;
+    },
+
+    async getSection(this: ResolverContext, id: string): Promise<ItemHolder | null> {
+      let taskList = await this.getTaskList(id);
+      if (taskList) {
+        return taskList;
+      }
+
+      return this.dataSources.sections.getImpl(id);
     },
 
     login(this: ResolverContext, user: User): void {

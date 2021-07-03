@@ -6,6 +6,7 @@ import {
   useCreateTaskMutation,
   useEditItemMutation,
   refetchQueriesForSection,
+  isInbox,
 } from "../schema";
 import type { Inbox, TaskList, Section, TaskItem } from "../schema";
 
@@ -60,7 +61,7 @@ export default ReactMemo(function TaskDialog({
     } else {
       await createTask({
         variables: {
-          list: list.id,
+          section: isInbox(list) ? null : list.id,
           item: {
             ...state,
             archived: null,

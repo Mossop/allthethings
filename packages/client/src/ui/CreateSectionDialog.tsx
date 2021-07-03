@@ -46,6 +46,7 @@ export default ReactMemo(function CreateSectionDialog({
     <TextFieldInput
       id="name"
       label="Name:"
+      autoFocus={true}
       state={state}
       setState={setState}
       stateKey="name"

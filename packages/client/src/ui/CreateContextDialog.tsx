@@ -61,9 +61,9 @@ export default ReactMemo(function CreateContextDialog({
     formState={loading ? FormState.Loading : FormState.Default}
   >
     <TextFieldInput
-      autoFocus={true}
       id="name"
       label="Name:"
+      autoFocus={true}
       state={state}
       setState={setState}
       stateKey="name"

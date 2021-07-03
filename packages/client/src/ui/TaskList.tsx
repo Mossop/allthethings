@@ -1,4 +1,4 @@
-import { Icons, Styles, Heading, TextStyles, HiddenInput, ReactMemo } from "@allthethings/ui";
+import { Icons, Styles, TextStyles, HiddenInput, ReactMemo } from "@allthethings/ui";
 import type { ReactRef, ReactResult } from "@allthethings/ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
@@ -10,10 +10,9 @@ import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { ItemList } from "../components/SectionList";
-import type { Context, Project, User, Section } from "../schema";
+import type { Context, Project, Section } from "../schema";
 import {
   isProject,
-  isUser,
   useEditContextMutation,
   useEditProjectMutation,
   useTaskListContents,
@@ -56,29 +55,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     dragging: Styles.dragging,
   }));
-
-interface UserHeaderProps {
-  user: User;
-  filter: ListFilter;
-  setFilter: Dispatch<SetStateAction<ListFilter>>;
-}
-
-const UserHeader = ReactMemo(forwardRef(function TasksHeader({
-  user,
-  filter,
-  setFilter,
-}: UserHeaderProps, ref: ReactRef | null): ReactResult {
-  let classes = useStyles();
-
-  return <div ref={ref} className={classes.heading}>
-    <div className={classes.icon}>
-      <Icons.Project/>
-    </div>
-    <Heading className={classes.tasksHeading}>Tasks</Heading>
-    <FilterMenu list={user} filter={filter} setFilter={setFilter}/>
-    <ItemListActions list={user}/>
-  </div>;
-}));
 
 interface ContextHeaderProps {
   context: Context;
@@ -182,13 +158,7 @@ export default ReactMemo(function TaskList({
   let [filter, setFilter] = useState(() => Filters.Normal);
 
   let header: ReactResult;
-  if (isUser(view.taskList)) {
-    header = <UserHeader
-      user={view.taskList}
-      filter={filter}
-      setFilter={setFilter}
-    />;
-  } else if (isProject(view.taskList)) {
+  if (isProject(view.taskList)) {
     header = <ProjectHeader
       project={view.taskList}
       filter={filter}

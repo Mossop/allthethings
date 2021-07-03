@@ -105,7 +105,7 @@ export type DeleteProjectMutationVariables = Types.Exact<{
 export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly deleteProject: boolean };
 
 export type CreateTaskMutationVariables = Types.Exact<{
-  list: Types.Scalars['ID'];
+  section: Types.Maybe<Types.Scalars['ID']>;
   item: Types.ItemParams;
 }>;
 
@@ -116,7 +116,7 @@ export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly cre
   ) };
 
 export type CreateLinkMutationVariables = Types.Exact<{
-  list: Types.Scalars['ID'];
+  section: Types.Maybe<Types.Scalars['ID']>;
   item: Types.ItemParams;
   detail: Types.LinkDetailParams;
   isTask: Types.Scalars['Boolean'];
@@ -163,7 +163,7 @@ export type EditTaskControllerMutation = { readonly __typename: 'Mutation', read
 
 export type MoveItemMutationVariables = Types.Exact<{
   id: Types.Scalars['ID'];
-  list: Types.Scalars['ID'];
+  section: Types.Maybe<Types.Scalars['ID']>;
   before: Types.Maybe<Types.Scalars['ID']>;
 }>;
 
@@ -681,8 +681,8 @@ export type DeleteProjectMutationHookResult = ReturnType<typeof useDeleteProject
 export type DeleteProjectMutationResult = Apollo.MutationResult<DeleteProjectMutation>;
 export type DeleteProjectMutationOptions = Apollo.BaseMutationOptions<DeleteProjectMutation, DeleteProjectMutationVariables>;
 export const CreateTaskDocument = gql`
-    mutation CreateTask($list: ID!, $item: ItemParams!) {
-  createTask(list: $list, item: $item) {
+    mutation CreateTask($section: ID, $item: ItemParams!) {
+  createTask(section: $section, item: $item) {
     ...clientItemFields
   }
 }
@@ -702,7 +702,7 @@ export type CreateTaskMutationFn = Apollo.MutationFunction<CreateTaskMutation, C
  * @example
  * const [createTaskMutation, { data, loading, error }] = useCreateTaskMutation({
  *   variables: {
- *      list: // value for 'list'
+ *      section: // value for 'section'
  *      item: // value for 'item'
  *   },
  * });
@@ -715,8 +715,8 @@ export type CreateTaskMutationHookResult = ReturnType<typeof useCreateTaskMutati
 export type CreateTaskMutationResult = Apollo.MutationResult<CreateTaskMutation>;
 export type CreateTaskMutationOptions = Apollo.BaseMutationOptions<CreateTaskMutation, CreateTaskMutationVariables>;
 export const CreateLinkDocument = gql`
-    mutation CreateLink($list: ID!, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
-  createLink(list: $list, item: $item, detail: $detail, isTask: $isTask) {
+    mutation CreateLink($section: ID, $item: ItemParams!, $detail: LinkDetailParams!, $isTask: Boolean!) {
+  createLink(section: $section, item: $item, detail: $detail, isTask: $isTask) {
     ...clientItemFields
   }
 }
@@ -736,7 +736,7 @@ export type CreateLinkMutationFn = Apollo.MutationFunction<CreateLinkMutation, C
  * @example
  * const [createLinkMutation, { data, loading, error }] = useCreateLinkMutation({
  *   variables: {
- *      list: // value for 'list'
+ *      section: // value for 'section'
  *      item: // value for 'item'
  *      detail: // value for 'detail'
  *      isTask: // value for 'isTask'
@@ -853,8 +853,8 @@ export type EditTaskControllerMutationHookResult = ReturnType<typeof useEditTask
 export type EditTaskControllerMutationResult = Apollo.MutationResult<EditTaskControllerMutation>;
 export type EditTaskControllerMutationOptions = Apollo.BaseMutationOptions<EditTaskControllerMutation, EditTaskControllerMutationVariables>;
 export const MoveItemDocument = gql`
-    mutation MoveItem($id: ID!, $list: ID!, $before: ID) {
-  moveItem(id: $id, list: $list, before: $before) {
+    mutation MoveItem($id: ID!, $section: ID, $before: ID) {
+  moveItem(id: $id, section: $section, before: $before) {
     ...clientItemFields
   }
 }
@@ -875,7 +875,7 @@ export type MoveItemMutationFn = Apollo.MutationFunction<MoveItemMutation, MoveI
  * const [moveItemMutation, { data, loading, error }] = useMoveItemMutation({
  *   variables: {
  *      id: // value for 'id'
- *      list: // value for 'list'
+ *      section: // value for 'section'
  *      before: // value for 'before'
  *   },
  * });

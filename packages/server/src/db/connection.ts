@@ -58,6 +58,8 @@ export class DatabaseConnection {
       throw new Error("Cannot migrate while in a transaction.");
     }
 
+    await this.knex.raw("CREATE SCHEMA IF NOT EXISTS ??", ["public"]);
+
     let migrateConfig = {
       tableName: "allthethings_migrations",
       migrationSource: DbMigrations,
@@ -74,13 +76,7 @@ export class DatabaseConnection {
     }
 
     await PluginManager.rollbackDbMigrations(this.knex, all);
-
-    let migrateConfig = {
-      tableName: "allthethings_migrations",
-      migrationSource: DbMigrations,
-    };
-
-    await this.knex.migrate.rollback(migrateConfig, all);
+    await this.knex.raw("DROP SCHEMA IF EXISTS ?? CASCADE", ["public"]);
   }
 
   public get isInTransaction(): boolean {

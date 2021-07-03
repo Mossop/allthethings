@@ -111,7 +111,7 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
       mutation: MoveItemDocument,
       variables: {
         id: this.dragSource.id,
-        list: this.state.dropTarget.id,
+        section: isInbox(this.state.dropTarget) ? null : this.state.dropTarget.id,
         before: null,
       },
       refetchQueries: [

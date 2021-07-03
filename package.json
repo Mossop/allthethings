@@ -11,7 +11,7 @@
     "build": "lerna run build-schema && lerna run build",
     "build-client": "lerna run build-client",
     "build-server": "lerna run build-server",
-    "watch": "yarn build && lerna run --parallel watch",
+    "watch": "yarn build-schema && lerna run --parallel watch",
     "start": "cd packages/server && yarn start ../../testing/config.json",
     "jslint": "eslint .",
     "lint": "yarn jslint && lerna run lint"

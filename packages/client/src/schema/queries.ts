@@ -1,21 +1,15 @@
 /* eslint-disable */
 import * as Types from './types';
 
-import { ClientRootFields_Context_Fragment, ClientRootFields_User_Fragment, ClientItemFieldsFragment } from './fragments';
+import { ClientItemFieldsFragment } from './fragments';
 import { gql } from '@apollo/client';
-import { ClientRootFieldsFragmentDoc, ClientItemFieldsFragmentDoc } from './fragments';
+import { ClientItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<(
-    { readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'Inbox', readonly id: string, readonly items: { readonly __typename: 'ItemSet', readonly count: number } }, readonly contexts: ReadonlyArray<(
-      { readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string }
-      & ClientRootFields_Context_Fragment
-    )> }
-    & ClientRootFields_User_Fragment
-  )> };
+export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }> };
 
 export type PageContentQueryVariables = Types.Exact<{
   path: Types.Scalars['String'];
@@ -32,10 +26,10 @@ export type ListUsersQuery = { readonly __typename: 'Query', readonly users: Rea
 export type ListInboxQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListInboxQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly inbox: { readonly __typename: 'Inbox', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
-          { readonly __typename: 'Item' }
-          & ClientItemFieldsFragment
-        )> } } }> };
+export type ListInboxQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly inbox: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+        { readonly __typename: 'Item' }
+        & ClientItemFieldsFragment
+      )> } }> };
 
 export type ListTaskListQueryVariables = Types.Exact<{
   taskList: Types.Scalars['ID'];
@@ -54,12 +48,6 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
       )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
-        )> } }> } | { readonly __typename: 'User', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
-        { readonly __typename: 'Item' }
-        & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
-          { readonly __typename: 'Item' }
-          & ClientItemFieldsFragment
         )> } }> }> };
 
 
@@ -70,21 +58,37 @@ export const ListContextStateDocument = gql`
     email
     isAdmin
     inbox {
-      id
-      items {
-        count
-      }
+      count
     }
-    ...clientRootFields
     contexts {
       id
       stub
       name
-      ...clientRootFields
+      remainingTasks: items {
+        isTask(done: false) {
+          count
+        }
+      }
+      subprojects {
+        id
+      }
+      projects {
+        id
+        stub
+        name
+        remainingTasks: items {
+          isTask(done: false) {
+            count
+          }
+        }
+        subprojects {
+          id
+        }
+      }
     }
   }
 }
-    ${ClientRootFieldsFragmentDoc}`;
+    `;
 
 /**
  * __useListContextStateQuery__
@@ -195,9 +199,7 @@ export const ListInboxDocument = gql`
   user {
     inbox {
       items {
-        items {
-          ...clientItemFields
-        }
+        ...clientItemFields
       }
     }
   }

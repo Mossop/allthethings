@@ -27,20 +27,6 @@ type Maybe<T> = T | null | undefined;
 type DbInsertObject<T> = Db.DbInsertObject<T>;
 type DbObject<T> = Db.DbObject<T>;
 
-export enum SectionIndex {
-  Anonymous = -1,
-  Inbox = -2,
-}
-
-function nameForSection(type: SectionIndex): string {
-  switch (type) {
-    case SectionIndex.Anonymous:
-      return "";
-    case SectionIndex.Inbox:
-      return "inbox";
-  }
-}
-
 function classBuilder<I, T>(
   cls: new (dataSources: AppDataSources, dbObject: DbObject<T>) => I,
 ): ImplBuilder<I, T> {
@@ -97,6 +83,10 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
     context: ResolverContext,
   ): Promise<number> {
     return (await this.items(parent, args, context)).length;
+  }
+
+  public async records(): Promise<DbObject<Db.ItemDbTable>[]> {
+    return this.query.select("Item.*");
   }
 
   public async items(
@@ -194,12 +184,6 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
     }
 
     return this.inner(query, { taskJoined: true });
-  }
-
-  public sortBy(field: keyof DbObject<Db.ItemDbTable>, descending: boolean = false): ItemSet {
-    return this.inner(
-      this.query.clone().orderBy(field, descending ? "desc" : "asc"),
-    );
   }
 }
 
@@ -375,39 +359,37 @@ export abstract class DbDataSource<
   }
 }
 
-export abstract class IndexedDbDataSource<
+type IndexedRecord = Db.DbEntity & Db.IndexedDbEntity;
+abstract class IndexedDbDataSource<
   I extends { id: () => string },
-  T extends Db.DbTable<Db.IndexedDbEntity> = Db.DbTable<Db.IndexedDbEntity>,
+  T extends Db.DbTable = Db.DbTable,
 > extends DbDataSource<I, T> {
-  protected async nextIndex(owner: string): Promise<number> {
-    let index = await max(this.records.where("ownerId", owner), "index");
-    return index !== null ? index + 1 : 0;
+  public readonly abstract indexTableName: string;
+
+  protected get indexTable(): Knex.QueryBuilder<IndexedRecord, IndexedRecord[]> {
+    return this.knex<IndexedRecord>(this.indexTableName);
   }
 
-  public async find(fields: Partial<DbObject<T>>): Promise<I[]> {
-    return this.buildAll(this.select(this.records.where(fields).orderBy("index")));
+  public async nextIndex(owner: string): Promise<number> {
+    let index = await max(this.indexTable.where("ownerId", owner), "index");
+    return index !== null ? index + 1 : 0;
   }
 
   public async move(
     itemId: string,
+    userId: string,
     targetOwner: string,
     beforeId: string | null,
   ): Promise<void> {
-    let current = await this.getRecord(itemId);
-    if (!current) {
-      return;
-    }
-
-    let currentIndex = current.index;
-    let currentOwner = current.ownerId;
+    let current = await this.indexTable.where("id", itemId).first();
 
     let targetIndex: number;
-    let before = beforeId ? await this.getRecord(beforeId) : null;
+    let before = beforeId ? await this.indexTable.where("id", beforeId).first() : null;
 
     if (before && before.ownerId == targetOwner) {
       targetIndex = before.index;
 
-      await this.records
+      await this.indexTable
         .where("ownerId", targetOwner)
         .andWhere("index", ">=", targetIndex)
         // @ts-ignore
@@ -418,17 +400,43 @@ export abstract class IndexedDbDataSource<
       targetIndex = await this.nextIndex(targetOwner);
     }
 
-    await this.records
-      .where("id", itemId)
+    if (current) {
+      await this.indexTable
+        .where("id", itemId)
       // @ts-ignore
-      .update({
+        .update({
+          ownerId: targetOwner,
+          index: targetIndex,
+        });
+
+      await this.indexTable
+        .where("ownerId", current.ownerId)
+        .andWhere("index", ">", current.index)
+        // @ts-ignore
+        .update({
+          index: this.knex.raw("?? - 1", ["index"]),
+        });
+    } else {
+      await this.indexTable.insert({
+        id: itemId,
+        userId,
         ownerId: targetOwner,
         index: targetIndex,
       });
+    }
+  }
 
-    await this.records
-      .where("ownerId", currentOwner)
-      .andWhere("index", ">", currentIndex)
+  public async remove(id: string): Promise<void> {
+    let item = await this.indexTable.where("id", id).first();
+    if (!item) {
+      return;
+    }
+
+    await this.indexTable.where("id", id).delete();
+
+    await this.indexTable
+      .where("ownerId", item.ownerId)
+      .andWhere("index", ">", item.index)
       // @ts-ignore
       .update({
         index: this.knex.raw("?? - 1", ["index"]),
@@ -436,20 +444,8 @@ export abstract class IndexedDbDataSource<
   }
 
   public async delete(id: string): Promise<void> {
-    let item = await this.getRecord(id);
-    if (!item) {
-      return;
-    }
-
-    await this.table.where(this.ref("id"), id).delete();
-
-    await this.table
-      .where("ownerId", item.ownerId)
-      .andWhere("index", ">", item.index)
-      // @ts-ignore
-      .update({
-        index: this.knex.raw("?? - 1", ["index"]),
-      });
+    await this.remove(id);
+    await super.delete(id);
   }
 }
 
@@ -508,10 +504,8 @@ export class UserDataSource extends DbDataSource<Impl.User, Db.UserDbTable> {
     }));
 
     await this.dataSources.contexts.create(user, {
-      name: "",
+      name: "Tasks",
     });
-
-    await this.dataSources.sections.createSpecialSection(user.id(), SectionIndex.Inbox);
 
     return user;
   }
@@ -523,10 +517,6 @@ export class ContextDataSource extends DbDataSource<
 > {
   public tableName = "Context";
   protected builder = classBuilder<Impl.Context, Db.ContextDbTable>(Impl.Context);
-
-  public get records(): Knex.QueryBuilder<Db.ContextDbTable, Db.ContextDbTable[]> {
-    return this.table.where("name", "<>", "");
-  }
 
   public async getUser(contextId: string): Promise<Impl.User | null> {
     let record = await this.first(this.table.where("id", contextId));
@@ -542,7 +532,7 @@ export class ContextDataSource extends DbDataSource<
     params: Omit<DbInsertObject<Db.ContextDbTable>, "id" | "userId">,
   ): Promise<Impl.Context> {
     let context = await this.build(this.insert({
-      id: params.name == "" ? user.id() : await id(),
+      id: await id(),
       ...params,
       userId: user.id(),
     }));
@@ -552,6 +542,14 @@ export class ContextDataSource extends DbDataSource<
     });
 
     return context;
+  }
+
+  public async delete(id: string): Promise<void> {
+    let items = await this.dataSources.items.contextItems(id).records();
+    for (let { id } of items) {
+      await this.dataSources.items.delete(id);
+    }
+    return super.delete(id);
   }
 }
 
@@ -567,26 +565,40 @@ export class ProjectDataSource extends DbDataSource<
   }
 
   public async create(
-    taskList: Impl.User | Impl.Context | Impl.Project,
-    params: Omit<DbInsertObject<Db.ProjectDbTable>, "id" | "contextId" | "parentId">,
+    taskList: Impl.Context | Impl.Project,
+    params: Omit<DbInsertObject<Db.ProjectDbTable>, "id" | "userId" | "contextId" | "parentId">,
   ): Promise<Impl.Project> {
     let context = taskList instanceof Impl.Project
       ? await taskList.context() ?? await taskList.user()
       : taskList;
 
+    let user = await taskList.user();
+
     let project = await this.build(this.insert({
       id: params.name == "" ? taskList.id() : await id(),
       contextId: context.id(),
+      userId: user.id(),
       ...params,
       parentId: params.name == "" ? null : taskList.id(),
     }));
 
-    await this.dataSources.sections.createSpecialSection(
-      project.id(),
-      SectionIndex.Anonymous,
-    );
+    await this.dataSources.sections.insert({
+      id: project.id(),
+      userId: user.id(),
+      ownerId: project.id(),
+      index: -1,
+      name: "",
+    });
 
     return project;
+  }
+
+  public async delete(id: string): Promise<void> {
+    let items = await this.dataSources.items.projectItems(id).records();
+    for (let { id } of items) {
+      await this.dataSources.items.delete(id);
+    }
+    return super.delete(id);
   }
 }
 
@@ -595,66 +607,34 @@ export class SectionDataSource extends IndexedDbDataSource<
   Db.SectionDbTable
 > {
   public tableName = "Section";
+  public indexTableName = "Section";
   protected builder = classBuilder<Impl.Section, Db.SectionDbTable>(Impl.Section);
 
   public get records(): Knex.QueryBuilder<Db.SectionDbTable, Db.SectionDbTable[]> {
     return this.table.where("index", ">=", 0);
   }
 
-  public async getSection(id: string): Promise<Impl.Section | Impl.Inbox | null> {
+  public async getSection(id: string): Promise<Impl.Section | null> {
     let record = await this.getRecord(id);
     if (!record) {
       return null;
     }
 
-    if (record.index >= SectionIndex.Anonymous) {
+    if (record.index >= 0) {
       return new Impl.Section(this.dataSources, record);
-    }
-
-    switch (record.index) {
-      case SectionIndex.Inbox:
-        return new Impl.Inbox(this.dataSources, record);
     }
 
     return null;
   }
 
-  public async getSpecialSection(
-    ownerId: string,
-    type: SectionIndex,
-  ): Promise<DbObject<Db.SectionDbTable> | null> {
-    let record = await this.table.where({
-      ownerId,
-      index: type,
-    }).first();
-
-    return record ?? null;
-  }
-
-  public async createSpecialSection(
-    ownerId: string,
-    type: SectionIndex,
-  ): Promise<Impl.Section> {
-    let newId = type == SectionIndex.Anonymous ? ownerId : await id();
-
-    return this.build(this.insert({
-      id: newId,
-      name: nameForSection(type),
-      ownerId,
-      index: type,
-    }));
-  }
-
   public async create(
-    project: Impl.User | Impl.Context | Impl.Project,
+    project: Impl.Context | Impl.Project,
     before: string | null,
-    params: Omit<DbInsertObject<Db.SectionDbTable>, "id" | "ownerId" | "index">,
+    params: Omit<DbInsertObject<Db.SectionDbTable>, "id" | "userId" | "ownerId" | "index">,
   ): Promise<Impl.Section> {
     let index: number;
 
-    if (params.name == "") {
-      index = SectionIndex.Anonymous;
-    } else if (before) {
+    if (before) {
       let record = await this.records
         .where({
           ownerId: project.id(),
@@ -674,29 +654,47 @@ export class SectionDataSource extends IndexedDbDataSource<
       index = await this.nextIndex(project.id());
     }
 
+    let user = await project.user();
+
     return this.build(this.insert({
       id: params.name == "" ? project.id() : await id(),
       ...params,
+      userId: user.id(),
       ownerId: project.id(),
       index,
     }));
+  }
+
+  public async delete(id: string): Promise<void> {
+    let items = await this.dataSources.items.sectionItems(id).records();
+    for (let { id } of items) {
+      await this.dataSources.items.delete(id);
+    }
+    return super.delete(id);
   }
 }
 
 export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTable> {
   public tableName = "Item";
+  public indexTableName = "SectionItems";
   protected builder = classBuilder<Impl.Item, Db.ItemDbTable>(Impl.Item);
 
   public async create(
-    owner: Impl.TaskList | Impl.Section | Impl.Inbox,
-    params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "ownerId" | "index">,
+    user: Impl.User,
+    section: Impl.ItemHolder | null,
+    params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "userId">,
   ): Promise<Impl.Item> {
-    return this.build(this.insert({
+    let item = await this.build(this.insert({
       id: await id(),
-      ownerId: owner.id(),
-      index: await this.nextIndex(owner.id()),
+      userId: user.id(),
       ...params,
     }));
+
+    if (section) {
+      await this.move(item.id(), user.id(), section.id(), null);
+    }
+
+    return item;
   }
 
   public async deleteCompleteInboxTasks(): Promise<void> {
@@ -707,10 +705,10 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
 
     let items = await this.select(this.records
       .join("TaskInfo", "TaskInfo.id", this.ref("id"))
-      .join("Section", this.ref("ownerId"), "Section.id")
+      .leftJoin("SectionItems", this.ref("id"), "SectionItems.id")
       .whereNotNull("TaskInfo.done")
       .whereNotIn(this.ref("id"), itemsInLists)
-      .where("Section.index", SectionIndex.Inbox));
+      .whereNull("SectionItems.id"));
 
     for (let item of items) {
       await this.delete(item.id);
@@ -718,15 +716,26 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   }
 
   public findItems(fields: Partial<DbObject<Db.ItemDbTable>>): ItemSet {
+    return new ItemSet(this.records.where(fields));
+  }
+
+  public sectionItems(section: string | null): ItemSet {
     return new ItemSet(
-      this.records.where(fields).orderBy("index"),
+      this.records
+        .leftJoin("SectionItems", "Item.id", "SectionItems.id")
+        .where("SectionItems.ownerId", section)
+        .orderBy([
+          { column: "SectionItems.index", order: "asc" },
+          { column: "Item.created", order: "desc" },
+        ]),
     );
   }
 
   public projectItems(project: string): ItemSet {
     return new ItemSet(
       this.records
-        .join("Section", "Section.id", "Item.ownerId")
+        .join("SectionItems", "Item.id", "SectionItems.id")
+        .join("Section", "Section.id", "SectionItems.ownerId")
         .join("Project", "Project.id", "Section.ownerId")
         .where("Project.id", project),
     );
@@ -735,7 +744,8 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   public contextItems(context: string): ItemSet {
     return new ItemSet(
       this.records
-        .join("Section", "Section.id", "Item.ownerId")
+        .join("SectionItems", "Item.id", "SectionItems.id")
+        .join("Section", "Section.id", "SectionItems.ownerId")
         .join("Project", "Project.id", "Section.ownerId")
         .join("Context", "Context.id", "Project.contextId")
         .where("Context.id", context),
@@ -745,24 +755,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   public userItems(user: string): ItemSet {
     return new ItemSet(
       this.records
-        .join("Section", "Section.id", "Item.ownerId")
-        .join("Project", "Project.id", "Section.ownerId")
-        .join("Context", "Context.id", "Project.contextId")
-        .join("User", "User.id", "Context.userId")
-        .where("User.id", user),
-    );
-  }
-
-  public listSpecialSection(
-    owner: string,
-    type: SectionIndex,
-  ): ItemSet {
-    return new ItemSet(
-      this.records
-        .join("Section", "Section.id", "Item.ownerId")
-        .where("Section.ownerId", owner)
-        .andWhere("Section.index", type)
-        .orderBy("Item.index"),
+        .where("Item.userId", user),
     );
   }
 }
@@ -1215,39 +1208,6 @@ export class AppDataSources {
         }
       }
     }
-  }
-
-  public async getItemTarget(
-    id: string,
-  ): Promise<Impl.TaskList | Impl.Section | Impl.Inbox | null> {
-    let section = await this.sections.getSection(id);
-    if (!section || section instanceof Impl.Inbox) {
-      return section;
-    }
-
-    if (await section.index() != SectionIndex.Anonymous) {
-      return section;
-    }
-
-    let project = await this.projects.getRecord(id);
-    if (!project) {
-      return null;
-    }
-
-    if (project.contextId != id) {
-      return new Impl.Project(this, project);
-    }
-
-    let context = await this.contexts.getRecord(id);
-    if (!context) {
-      return null;
-    }
-
-    if (context.userId != id) {
-      return new Impl.Context(this, context);
-    }
-
-    return this.users.getImpl(id);
   }
 
   public async ensureSanity(): Promise<void> {

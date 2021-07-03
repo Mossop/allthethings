@@ -3,7 +3,7 @@ import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 import type { Location, Update } from "history";
 import { useState, useMemo, useEffect, createContext, useContext as useReactContext } from "react";
 
-import type { Context, Project, ProjectRoot, TaskList, User } from "../schema";
+import type { Context, Project, TaskList, User } from "../schema";
 import { isProject, useContextState } from "../schema";
 
 const ViewContext = createContext<View | undefined>(undefined);
@@ -19,7 +19,7 @@ export enum ViewType {
 
 export interface LoggedInViewState {
   readonly user: User;
-  readonly context: Context | null;
+  readonly context: Context;
 }
 
 export interface LoggedOutViewState {
@@ -60,7 +60,7 @@ export type LoggedOutView = LoggedOutState & LoggedOutViewState;
 
 export type View = LoggedInView | LoggedOutView;
 
-export function useUrl(view: LoggedInState | LoggedOutState, context?: Context | null): URL {
+export function useUrl(view: LoggedInState | LoggedOutState, context?: Context): URL {
   let currentView = useView();
   if (!currentView) {
     // Uninitialized.
@@ -106,14 +106,9 @@ export function useContexts(): ReadonlyMap<string, Context> {
   return useUser().contexts;
 }
 
-export function useProjectRoot(): ProjectRoot {
+export function useCurrentContext(): Context {
   let state = useLoggedInView();
-  return state.context ?? state.user;
-}
-
-export function useCurrentContext(): Context | null {
-  let state = useLoggedInView();
-  return state.context ?? null;
+  return state.context;
 }
 
 export function viewToUrl(view: View): URL {
@@ -185,17 +180,12 @@ export function urlToView(user: User | null, url: URL): View {
 
   let pathParts = url.pathname.substring(1).split("/");
 
-  let root: ProjectRoot = user;
-  let context: Context | null = null;
+  let context: Context = user.defaultContext;
   let selectedContext = url.searchParams.get("context");
   if (selectedContext) {
     context = [...user.contexts.values()].find(
       (context: Context): boolean => context.stub == selectedContext,
-    ) ?? null;
-
-    if (context) {
-      root = context;
-    }
+    ) ?? user.defaultContext;
   }
 
   let notFound: LoggedInView = {
@@ -214,7 +204,7 @@ export function urlToView(user: User | null, url: URL): View {
         type: ViewType.TaskList,
         user,
         context,
-        taskList: root,
+        taskList: context,
       };
     case "inbox":
       if (pathParts.length) {
@@ -255,7 +245,7 @@ export function urlToView(user: User | null, url: URL): View {
       };
     }
     case "project": {
-      let taskList: TaskList = root;
+      let taskList: TaskList = context;
       let part = pathParts.shift();
       while (part) {
         let inner = descend(taskList, part);
@@ -343,7 +333,7 @@ export class NavigationHandler {
 }
 
 interface ContextChange {
-  readonly context?: Context | null;
+  readonly context?: Context;
 }
 
 function buildView(

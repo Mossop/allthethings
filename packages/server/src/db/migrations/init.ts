@@ -1,21 +1,6 @@
 import type { Knex } from "knex";
 
-function id(table: Knex.CreateTableBuilder): void {
-  table.text("id")
-    .notNullable()
-    .unique()
-    .primary();
-}
-
-function itemId(table: Knex.CreateTableBuilder): void {
-  table.text("id")
-    .notNullable()
-    .unique()
-    .primary()
-    .references("Item.id")
-    .onDelete("CASCADE")
-    .onUpdate("CASCADE");
-}
+import { id, itemId } from "./shared";
 
 export async function up(knex: Knex): Promise<void> {
   await down(knex);
