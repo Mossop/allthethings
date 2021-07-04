@@ -20,6 +20,7 @@ export type GoogleAccount = {
   readonly email: Scalars['String'];
   readonly avatar: Maybe<Scalars['String']>;
   readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
+  readonly loginUrl: Scalars['String'];
 };
 
 export type GoogleMailSearch = {
@@ -164,6 +165,7 @@ export type GoogleAccountResolvers<ContextType = any, ParentType extends Resolve
   email: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   avatar: Resolver<Maybe<ResolversTypes['String']>, ParentType, ContextType>;
   mailSearches: Resolver<ReadonlyArray<ResolversTypes['GoogleMailSearch']>, ParentType, ContextType>;
+  loginUrl: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 

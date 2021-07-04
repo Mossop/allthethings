@@ -10,7 +10,6 @@ import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@materia
 import md5 from "md5";
 import { useCallback } from "react";
 
-import type { User } from "../schema";
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { pushView, useLoggedInView, ViewType } from "../utils/view";
 import ChangePasswordDialog from "./ChangePasswordDialog";
@@ -32,13 +31,7 @@ const useStyles = makeStyles(() =>
     },
   }));
 
-interface UserMenuProps {
-  user: User;
-}
-
-export default ReactMemo(function UserMenu({
-  user,
-}: UserMenuProps): ReactResult {
+export default ReactMemo(function UserMenu(): ReactResult {
   let view = useLoggedInView();
   let classes = useStyles();
   let [logout] = useLogoutMutation({
@@ -61,8 +54,8 @@ export default ReactMemo(function UserMenu({
   return <>
     <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
       <Avatar
-        srcSet={avatarSources(user.email).join(", ")}
-        src={avatarSources(user.email)[0]}
+        srcSet={avatarSources(view.user.email).join(", ")}
+        src={avatarSources(view.user.email)[0]}
         className={classes.avatar}
       />
     </IconButton>

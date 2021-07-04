@@ -5,8 +5,9 @@ import type { Theme } from "@material-ui/core";
 
 import ContextMenu from "../ui/ContextMenu";
 import LoginDialog from "../ui/LoginDialog";
+import ProblemsMenu from "../ui/ProblemsMenu";
 import UserMenu from "../ui/UserMenu";
-import { useUser, useView } from "../utils/view";
+import { useView } from "../utils/view";
 import Logo from "./Logo";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -37,17 +38,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-const PageControls = ReactMemo(function PageControls(): ReactResult {
-  let classes = useStyles();
-  let user = useUser();
-
-  return <div className={classes.pageControls}>
-    <ContextMenu/>
-    <UserMenu user={user}/>
-  </div>;
-});
-
-export default function Banner(): ReactResult {
+export default ReactMemo(function Banner(): ReactResult {
   let classes = useStyles();
   let view = useView();
   let [loginDialogShown, showLoginDialog, closeLoginDialog] = useBoolState();
@@ -64,11 +55,17 @@ export default function Banner(): ReactResult {
         <span>AllTheThings</span>
       </Link>
     </h1>
-    {
-      view?.user
-        ? <PageControls/>
-        : <Button onClick={showLoginDialog}>Login</Button>
-    }
+    <div className={classes.pageControls}>
+      <ProblemsMenu/>
+      {
+        view?.user
+          ? <>
+            <ContextMenu/>
+            <UserMenu/>
+          </>
+          : <Button onClick={showLoginDialog}>Login</Button>
+      }
+    </div>
     {loginDialogShown && <LoginDialog onClosed={closeLoginDialog}/>}
   </AppBar>;
-}
+});

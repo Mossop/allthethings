@@ -110,8 +110,14 @@ type Section {
   name: String!
 }
 
+type Problem {
+  description: String!
+  url: String!
+}
+
 type Query {
   user: User
+  problems: [Problem!]!
 
   users: [User!]!
   taskList(id: ID!): TaskList

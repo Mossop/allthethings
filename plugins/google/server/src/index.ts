@@ -11,6 +11,7 @@ import type {
   PluginContext,
   PluginWebMiddleware,
   PluginWebContext,
+  Problem,
 } from "@allthethings/server";
 import {
   BasePlugin,
@@ -35,6 +36,7 @@ function first(param: string | string[] | undefined): string | undefined {
   return param;
 }
 
+const INITIAL_DELAY = 1000;
 const UPDATE_DELAY = 60000;
 
 export class GooglePlugin extends BasePlugin implements ServerPlugin {
@@ -42,7 +44,7 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
 
   private readonly clientPath: string;
 
-  private static _config: GooglePluginConfig | null = null;
+  private static _plugin: GooglePlugin | null = null;
 
   protected readonly listProviders = [
     MailSearch,
@@ -54,11 +56,25 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
   ];
 
   public static get config(): GooglePluginConfig {
-    if (!GooglePlugin._config) {
+    return GooglePlugin.plugin.config;
+  }
+
+  public static get plugin(): GooglePlugin {
+    if (!GooglePlugin._plugin) {
       throw new Error("Not yet initialized.");
     }
 
-    return GooglePlugin._config;
+    return GooglePlugin._plugin;
+  }
+
+  protected readonly problems: Map<string, string>;
+
+  public setProblem(account: Account, problem: string): void {
+    this.problems.set(account.id, problem);
+  }
+
+  public clearProblem(account: Account): void {
+    this.problems.delete(account.id);
   }
 
   public constructor(
@@ -67,7 +83,8 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
   ) {
     super();
 
-    GooglePlugin._config = config;
+    GooglePlugin._plugin = this;
+    this.problems = new Map();
 
     this.clientPath = path.dirname(require.resolve("@allthethings/google-client/dist/app.js"));
 
@@ -102,13 +119,17 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
         console.error(e);
       }
       return UPDATE_DELAY;
-    }, UPDATE_DELAY);
+    }, INITIAL_DELAY);
   }
 
   public async update(context: PluginContext): Promise<void> {
     let accounts = await Account.store.list(context);
     for (let account of accounts) {
-      await account.update();
+      try {
+        await account.update();
+      } catch (e) {
+        // Ignore account failure.
+      }
     }
     await super.update(context);
   }
@@ -130,6 +151,29 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
 
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
+  }
+
+  public async listProblems(context: PluginContext, userId: string | null): Promise<Problem[]> {
+    if (!userId) {
+      return [];
+    }
+
+    let accounts = await Account.store.list(context, {
+      userId,
+    });
+
+    let problems: Problem[] = [];
+    for (let account of accounts) {
+      let problem = this.problems.get(account.id);
+      if (problem) {
+        problems.push({
+          url: context.settingsPageUrl(account.id).toString(),
+          description: `Issue with Google account ${account.email}: ${problem}`,
+        });
+      }
+    }
+
+    return problems;
   }
 }
 

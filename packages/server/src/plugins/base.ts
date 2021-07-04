@@ -48,9 +48,13 @@ export abstract class BasePlugin implements ServerPlugin {
     for (let provider of this.listProviders) {
       let lists = await provider.store.list(context);
       for (let list of lists) {
-        let seen = await list.update();
-        for (let item of seen) {
-          seenIds.add(item.id);
+        try {
+          let seen = await list.update();
+          for (let item of seen) {
+            seenIds.add(item.id);
+          }
+        } catch (e) {
+          console.error(e);
         }
       }
     }
@@ -59,7 +63,11 @@ export abstract class BasePlugin implements ServerPlugin {
       let items = await provider.store.list(context);
       for (let item of items) {
         if (!seenIds.has(item.id)) {
-          await item.update();
+          try {
+            await item.update();
+          } catch (e) {
+            console.error(e);
+          }
         }
       }
     }

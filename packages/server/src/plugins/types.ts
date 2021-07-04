@@ -31,6 +31,11 @@ export interface PluginItem {
   fields: MaybeCallable<Awaitable<unknown>>;
 }
 
+export interface Problem {
+  description: string;
+  url: string;
+}
+
 export interface PluginContext {
   rootUrl: URL;
   pluginUrl: URL;
@@ -109,4 +114,5 @@ export interface ServerPlugin {
     string | null,
     [context: AuthedPluginContext, url: URL, isTask: boolean]
   >;
+  readonly listProblems?: PluginField<Problem[], [context: PluginContext, user: string | null]>;
 }

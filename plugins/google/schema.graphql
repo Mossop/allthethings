@@ -3,6 +3,7 @@ type GoogleAccount {
   email: String!
   avatar: String
   mailSearches: [GoogleMailSearch!]!
+  loginUrl: String!
 }
 
 type GoogleMailSearch {

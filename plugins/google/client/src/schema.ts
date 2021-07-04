@@ -54,6 +54,7 @@ export type GoogleAccount = {
   readonly email: Scalars['String'];
   readonly avatar: Maybe<Scalars['String']>;
   readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
+  readonly loginUrl: Scalars['String'];
 };
 
 export type GoogleMailSearch = {
@@ -357,6 +358,12 @@ export type PluginList = {
   readonly url: Maybe<Scalars['String']>;
 };
 
+export type Problem = {
+  readonly __typename?: 'Problem';
+  readonly description: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
 export type Project = TaskList & {
   readonly __typename?: 'Project';
   readonly subprojects: ReadonlyArray<Project>;
@@ -376,6 +383,7 @@ export type Query = {
   readonly __typename?: 'Query';
   readonly googleLoginUrl: Scalars['String'];
   readonly pageContent: Scalars['String'];
+  readonly problems: ReadonlyArray<Problem>;
   readonly taskList: Maybe<TaskList>;
   readonly user: Maybe<User>;
   readonly users: ReadonlyArray<User>;
@@ -434,7 +442,7 @@ export type User = {
 export type ListGoogleAccountsQueryVariables = Exact<{ [key: string]: never; }>;
 
 
-export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string>, readonly mailSearches: ReadonlyArray<{ readonly __typename: 'GoogleMailSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
+export type ListGoogleAccountsQuery = { readonly __typename: 'Query', readonly user: Maybe<{ readonly __typename: 'User', readonly id: string, readonly googleAccounts: ReadonlyArray<{ readonly __typename: 'GoogleAccount', readonly id: string, readonly email: string, readonly avatar: Maybe<string>, readonly loginUrl: string, readonly mailSearches: ReadonlyArray<{ readonly __typename: 'GoogleMailSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
 
 export type RequestLoginUrlQueryVariables = Exact<{ [key: string]: never; }>;
 
@@ -458,6 +466,7 @@ export const ListGoogleAccountsDocument = gql`
       id
       email
       avatar
+      loginUrl
       mailSearches {
         id
         name

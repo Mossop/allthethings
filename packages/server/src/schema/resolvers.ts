@@ -102,6 +102,7 @@ export type ResolversTypes = {
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: ResolverTypeWrapper<PluginDetail>;
   PluginList: ResolverTypeWrapper<PluginList>;
+  Problem: ResolverTypeWrapper<Schema.Problem>;
   Project: ResolverTypeWrapper<Project>;
   ProjectParams: Schema.ProjectParams;
   Query: ResolverTypeWrapper<{}>;
@@ -134,6 +135,7 @@ export type ResolversParentTypes = {
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: PluginDetail;
   PluginList: PluginList;
+  Problem: Schema.Problem;
   Project: Project;
   ProjectParams: Schema.ProjectParams;
   Query: {};
@@ -254,6 +256,12 @@ export type PluginListResolvers<ContextType = ResolverContext, ParentType extend
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export type ProblemResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Problem'] = ResolversParentTypes['Problem']> = {
+  description: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
 export type ProjectResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Project'] = ResolversParentTypes['Project']> = {
   subprojects: Resolver<ReadonlyArray<ResolversTypes['Project']>, ParentType, ContextType>;
   sections: Resolver<ReadonlyArray<ResolversTypes['Section']>, ParentType, ContextType>;
@@ -267,6 +275,7 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
   user: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
+  problems: Resolver<ReadonlyArray<ResolversTypes['Problem']>, ParentType, ContextType>;
   users: Resolver<ReadonlyArray<ResolversTypes['User']>, ParentType, ContextType>;
   taskList: Resolver<Schema.Maybe<ResolversTypes['TaskList']>, ParentType, ContextType, RequireFields<Schema.QueryTaskListArgs, 'id'>>;
   pageContent: Resolver<ResolversTypes['String'], ParentType, ContextType, RequireFields<Schema.QueryPageContentArgs, 'path'>>;
@@ -315,6 +324,7 @@ export type Resolvers<ContextType = ResolverContext> = {
   NoteDetail: NoteDetailResolvers<ContextType>;
   PluginDetail: PluginDetailResolvers<ContextType>;
   PluginList: PluginListResolvers<ContextType>;
+  Problem: ProblemResolvers<ContextType>;
   Project: ProjectResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   Section: SectionResolvers<ContextType>;

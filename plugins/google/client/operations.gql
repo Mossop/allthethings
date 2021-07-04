@@ -5,6 +5,7 @@ query ListGoogleAccounts {
       id
       email
       avatar
+      loginUrl
       mailSearches {
         id
         name

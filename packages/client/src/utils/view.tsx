@@ -3,10 +3,15 @@ import { pushUrl, replaceUrl, history } from "@allthethings/ui";
 import type { Location, Update } from "history";
 import { useState, useMemo, useEffect, createContext, useContext as useReactContext } from "react";
 
-import type { Context, Project, TaskList, User } from "../schema";
+import type { Context, Problem, Project, TaskList, User } from "../schema";
 import { isProject, useContextState } from "../schema";
 
-const ViewContext = createContext<View | undefined>(undefined);
+interface AppState {
+  view: View;
+  problems: readonly Problem[];
+}
+
+const ViewContext = createContext<AppState | undefined>(undefined);
 
 export enum ViewType {
   Page = "page",
@@ -87,7 +92,11 @@ export function useUrl(view: LoggedInState | LoggedOutState, context?: Context):
 }
 
 export function useView(): View | undefined {
-  return useReactContext(ViewContext);
+  return useReactContext(ViewContext)?.view;
+}
+
+export function useProblems(): readonly Problem[] {
+  return useReactContext(ViewContext)?.problems ?? [];
 }
 
 export function useLoggedInView(): LoggedInView {
@@ -380,11 +389,22 @@ export function replaceView(
 export function ViewListener({ children }: ReactChildren): ReactResult {
   let [view, setView] = useState<View | undefined>(undefined);
   let navHandler = useMemo(() => new NavigationHandler(setView), []);
-  let user = useContextState();
+  let state = useContextState();
 
   useEffect(() => {
-    return navHandler.watch(user);
-  }, [navHandler, user]);
+    return navHandler.watch(state?.user);
+  }, [navHandler, state]);
 
-  return <ViewContext.Provider value={view}>{children}</ViewContext.Provider>;
+  let appState: AppState | undefined = useMemo(() => {
+    if (!view) {
+      return undefined;
+    }
+
+    return {
+      view,
+      problems: state?.problems ?? [],
+    };
+  }, [view, state]);
+
+  return <ViewContext.Provider value={appState}>{children}</ViewContext.Provider>;
 }

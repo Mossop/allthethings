@@ -371,6 +371,12 @@ export type PluginList = {
   readonly url: Maybe<Scalars['String']>;
 };
 
+export type Problem = {
+  readonly __typename?: 'Problem';
+  readonly description: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
 export type Project = TaskList & {
   readonly __typename?: 'Project';
   readonly subprojects: ReadonlyArray<Project>;
@@ -389,6 +395,7 @@ export type ProjectParams = {
 export type Query = {
   readonly __typename?: 'Query';
   readonly user: Maybe<User>;
+  readonly problems: ReadonlyArray<Problem>;
   readonly users: ReadonlyArray<User>;
   readonly taskList: Maybe<TaskList>;
   readonly pageContent: Scalars['String'];

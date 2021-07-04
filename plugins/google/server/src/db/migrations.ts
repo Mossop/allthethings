@@ -166,8 +166,21 @@ class BaseMigration implements PluginDbMigration {
   }
 }
 
+class OptionalRefresh implements PluginDbMigration {
+  public readonly name = "optional-refresh";
+
+  public async up(knex: PluginKnex): Promise<void> {
+    await knex.schema.alterTable("Account", (table: Knex.CreateTableBuilder): void => {
+      table.text("refreshToken")
+        .nullable()
+        .alter();
+    });
+  }
+}
+
 export default function BuildMigrations(): PluginDbMigration[] {
   return [
     new BaseMigration(),
+    new OptionalRefresh(),
   ];
 }

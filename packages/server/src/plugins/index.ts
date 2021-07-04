@@ -25,6 +25,7 @@ import type {
   CreatePluginItemParams,
   PluginContext,
   PluginList,
+  Problem,
   Resolver,
   TypeResolver,
 } from "./types";
@@ -477,6 +478,25 @@ class PluginManager {
     await Promise.all(
       Array.from(this.plugins, (plugin: PluginInstance): Promise<void> => plugin.startup()),
     );
+  }
+
+  public async listProblems(
+    dataSources: AppDataSources,
+    userId: string | null,
+  ): Promise<Problem[]> {
+    let problems: Problem[] = [];
+    for (let plugin of this.plugins) {
+      let pluginProblems = await plugin.listProblems(
+        buildPluginContext(plugin, dataSources),
+        userId,
+      );
+
+      for (let problem of pluginProblems) {
+        problems.push(problem);
+      }
+    }
+
+    return problems;
   }
 }
 

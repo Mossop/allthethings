@@ -11,9 +11,17 @@ interface StateId {
   id: string
 }
 type StateQuery = ListContextStateQuery;
+type StateQuery$Problem = ArrayContents<StateQuery["problems"]>;
 type StateQuery$User = NonNullable<StateQuery["user"]>;
 type StateQuery$User$Context = ArrayContents<StateQuery$User["contexts"]>;
 type StateQuery$User$Project = ArrayContents<StateQuery$User$Context["projects"]>;
+
+export type Problem = Omit<StateQuery$Problem, "__typename">;
+
+export interface State {
+  readonly user: User | null;
+  readonly problems: readonly Problem[];
+}
 
 export type User = Overwrite<StateQuery$User, {
   readonly contexts: ReadonlyMap<string, Context>;
@@ -118,11 +126,14 @@ function buildUser(queryResult: StateQuery$User): User {
   };
 }
 
-function buildState(queryResult: StateQuery): User | null {
-  return queryResult.user ? buildUser(queryResult.user) : null;
+function buildState(queryResult: StateQuery): State | null {
+  return {
+    user: queryResult.user ? buildUser(queryResult.user) : null,
+    problems: queryResult.problems,
+  };
 }
 
-export function useContextState(): User | null | undefined {
+export function useContextState(): State | null | undefined {
   let { data } = useListContextStateQuery({
     pollInterval: 5000,
   });

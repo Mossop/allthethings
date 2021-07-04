@@ -14,19 +14,16 @@ import type {
   PluginContext,
 } from "@allthethings/server";
 import type { GraphQLResolver } from "@allthethings/utils";
-import type { gmail_v1, Auth } from "googleapis";
+import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
+import { GooglePlugin } from "..";
 import type { GoogleAPIFile } from "../api";
 import {
   encodeWebId,
-  listThreads,
   getAccountInfo,
-  createAuthClient,
   decodeWebId,
-  getFile,
-  getLabels,
-  getThread,
+  GoogleApi,
 } from "../api";
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
 import type { FileFields, ThreadFields } from "../types";
@@ -44,7 +41,7 @@ const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 export class Account extends BaseAccount implements GraphQLResolver<GoogleAccount> {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
-  private client: Auth.OAuth2Client | null;
+  private client: GoogleApi | null;
 
   public constructor(
     public readonly context: PluginContext,
@@ -74,6 +71,10 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     return this.record.avatar;
   }
 
+  public get loginUrl(): string {
+    return this.authClient.generateAuthUrl();
+  }
+
   public async items(): Promise<BaseItem[]> {
     return [
       ...await Thread.store.list(this.context, { ownerId: this.id }),
@@ -97,11 +98,26 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
   }
 
   public async update(): Promise<void> {
-    return this.updateLabels();
+    await this.updateLabels();
+
+    let userInfo = await this.authClient.getAccountInfo();
+
+    let avatar: string | null = null;
+    let photos = userInfo.photos ?? [];
+    for (let photo of photos) {
+      if (photo.metadata?.primary && photo.url) {
+        avatar = photo.url;
+      }
+    }
+
+    await Account.store.update(this.context, {
+      id: this.id,
+      avatar,
+    });
   }
 
   public async updateLabels(): Promise<void> {
-    let labels = await getLabels(this.authClient);
+    let labels = await this.authClient.getLabels();
 
     let labelIds = await this.context.table<GoogleLabelRecord>("Label")
       .where("ownerId", this.id)
@@ -139,36 +155,12 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     }
   }
 
-  private watchTokens(): void {
-    if (this.client) {
-      this.client.on("tokens", (credentials: Auth.Credentials): void => {
-        let {
-          access_token: accessToken,
-          expiry_date: expiry,
-          refresh_token: refreshToken,
-        } = credentials;
-
-        if (!accessToken || !refreshToken || !expiry) {
-          return;
-        }
-
-        void Account.store.update(this.context, {
-          id: this.id,
-          accessToken,
-          refreshToken,
-          expiry: Math.floor(expiry / 1000),
-        });
-      });
-    }
-  }
-
-  public get authClient(): Auth.OAuth2Client {
+  public get authClient(): GoogleApi {
     if (this.client) {
       return this.client;
     }
 
-    this.client = createAuthClient(this.context.pluginUrl, this.record);
-    this.watchTokens();
+    this.client = new GoogleApi(this, this.record);
     return this.client;
   }
 
@@ -176,7 +168,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     context: AuthedPluginContext,
     code: string,
   ): Promise<Account> {
-    let client = createAuthClient(context.pluginUrl);
+    let client = GoogleApi.createAuthClient(context.pluginUrl);
     let { tokens: credentials } = await client.getToken(code);
 
     let {
@@ -188,11 +180,6 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
     if (!accessToken) {
       console.error("Bad credentials", credentials);
       throw new Error("Failed to authenticate correctly, missing access token.");
-    }
-
-    if (!refreshToken) {
-      console.error("Bad credentials", credentials);
-      throw new Error("Failed to authenticate correctly, missing refresh token.");
     }
 
     if (!expiry) {
@@ -218,19 +205,46 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
       }
     }
 
-    let record: GoogleAccountRecord = {
-      id: await context.id(),
+    let existing = await Account.store.first(context, {
       userId: context.userId,
       email: tokenInfo.email,
-      avatar,
-      accessToken,
-      refreshToken,
-      expiry: Math.floor(expiry / 1000),
-    };
+    });
 
-    let account = await Account.store.insert(context, record);
-    await account.updateLabels();
-    return account;
+    if (!existing) {
+      let record: GoogleAccountRecord = {
+        id: await context.id(),
+        userId: context.userId,
+        email: tokenInfo.email,
+        avatar,
+        accessToken,
+        refreshToken: refreshToken ?? null,
+        expiry: Math.floor(expiry / 1000),
+      };
+
+      let account = await Account.store.insert(context, record);
+      await account.updateLabels();
+
+      return account;
+    } else {
+      if (refreshToken) {
+        await Account.store.update(context, {
+          id: existing.id,
+          accessToken,
+          refreshToken,
+          expiry: Math.floor(expiry / 1000),
+        });
+      } else {
+        await Account.store.update(context, {
+          id: existing.id,
+          accessToken,
+          expiry: Math.floor(expiry / 1000),
+        });
+      }
+
+      GooglePlugin.plugin.clearProblem(existing);
+
+      return existing;
+    }
   }
 }
 
@@ -282,7 +296,7 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
 
   public async listItems(threadList?: gmail_v1.Schema$Thread[]): Promise<Thread[]> {
     if (!threadList) {
-      threadList = await listThreads(this.account.authClient, this.query);
+      threadList = await this.account.authClient.listThreads(this.query);
     }
 
     let instances: Thread[] = [];
@@ -314,7 +328,7 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
     account: Account,
     record: Omit<GoogleMailSearchRecord, "id" | "ownerId">,
   ): Promise<MailSearch> {
-    let threads = await listThreads(account.authClient, record.query);
+    let threads = await account.authClient.listThreads(record.query);
 
     let id = await context.addList({
       name: record.name,
@@ -372,7 +386,7 @@ export class Thread extends BaseItem {
 
   public async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
     if (!thread) {
-      thread = await getThread(this.account.authClient, this.threadId) ?? undefined;
+      thread = await this.account.authClient.getThread(this.threadId) ?? undefined;
       if (!thread) {
         return this.context.deleteItem(this.id);
       }
@@ -529,7 +543,7 @@ export class Thread extends BaseItem {
         return existing;
       }
 
-      let apiThread = await getThread(account.authClient, threadId);
+      let apiThread = await account.authClient.getThread(threadId);
       if (!apiThread) {
         continue;
       }
@@ -602,7 +616,7 @@ export class File extends BaseItem {
 
   public async update(file?: GoogleAPIFile): Promise<void> {
     if (!file) {
-      file = await getFile(this.account.authClient, this.fileId) ?? undefined;
+      file = await this.account.authClient.getFile(this.fileId) ?? undefined;
 
       if (!file) {
         return this.context.deleteItem(this.id);
@@ -664,7 +678,7 @@ export class File extends BaseItem {
         return existing;
       }
 
-      let file = await getFile(account.authClient, matches[1]);
+      let file = await account.authClient.getFile(matches[1]);
       if (file) {
         return File.create(account, {
           webViewLink: url.toString(),

@@ -20,6 +20,7 @@ import type {
   PluginItem,
   PluginServer,
   Resolver,
+  Problem,
 } from "./types";
 
 async function loadPlugin(
@@ -187,5 +188,9 @@ export default class PluginInstance implements PluginServer {
     isTask: boolean,
   ): Promise<string | null> {
     return getField(this.plugin, this.plugin.createItemFromURL, null, context, url, isTask);
+  }
+
+  public listProblems(context: PluginContext, userId: string | null): Promise<Problem[]> {
+    return getField(this.plugin, this.plugin.listProblems, [], context, userId);
   }
 }

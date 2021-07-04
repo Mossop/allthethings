@@ -1,48 +1,278 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { URL } from "url";
 
+import type { AuthedPluginContext } from "@allthethings/server";
 import { decode as b64Decode, encode as b64Encode } from "base-64";
 import type { drive_v3, gmail_v1, people_v1 } from "googleapis";
 import { google, Auth } from "googleapis";
+import { GaxiosError } from "googleapis-common";
 
 import { GooglePlugin } from ".";
+import { Account } from "./db/implementations";
 import type { GoogleAccountRecord } from "./db/types";
 
-export function createAuthClient(
-  pluginUrl: URL,
-  credentials?: GoogleAccountRecord,
-): Auth.OAuth2Client {
-  let callbackUrl = new URL("oauth", pluginUrl);
+export async function getAccountInfo(
+  authClient: Auth.OAuth2Client,
+): Promise<people_v1.Schema$Person> {
+  let api = google.people({
+    version: "v1",
+    auth: authClient,
+  });
 
-  let client = new Auth.OAuth2Client(
-    GooglePlugin.config.clientId,
-    GooglePlugin.config.clientSecret,
-    callbackUrl.toString(),
-  );
+  let { data: info } = await api.people.get({
+    resourceName: "people/me",
+    personFields: "photos",
+  });
 
-  if (credentials) {
-    client.setCredentials({
+  return info;
+}
+
+function isNonNull<T>(item: T | null): item is T {
+  return !!item;
+}
+
+export interface GoogleAPILabel {
+  id: string;
+  name: string;
+}
+
+function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
+  if (!label.id || !label.name) {
+    return false;
+  }
+  return label.type == "user";
+}
+
+type Present<T, F extends keyof T> = Omit<T, F> & {
+  [K in F]-?: NonNullable<T[K]>;
+};
+
+export type GoogleAPIFile = Present<Pick<drive_v3.Schema$File,
+  "id" |
+  "name" |
+  "mimeType" |
+  "description" |
+  "iconLink" |
+  "webViewLink"
+>, "id" | "name" | "mimeType">;
+
+const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
+  "id",
+  "name",
+  "mimeType",
+  "description",
+  "iconLink",
+  "webViewLink",
+  "trashed",
+];
+
+export class GoogleApi {
+  private readonly client: Auth.OAuth2Client;
+
+  public constructor(
+    private readonly account: Account,
+    credentials: GoogleAccountRecord,
+  ) {
+    this.client = GoogleApi.createAuthClient(account.context.pluginUrl);
+
+    this.client.setCredentials({
       access_token: credentials.accessToken,
       refresh_token: credentials.refreshToken,
       expiry_date: credentials.expiry * 1000,
     });
+
+    this.watchTokens();
   }
 
-  return client;
-}
+  public static createAuthClient(pluginUrl: URL): Auth.OAuth2Client {
+    let callbackUrl = new URL("oauth", pluginUrl);
 
-export function generateAuthUrl(client: Auth.OAuth2Client, userId: string): string {
-  return client.generateAuthUrl({
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    access_type: "offline",
-    scope: [
-      "https://www.googleapis.com/auth/userinfo.profile",
-      "https://www.googleapis.com/auth/userinfo.email",
-      "https://www.googleapis.com/auth/gmail.readonly",
-      "https://www.googleapis.com/auth/drive.readonly",
-    ],
-    state: userId,
-  });
+    return new Auth.OAuth2Client(
+      GooglePlugin.config.clientId,
+      GooglePlugin.config.clientSecret,
+      callbackUrl.toString(),
+    );
+  }
+
+  private watchTokens(): void {
+    this.client.on("tokens", (credentials: Auth.Credentials): void => {
+      let {
+        access_token: accessToken,
+        expiry_date: expiry,
+        refresh_token: refreshToken,
+      } = credentials;
+
+      if (!accessToken || !expiry) {
+        console.error("Got bad access tokens", accessToken, refreshToken, expiry);
+        GooglePlugin.plugin.setProblem(this.account, "Google API returned invalid access tokens.");
+      } else if (refreshToken) {
+        GooglePlugin.plugin.clearProblem(this.account);
+        void Account.store.update(this.account.context, {
+          id: this.account.id,
+          accessToken,
+          refreshToken,
+          expiry: Math.floor(expiry / 1000),
+        });
+      } else {
+        void Account.store.update(this.account.context, {
+          id: this.account.id,
+          accessToken,
+          expiry: Math.floor(expiry / 1000),
+        });
+      }
+    });
+  }
+
+  public static generateAuthUrl(ctx: AuthedPluginContext): string {
+    let client = GoogleApi.createAuthClient(ctx.pluginUrl);
+
+    return client.generateAuthUrl({
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      access_type: "offline",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/drive.readonly",
+      ],
+      state: ctx.userId,
+    });
+  }
+
+  public generateAuthUrl(): string {
+    return this.client.generateAuthUrl({
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      access_type: "offline",
+      scope: [
+        "https://www.googleapis.com/auth/userinfo.profile",
+        "https://www.googleapis.com/auth/userinfo.email",
+        "https://www.googleapis.com/auth/gmail.readonly",
+        "https://www.googleapis.com/auth/drive.readonly",
+      ],
+      state: this.account.userId,
+      login_hint: this.account.email,
+    });
+  }
+
+  private async apiCall<T>(fn: () => Promise<T>): Promise<T> {
+    try {
+      let result = await fn();
+      GooglePlugin.plugin.clearProblem(this.account);
+      return result;
+    } catch (e) {
+      GooglePlugin.plugin.setProblem(this.account, e.message);
+      console.log(`Google plugin error: ${e.message}`);
+      throw e;
+    }
+  }
+
+  public async getAccountInfo(): Promise<people_v1.Schema$Person> {
+    return getAccountInfo(this.client);
+  }
+
+  public async getThread(threadId: string): Promise<gmail_v1.Schema$Thread | null> {
+    let api = google.gmail({
+      version: "v1",
+      auth: this.client,
+    });
+
+    return this.apiCall(async () => {
+      try {
+        let { data: thread } = await api.users.threads.get({
+          userId: "me",
+          id: threadId,
+        });
+
+        return thread;
+      } catch (e) {
+        if (e instanceof GaxiosError && e.response?.status == 404) {
+          return null;
+        }
+        throw e;
+      }
+    });
+  }
+
+  public async listThreads(query: string): Promise<gmail_v1.Schema$Thread[]> {
+    let api = google.gmail({
+      version: "v1",
+      auth: this.client,
+    });
+
+    let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
+
+    let pageToken: string | null | undefined = undefined;
+    while (pageToken !== null) {
+      let { data: response } = await this.apiCall(() => api.users.threads.list({
+        userId: "me",
+        q: query,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        pageToken: pageToken!,
+      }));
+
+      for (let thread of response.threads ?? []) {
+        if (thread.id) {
+          threads.push(this.getThread(thread.id));
+        }
+      }
+
+      pageToken = response.nextPageToken ?? null;
+    }
+
+    let results = await Promise.all(threads);
+    return results.filter(isNonNull);
+  }
+
+  public async getLabels(): Promise<GoogleAPILabel[]> {
+    let api = google.gmail({
+      version: "v1",
+      auth: this.client,
+    });
+
+    let { data: { labels } } = await this.apiCall(() => api.users.labels.list({
+      userId: "me",
+    }));
+
+    if (!labels) {
+      return [];
+    }
+
+    return labels.filter(isLabel);
+  }
+
+  public async getFile(fileId: string): Promise<GoogleAPIFile | null> {
+    let api = google.drive({
+      version: "v3",
+      auth: this.client,
+    });
+
+    return this.apiCall(async (): Promise<GoogleAPIFile | null> => {
+      try {
+        let { data } = await api.files.get({
+          fileId,
+          supportsAllDrives: true,
+          fields: fileFields.join(", "),
+        });
+
+        if (data.trashed) {
+          return null;
+        }
+
+        if (!data.id || !data.name || !data.mimeType) {
+          return null;
+        }
+
+        // @ts-ignore
+        return data;
+      } catch (e) {
+        if (e instanceof GaxiosError && e.response?.status == 404) {
+          return null;
+        }
+
+        throw e;
+      }
+    });
+  }
 }
 
 const B64_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
@@ -136,165 +366,4 @@ export function modifyCharset(id: string, sourceCharset: string, targetCharset: 
   }
 
   return resultCharacters.join("");
-}
-
-export async function getAccountInfo(
-  authClient: Auth.OAuth2Client,
-): Promise<people_v1.Schema$Person> {
-  let api = google.people({
-    version: "v1",
-    auth: authClient,
-  });
-
-  let { data: info } = await api.people.get({
-    resourceName: "people/me",
-    personFields: "photos",
-  });
-
-  return info;
-}
-
-export async function getThread(
-  authClient: Auth.OAuth2Client,
-  threadId: string,
-): Promise<gmail_v1.Schema$Thread | null> {
-  let api = google.gmail({
-    version: "v1",
-    auth: authClient,
-  });
-
-  try {
-    let { data: thread } = await api.users.threads.get({
-      userId: "me",
-      id: threadId,
-    });
-
-    return thread;
-  } catch (e) {
-    console.error(e);
-    return null;
-  }
-}
-
-function isNonNull<T>(item: T | null): item is T {
-  return !!item;
-}
-
-export async function listThreads(
-  authClient: Auth.OAuth2Client,
-  query: string,
-): Promise<gmail_v1.Schema$Thread[]> {
-  let api = google.gmail({
-    version: "v1",
-    auth: authClient,
-  });
-
-  let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
-
-  let pageToken: string | null | undefined = undefined;
-  while (pageToken !== null) {
-    let { data: response } = await api.users.threads.list({
-      userId: "me",
-      q: query,
-      pageToken,
-    });
-
-    for (let thread of response.threads ?? []) {
-      if (thread.id) {
-        threads.push(getThread(authClient, thread.id));
-      }
-    }
-
-    pageToken = response.nextPageToken ?? null;
-  }
-
-  let results = await Promise.all(threads);
-  return results.filter(isNonNull);
-}
-
-export interface GoogleAPILabel {
-  id: string;
-  name: string;
-}
-
-function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
-  if (!label.id || !label.name) {
-    return false;
-  }
-  return label.type == "user";
-}
-
-export async function getLabels(authClient: Auth.OAuth2Client): Promise<GoogleAPILabel[]> {
-  let api = google.gmail({
-    version: "v1",
-    auth: authClient,
-  });
-
-  try {
-    let { data: { labels } } = await api.users.labels.list({
-      userId: "me",
-    });
-
-    if (!labels) {
-      return [];
-    }
-
-    return labels.filter(isLabel);
-  } catch (e) {
-    return [];
-  }
-}
-
-type Present<T, F extends keyof T> = Omit<T, F> & {
-  [K in F]-?: NonNullable<T[K]>;
-};
-
-export type GoogleAPIFile = Present<Pick<drive_v3.Schema$File,
-  "id" |
-  "name" |
-  "mimeType" |
-  "description" |
-  "iconLink" |
-  "webViewLink"
->, "id" | "name" | "mimeType">;
-
-const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
-  "id",
-  "name",
-  "mimeType",
-  "description",
-  "iconLink",
-  "webViewLink",
-  "trashed",
-];
-
-export async function getFile(
-  authClient: Auth.OAuth2Client,
-  fileId: string,
-): Promise<GoogleAPIFile | null> {
-  let api = google.drive({
-    version: "v3",
-    auth: authClient,
-  });
-
-  try {
-    let { data } = await api.files.get({
-      fileId,
-      supportsAllDrives: true,
-      fields: fileFields.join(", "),
-    });
-
-    if (data.trashed) {
-      return null;
-    }
-
-    if (!data.id || !data.name || !data.mimeType) {
-      return null;
-    }
-
-    // @ts-ignore
-    return data;
-  } catch (e) {
-    return null;
-  }
 }

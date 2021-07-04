@@ -40,6 +40,11 @@ query ListContextState {
       }
     }
   }
+
+  problems {
+    description
+    url
+  }
 }
 
 query PageContent($path: String!) {

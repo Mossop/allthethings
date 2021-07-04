@@ -327,6 +327,12 @@ export type PluginList = {
   readonly url?: Maybe<Scalars['String']>;
 };
 
+export type Problem = {
+  readonly __typename: 'Problem';
+  readonly description: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
 export type Project = TaskList & {
   readonly __typename: 'Project';
   readonly subprojects: ReadonlyArray<Project>;
@@ -345,6 +351,7 @@ export type ProjectParams = {
 export type Query = {
   readonly __typename: 'Query';
   readonly user?: Maybe<User>;
+  readonly problems: ReadonlyArray<Problem>;
   readonly users: ReadonlyArray<User>;
   readonly taskList?: Maybe<TaskList>;
   readonly pageContent: Scalars['String'];
@@ -492,6 +499,11 @@ export type PluginListFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type ProblemKeySpecifier = ('description' | 'url' | ProblemKeySpecifier)[];
+export type ProblemFieldPolicy = {
+	description?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type ProjectKeySpecifier = ('subprojects' | 'sections' | 'items' | 'id' | 'stub' | 'name' | 'taskList' | ProjectKeySpecifier)[];
 export type ProjectFieldPolicy = {
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -502,9 +514,10 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'users' | 'taskList' | 'pageContent' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('user' | 'problems' | 'users' | 'taskList' | 'pageContent' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	problems?: FieldPolicy<any> | FieldReadFunction<any>,
 	users?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	pageContent?: FieldPolicy<any> | FieldReadFunction<any>
@@ -572,6 +585,10 @@ export type TypedTypePolicies = TypePolicies & {
 	PluginList?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | PluginListKeySpecifier | (() => undefined | PluginListKeySpecifier),
 		fields?: PluginListFieldPolicy,
+	},
+	Problem?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | ProblemKeySpecifier | (() => undefined | ProblemKeySpecifier),
+		fields?: ProblemFieldPolicy,
 	},
 	Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ProjectKeySpecifier | (() => undefined | ProjectKeySpecifier),

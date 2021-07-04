@@ -3,6 +3,8 @@ import { promises as fs } from "fs";
 import path from "path";
 
 import type { TaskList, User } from "../db";
+import PluginManager from "../plugins";
+import type { Problem } from "../plugins/types";
 import { admin, authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
 
@@ -32,6 +34,10 @@ const resolvers: QueryResolvers = {
     }
 
     return user;
+  }),
+
+  problems: resolver(async (ctx): Promise<Problem[]> => {
+    return PluginManager.listProblems(ctx.dataSources, ctx.userId);
   }),
 
   users: admin(async (ctx): Promise<User[]> => {

@@ -28,5 +28,6 @@ export {
   PluginServer,
   PluginWebMiddleware,
   PluginWebContext,
+  Problem,
 } from "./plugins/types";
 export * from "./utils/page";

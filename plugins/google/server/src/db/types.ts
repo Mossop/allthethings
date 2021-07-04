@@ -2,11 +2,11 @@ import type { GraphQLType } from "@allthethings/utils";
 
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
 
-export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches"> & {
+export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches" | "loginUrl"> & {
   userId: string;
   avatar: string | null;
   accessToken: string;
-  refreshToken: string;
+  refreshToken: string | null;
   expiry: number;
 };
 

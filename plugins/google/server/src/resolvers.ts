@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Resolver, AuthedPluginContext, User } from "@allthethings/server";
 
-import { createAuthClient, generateAuthUrl } from "./api";
+import { GoogleApi } from "./api";
 import { Account, MailSearch } from "./db/implementations";
 import type { MutationCreateGoogleMailSearchArgs } from "./schema";
 
@@ -22,9 +22,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       args: unknown,
       ctx: AuthedPluginContext,
     ): Promise<string> {
-      let client = createAuthClient(ctx.pluginUrl);
-
-      return generateAuthUrl(client, ctx.userId);
+      return GoogleApi.generateAuthUrl(ctx);
     },
   },
 

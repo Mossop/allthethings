@@ -25,7 +25,11 @@ export function pushClickedLink(event: React.MouseEvent<HTMLElement>): void {
   }
 }
 
-export function pushUrl(url: URL): void {
+export function pushUrl(url: URL | string): void {
+  if (!(url instanceof URL)) {
+    url = new URL(url);
+  }
+
   let {
     pathname,
     search,
@@ -39,10 +43,14 @@ export function pushUrl(url: URL): void {
   history.push(to);
 }
 
-export function replaceUrl({ pathname, search }: URL): void {
+export function replaceUrl(url: URL | string): void {
+  if (!(url instanceof URL)) {
+    url = new URL(url);
+  }
+
   let to: To = {
-    pathname,
-    search: search.length > 1 ? search : "",
+    pathname: url.pathname,
+    search: url.search.length > 1 ? url.search : "",
   };
 
   history.replace(to);

@@ -9,7 +9,7 @@ const defaultOptions =  {}
 export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }> };
+export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }>, readonly problems: ReadonlyArray<{ readonly __typename: 'Problem', readonly description: string, readonly url: string }> };
 
 export type PageContentQueryVariables = Types.Exact<{
   path: Types.Scalars['String'];
@@ -86,6 +86,10 @@ export const ListContextStateDocument = gql`
         }
       }
     }
+  }
+  problems {
+    description
+    url
   }
 }
     `;

@@ -12,7 +12,9 @@ import type { ReactResult } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
+import LoopIcon from "@material-ui/icons/Loop";
 import SearchIcon from "@material-ui/icons/Search";
+import { useCallback } from "react";
 
 import Google from "../logos/Google";
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
@@ -22,6 +24,7 @@ const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     headingText: {
       padding: theme.spacing(1) + 2,
+      flex: 1,
     },
     actions: {
       flex: 1,
@@ -96,11 +99,18 @@ export default function AccountSettings({
   let classes = useStyles();
   let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
 
+  let reLogin = useCallback(() => {
+    window.location.assign(account.loginUrl);
+  }, [account]);
+
   return <SettingsPage
     heading={
       <>
         <ImageIcon icon={<Google/>}/>
         <Heading className={classes.headingText}>Settings for {account.email}</Heading>
+        <IconButton onClick={reLogin}>
+          <LoopIcon/>
+        </IconButton>
       </>
     }
   >
