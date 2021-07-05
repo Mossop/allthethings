@@ -43,7 +43,7 @@ export const Menu = ReactMemo(function Menu({
     {...bindMenu(state)}
     anchorOrigin={anchorOrigin}
     transformOrigin={transformOrigin}
-    keepMounted={true}
+    keepMounted={false}
     getContentAnchorEl={null}
     onClick={closeMenu}
     onExited={onClosed}
