@@ -9,6 +9,7 @@ import {
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
+import ErrorHandler from "./ui/ErrorHandler";
 import Main from "./ui/Main";
 import { DragContext } from "./utils/drag";
 import { ViewListener } from "./utils/view";
@@ -125,13 +126,15 @@ export default function App({
     <ThemeProvider theme={baseTheme}>
       <ApolloProvider client={client}>
         <CssBaseline/>
-        <UIProvider>
-          <ViewListener>
-            <DragContext>
-              <Main/>
-            </DragContext>
-          </ViewListener>
-        </UIProvider>
+        <ErrorHandler>
+          <UIProvider>
+            <ViewListener>
+              <DragContext>
+                <Main/>
+              </DragContext>
+            </ViewListener>
+          </UIProvider>
+        </ErrorHandler>
       </ApolloProvider>
     </ThemeProvider>
   </ThemeProvider>;
