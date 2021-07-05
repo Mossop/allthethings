@@ -10,6 +10,7 @@ import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
 import { useInboxContents } from "../schema";
 import { Filters } from "../utils/filter";
+import { useUser } from "../utils/globalState";
 import { replaceView, useLoggedInView, ViewType } from "../utils/view";
 import LinkDialog from "./LinkDialog";
 
@@ -43,7 +44,7 @@ export default ReactMemo(function Inbox(): ReactResult {
   let [linkView] = useState(view.type == ViewType.AddLink ? view : null);
   let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(linkView !== null);
 
-  let user = view.user;
+  let user = useUser();
   let items = useInboxContents().items;
 
   let [filter, setFilter] = useState(() => Filters.Normal);
@@ -52,7 +53,7 @@ export default ReactMemo(function Inbox(): ReactResult {
     if (view.type == ViewType.AddLink) {
       replaceView({
         type: ViewType.Inbox,
-      }, view);
+      });
     }
   }, [view]);
 

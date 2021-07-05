@@ -22,12 +22,11 @@ import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useCallback } from "react";
 
 import Page from "../../components/Page";
+import { useUser } from "../../utils/globalState";
 import {
   pushView,
   useUrl,
-  useLoggedInView,
   ViewType,
-  useUser,
   useCurrentContext,
 } from "../../utils/view";
 import AdminPage from "./AdminPage";
@@ -149,15 +148,14 @@ export default ReactMemo(function Settings({
   pluginId,
 }: SettingsProps): ReactResult {
   let classes = useStyles();
-  let view = useLoggedInView();
 
   let updateSection = useCallback((page: string, pluginId?: string): void => {
     pushView({
       type: ViewType.Settings,
       page,
       pluginId,
-    }, view);
-  }, [view]);
+    });
+  }, []);
 
   return <SettingsContext.Provider value={{ page, setPage: updateSection }}>
     <Page sidebar={<SettingsSidebar/>}>

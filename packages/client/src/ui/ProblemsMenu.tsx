@@ -10,7 +10,7 @@ import {
 import { IconButton, MenuItem } from "@material-ui/core";
 
 import type { Problem } from "../schema";
-import { useProblems } from "../utils/view";
+import { useProblems } from "../utils/globalState";
 
 export default ReactMemo(function ProblemsMenu(): ReactResult {
   let problems = useProblems();

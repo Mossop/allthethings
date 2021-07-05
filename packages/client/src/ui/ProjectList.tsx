@@ -18,6 +18,7 @@ import type { Project, TaskList, Item } from "../schema";
 import { nameSorted } from "../utils/collections";
 import { useDragSource, useDragState, useDropTarget } from "../utils/drag";
 import { Filters, isVisible } from "../utils/filter";
+import { useUser } from "../utils/globalState";
 import {
   useCurrentContext,
   useUrl,
@@ -189,6 +190,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
   let classes = useStyles({ depth: 0 });
 
   let view = useLoggedInView();
+  let user = useUser();
   let context = useCurrentContext();
   let taskList = "taskList" in view ? view.taskList : null;
 
@@ -209,7 +211,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
   let {
     isDropping: isInboxDropping,
     dropRef: inboxDropRef,
-  } = useDropTarget(view.user.inbox);
+  } = useDropTarget(user.inbox);
 
   let {
     isDropping: isRootDropping,

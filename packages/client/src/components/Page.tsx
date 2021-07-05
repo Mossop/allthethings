@@ -5,7 +5,7 @@ import clsx from "clsx";
 import type { ReactNode } from "react";
 
 import ProjectList from "../ui/ProjectList";
-import { useView } from "../utils/view";
+import { useMaybeUser } from "../utils/globalState";
 import Banner from "./Banner";
 
 const useStyles = makeStyles(() =>
@@ -32,9 +32,9 @@ export default ReactMemo(function Page({
   children,
 }: PageProps): ReactResult {
   let classes = useStyles();
-  let view = useView();
+  let user = useMaybeUser();
 
-  sidebar = sidebar ?? (view?.user ? <ProjectList/> : null);
+  sidebar = sidebar ?? (user ? <ProjectList/> : null);
 
   return <div className={clsx(classes.outer)}>
     <Banner/>

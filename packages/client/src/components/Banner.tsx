@@ -7,7 +7,7 @@ import ContextMenu from "../ui/ContextMenu";
 import LoginDialog from "../ui/LoginDialog";
 import ProblemsMenu from "../ui/ProblemsMenu";
 import UserMenu from "../ui/UserMenu";
-import { useView } from "../utils/view";
+import { useMaybeUser } from "../utils/globalState";
 import Logo from "./Logo";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -40,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) =>
 
 export default ReactMemo(function Banner(): ReactResult {
   let classes = useStyles();
-  let view = useView();
+  let user = useMaybeUser();
   let [loginDialogShown, showLoginDialog, closeLoginDialog] = useBoolState();
 
   return <AppBar
@@ -58,7 +58,7 @@ export default ReactMemo(function Banner(): ReactResult {
     <div className={classes.pageControls}>
       <ProblemsMenu/>
       {
-        view?.user
+        user
           ? <>
             <ContextMenu/>
             <UserMenu/>

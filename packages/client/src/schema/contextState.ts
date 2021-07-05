@@ -1,10 +1,8 @@
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { Overwrite } from "@allthethings/utils";
-import { useMemo } from "react";
 
 import type { GraphQLType } from ".";
 import type { ListContextStateQuery } from "./queries";
-import { useListContextStateQuery } from "./queries";
 
 type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
 interface StateId {
@@ -126,17 +124,9 @@ function buildUser(queryResult: StateQuery$User): User {
   };
 }
 
-function buildState(queryResult: StateQuery): State | null {
+export function buildState(queryResult: StateQuery): State {
   return {
     user: queryResult.user ? buildUser(queryResult.user) : null,
     problems: queryResult.problems,
   };
-}
-
-export function useContextState(): State | null | undefined {
-  let { data } = useListContextStateQuery({
-    pollInterval: 5000,
-  });
-
-  return useMemo(() => data ? buildState(data) : undefined, [data]);
 }

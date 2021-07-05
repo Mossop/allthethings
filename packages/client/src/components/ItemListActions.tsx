@@ -35,7 +35,8 @@ import type { Inbox, TaskList, Section } from "../schema";
 import CreateSectionDialog from "../ui/CreateSectionDialog";
 import LinkDialog from "../ui/LinkDialog";
 import TaskDialog from "../ui/TaskDialog";
-import { ViewType, replaceView, useLoggedInView, useUser } from "../utils/view";
+import { useUser } from "../utils/globalState";
+import { ViewType, replaceView, useLoggedInView } from "../utils/view";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -85,7 +86,7 @@ export default ReactMemo(function ItemListActions({
         replaceView({
           type: ViewType.TaskList,
           taskList: list.parent ?? view.context,
-        }, view);
+        });
 
         void deleteProject({
           variables: {
@@ -97,7 +98,7 @@ export default ReactMemo(function ItemListActions({
           type: ViewType.TaskList,
           taskList: user.defaultContext,
           context: user.defaultContext,
-        }, view);
+        });
 
         void deleteContext({
           variables: {

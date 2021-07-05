@@ -1,10 +1,11 @@
 import { ReactMemo, useBoolState, Dialog, TextFieldInput, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
-import type { TaskList } from "../schema";
+import type { Project, TaskList } from "../schema";
 import { useCreateProjectMutation, refetchListContextStateQuery } from "../schema";
-import { useLoggedInView, pushView, ViewType } from "../utils/view";
+import GlobalState from "../utils/globalState";
+import { pushView, ViewType } from "../utils/view";
 
 interface CreateProjectProps {
   onClosed: () => void;
@@ -18,11 +19,10 @@ export default ReactMemo(function CreateProjectDialog({
   let [state, setState] = useState({
     name: "",
   });
-  let view = useLoggedInView();
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createProject, { data, loading, error }] = useCreateProjectMutation({
+  let [createProjectMutation, { loading, error }] = useCreateProjectMutation({
     variables: {
       taskList: taskList.id,
       params: state,
@@ -32,26 +32,33 @@ export default ReactMemo(function CreateProjectDialog({
     ],
   });
 
-  let newProject = useMemo(() => {
-    if (!data) {
-      return null;
+  let createProject = useCallback(async () => {
+    let { data } = await createProjectMutation();
+    let user = GlobalState.user;
+    if (!data || !user) {
+      throw new Error("Invalid state.");
     }
 
-    return view.context.projects.get(data.createProject.id) ?? null;
-  }, [data, view.context]);
+    let newProject: Project | undefined = undefined;
 
-  useEffect(() => {
+    for (let context of user.contexts.values()) {
+      newProject = context.projects.get(data.createProject.id);
+      if (newProject) {
+        break;
+      }
+    }
+
     if (!newProject) {
-      return;
+      throw new Error("New project not present in user state.");
     }
 
     pushView({
       type: ViewType.TaskList,
       taskList: newProject,
-    }, view);
+    });
 
     close();
-  }, [newProject, close, view]);
+  }, [close, createProjectMutation]);
 
   return <Dialog
     title="Create Project"

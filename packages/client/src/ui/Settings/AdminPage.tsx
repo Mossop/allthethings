@@ -19,7 +19,7 @@ import { useCallback } from "react";
 
 import { useDeleteUserMutation } from "../../schema";
 import { refetchListUsersQuery, useListUsersQuery } from "../../schema/queries";
-import { useUser } from "../../utils/view";
+import { useUser } from "../../utils/globalState";
 import CreateUserDialog from "./CreateUserDialog";
 
 const useStyles = makeStyles((theme: Theme) =>

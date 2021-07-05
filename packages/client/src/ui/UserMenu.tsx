@@ -11,7 +11,8 @@ import md5 from "md5";
 import { useCallback } from "react";
 
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
-import { pushView, useLoggedInView, ViewType } from "../utils/view";
+import { useUser } from "../utils/globalState";
+import { pushView, ViewType } from "../utils/view";
 import ChangePasswordDialog from "./ChangePasswordDialog";
 
 function avatarSources(email: string): string[] {
@@ -32,7 +33,7 @@ const useStyles = makeStyles(() =>
   }));
 
 export default ReactMemo(function UserMenu(): ReactResult {
-  let view = useLoggedInView();
+  let user = useUser();
   let classes = useStyles();
   let [logout] = useLogoutMutation({
     refetchQueries: [refetchListContextStateQuery()],
@@ -48,14 +49,14 @@ export default ReactMemo(function UserMenu(): ReactResult {
     pushView({
       type: ViewType.Settings,
       page: "general",
-    }, view);
-  }, [view]);
+    });
+  }, []);
 
   return <>
     <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
       <Avatar
-        srcSet={avatarSources(view.user.email).join(", ")}
-        src={avatarSources(view.user.email)[0]}
+        srcSet={avatarSources(user.email).join(", ")}
+        src={avatarSources(user.email)[0]}
         className={classes.avatar}
       />
     </IconButton>

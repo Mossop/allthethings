@@ -1,4 +1,4 @@
-import { useLoggedInView } from "../utils/view";
+import { useUser } from "../utils/globalState";
 import { useListInboxQuery } from "./queries";
 import type { Item } from "./taskListState";
 import { buildItem } from "./taskListState";
@@ -12,7 +12,7 @@ export function useInboxContents(): InboxContents {
     pollInterval: 5000,
   });
 
-  let view = useLoggedInView();
+  let user = useUser();
 
   if (!data?.user) {
     return {
@@ -21,6 +21,6 @@ export function useInboxContents(): InboxContents {
   }
 
   return {
-    items: data.user.inbox.items.map(buildItem.bind(null, view.user.inbox)),
+    items: data.user.inbox.items.map(buildItem.bind(null, user.inbox)),
   };
 }

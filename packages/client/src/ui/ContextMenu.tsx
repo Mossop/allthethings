@@ -15,9 +15,9 @@ import { forwardRef, useCallback, useMemo } from "react";
 
 import type { Context } from "../schema";
 import { nameSorted } from "../utils/collections";
-import type { LoggedInState } from "../utils/view";
+import { useUser } from "../utils/globalState";
+import type { LoggedInViewState } from "../utils/view";
 import {
-  useContexts,
   useCurrentContext,
   ViewType,
   useLoggedInView,
@@ -56,7 +56,7 @@ const ContextMenuItem = ReactMemo(
   ): ReactResult {
     let view = useLoggedInView();
 
-    let targetView: LoggedInState;
+    let targetView: LoggedInViewState;
     switch (view.type) {
       case ViewType.Inbox:
         targetView = {
@@ -94,7 +94,7 @@ export default ReactMemo(function ContextMenu(): ReactResult {
   let [showCreateDialog, openCreateDialog, closeCreateDialog] = useBoolState(false);
 
   let contextMenuState = useMenuState("context-menu");
-  let contexts = useContexts();
+  let contexts = useUser().contexts;
   let currentContext = useCurrentContext();
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);

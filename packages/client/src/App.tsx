@@ -12,7 +12,6 @@ import type { Theme } from "@material-ui/core";
 import ErrorHandler from "./ui/ErrorHandler";
 import Main from "./ui/Main";
 import { DragContext } from "./utils/drag";
-import { ViewListener } from "./utils/view";
 
 const base = createMuiTheme();
 
@@ -128,11 +127,9 @@ export default function App({
         <CssBaseline/>
         <ErrorHandler>
           <UIProvider>
-            <ViewListener>
-              <DragContext>
-                <Main/>
-              </DragContext>
-            </ViewListener>
+            <DragContext>
+              <Main/>
+            </DragContext>
           </UIProvider>
         </ErrorHandler>
       </ApolloProvider>

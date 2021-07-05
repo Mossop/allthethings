@@ -1,9 +1,10 @@
 import { useBoolState, ReactMemo, Dialog, TextFieldInput, FormState } from "@allthethings/ui";
 import type { ReactElement } from "react";
-import { useMemo, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { useCreateContextMutation, refetchListContextStateQuery } from "../schema";
-import { useLoggedInView, pushView, ViewType } from "../utils/view";
+import GlobalState from "../utils/globalState";
+import { pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
   onClosed: () => void;
@@ -15,12 +16,10 @@ export default ReactMemo(function CreateContextDialog({
   let [state, setState] = useState({
     name: "",
   });
-  let view = useLoggedInView();
-  let user = view.user;
 
   let [isOpen,, close] = useBoolState(true);
 
-  let [createContext, { data, loading, error }] = useCreateContextMutation({
+  let [createContextMutation, { loading, error }] = useCreateContextMutation({
     variables: {
       params: state,
     },
@@ -29,26 +28,24 @@ export default ReactMemo(function CreateContextDialog({
     ],
   });
 
-  let newContext = useMemo(() => {
-    if (!data) {
-      return null;
+  let createContext = useCallback(async () => {
+    let { data } = await createContextMutation();
+    let user = GlobalState.user;
+    if (!data || !user) {
+      throw new Error("Invalid state.");
     }
 
-    return user.contexts.get(data.createContext.id) ?? null;
-  }, [data, user]);
-
-  useEffect(() => {
+    let newContext = user.contexts.get(data.createContext.id);
     if (!newContext) {
-      return;
+      throw new Error("New context not present in user state.");
     }
 
     pushView({
       type: ViewType.TaskList,
       context: newContext,
       taskList: newContext,
-    }, view);
-    close();
-  }, [newContext, view, close]);
+    });
+  }, [createContextMutation]);
 
   return <Dialog
     title="Create Context"
