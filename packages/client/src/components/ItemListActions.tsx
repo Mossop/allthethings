@@ -2,6 +2,10 @@ import {
   Icons,
   Styles,
   ReactMemo,
+  useBoolState,
+  bindTrigger,
+  useMenuState,
+  Menu,
 } from "@allthethings/ui";
 import type { ReactResult } from "@allthethings/ui";
 import {
@@ -9,7 +13,11 @@ import {
   createStyles,
   makeStyles,
   Tooltip,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
 } from "@material-ui/core";
+import MenuIcon from "@material-ui/icons/MoreVert";
 import { useMemo } from "react";
 
 import {
@@ -21,10 +29,13 @@ import {
   useDeleteSectionMutation,
   refetchListContextStateQuery,
   refetchQueriesForSection,
+  isTaskList,
 } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
+import CreateSectionDialog from "../ui/CreateSectionDialog";
+import LinkDialog from "../ui/LinkDialog";
+import TaskDialog from "../ui/TaskDialog";
 import { ViewType, replaceView, useLoggedInView, useUser } from "../utils/view";
-import AddMenu from "./AddMenu";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -45,6 +56,12 @@ export default ReactMemo(function ItemListActions({
   let classes = useStyles();
   let view = useLoggedInView();
   let user = useUser();
+
+  let actionMenu = useMenuState("list-actions");
+
+  let [sectionAddDialogOpen, openAddSection, closeAddSection] = useBoolState();
+  let [taskAddDialogOpen, openAddTask, closeAddTask] = useBoolState();
+  let [linkAddDialogOpen, openAddLink, closeAddLink] = useBoolState();
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
@@ -99,12 +116,50 @@ export default ReactMemo(function ItemListActions({
   }, [deleteContext, deleteProject, deleteSection, list, view, user]);
 
   return <div className={classes.actions}>
-    <AddMenu list={list}/>
+    <Tooltip title="Add Task">
+      <IconButton onClick={openAddTask}>
+        <Icons.Checked/>
+      </IconButton>
+    </Tooltip>
+    <Tooltip title="Add Link">
+      <IconButton onClick={openAddLink}>
+        <Icons.Link/>
+      </IconButton>
+    </Tooltip>
+    {
+      isTaskList(list) && <Tooltip title="Add Section">
+        <IconButton onClick={openAddSection}>
+          <Icons.Section/>
+        </IconButton>
+      </Tooltip>
+    }
     {
       deleteList &&
-        <Tooltip title="Delete">
-          <IconButton onClick={deleteList}><Icons.Delete/></IconButton>
-        </Tooltip>
+        <>
+          <IconButton {...bindTrigger(actionMenu)}>
+            <MenuIcon/>
+          </IconButton>
+          <Menu
+            state={actionMenu}
+            anchor={
+              {
+                vertical: "bottom",
+                horizontal: "right",
+              }
+            }
+          >
+            <MenuItem onClick={deleteList}>
+              <ListItemIcon><Icons.Delete/></ListItemIcon>
+              <ListItemText>Delete</ListItemText>
+            </MenuItem>
+          </Menu>
+        </>
+    }
+    {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
+    {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink}/>}
+    {
+      sectionAddDialogOpen && isTaskList(list) &&
+      <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>
     }
   </div>;
 });
