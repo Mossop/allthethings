@@ -4,7 +4,8 @@ import { Styles, ReactMemo } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 import UnreadMailIcon from "@material-ui/icons/Mail";
-import ReadMailIcon from "@material-ui/icons/MailOutline";
+
+import GmailIcon from "./logos/Gmail";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -35,10 +36,13 @@ export default ReactMemo(function Thread({
 }: FileProps): ReactResult {
   let classes = useStyles();
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={thread.url}>
-    <div className={classes.iconContainer}>
-      {thread.unread ? <UnreadMailIcon/> : <ReadMailIcon/>}
-    </div>
-    <div className={classes.subject}>{thread.subject}</div>
-  </a>;
+  return <>
+    <a className={classes.link} rel="noreferrer" target="_blank" href={thread.url}>
+      <div className={classes.iconContainer}>
+        <GmailIcon/>
+      </div>
+      <div className={classes.subject}>{thread.subject}</div>
+    </a>
+    {thread.unread && <UnreadMailIcon/>}
+  </>;
 });
