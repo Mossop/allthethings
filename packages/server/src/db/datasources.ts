@@ -720,12 +720,22 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   }
 
   public sectionItems(section: string | null): ItemSet {
+    if (section) {
+      return new ItemSet(
+        this.records
+          .leftJoin("SectionItems", "Item.id", "SectionItems.id")
+          .where("SectionItems.ownerId", section)
+          .orderBy([
+            { column: "SectionItems.index", order: "asc" },
+          ]),
+      );
+    }
+
     return new ItemSet(
       this.records
         .leftJoin("SectionItems", "Item.id", "SectionItems.id")
-        .where("SectionItems.ownerId", section)
+        .whereNull("SectionItems.ownerId")
         .orderBy([
-          { column: "SectionItems.index", order: "asc" },
           { column: "Item.created", order: "desc" },
         ]),
     );
