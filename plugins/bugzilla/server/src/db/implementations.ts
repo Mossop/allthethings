@@ -1,5 +1,7 @@
 import { URL, URLSearchParams } from "url";
 
+import type { BugFields } from "@allthethings/bugzilla-schema";
+import { SearchType } from "@allthethings/bugzilla-schema";
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
@@ -20,8 +22,6 @@ import type {
   BugzillaAccountParams,
   BugzillaSearch,
 } from "../schema";
-import type { BugFields } from "../types";
-import { SearchType } from "../types";
 import type { BugzillaAccountRecord, BugzillaBugRecord, BugzillaSearchRecord } from "./types";
 
 function isDone(status: string): boolean {

@@ -8,8 +8,7 @@ module.exports = {
     project: [
       "./tsconfig.json",
       "packages/*/tsconfig.json",
-      "plugins/*/server/tsconfig.json",
-      "plugins/*/client/tsconfig.json",
+      "plugins/*/*/tsconfig.json",
     ],
   },
 
@@ -26,11 +25,10 @@ module.exports = {
     "node_modules",
     "packages/*/dist",
     "packages/*/node_modules",
-    "plugins/*/server/dist",
-    "plugins/*/server/node_modules",
-    "plugins/*/client/dist",
-    "plugins/*/client/node_modules",
-    "packages/ui/types",
+    "packages/*/types",
+    "plugins/*/*/dist",
+    "plugins/*/*/node_modules",
+    "plugins/*/*/types",
   ],
 
   extends: [

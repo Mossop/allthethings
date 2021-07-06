@@ -1,4 +1,4 @@
-import type { RevisionFields } from "@allthethings/phabricator-server";
+import type { RevisionFields } from "@allthethings/phabricator-schema";
 import type { PluginItemProps, ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,

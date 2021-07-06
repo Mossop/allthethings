@@ -1,5 +1,6 @@
 import { URL } from "url";
 
+import type { RevisionFields } from "@allthethings/phabricator-schema";
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
@@ -25,7 +26,6 @@ import conduit, {
 import { DateTime } from "luxon";
 
 import type { PhabricatorAccount, CreatePhabricatorAccountParams } from "../schema";
-import type { RevisionFields } from "../types";
 import type {
   PhabricatorAccountRecord,
   PhabricatorQueryRecord,

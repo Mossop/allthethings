@@ -1,5 +1,6 @@
 import { URL } from "url";
 
+import type { FileFields, ThreadFields } from "@allthethings/google-schema";
 import { TaskController } from "@allthethings/schema";
 import {
   BaseAccount,
@@ -26,7 +27,6 @@ import {
   GoogleApi,
 } from "../api";
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
-import type { FileFields, ThreadFields } from "../types";
 import type {
   GoogleAccountRecord,
   GoogleFileRecord,

@@ -26,8 +26,6 @@ import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 import type { GooglePluginConfig } from "./types";
 
-export * from "./types";
-
 function first(param: string | string[] | undefined): string | undefined {
   if (Array.isArray(param)) {
     return param[0];
@@ -135,7 +133,7 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
   }
 
   public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
+    let schemaFile = require.resolve("@allthethings/google-schema/schema.graphql");
     return fs.readFile(schemaFile, {
       encoding: "utf8",
     });

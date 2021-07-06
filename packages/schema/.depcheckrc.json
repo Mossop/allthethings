@@ -1,0 +1,9 @@
+{
+  "ignores": [
+    "depcheck"
+  ],
+  "ignore-patterns": [
+    "dist",
+    "types"
+  ]
+}

@@ -22,8 +22,6 @@ import Resolvers from "./resolvers";
 
 const UPDATE_DELAY = 60000;
 
-export * from "./types";
-
 export class JiraPlugin extends BasePlugin implements ServerPlugin {
   public readonly middleware: PluginWebMiddleware;
 
@@ -67,7 +65,7 @@ export class JiraPlugin extends BasePlugin implements ServerPlugin {
   }
 
   public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
+    let schemaFile = require.resolve("@allthethings/jira-schema/schema.graphql");
     return fs.readFile(schemaFile, {
       encoding: "utf8",
     });

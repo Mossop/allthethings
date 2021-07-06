@@ -1,0 +1,10 @@
+{
+  "ignores": [
+    "@graphql-codegen/*",
+    "depcheck"
+  ],
+  "ignore-patterns": [
+    "dist",
+    "types"
+  ]
+}

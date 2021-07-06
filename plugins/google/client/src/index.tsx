@@ -1,4 +1,4 @@
-import type { GoogleFields } from "@allthethings/google-server";
+import type { GoogleFields } from "@allthethings/google-schema";
 import { PluginManager } from "@allthethings/ui";
 import type { ClientPlugin, PluginItemProps, ReactResult } from "@allthethings/ui";
 

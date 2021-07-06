@@ -1,0 +1,15 @@
+{
+  "ignores": [
+    "@graphql-codegen/*",
+    "graphql-tag",
+    "webpack-cli",
+    "depcheck"
+  ],
+  "ignore-patterns": [
+    "dist",
+    "types"
+  ],
+  "specials": [
+    "webpack"
+  ]
+}

@@ -1,4 +1,4 @@
-import type { ThreadFields } from "@allthethings/google-server";
+import type { ThreadFields } from "@allthethings/google-schema";
 import type { ReactResult } from "@allthethings/ui";
 import { Styles, ReactMemo } from "@allthethings/ui";
 import type { Theme } from "@material-ui/core";

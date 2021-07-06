@@ -14,12 +14,12 @@
     "watch": "yarn build-schema && lerna run --parallel watch",
     "start": "cd packages/server && yarn start ../../testing/config.json",
     "jslint": "eslint .",
-    "lint": "yarn jslint && lerna run lint"
+    "depcheck": "lerna run depcheck",
+    "lint": "yarn jslint && yarn depcheck"
   },
   "workspaces": [
     "packages/*",
-    "plugins/*/server",
-    "plugins/*/client"
+    "plugins/*/*"
   ],
   "devDependencies": {
     "@typescript-eslint/eslint-plugin": "^4.12.0",

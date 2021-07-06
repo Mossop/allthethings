@@ -5,7 +5,7 @@ module.exports = {
   overwrite: true,
   schema: [
     require.resolve("@allthethings/schema/schema.graphql"),
-    path.join(__dirname, "..", "schema.graphql"),
+    require.resolve("@allthethings/bugzilla-schema/schema.graphql"),
   ],
   errorsOnly: true,
   generates: {

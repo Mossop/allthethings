@@ -1,4 +1,4 @@
-import type { IssueFields } from "@allthethings/jira-server";
+import type { IssueFields } from "@allthethings/jira-schema";
 import { PluginManager } from "@allthethings/ui";
 import type { ClientPlugin, ReactResult, PluginItemProps } from "@allthethings/ui";
 

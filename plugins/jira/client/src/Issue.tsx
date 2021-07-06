@@ -1,4 +1,4 @@
-import type { IssueFields } from "@allthethings/jira-server";
+import type { IssueFields } from "@allthethings/jira-schema";
 import type { ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,

@@ -1,3 +1,4 @@
+import type { IssueFields } from "@allthethings/jira-schema";
 import { TaskController } from "@allthethings/schema";
 import type { AuthedPluginContext, PluginContext } from "@allthethings/server";
 import {
@@ -18,7 +19,6 @@ import type {
   JiraAccountParams,
   JiraSearch,
 } from "../schema";
-import type { IssueFields } from "../types";
 import type { JiraAccountRecord, JiraIssueRecord, JiraSearchRecord } from "./types";
 
 type JiraIssue = Version3Models.IssueBean;

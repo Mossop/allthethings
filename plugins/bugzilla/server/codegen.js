@@ -3,7 +3,7 @@ const path = require("path");
 
 module.exports = {
   overwrite: true,
-  schema: path.join(__dirname, "..", "schema.graphql"),
+  schema: require.resolve("@allthethings/bugzilla-schema/schema.graphql"),
   errorsOnly: true,
   generates: {
     [path.join(__dirname, "src", "schema.ts")]: {

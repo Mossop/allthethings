@@ -1,3 +1,4 @@
+import type { FileFields, ThreadFields } from "@allthethings/google-schema";
 import type { GraphQLType } from "@allthethings/utils";
 
 import type { GoogleAccount, GoogleMailSearch } from "../schema";
@@ -14,24 +15,9 @@ export type GoogleMailSearchRecord = Omit<GraphQLType<GoogleMailSearch>, "url"> 
   ownerId: string;
 };
 
-export interface GoogleFileRecord {
-  ownerId: string;
-  id: string;
-  fileId: string;
-  name: string;
-  description: string | null;
-  mimeType: string;
-  url: string | null;
-}
+export type GoogleFileRecord = Omit<FileFields, "type">;
 
-export interface GoogleThreadRecord {
-  ownerId: string;
-  id: string;
-  threadId: string;
-  subject: string;
-  unread: boolean;
-  starred: boolean;
-}
+export type GoogleThreadRecord = Omit<ThreadFields, "type" | "labels" | "url">;
 
 export interface GoogleLabelRecord {
   ownerId: string;

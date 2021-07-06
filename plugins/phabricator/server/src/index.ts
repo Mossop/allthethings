@@ -18,8 +18,6 @@ import { Query, Revision } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
-export * from "./types";
-
 const UPDATE_DELAY = 60000;
 
 class PhabricatorPlugin extends BasePlugin implements ServerPlugin {
@@ -55,7 +53,7 @@ class PhabricatorPlugin extends BasePlugin implements ServerPlugin {
   }
 
   public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "..", "schema.graphql");
+    let schemaFile = require.resolve("@allthethings/phabricator-schema/schema.graphql");
     return fs.readFile(schemaFile, {
       encoding: "utf8",
     });

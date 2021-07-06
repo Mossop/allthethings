@@ -1,4 +1,4 @@
-import type { BugFields } from "@allthethings/bugzilla-server";
+import type { BugFields } from "@allthethings/bugzilla-schema";
 import type { PluginItemProps, ReactResult } from "@allthethings/ui";
 import {
   ImageIcon,

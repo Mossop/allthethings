@@ -9,11 +9,13 @@
   "types": "dist/index",
   "scripts": {
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "depcheck": "depcheck",
     "build-server": "yarn build",
     "build": "tsc -b --incremental",
     "watch": "tsc -b -w --incremental"
   },
   "devDependencies": {
+    "depcheck": "^1.4.2",
     "typescript": "^4.1.0"
   }
 }
