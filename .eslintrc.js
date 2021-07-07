@@ -7,8 +7,7 @@ module.exports = {
     tsconfigRootDir: __dirname,
     project: [
       "./tsconfig.json",
-      "packages/*/tsconfig.json",
-      "plugins/*/*/tsconfig.json",
+      "**/tsconfig.json",
     ],
   },
 
@@ -23,6 +22,7 @@ module.exports = {
 
   ignorePatterns: [
     "node_modules",
+    "dist",
     "packages/*/dist",
     "packages/*/node_modules",
     "packages/*/types",

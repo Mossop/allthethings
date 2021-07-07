@@ -1,10 +1,10 @@
 module.exports = {
   schema: [
-    "packages/**/*.graphql",
+    "core/**/*.graphql",
     "plugins/**/*.graphql",
   ],
   documents: [
-    "packages/**/*.gql",
+    "core/**/*.gql",
     "plugins/**/*.gql",
   ],
 };

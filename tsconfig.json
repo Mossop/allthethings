@@ -1,19 +1,10 @@
 {
   "extends": "./tsconfig.base.json",
-  "compilerOptions": {
-    "lib": [
-      "ESNext"
-    ],
-    "allowJs": true,
-    "noEmit": true,
-  },
+  "references": [
+    { "path": "./core/server" },
+    { "path": "./core/client" }
+  ],
   "include": [
-    "packages/*/*.js",
-    "packages/*/.*.js",
-    "plugins/*/server/*.js",
-    "plugins/*/server/.*.js",
-    "plugins/*/client/*.js",
-    "plugins/*/client/.*.js",
     "*.js",
     ".*.js"
   ]

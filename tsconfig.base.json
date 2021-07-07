@@ -3,9 +3,20 @@
     "target": "es2019",
     "moduleResolution": "node",
     "sourceMap": true,
-    "declarationMap": false,
+    "incremental": true,
+    "composite": true,
+    "declarationMap": true,
     "esModuleInterop": true,
     "noEmitOnError": true,
+    "rootDir": ".",
+    "baseUrl": ".",
+    "outDir": "./dist",
+
+    "paths": {
+      "#ui": ["./core/ui/index.ts"],
+      "#utils": ["./core/utils/index.ts"],
+      "#schema": ["./core/schema/index.ts"],
+    },
 
     "noImplicitAny": false,
     "noImplicitThis": true,
