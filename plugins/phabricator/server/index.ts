@@ -51,10 +51,6 @@ class PhabricatorPlugin extends BasePlugin implements ServerPlugin {
     return Resolvers;
   }
 
-  public clientScripts(): string[] {
-    return ["/app.js"];
-  }
-
   public dbMigrations(): PluginDbMigration[] {
     return buildMigrations();
   }
