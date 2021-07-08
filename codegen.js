@@ -6,6 +6,14 @@ module.exports = {
   schema: path.join(__dirname, "core", "schema", "schema.graphql"),
   errorsOnly: true,
   generates: {
+    [path.join(__dirname, "core", "schema", "introspection.json")]: {
+      plugins: {
+        introspection: {
+          minify: true,
+        },
+      },
+    },
+
     [path.join(__dirname, "dist", "core", "schema", "schema.graphql")]: {
       plugins: {
         "schema-ast": {},

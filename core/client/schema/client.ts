@@ -1,8 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ApolloClient, createHttpLink, InMemoryCache, ApolloLink } from "@apollo/client";
+import { withScalars } from "apollo-link-scalars";
+import { buildClientSchema } from "graphql";
 import { DateTime } from "luxon";
 
-import link from "./link";
+import { introspectionData } from "#schema";
+
 import introspection from "./types";
 import type { TypedTypePolicies } from "./types";
 
@@ -10,28 +13,7 @@ const ArrayField = {
   merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
 };
 
-const DateField = {
-  read: (existing: string) => DateTime.fromISO(existing),
-};
-
-const OptionalDateField = {
-  read: (existing: string | null | undefined) => existing ? DateTime.fromISO(existing) : null,
-};
-
 let typePolicies: TypedTypePolicies = {
-  Item: {
-    fields: {
-      created: DateField,
-      archived: OptionalDateField,
-      snoozed: OptionalDateField,
-    },
-  },
-  TaskInfo: {
-    fields: {
-      due: OptionalDateField,
-      done: OptionalDateField,
-    },
-  },
   Inbox: {
     fields: {
       items: ArrayField,
@@ -65,9 +47,27 @@ let typePolicies: TypedTypePolicies = {
   },
 };
 
+let typesMap = {
+  DateTime: {
+    serialize: (parsed: DateTime) => parsed.toString(),
+    parseValue: (raw: string | number | null): DateTime | null => {
+      if (typeof raw == "string") {
+        let date = DateTime.fromISO(raw);
+        if (date.isValid) {
+          return date;
+        }
+      }
+      return null;
+    },
+  },
+};
+
 export const client = new ApolloClient({
   link: ApolloLink.from([
-    link,
+    withScalars({
+      schema: buildClientSchema(introspectionData),
+      typesMap,
+    }),
     createHttpLink({
       uri: "/graphql",
       credentials: "same-origin",
