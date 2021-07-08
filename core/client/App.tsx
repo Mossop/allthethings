@@ -1,5 +1,3 @@
-import type { ReactResult } from "#ui";
-import { UIProvider } from "#ui";
 import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
 import {
@@ -8,6 +6,9 @@ import {
   ThemeProvider,
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
+
+import { UIProvider } from "#ui";
+import type { ReactResult } from "#ui";
 
 import ErrorHandler from "./ui/ErrorHandler";
 import Main from "./ui/Main";

@@ -1,11 +1,28 @@
 import { URL } from "url";
 
-import { TaskController } from "#schema";
-import { isCallable } from "#utils";
 import type { Knex } from "knex";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import { DateTime } from "luxon";
+
+import BugzillaPluginExport from "#plugins/bugzilla/server";
+import GooglePluginExport from "#plugins/google/server";
+import JiraPluginExport from "#plugins/jira/server";
+import PhabricatorPluginExport from "#plugins/phabricator/server";
+import { TaskController } from "#schema";
+import type {
+  PluginKnex,
+  TableRef,
+  AuthedPluginContext,
+  CreatePluginItemParams,
+  PluginContext,
+  PluginList,
+  Problem,
+  Resolver,
+  TypeResolver,
+  ServerPluginExport,
+} from "#server-utils";
+import { isCallable } from "#utils";
 
 import type { ServerConfig } from "../config";
 import type { Item } from "../db";
@@ -17,18 +34,8 @@ import { ItemType } from "../db/types";
 import type { ResolverContext } from "../schema/context";
 import type { WebServer } from "../webserver";
 import type { WebServerContext } from "../webserver/context";
-import type { PluginKnex, TableRef } from "./db";
 import { wrapKnex, getMigrationSource } from "./db";
 import PluginInstance from "./instance";
-import type {
-  AuthedPluginContext,
-  CreatePluginItemParams,
-  PluginContext,
-  PluginList,
-  Problem,
-  Resolver,
-  TypeResolver,
-} from "./types";
 
 export function buildAuthedPluginContext(
   plugin: PluginInstance,
@@ -449,15 +456,15 @@ class PluginManager {
 
   private async loadPlugin(
     db: DatabaseConnection,
-    spec: string,
     serverConfig: ServerConfig,
+    pluginExport: ServerPluginExport,
   ): Promise<void> {
-    let instance = new PluginInstance(spec, db, serverConfig);
+    let instance = new PluginInstance(db, serverConfig, pluginExport);
     try {
       await instance.init();
       this.plugins.add(instance);
     } catch (e) {
-      console.error(`Failed to initialize plugin ${spec}`, e);
+      console.error("Failed to initialize plugin", e);
     }
   }
 
@@ -466,10 +473,10 @@ class PluginManager {
     serverConfig: ServerConfig,
   ): Promise<void> {
     let startupPromises: Promise<void>[] = [];
-
-    for (let spec of Object.keys(serverConfig.plugins)) {
-      startupPromises.push(this.loadPlugin(db, spec, serverConfig));
-    }
+    startupPromises.push(this.loadPlugin(db, serverConfig, BugzillaPluginExport));
+    startupPromises.push(this.loadPlugin(db, serverConfig, GooglePluginExport));
+    startupPromises.push(this.loadPlugin(db, serverConfig, JiraPluginExport));
+    startupPromises.push(this.loadPlugin(db, serverConfig, PhabricatorPluginExport));
 
     await Promise.all(startupPromises);
   }

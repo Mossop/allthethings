@@ -44,9 +44,11 @@ export const DateTimeDialog = ReactMemo(function DateTimeDialog({
     className={classes.pickerInput}
     onChange={selected}
     onClose={close}
-    DialogProps={{
-      onClose: close,
-      onExited: onClosed,
-    }}
+    DialogProps={
+      {
+        onClose: close,
+        onExited: onClosed,
+      }
+    }
   />;
 });

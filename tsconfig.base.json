@@ -12,17 +12,35 @@
     "baseUrl": ".",
     "outDir": "./dist",
 
-    "paths": {
-      "#ui": ["./core/ui/index.ts"],
-      "#utils": ["./core/utils/index.ts"],
-      "#schema": ["./core/schema/index.ts"],
-    },
-
     "noImplicitAny": false,
     "noImplicitThis": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,
     "strictBindCallApply": true,
+
+    "paths": {
+      "#ui": ["./core/ui/index.ts"],
+      "#utils": ["./core/utils/index.ts"],
+      "#schema": ["./core/schema/index.ts"],
+
+      "#server-utils": ["./core/server-utils/index.ts"],
+
+      "#plugins/bugzilla/schema": ["./plugins/bugzilla/schema/index.ts"],
+      "#plugins/bugzilla/client": ["./plugins/bugzilla/client/index.tsx"],
+      "#plugins/bugzilla/server": ["./plugins/bugzilla/server/index.ts"],
+
+      "#plugins/jira/schema": ["./plugins/jira/schema/index.ts"],
+      "#plugins/jira/client": ["./plugins/jira/client/index.tsx"],
+      "#plugins/jira/server": ["./plugins/jira/server/index.ts"],
+
+      "#plugins/google/schema": ["./plugins/google/schema/index.ts"],
+      "#plugins/google/client": ["./plugins/google/client/index.tsx"],
+      "#plugins/google/server": ["./plugins/google/server/index.ts"],
+
+      "#plugins/phabricator/schema": ["./plugins/phabricator/schema/index.ts"],
+      "#plugins/phabricator/client": ["./plugins/phabricator/client/index.tsx"],
+      "#plugins/phabricator/server": ["./plugins/phabricator/server/index.ts"],
+    },
   }
 }

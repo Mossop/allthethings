@@ -1,18 +1,9 @@
 import type { URL } from "url";
 
-import type { Awaitable, MaybeCallable } from "#utils";
-import { call, isCallable, waitFor } from "#utils";
 import type Koa from "koa";
 
-import { buildAuthedPluginContext, buildPluginContext } from ".";
-import type { ServerConfig } from "../config";
-import type { DatabaseConnection } from "../db/connection";
-import { AppDataSources } from "../db/datasources";
-import type { TaskManager } from "../utils/tasks";
-import taskManager from "../utils/tasks";
-import type { WebServerContext } from "../webserver/context";
-import type { PluginDbMigration } from "./db";
 import type {
+  PluginDbMigration,
   ServerPlugin,
   PluginContext,
   AuthedPluginContext,
@@ -21,17 +12,17 @@ import type {
   PluginServer,
   Resolver,
   Problem,
-} from "./types";
+} from "#server-utils";
+import type { Awaitable, MaybeCallable } from "#utils";
+import { isCallable, waitFor } from "#utils";
 
-async function loadPlugin(
-  spec: string,
-  server: PluginServer,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  config: any,
-): Promise<ServerPlugin> {
-  let { default: module } = await import(spec) as { default: ServerPluginExport };
-  return waitFor(call(module, server, config));
-}
+import { buildAuthedPluginContext, buildPluginContext } from ".";
+import type { ServerConfig } from "../config";
+import type { DatabaseConnection } from "../db/connection";
+import { AppDataSources } from "../db/datasources";
+import type { TaskManager } from "../utils/tasks";
+import taskManager from "../utils/tasks";
+import type { WebServerContext } from "../webserver/context";
 
 function getField<R, D, A extends unknown[]>(
   plugin: ServerPlugin,
@@ -54,21 +45,19 @@ function getField<R, D, A extends unknown[]>(
 }
 
 export default class PluginInstance implements PluginServer {
-  public readonly schema: string;
   private _plugin: ServerPlugin | null = null;
   private readonly pluginPromise: Promise<void>;
+  public readonly id: string;
 
   public constructor(
-    public readonly id: string,
     private readonly db: DatabaseConnection,
     public readonly serverConfig: ServerConfig,
+    public readonly pluginExport: ServerPluginExport,
   ) {
-    this.schema = this.id.replace(/[^0-9a-zA-Z_]/g, "_");
+    this.id = pluginExport.id;
 
-    this.pluginPromise = loadPlugin(
-      this.id,
-      this,
-      serverConfig.plugins[this.id],
+    this.pluginPromise = waitFor(
+      pluginExport.init(this, serverConfig.plugins[pluginExport.id]),
     ).then((plugin: ServerPlugin) => {
       this._plugin = plugin;
     });
@@ -100,6 +89,10 @@ export default class PluginInstance implements PluginServer {
       await cloned.rollbackTransaction(e);
       throw e;
     }
+  }
+
+  public get schema(): string {
+    return this.id.replace(/[^0-9a-zA-Z_]/g, "_");
   }
 
   private get plugin(): ServerPlugin {

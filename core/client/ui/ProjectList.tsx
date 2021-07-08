@@ -1,5 +1,3 @@
-import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#ui";
-import type { ReactResult, ReactRef } from "#ui";
 import {
   Divider,
   List,
@@ -12,6 +10,9 @@ import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useMemo, forwardRef } from "react";
 import mergeRefs from "react-merge-refs";
+
+import type { ReactResult, ReactRef } from "#ui";
+import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#ui";
 
 import { useInboxContents } from "../schema";
 import type { Project, TaskList, Item } from "../schema";

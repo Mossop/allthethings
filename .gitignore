@@ -1,11 +1,5 @@
 /dist
 /node_modules
-/packages/*/node_modules
-/packages/*/dist
-/packages/*/types
-/plugins/*/*/dist
-/plugins/*/*/node_modules
-/plugins/*/*/types
 /.vscode
 .*
 *.tsbuildinfo

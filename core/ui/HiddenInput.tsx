@@ -123,6 +123,7 @@ export const HiddenInput = ReactMemo(function HiddenInput({
         >
           <Icons.Cancel/>
         </IconButton>
-      </>}
+      </>
+    }
   </div>;
 });

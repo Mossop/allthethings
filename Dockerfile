@@ -12,5 +12,5 @@ RUN \
   yarn install --frozen-lockfile --production && \
   yarn cache clean
 
-ENTRYPOINT ["node", "packages/server"]
+ENTRYPOINT ["node", "dist/core/server"]
 CMD ["/config.json"]

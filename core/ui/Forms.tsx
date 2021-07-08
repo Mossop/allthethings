@@ -1,4 +1,3 @@
-import type { Overwrite } from "#utils";
 import type { ButtonProps as MuiButtonProps, OutlinedInputProps } from "@material-ui/core";
 import {
   CircularProgress,
@@ -16,6 +15,8 @@ import {
 import clsx from "clsx";
 import type { Dispatch, SetStateAction, ReactElement } from "react";
 import { useMemo, useCallback, createContext, useContext } from "react";
+
+import type { Overwrite } from "#utils";
 
 import { flexCentered } from "./styles";
 import type { ReactChildren, ReactResult } from "./types";
@@ -319,11 +320,13 @@ export const Button = ReactMemo(function Button({
   return <MuiButton disabled={disabled} type={type} {...props}>
     <div className={classes.buttonInner}>
       <div className={clsx(isLoading && classes.hidden)}>{children}</div>
-      {isLoading && <div
-        className={classes.loading}
-      >
-        <CircularProgress size="1.5rem"/>
-      </div>}
+      {
+        isLoading && <div
+          className={classes.loading}
+        >
+          <CircularProgress size="1.5rem"/>
+        </div>
+      }
     </div>
   </MuiButton>;
 });

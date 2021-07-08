@@ -1,28 +1,9 @@
 import type { Knex } from "knex";
 
+import type { DbMigrationHelper, PluginKnex, PluginDbMigration } from "#server-utils";
+
 import type { DbMigration } from "../db/migration";
 import { DbMigrationSource } from "../db/migration";
-
-export type PluginKnex = Omit<Knex, "transaction">;
-
-type CreateColumn = (table: Knex.CreateTableBuilder, column: string) => Knex.ColumnBuilder;
-
-export type TableRef = Pick<Knex.Ref<string, {[K in string]: string}>, "as"> & Knex.Raw<string>;
-
-export interface DbMigrationHelper {
-  readonly idColumn: CreateColumn;
-  readonly userRef: CreateColumn;
-  readonly itemRef: CreateColumn;
-  readonly listRef: CreateColumn;
-  readonly tableName: (name: string) => string;
-}
-
-export interface PluginDbMigration {
-  readonly name: string;
-
-  readonly up: (knex: PluginKnex, helper: DbMigrationHelper) => Promise<void>;
-  readonly down?: (knex: PluginKnex, helper: DbMigrationHelper) => Promise<void>;
-}
 
 class MigrationHelper implements DbMigrationHelper {
   public constructor(private readonly schema: string) {

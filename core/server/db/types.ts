@@ -1,6 +1,7 @@
-import type { TaskController } from "#schema";
 import type { Knex } from "knex";
 import type { DateTime } from "luxon";
+
+import type { TaskController } from "#schema";
 
 // This stucture is a little complex to support having items and sections available at multiple
 // levels.

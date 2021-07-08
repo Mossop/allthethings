@@ -1,13 +1,3 @@
-import type { ClientPlugin, ReactResult } from "#ui";
-import {
-  SettingsContext,
-  SettingsPageItem,
-  usePlugins,
-  ReactMemo,
-  Icons,
-  Styles,
-  Text,
-} from "#ui";
 import type { Theme } from "@material-ui/core";
 import {
   Divider,
@@ -20,6 +10,17 @@ import {
 import AdminIcon from "@material-ui/icons/BusinessCenter";
 import SettingsIcon from "@material-ui/icons/Settings";
 import { Fragment, useCallback } from "react";
+
+import {
+  SettingsContext,
+  SettingsPageItem,
+  usePlugins,
+  ReactMemo,
+  Icons,
+  Styles,
+  Text,
+} from "#ui";
+import type { ClientPlugin, ReactResult } from "#ui";
 
 import Page from "../../components/Page";
 import { useUser } from "../../utils/globalState";

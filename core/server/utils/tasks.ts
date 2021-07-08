@@ -1,5 +1,6 @@
 import { setTimeout, clearTimeout } from "timers";
 
+import type { TaskManager as ITaskManager } from "#server-utils";
 import type { Awaitable } from "#utils";
 import { waitFor } from "#utils";
 
@@ -7,7 +8,7 @@ type Task<R = void> = () => Awaitable<R>;
 
 const MIN_DELAY = 1000;
 
-export class TaskManager {
+export class TaskManager implements ITaskManager {
   private timer: NodeJS.Timeout | null = null;
   private nextTask: Task | null = null;
 

@@ -1,11 +1,12 @@
-import { TaskController } from "#schema";
-import type { ReactResult } from "#ui";
-import { Icons, ReactMemo } from "#ui";
 import { IconButton } from "@material-ui/core";
 import type { Theme } from "@material-ui/core/styles";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
+
+import { TaskController } from "#schema";
+import { Icons, ReactMemo } from "#ui";
+import type { ReactResult } from "#ui";
 
 import { useEditTaskInfoMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";

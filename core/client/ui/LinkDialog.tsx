@@ -1,3 +1,6 @@
+import type { ReactElement } from "react";
+import { useState, useCallback } from "react";
+
 import {
   TextFieldInput,
   ReactMemo,
@@ -6,8 +9,6 @@ import {
   BooleanCheckboxInput,
   FormState,
 } from "#ui";
-import type { ReactElement } from "react";
-import { useState, useCallback } from "react";
 
 import { useCreateLinkMutation, refetchQueriesForSection, isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";

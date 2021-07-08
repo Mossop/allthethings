@@ -1,14 +1,4 @@
 import {
-  Icons,
-  Styles,
-  ReactMemo,
-  useBoolState,
-  bindTrigger,
-  useMenuState,
-  Menu,
-} from "#ui";
-import type { ReactResult } from "#ui";
-import {
   IconButton,
   createStyles,
   makeStyles,
@@ -19,6 +9,17 @@ import {
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { useMemo } from "react";
+
+import type { ReactResult } from "#ui";
+import {
+  Icons,
+  Styles,
+  ReactMemo,
+  useBoolState,
+  bindTrigger,
+  useMenuState,
+  Menu,
+} from "#ui";
 
 import {
   isContext,

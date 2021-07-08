@@ -1,5 +1,3 @@
-import type { ReactResult } from "#ui";
-import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "#ui";
 import type { Theme } from "@material-ui/core";
 import {
   createStyles,
@@ -13,6 +11,9 @@ import {
 import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
+
+import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "#ui";
+import type { ReactResult } from "#ui";
 
 import type { Inbox, TaskList } from "../schema";
 import { isInbox } from "../schema";

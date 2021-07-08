@@ -1,18 +1,13 @@
 {
-  "extends": "../../../tsconfig.base.json",
+  "extends": "../../../tsconfig.server.json",
   "compilerOptions": {
-    "module": "commonjs",
-    "declaration": true,
-    "outDir": "dist",
-    "rootDir": "./src",
     "lib": [
       "ESNext",
-      // Needed to support jira.js
-      "DOM",
     ],
-    "incremental": true,
   },
-  "include": [
-    "src/**/*.ts"
+  "references": [
+    { "path": "../../../core/utils" },
+    { "path": "../../../core/server-utils" },
+    { "path": "../schema" }
   ]
 }

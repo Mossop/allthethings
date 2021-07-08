@@ -2,6 +2,11 @@
   "extends": "../../tsconfig.server.json",
   "references": [
     { "path": "../schema" },
-    { "path": "../utils" }
+    { "path": "../utils" },
+    { "path": "../server-utils" },
+    { "path": "../../plugins/bugzilla/server" },
+    { "path": "../../plugins/google/server" },
+    { "path": "../../plugins/jira/server" },
+    { "path": "../../plugins/phabricator/server" },
   ]
 }

@@ -23,15 +23,48 @@ module.exports = {
   ignorePatterns: [
     "node_modules",
     "dist",
-    "packages/*/dist",
-    "packages/*/node_modules",
-    "packages/*/types",
-    "plugins/*/*/dist",
-    "plugins/*/*/node_modules",
-    "plugins/*/*/types",
   ],
 
   extends: [
     "plugin:mossop/typescript",
   ],
+
+  overrides: [{
+    files: [
+      "core/client/**/*.ts",
+      "core/client/**/*.tsx",
+      "core/ui/**/*.ts",
+      "core/ui/**/*.tsx",
+      "plugins/*/client/**/*.ts",
+      "plugins/*/client/**/*.tsx",
+    ],
+
+    env: {
+      node: false,
+      es6: true,
+      browser: true,
+    },
+
+    parserOptions: {
+      ecmaFeatures: {
+        jsx: true,
+      },
+    },
+
+    extends: [
+      "plugin:mossop/react",
+      "plugin:react-hooks/recommended",
+    ],
+
+    rules: {
+      "react/jsx-fragments": ["warn", "syntax"],
+      "react/react-in-jsx-scope": "off",
+    },
+
+    settings: {
+      react: {
+        version: "17.0",
+      },
+    },
+  }],
 };

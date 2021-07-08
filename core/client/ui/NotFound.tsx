@@ -1,7 +1,8 @@
-import type { ReactResult } from "#ui";
-import { ReactMemo, Styles, Text } from "#ui";
 import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
+
+import type { ReactResult } from "#ui";
+import { ReactMemo, Styles, Text } from "#ui";
 
 import Page from "../components/Page";
 

@@ -1,5 +1,6 @@
-import { upsert } from "#utils";
 import type Koa from "koa";
+
+import { upsert } from "#utils";
 
 import type { ServerConfig } from "../config";
 import type { DatabaseConnection } from "../db/connection";

@@ -1,4 +1,7 @@
-import type { ReactResult } from "#ui";
+import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@material-ui/core";
+import md5 from "md5";
+import { useCallback } from "react";
+
 import {
   useBoolState,
   ReactMemo,
@@ -6,9 +9,7 @@ import {
   useMenuState,
   bindTrigger,
 } from "#ui";
-import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@material-ui/core";
-import md5 from "md5";
-import { useCallback } from "react";
+import type { ReactResult } from "#ui";
 
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { useUser } from "../utils/globalState";

@@ -1,13 +1,3 @@
-import type { ReactResult } from "#ui";
-import {
-  Icons,
-  useBoolState,
-  useBoundCallback,
-  useMenuState,
-  bindTrigger,
-  ReactMemo,
-  Menu,
-} from "#ui";
 import {
   Collapse,
   IconButton,
@@ -17,6 +7,17 @@ import {
 } from "@material-ui/core";
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { useCallback, useState } from "react";
+
+import {
+  Icons,
+  useBoolState,
+  useBoundCallback,
+  useMenuState,
+  bindTrigger,
+  ReactMemo,
+  Menu,
+} from "#ui";
+import type { ReactResult } from "#ui";
 
 import type { Item } from "../schema";
 import {

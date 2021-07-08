@@ -1,9 +1,10 @@
-import type { ReactChildren, ReactResult } from "#ui";
-import { Heading } from "#ui";
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
+
+import { Heading } from "#ui";
+import type { ReactChildren, ReactResult } from "#ui";
 
 import Page from "../components/Page";
 

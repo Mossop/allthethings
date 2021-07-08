@@ -1,17 +1,7 @@
 {
-  "extends": "../../../tsconfig.base.json",
-  "compilerOptions": {
-    "target": "es2015",
-    "module": "esnext",
-    "lib": [
-      "ESNext",
-      "DOM",
-      "DOM.Iterable"
-    ],
-    "jsx": "react-jsx"
-  },
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.tsx"
+  "extends": "../../../tsconfig.client.json",
+  "references": [
+    { "path": "../../../core/ui" },
+    { "path": "../schema" }
   ]
 }

@@ -1,6 +1,7 @@
-import { history } from "#ui";
 import type { ApolloQueryResult } from "@apollo/client";
 import type { Update, Location } from "history";
+
+import { history } from "#ui";
 
 import type { Problem, State, User } from "../schema";
 import { buildState } from "../schema";

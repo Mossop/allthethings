@@ -2,9 +2,10 @@
 import { promises as fs } from "fs";
 import path from "path";
 
+import type { Problem } from "#server-utils";
+
 import type { TaskList, User } from "../db";
 import PluginManager from "../plugins";
-import type { Problem } from "../plugins/types";
 import { admin, authed, resolver } from "./context";
 import type { QueryResolvers } from "./resolvers";
 

@@ -1,4 +1,3 @@
-import { TaskController } from "#schema";
 import type { DataSourceConfig } from "apollo-datasource";
 import { DataSource } from "apollo-datasource";
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
@@ -6,7 +5,9 @@ import type { Knex } from "knex";
 import type { Duration } from "luxon";
 import { DateTime } from "luxon";
 
-import type { PluginList } from "../plugins/types";
+import { TaskController } from "#schema";
+import type { PluginList } from "#server-utils";
+
 import type { ResolverContext } from "../schema/context";
 import type { ItemSetResolvers } from "../schema/resolvers";
 import type {

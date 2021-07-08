@@ -26,5 +26,6 @@ export function useBoundCallback<
   B extends unknown[],
 >(cb: (this: undefined, ...allArgs: [...A, ...B]) => R, ...fixedArgs: A): (...args: B) => R {
   // @ts-ignore
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return useMemo(() => cb.bind(undefined, ...fixedArgs), [cb, ...fixedArgs]);
 }

@@ -1,8 +1,9 @@
-import type { ReactResult } from "#ui";
-import { useBoolState, ReactMemo, Icons, Styles, Heading } from "#ui";
 import { List, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { useEffect, useState } from "react";
+
+import { useBoolState, ReactMemo, Icons, Styles, Heading } from "#ui";
+import type { ReactResult } from "#ui";
 
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";

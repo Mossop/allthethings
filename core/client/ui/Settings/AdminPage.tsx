@@ -1,4 +1,11 @@
-import type { ReactResult } from "#ui";
+import type { Theme } from "@material-ui/core";
+import { IconButton, makeStyles, createStyles } from "@material-ui/core";
+import AdminIcon from "@material-ui/icons/BusinessCenter";
+import UsersIcon from "@material-ui/icons/People";
+import AdminUserIcon from "@material-ui/icons/Person";
+import UserIcon from "@material-ui/icons/PersonOutline";
+import { useCallback } from "react";
+
 import {
   useBoolState,
   Styles,
@@ -9,13 +16,7 @@ import {
   ReactMemo,
   SettingsPage,
 } from "#ui";
-import type { Theme } from "@material-ui/core";
-import { IconButton, makeStyles, createStyles } from "@material-ui/core";
-import AdminIcon from "@material-ui/icons/BusinessCenter";
-import UsersIcon from "@material-ui/icons/People";
-import AdminUserIcon from "@material-ui/icons/Person";
-import UserIcon from "@material-ui/icons/PersonOutline";
-import { useCallback } from "react";
+import type { ReactResult } from "#ui";
 
 import { useDeleteUserMutation } from "../../schema";
 import { refetchListUsersQuery, useListUsersQuery } from "../../schema/queries";

@@ -1,10 +1,11 @@
-import type { Awaitable } from "#utils";
-import { waitFor } from "#utils";
 import type { Knex } from "knex";
 import { knex } from "knex";
 import { DateTime } from "luxon";
 import { customAlphabet } from "nanoid/async";
 import { types } from "pg";
+
+import { waitFor } from "#utils";
+import type { Awaitable } from "#utils";
 
 import type { DatabaseConfig } from "../config";
 import PluginManager from "../plugins";

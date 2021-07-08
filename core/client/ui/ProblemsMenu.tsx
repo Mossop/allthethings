@@ -1,3 +1,5 @@
+import { IconButton, MenuItem } from "@material-ui/core";
+
 import type { ReactResult } from "#ui";
 import {
   pushClickedLink,
@@ -7,7 +9,6 @@ import {
   useMenuState,
   bindTrigger,
 } from "#ui";
-import { IconButton, MenuItem } from "@material-ui/core";
 
 import type { Problem } from "../schema";
 import { useProblems } from "../utils/globalState";

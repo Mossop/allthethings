@@ -1,5 +1,6 @@
+import type { User as PluginUser } from "#server-utils";
+
 import PluginManager from "../plugins";
-import type { User as PluginUser } from "../plugins/types";
 import type * as Rslv from "../schema/resolvers";
 import type * as Schema from "../schema/types";
 import type * as Src from "./datasources";

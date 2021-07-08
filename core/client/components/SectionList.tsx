@@ -1,10 +1,11 @@
-import type { ReactResult } from "#ui";
-import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "#ui";
 import { Divider, List, ListSubheader, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
+
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "#ui";
+import type { ReactResult } from "#ui";
 
 import { useEditSectionMutation } from "../schema";
 import type { Item, Section } from "../schema";

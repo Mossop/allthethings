@@ -1,8 +1,9 @@
-import { Loading, Styles } from "#ui";
-import type { ReactResult } from "#ui";
 import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import { Suspense } from "react";
+
+import type { ReactResult } from "#ui";
+import { Loading, Styles } from "#ui";
 
 import Page from "../components/Page";
 import { useView, ViewType } from "../utils/view";
