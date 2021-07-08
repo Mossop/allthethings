@@ -4,6 +4,7 @@ import { URL } from "url";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
+import type * as Schema from "#schema";
 import { bestIcon, loadPageInfo } from "#server-utils";
 import type { Overwrite } from "#utils";
 
@@ -14,12 +15,11 @@ import PluginManager from "../plugins";
 import type { AuthedResolverContext } from "./context";
 import { admin, resolver, authed } from "./context";
 import type { MutationResolvers } from "./resolvers";
-import type * as Types from "./types";
 
-type ItemCreateArgs = Overwrite<Types.MutationCreateTaskArgs, {
+type ItemCreateArgs = Overwrite<Schema.MutationCreateTaskArgs, {
   user: User;
   section: ItemHolder | null;
-  taskInfo?: Types.TaskInfoParams | null;
+  taskInfo?: Schema.TaskInfoParams | null;
 }>;
 
 async function baseCreateItem(

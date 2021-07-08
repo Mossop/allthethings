@@ -1,42 +1,42 @@
 /* eslint-disable */
-import * as Types from './types';
+import * as Schema from '#schema';
 
 import { ClientItemFieldsFragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ClientItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
-export type ListContextStateQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type ListContextStateQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
-export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }>, readonly problems: ReadonlyArray<{ readonly __typename: 'Problem', readonly description: string, readonly url: string }> };
+export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }>, readonly problems: ReadonlyArray<{ readonly __typename: 'Problem', readonly description: string, readonly url: string }> };
 
-export type PageContentQueryVariables = Types.Exact<{
-  path: Types.Scalars['String'];
+export type PageContentQueryVariables = Schema.Exact<{
+  path: Schema.Scalars['String'];
 }>;
 
 
 export type PageContentQuery = { readonly __typename: 'Query', readonly pageContent: string };
 
-export type ListUsersQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type ListUsersQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
 export type ListUsersQuery = { readonly __typename: 'Query', readonly users: ReadonlyArray<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean }> };
 
-export type ListInboxQueryVariables = Types.Exact<{ [key: string]: never; }>;
+export type ListInboxQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
-export type ListInboxQuery = { readonly __typename: 'Query', readonly user: Types.Maybe<{ readonly __typename: 'User', readonly inbox: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+export type ListInboxQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly inbox: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
       )> } }> };
 
-export type ListTaskListQueryVariables = Types.Exact<{
-  taskList: Types.Scalars['ID'];
+export type ListTaskListQueryVariables = Schema.Exact<{
+  taskList: Schema.Scalars['ID'];
 }>;
 
 
-export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Types.Maybe<{ readonly __typename: 'Context', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
+export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Schema.Maybe<{ readonly __typename: 'Context', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
       )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(

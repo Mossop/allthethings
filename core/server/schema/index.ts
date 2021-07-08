@@ -7,6 +7,8 @@ import { GraphQLScalarType, Kind } from "graphql";
 import type { ValueNode } from "graphql";
 import { DateTime } from "luxon";
 
+import type { TaskController } from "#schema";
+
 import * as Db from "../db";
 import PluginManager from "../plugins";
 import { buildResolverContext } from "./context";
@@ -17,7 +19,7 @@ import type { Resolvers } from "./resolvers";
 
 type UnionTypes = "TaskList" | "ItemDetail";
 
-type CustomTypes = "DateTime";
+type CustomTypes = "DateTime" | "TaskController";
 type BaseResolvers = "Query" | "Mutation";
 type RootResolvers = Pick<Resolvers, CustomTypes | BaseResolvers> & {
   [K in UnionTypes]: {
@@ -38,6 +40,23 @@ const rootResolvers: RootResolvers = {
     parseLiteral(ast: ValueNode): DateTime | null {
       if (ast.kind === Kind.STRING) {
         return DateTime.fromISO(ast.value);
+      }
+      return null;
+    },
+  }),
+
+  TaskController: new GraphQLScalarType({
+    name: "TaskController",
+    description: "TaskController",
+    serialize(value: TaskController): string {
+      return value;
+    },
+    parseValue(value: unknown): TaskController | null {
+      return typeof value == "string" ? value as TaskController : null;
+    },
+    parseLiteral(ast: ValueNode): TaskController | null {
+      if (ast.kind === Kind.STRING) {
+        return ast.value as TaskController;
       }
       return null;
     },

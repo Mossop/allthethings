@@ -105,7 +105,7 @@ mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
   }
 }
 
-mutation EditTaskController($id: ID!, $controller: String) {
+mutation EditTaskController($id: ID!, $controller: TaskController) {
   editTaskController(id: $id, controller: $controller) {
     ...clientItemFields
   }

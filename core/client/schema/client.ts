@@ -6,7 +6,7 @@ import { DateTime } from "luxon";
 
 import { introspectionData } from "#schema";
 
-import introspection from "./types";
+import possibleTypes from "./types";
 import type { TypedTypePolicies } from "./types";
 
 const ArrayField = {
@@ -74,7 +74,7 @@ export const client = new ApolloClient({
     }),
   ]),
   cache: new InMemoryCache({
-    ...introspection,
+    ...possibleTypes,
     typePolicies,
   }),
   defaultOptions: {

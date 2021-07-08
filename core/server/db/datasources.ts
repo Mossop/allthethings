@@ -6,16 +6,16 @@ import type { Duration } from "luxon";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
-import type { PluginList } from "#server-utils";
-
-import type { ResolverContext } from "../schema/context";
-import type { ItemSetResolvers } from "../schema/resolvers";
 import type {
   ItemSetArchivedArgs,
   ItemSetDueArgs,
   ItemSetIsTaskArgs,
   ItemSetSnoozedArgs,
-} from "../schema/types";
+} from "#schema";
+import type { PluginList } from "#server-utils";
+
+import type { ResolverContext } from "../schema/context";
+import type { ItemSetResolvers } from "../schema/resolvers";
 import type { DatabaseConnection } from "./connection";
 import { id } from "./connection";
 import type { ImplBuilder } from "./implementations";
@@ -103,7 +103,7 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
 
   public snoozed(
     parent: ItemSet,
-    { isSnoozed }: ItemSetSnoozedArgs,
+    { isSnoozed }: Partial<ItemSetSnoozedArgs>,
   ): ItemSet {
     isSnoozed = isSnoozed ?? true;
 
@@ -126,7 +126,7 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
 
   public archived(
     parent: ItemSet,
-    { isArchived }: ItemSetArchivedArgs,
+    { isArchived }: Partial<ItemSetArchivedArgs>,
   ): ItemSet {
     isArchived = isArchived ?? true;
 
@@ -145,7 +145,7 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
 
   public due(
     parent: ItemSet,
-    { before, after }: ItemSetDueArgs,
+    { before, after }: Partial<ItemSetDueArgs>,
   ): ItemSet {
     if (!before && !after) {
       before = DateTime.now();
@@ -170,7 +170,7 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
 
   public isTask(
     parent: ItemSet,
-    { done }: ItemSetIsTaskArgs,
+    { done }: Partial<ItemSetIsTaskArgs>,
   ): ItemSet {
     let query = this.query.clone();
 

@@ -1,9 +1,10 @@
 scalar DateTime
+scalar TaskController
 
 type TaskInfo {
   due: DateTime
   done: DateTime
-  controller: String!
+  controller: TaskController!
 }
 
 type PluginDetail {
@@ -179,7 +180,7 @@ type Mutation {
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
-  editTaskController(id: ID!, controller: String): Item
+  editTaskController(id: ID!, controller: TaskController): Item
 
   moveItem(id: ID!, section: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!

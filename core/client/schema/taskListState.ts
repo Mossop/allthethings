@@ -1,4 +1,4 @@
-import type { TaskController } from "#schema";
+import type * as Schema from "#schema";
 import type { Overwrite, ArrayContents } from "#utils";
 
 import type { GraphQLType } from ".";
@@ -6,7 +6,6 @@ import type { Inbox, TaskList } from "./contextState";
 import type { ClientItemFieldsFragment } from "./fragments";
 import type { ListTaskListQuery } from "./queries";
 import { useListTaskListQuery } from "./queries";
-import type * as Schema from "./types";
 
 type StateQuery = ListTaskListQuery;
 type StateQuery$TaskList = NonNullable<StateQuery["taskList"]>;
@@ -24,7 +23,7 @@ export type FileDetail = Schema.FileDetail;
 export type Detail = LinkDetail | NoteDetail | PluginDetail | FileDetail;
 
 export type TaskInfo = Overwrite<StateQuery$TaskList$Item$TaskInfo, {
-  controller: TaskController;
+  controller: Schema.TaskController;
 }>;
 
 export type Section = Overwrite<StateQuery$TaskList$Section, {

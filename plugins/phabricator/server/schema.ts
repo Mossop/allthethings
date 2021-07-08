@@ -15,6 +15,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   DateTime: DateTime;
+  TaskController: any;
 };
 
 export type Context = TaskList & {
@@ -274,7 +275,7 @@ export type MutationEditSectionArgs = {
 
 export type MutationEditTaskControllerArgs = {
   id: Scalars['ID'];
-  controller: Maybe<Scalars['String']>;
+  controller: Maybe<Scalars['TaskController']>;
 };
 
 
@@ -422,11 +423,12 @@ export type SectionParams = {
   readonly name: Scalars['String'];
 };
 
+
 export type TaskInfo = {
   readonly __typename?: 'TaskInfo';
   readonly due: Maybe<Scalars['DateTime']>;
   readonly done: Maybe<Scalars['DateTime']>;
-  readonly controller: Scalars['String'];
+  readonly controller: Scalars['TaskController'];
 };
 
 export type TaskInfoParams = {
@@ -565,6 +567,7 @@ export type ResolversTypes = ResolversObject<{
   Query: ResolverTypeWrapper<{}>;
   Section: ResolverTypeWrapper<Section>;
   SectionParams: SectionParams;
+  TaskController: ResolverTypeWrapper<Scalars['TaskController']>;
   TaskInfo: ResolverTypeWrapper<TaskInfo>;
   TaskInfoParams: TaskInfoParams;
   TaskList: ResolversTypes['Context'] | ResolversTypes['Project'];
@@ -602,6 +605,7 @@ export type ResolversParentTypes = ResolversObject<{
   Query: {};
   Section: Section;
   SectionParams: SectionParams;
+  TaskController: Scalars['TaskController'];
   TaskInfo: TaskInfo;
   TaskInfoParams: TaskInfoParams;
   TaskList: ResolversParentTypes['Context'] | ResolversParentTypes['Project'];
@@ -770,10 +774,14 @@ export type SectionResolvers<ContextType = any, ParentType extends ResolversPare
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
+export interface TaskControllerScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TaskController'], any> {
+  name: 'TaskController';
+}
+
 export type TaskInfoResolvers<ContextType = any, ParentType extends ResolversParentTypes['TaskInfo'] = ResolversParentTypes['TaskInfo']> = ResolversObject<{
   due: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  controller: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  controller: Resolver<ResolversTypes['TaskController'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 }>;
 
@@ -814,6 +822,7 @@ export type Resolvers<ContextType = any> = ResolversObject<{
   Project: ProjectResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   Section: SectionResolvers<ContextType>;
+  TaskController: GraphQLScalarType;
   TaskInfo: TaskInfoResolvers<ContextType>;
   TaskList: TaskListResolvers<ContextType>;
   User: UserResolvers<ContextType>;

@@ -1,112 +1,112 @@
 /* eslint-disable */
-import * as Types from './types';
+import * as Schema from '#schema';
 
 import { ClientItemFieldsFragment } from './fragments';
 import { gql } from '@apollo/client';
 import { ClientItemFieldsFragmentDoc } from './fragments';
 import * as Apollo from '@apollo/client';
 const defaultOptions =  {}
-export type LoginMutationVariables = Types.Exact<{
-  email: Types.Scalars['String'];
-  password: Types.Scalars['String'];
+export type LoginMutationVariables = Schema.Exact<{
+  email: Schema.Scalars['String'];
+  password: Schema.Scalars['String'];
 }>;
 
 
-export type LoginMutation = { readonly __typename: 'Mutation', readonly login: Types.Maybe<{ readonly __typename: 'User', readonly email: string }> };
+export type LoginMutation = { readonly __typename: 'Mutation', readonly login: Schema.Maybe<{ readonly __typename: 'User', readonly email: string }> };
 
-export type LogoutMutationVariables = Types.Exact<{ [key: string]: never; }>;
+export type LogoutMutationVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
-export type LogoutMutation = { readonly __typename: 'Mutation', readonly logout: Types.Maybe<boolean> };
+export type LogoutMutation = { readonly __typename: 'Mutation', readonly logout: Schema.Maybe<boolean> };
 
-export type CreateContextMutationVariables = Types.Exact<{
-  params: Types.ContextParams;
+export type CreateContextMutationVariables = Schema.Exact<{
+  params: Schema.ContextParams;
 }>;
 
 
 export type CreateContextMutation = { readonly __typename: 'Mutation', readonly createContext: { readonly __typename: 'Context', readonly id: string, readonly name: string, readonly stub: string } };
 
-export type EditContextMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  params: Types.ContextParams;
+export type EditContextMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  params: Schema.ContextParams;
 }>;
 
 
-export type EditContextMutation = { readonly __typename: 'Mutation', readonly editContext: Types.Maybe<{ readonly __typename: 'Context', readonly id: string, readonly name: string, readonly stub: string }> };
+export type EditContextMutation = { readonly __typename: 'Mutation', readonly editContext: Schema.Maybe<{ readonly __typename: 'Context', readonly id: string, readonly name: string, readonly stub: string }> };
 
-export type DeleteContextMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
+export type DeleteContextMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
 }>;
 
 
 export type DeleteContextMutation = { readonly __typename: 'Mutation', readonly deleteContext: boolean };
 
-export type CreateSectionMutationVariables = Types.Exact<{
-  taskList: Types.Scalars['ID'];
-  params: Types.SectionParams;
+export type CreateSectionMutationVariables = Schema.Exact<{
+  taskList: Schema.Scalars['ID'];
+  params: Schema.SectionParams;
 }>;
 
 
 export type CreateSectionMutation = { readonly __typename: 'Mutation', readonly createSection: { readonly __typename: 'Section', readonly id: string, readonly name: string } };
 
-export type EditSectionMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  params: Types.SectionParams;
+export type EditSectionMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  params: Schema.SectionParams;
 }>;
 
 
-export type EditSectionMutation = { readonly __typename: 'Mutation', readonly editSection: Types.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
+export type EditSectionMutation = { readonly __typename: 'Mutation', readonly editSection: Schema.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
 
-export type MoveSectionMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  taskList: Types.Scalars['ID'];
-  before: Types.Maybe<Types.Scalars['ID']>;
+export type MoveSectionMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  taskList: Schema.Scalars['ID'];
+  before: Schema.Maybe<Schema.Scalars['ID']>;
 }>;
 
 
-export type MoveSectionMutation = { readonly __typename: 'Mutation', readonly moveSection: Types.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
+export type MoveSectionMutation = { readonly __typename: 'Mutation', readonly moveSection: Schema.Maybe<{ readonly __typename: 'Section', readonly id: string, readonly name: string }> };
 
-export type DeleteSectionMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
+export type DeleteSectionMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
 }>;
 
 
 export type DeleteSectionMutation = { readonly __typename: 'Mutation', readonly deleteSection: boolean };
 
-export type CreateProjectMutationVariables = Types.Exact<{
-  taskList: Types.Scalars['ID'];
-  params: Types.ProjectParams;
+export type CreateProjectMutationVariables = Schema.Exact<{
+  taskList: Schema.Scalars['ID'];
+  params: Schema.ProjectParams;
 }>;
 
 
 export type CreateProjectMutation = { readonly __typename: 'Mutation', readonly createProject: { readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string } };
 
-export type EditProjectMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  params: Types.ProjectParams;
+export type EditProjectMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  params: Schema.ProjectParams;
 }>;
 
 
-export type EditProjectMutation = { readonly __typename: 'Mutation', readonly editProject: Types.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+export type EditProjectMutation = { readonly __typename: 'Mutation', readonly editProject: Schema.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
 
-export type MoveProjectMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  taskList: Types.Scalars['ID'];
+export type MoveProjectMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  taskList: Schema.Scalars['ID'];
 }>;
 
 
-export type MoveProjectMutation = { readonly __typename: 'Mutation', readonly moveProject: Types.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
+export type MoveProjectMutation = { readonly __typename: 'Mutation', readonly moveProject: Schema.Maybe<{ readonly __typename: 'Project', readonly id: string, readonly name: string, readonly stub: string }> };
 
-export type DeleteProjectMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
+export type DeleteProjectMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
 }>;
 
 
 export type DeleteProjectMutation = { readonly __typename: 'Mutation', readonly deleteProject: boolean };
 
-export type CreateTaskMutationVariables = Types.Exact<{
-  section: Types.Maybe<Types.Scalars['ID']>;
-  item: Types.ItemParams;
+export type CreateTaskMutationVariables = Schema.Exact<{
+  section: Schema.Maybe<Schema.Scalars['ID']>;
+  item: Schema.ItemParams;
 }>;
 
 
@@ -115,11 +115,11 @@ export type CreateTaskMutation = { readonly __typename: 'Mutation', readonly cre
     & ClientItemFieldsFragment
   ) };
 
-export type CreateLinkMutationVariables = Types.Exact<{
-  section: Types.Maybe<Types.Scalars['ID']>;
-  item: Types.ItemParams;
-  detail: Types.LinkDetailParams;
-  isTask: Types.Scalars['Boolean'];
+export type CreateLinkMutationVariables = Schema.Exact<{
+  section: Schema.Maybe<Schema.Scalars['ID']>;
+  item: Schema.ItemParams;
+  detail: Schema.LinkDetailParams;
+  isTask: Schema.Scalars['Boolean'];
 }>;
 
 
@@ -128,114 +128,114 @@ export type CreateLinkMutation = { readonly __typename: 'Mutation', readonly cre
     & ClientItemFieldsFragment
   ) };
 
-export type EditItemMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  item: Types.ItemParams;
+export type EditItemMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  item: Schema.ItemParams;
 }>;
 
 
-export type EditItemMutation = { readonly __typename: 'Mutation', readonly editItem: Types.Maybe<(
+export type EditItemMutation = { readonly __typename: 'Mutation', readonly editItem: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type EditTaskInfoMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  taskInfo: Types.Maybe<Types.TaskInfoParams>;
+export type EditTaskInfoMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  taskInfo: Schema.Maybe<Schema.TaskInfoParams>;
 }>;
 
 
-export type EditTaskInfoMutation = { readonly __typename: 'Mutation', readonly editTaskInfo: Types.Maybe<(
+export type EditTaskInfoMutation = { readonly __typename: 'Mutation', readonly editTaskInfo: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type EditTaskControllerMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  controller: Types.Maybe<Types.Scalars['String']>;
+export type EditTaskControllerMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  controller: Schema.Maybe<Schema.Scalars['TaskController']>;
 }>;
 
 
-export type EditTaskControllerMutation = { readonly __typename: 'Mutation', readonly editTaskController: Types.Maybe<(
+export type EditTaskControllerMutation = { readonly __typename: 'Mutation', readonly editTaskController: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type MoveItemMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  section: Types.Maybe<Types.Scalars['ID']>;
-  before: Types.Maybe<Types.Scalars['ID']>;
+export type MoveItemMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  section: Schema.Maybe<Schema.Scalars['ID']>;
+  before: Schema.Maybe<Schema.Scalars['ID']>;
 }>;
 
 
-export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Types.Maybe<(
+export type MoveItemMutation = { readonly __typename: 'Mutation', readonly moveItem: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type DeleteItemMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
+export type DeleteItemMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
 }>;
 
 
 export type DeleteItemMutation = { readonly __typename: 'Mutation', readonly deleteItem: boolean };
 
-export type ArchiveItemMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  archived: Types.Maybe<Types.Scalars['DateTime']>;
+export type ArchiveItemMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  archived: Schema.Maybe<Schema.Scalars['DateTime']>;
 }>;
 
 
-export type ArchiveItemMutation = { readonly __typename: 'Mutation', readonly archiveItem: Types.Maybe<(
+export type ArchiveItemMutation = { readonly __typename: 'Mutation', readonly archiveItem: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type SnoozeItemMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  snoozed: Types.Maybe<Types.Scalars['DateTime']>;
+export type SnoozeItemMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  snoozed: Schema.Maybe<Schema.Scalars['DateTime']>;
 }>;
 
 
-export type SnoozeItemMutation = { readonly __typename: 'Mutation', readonly snoozeItem: Types.Maybe<(
+export type SnoozeItemMutation = { readonly __typename: 'Mutation', readonly snoozeItem: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type MarkItemDueMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
-  due: Types.Maybe<Types.Scalars['DateTime']>;
+export type MarkItemDueMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
+  due: Schema.Maybe<Schema.Scalars['DateTime']>;
 }>;
 
 
-export type MarkItemDueMutation = { readonly __typename: 'Mutation', readonly markItemDue: Types.Maybe<(
+export type MarkItemDueMutation = { readonly __typename: 'Mutation', readonly markItemDue: Schema.Maybe<(
     { readonly __typename: 'Item' }
     & ClientItemFieldsFragment
   )> };
 
-export type CreateUserMutationVariables = Types.Exact<{
-  email: Types.Scalars['String'];
-  password: Types.Scalars['String'];
-  isAdmin: Types.Maybe<Types.Scalars['Boolean']>;
+export type CreateUserMutationVariables = Schema.Exact<{
+  email: Schema.Scalars['String'];
+  password: Schema.Scalars['String'];
+  isAdmin: Schema.Maybe<Schema.Scalars['Boolean']>;
 }>;
 
 
 export type CreateUserMutation = { readonly __typename: 'Mutation', readonly createUser: { readonly __typename: 'User', readonly id: string } };
 
-export type DeleteUserMutationVariables = Types.Exact<{
-  id: Types.Scalars['ID'];
+export type DeleteUserMutationVariables = Schema.Exact<{
+  id: Schema.Scalars['ID'];
 }>;
 
 
-export type DeleteUserMutation = { readonly __typename: 'Mutation', readonly deleteUser: Types.Maybe<boolean> };
+export type DeleteUserMutation = { readonly __typename: 'Mutation', readonly deleteUser: Schema.Maybe<boolean> };
 
-export type ChangePasswordMutationVariables = Types.Exact<{
-  currentPassword: Types.Scalars['String'];
-  newPassword: Types.Scalars['String'];
+export type ChangePasswordMutationVariables = Schema.Exact<{
+  currentPassword: Schema.Scalars['String'];
+  newPassword: Schema.Scalars['String'];
 }>;
 
 
-export type ChangePasswordMutation = { readonly __typename: 'Mutation', readonly changePassword: Types.Maybe<{ readonly __typename: 'User', readonly id: string }> };
+export type ChangePasswordMutation = { readonly __typename: 'Mutation', readonly changePassword: Schema.Maybe<{ readonly __typename: 'User', readonly id: string }> };
 
 
 export const LoginDocument = gql`
@@ -819,7 +819,7 @@ export type EditTaskInfoMutationHookResult = ReturnType<typeof useEditTaskInfoMu
 export type EditTaskInfoMutationResult = Apollo.MutationResult<EditTaskInfoMutation>;
 export type EditTaskInfoMutationOptions = Apollo.BaseMutationOptions<EditTaskInfoMutation, EditTaskInfoMutationVariables>;
 export const EditTaskControllerDocument = gql`
-    mutation EditTaskController($id: ID!, $controller: String) {
+    mutation EditTaskController($id: ID!, $controller: TaskController) {
   editTaskController(id: $id, controller: $controller) {
     ...clientItemFields
   }

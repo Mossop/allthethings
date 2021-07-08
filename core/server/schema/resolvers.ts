@@ -3,7 +3,8 @@ import type { GraphQLResolveInfo, GraphQLScalarType, GraphQLScalarTypeConfig } f
 import type { User, Context, Project, Section, TaskList, Item, TaskInfo, LinkDetail, FileDetail, NoteDetail, PluginDetail, PluginList } from '../db/implementations';
 import type { ItemSet } from '../db/datasources';
 import type { ResolverContext } from './context';
-import * as Schema from './types';
+import * as Schema from '#schema';
+import { Problem } from '#server-utils'
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
@@ -102,12 +103,13 @@ export type ResolversTypes = {
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: ResolverTypeWrapper<PluginDetail>;
   PluginList: ResolverTypeWrapper<PluginList>;
-  Problem: ResolverTypeWrapper<Schema.Problem>;
+  Problem: ResolverTypeWrapper<Problem>;
   Project: ResolverTypeWrapper<Project>;
   ProjectParams: Schema.ProjectParams;
   Query: ResolverTypeWrapper<{}>;
   Section: ResolverTypeWrapper<Section>;
   SectionParams: Schema.SectionParams;
+  TaskController: ResolverTypeWrapper<Schema.Scalars['TaskController']>;
   TaskInfo: ResolverTypeWrapper<TaskInfo>;
   TaskInfoParams: Schema.TaskInfoParams;
   TaskList: ResolverTypeWrapper<TaskList>;
@@ -135,12 +137,13 @@ export type ResolversParentTypes = {
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: PluginDetail;
   PluginList: PluginList;
-  Problem: Schema.Problem;
+  Problem: Problem;
   Project: Project;
   ProjectParams: Schema.ProjectParams;
   Query: {};
   Section: Section;
   SectionParams: Schema.SectionParams;
+  TaskController: Schema.Scalars['TaskController'];
   TaskInfo: TaskInfo;
   TaskInfoParams: Schema.TaskInfoParams;
   TaskList: TaskList;
@@ -288,10 +291,14 @@ export type SectionResolvers<ContextType = ResolverContext, ParentType extends R
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export interface TaskControllerScalarConfig extends GraphQLScalarTypeConfig<ResolversTypes['TaskController'], any> {
+  name: 'TaskController';
+}
+
 export type TaskInfoResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['TaskInfo'] = ResolversParentTypes['TaskInfo']> = {
   due: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
   done: Resolver<Schema.Maybe<ResolversTypes['DateTime']>, ParentType, ContextType>;
-  controller: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  controller: Resolver<ResolversTypes['TaskController'], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -328,6 +335,7 @@ export type Resolvers<ContextType = ResolverContext> = {
   Project: ProjectResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   Section: SectionResolvers<ContextType>;
+  TaskController: GraphQLScalarType;
   TaskInfo: TaskInfoResolvers<ContextType>;
   TaskList: TaskListResolvers<ContextType>;
   User: UserResolvers<ContextType>;

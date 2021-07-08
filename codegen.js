@@ -14,6 +14,28 @@ module.exports = {
       },
     },
 
+    [path.join(__dirname, "core", "schema", "schema.ts")]: {
+      plugins: {
+        typescript: {
+          immutableTypes: true,
+          avoidOptionals: true,
+          nonOptionalTypename: true,
+          preResolveTypes: true,
+          useTypeImports: true,
+          useIndexTypes: true,
+          scalars: {
+            DateTime: "luxon#DateTime",
+            TaskController: "./types#TaskController",
+          },
+        },
+        add: {
+          content: [
+            "/* eslint-disable */",
+          ],
+        },
+      },
+    },
+
     [path.join(__dirname, "dist", "core", "schema", "schema.graphql")]: {
       plugins: {
         "schema-ast": {},
@@ -21,16 +43,8 @@ module.exports = {
     },
 
     [path.join(__dirname, "core", "client", "schema", "types.ts")]: {
+      documents: path.join(__dirname, "core", "client", "schema", "*.gql"),
       plugins: {
-        "typescript": {
-          immutableTypes: true,
-          nonOptionalTypename: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
         "typescript-apollo-client-helpers": {
           useTypeImports: true,
         },
@@ -43,12 +57,14 @@ module.exports = {
         },
       },
     },
+
     [path.join(__dirname, "core", "client", "schema")]: {
       documents: path.join(__dirname, "core", "client", "schema", "*.gql"),
       preset: "near-operation-file",
       presetConfig: {
-        baseTypesPath: "./types",
+        baseTypesPath: "~#schema",
         extension: ".ts",
+        importTypesNamespace: "Schema",
       },
       plugins: {
         "typescript-operations": {
@@ -59,7 +75,8 @@ module.exports = {
           onlyOperationTypes: true,
           nonOptionalTypename: true,
           scalars: {
-            DateTime: "Types.Scalars['DateTime']",
+            DateTime: "Schema.Scalars['DateTime']",
+            TaskController: "Schema.Scalars['TaskController']",
           },
         },
         "typescript-react-apollo": {
@@ -74,21 +91,6 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "core", "server", "schema", "types.ts")]: {
-      plugins: {
-        typescript: {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        add: {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
     [path.join(__dirname, "core", "server", "schema", "resolvers.ts")]: {
       plugins: {
         "typescript-resolvers": {
@@ -112,12 +114,14 @@ module.exports = {
             PluginDetail: "../db/implementations#PluginDetail",
             PluginList: "../db/implementations#PluginList",
             ItemSet: "../db/datasources#ItemSet",
+            Problem: "Problem",
           },
         },
         "add": {
           content: [
             "/* eslint-disable */",
-            "import * as Schema from './types';",
+            "import * as Schema from '#schema';",
+            "import { Problem } from '#server-utils'",
           ],
         },
       },

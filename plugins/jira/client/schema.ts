@@ -15,6 +15,7 @@ export type Scalars = {
   Int: number;
   Float: number;
   DateTime: DateTime;
+  TaskController: any;
 };
 
 export type Context = TaskList & {
@@ -310,7 +311,7 @@ export type MutationEditSectionArgs = {
 
 export type MutationEditTaskControllerArgs = {
   id: Scalars['ID'];
-  controller: Maybe<Scalars['String']>;
+  controller: Maybe<Scalars['TaskController']>;
 };
 
 
@@ -435,11 +436,12 @@ export type SectionParams = {
   readonly name: Scalars['String'];
 };
 
+
 export type TaskInfo = {
   readonly __typename?: 'TaskInfo';
   readonly due: Maybe<Scalars['DateTime']>;
   readonly done: Maybe<Scalars['DateTime']>;
-  readonly controller: Scalars['String'];
+  readonly controller: Scalars['TaskController'];
 };
 
 export type TaskInfoParams = {
