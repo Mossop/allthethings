@@ -76,7 +76,7 @@ export class Account extends BaseAccount implements JiraAccountResolvers {
     return [];
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Account.store.delete(this.context, this.id);
   }
@@ -168,14 +168,14 @@ export class Search extends BaseList<JiraIssue[]> implements JiraSearchResolvers
     return this.record.query;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let url = new URL("/issues/", this.account.url);
     url.searchParams.set("jql", this.query);
 
     return url.toString();
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Search.store.delete(this.context, this.id);
   }
@@ -315,17 +315,17 @@ export class Issue extends BaseItem {
     return this.record.issueKey;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let baseUrl = new URL(this.account.url);
 
     return new URL(`browse/${this.issueKey}`, baseUrl).toString();
   }
 
-  public get icon(): string | null {
+  public override get icon(): string | null {
     return this.record.icon;
   }
 
-  public async update(issue?: JiraIssue): Promise<void> {
+  public override async update(issue?: JiraIssue): Promise<void> {
     if (!issue) {
       issue = await this.account.apiClient.issues.getIssue({
         issueIdOrKey: this.issueKey,

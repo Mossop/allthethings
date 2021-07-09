@@ -44,7 +44,7 @@ export class Account extends BaseAccount implements GoogleAccountResolvers {
   private client: GoogleApi | null;
 
   public constructor(
-    public readonly context: PluginContext,
+    public override readonly context: PluginContext,
     private record: GoogleAccountRecord,
   ) {
     super(context);
@@ -82,7 +82,7 @@ export class Account extends BaseAccount implements GoogleAccountResolvers {
     ];
   }
 
-  public lists(): Promise<MailSearch[]> {
+  public override lists(): Promise<MailSearch[]> {
     return this.mailSearches();
   }
 
@@ -283,13 +283,13 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
     return this.record.query;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let url = new URL("https://mail.google.com/mail/");
     url.hash = `search/${this.query}`;
     return this.account.buildURL(url).toString();
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await MailSearch.store.delete(this.context, this.id);
   }
@@ -377,14 +377,14 @@ export class Thread extends BaseItem {
     return this.record.threadId;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let intId = BigInt(`0x${this.threadId}`);
     let encoded = encodeWebId(`f:${intId}`);
     let url = new URL(`https://mail.google.com/mail/#all/${encoded}`);
     return this.account.buildURL(url).toString();
   }
 
-  public async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
+  public override async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
     if (!thread) {
       thread = await this.account.authClient.getThread(this.threadId) ?? undefined;
       if (!thread) {
@@ -595,7 +595,7 @@ export class File extends BaseItem {
     return this.record.id;
   }
 
-  public get url(): string | null {
+  public override get url(): string | null {
     return this.record.url;
   }
 
@@ -614,7 +614,7 @@ export class File extends BaseItem {
     };
   }
 
-  public async update(file?: GoogleAPIFile): Promise<void> {
+  public override async update(file?: GoogleAPIFile): Promise<void> {
     if (!file) {
       file = await this.account.authClient.getFile(this.fileId) ?? undefined;
 

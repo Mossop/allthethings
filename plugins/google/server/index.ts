@@ -105,7 +105,7 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
     }, INITIAL_DELAY);
   }
 
-  public async update(context: PluginContext): Promise<void> {
+  public override async update(context: PluginContext): Promise<void> {
     let accounts = await Account.store.list(context);
     for (let account of accounts) {
       try {

@@ -55,7 +55,7 @@ export default class ErrorHandler extends PureComponent<ReactChildren, ErrorHand
     };
   }
 
-  public render(): ReactNode {
+  public override render(): ReactNode {
     if (this.state.error) {
       return <ErrorPage error={this.state.error}/>;
     }

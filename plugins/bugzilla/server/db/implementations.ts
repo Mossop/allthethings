@@ -55,7 +55,7 @@ export class Account extends BaseAccount implements BugzillaAccountResolvers {
     return Bug.store.list(this.context, { ownerId: this.id });
   }
 
-  public lists(): Promise<Search[]> {
+  public override lists(): Promise<Search[]> {
     return this.searches();
   }
 
@@ -217,7 +217,7 @@ export class Account extends BaseAccount implements BugzillaAccountResolvers {
     return null;
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Account.store.delete(this.context, this.id);
   }
@@ -272,7 +272,7 @@ export class Search extends BaseList<BugzillaAPIBug[]> implements BugzillaSearch
     return this.record.query;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let search = this.query;
     if (this.type == SearchType.Quicksearch) {
       let params = new URLSearchParams();
@@ -286,7 +286,7 @@ export class Search extends BaseList<BugzillaAPIBug[]> implements BugzillaSearch
     return url.toString();
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Search.store.delete(this.context, this.id);
   }
@@ -418,17 +418,17 @@ export class Bug extends BaseItem {
     return this.record.bugId;
   }
 
-  public get url(): string {
+  public override get url(): string {
     let baseUrl = new URL(this.account.url);
 
     return new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString();
   }
 
-  public get icon(): string | null {
+  public override get icon(): string | null {
     return this.account.icon;
   }
 
-  public async update(record?: BugzillaAPIBug): Promise<void> {
+  public override async update(record?: BugzillaAPIBug): Promise<void> {
     if (!record) {
       let bugs = await this.account.getAPI().getBugs([this.bugId]);
       if (!bugs.length) {

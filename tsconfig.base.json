@@ -15,6 +15,7 @@
 
     "noImplicitAny": false,
     "noImplicitThis": true,
+    "noImplicitOverride": true,
     "strictPropertyInitialization": true,
     "strictNullChecks": true,
     "strictFunctionTypes": true,

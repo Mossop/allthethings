@@ -180,7 +180,7 @@ export class Context
     return this.dataSources.items.contextItems(this.id());
   }
 
-  public async edit(
+  public override async edit(
     props: Omit<Db.DbUpdateObject<Db.ContextDbTable>, "userId">,
   ): Promise<void> {
     return this.updateDbObject(props);
@@ -208,7 +208,7 @@ export class Project extends TaskListImpl<Db.ProjectDbTable>
     return this.dataSources.contexts.getImpl((await this.dbObject).contextId);
   }
 
-  public async edit(
+  public override async edit(
     props: Omit<Db.DbUpdateObject<Db.ProjectDbTable>, "contextId" | "parentId">,
   ): Promise<void> {
     return this.updateDbObject(props);
@@ -252,7 +252,7 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     return this.dataSources.items.sectionItems(this._id);
   }
 
-  public async edit(
+  public override async edit(
     props: Omit<Db.DbUpdateObject<Db.SectionDbTable>, "ownerId">,
   ): Promise<void> {
     return this.updateDbObject(props);
@@ -278,7 +278,7 @@ export class Item extends BaseImpl<Db.ItemDbTable>
     return this.dataSources.items;
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     let detail = await this.detail();
     if (detail instanceof PluginDetail) {
       await detail.delete();
@@ -386,7 +386,7 @@ export class PluginDetail extends Detail<Db.PluginDetailDbTable>
     return this.dataSources.pluginDetail;
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     let item = await this.item();
     let pluginId = await this.pluginId();
     return PluginManager.deleteItem(this.dataSources, item, pluginId);

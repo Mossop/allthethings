@@ -226,7 +226,7 @@ export abstract class DbDataSource<
     return this.connection.knex;
   }
 
-  public initialize(config: DataSourceConfig<ResolverContext>): void {
+  public override initialize(config: DataSourceConfig<ResolverContext>): void {
     this._db = config.context.db;
     this.context = config.context;
   }
@@ -444,7 +444,7 @@ abstract class IndexedDbDataSource<
       });
   }
 
-  public async delete(id: string): Promise<void> {
+  public override async delete(id: string): Promise<void> {
     await this.remove(id);
     await super.delete(id);
   }
@@ -545,7 +545,7 @@ export class ContextDataSource extends DbDataSource<
     return context;
   }
 
-  public async delete(id: string): Promise<void> {
+  public override async delete(id: string): Promise<void> {
     let items = await this.dataSources.items.contextItems(id).records();
     for (let { id } of items) {
       await this.dataSources.items.delete(id);
@@ -561,7 +561,7 @@ export class ProjectDataSource extends DbDataSource<
   public tableName = "Project";
   protected builder = classBuilder<Impl.Project, Db.ProjectDbTable>(Impl.Project);
 
-  public get records(): Knex.QueryBuilder<Db.ProjectDbTable, Db.ProjectDbTable[]> {
+  public override get records(): Knex.QueryBuilder<Db.ProjectDbTable, Db.ProjectDbTable[]> {
     return this.table.where("name", "<>", "");
   }
 
@@ -594,7 +594,7 @@ export class ProjectDataSource extends DbDataSource<
     return project;
   }
 
-  public async delete(id: string): Promise<void> {
+  public override async delete(id: string): Promise<void> {
     let items = await this.dataSources.items.projectItems(id).records();
     for (let { id } of items) {
       await this.dataSources.items.delete(id);
@@ -611,7 +611,7 @@ export class SectionDataSource extends IndexedDbDataSource<
   public indexTableName = "Section";
   protected builder = classBuilder<Impl.Section, Db.SectionDbTable>(Impl.Section);
 
-  public get records(): Knex.QueryBuilder<Db.SectionDbTable, Db.SectionDbTable[]> {
+  public override get records(): Knex.QueryBuilder<Db.SectionDbTable, Db.SectionDbTable[]> {
     return this.table.where("index", ">=", 0);
   }
 
@@ -666,7 +666,7 @@ export class SectionDataSource extends IndexedDbDataSource<
     }));
   }
 
-  public async delete(id: string): Promise<void> {
+  public override async delete(id: string): Promise<void> {
     let items = await this.dataSources.items.sectionItems(id).records();
     for (let { id } of items) {
       await this.dataSources.items.delete(id);

@@ -97,13 +97,13 @@ export class Account extends BaseAccount implements PhabricatorAccountResolvers 
     });
   }
 
-  public async lists(): Promise<Query[]> {
+  public override async lists(): Promise<Query[]> {
     return Query.store.list(this.context, {
       ownerId: this.id,
     });
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Account.store.delete(this.context, this.id);
   }
@@ -221,7 +221,7 @@ export abstract class Query extends BaseList<never> {
     return this.class.description;
   }
 
-  public async delete(): Promise<void> {
+  public override async delete(): Promise<void> {
     await super.delete();
     await Query.store.delete(this.context, this.id);
   }
@@ -316,7 +316,7 @@ abstract class ReviewQuery extends Query {
     return ReviewState.Reviewable;
   }
 
-  protected getConstraints(): Differential$Revision$Search$Constraints {
+  protected override getConstraints(): Differential$Revision$Search$Constraints {
     return {
       reviewerPHIDs: [this.account.phid],
       statuses: [RevisionStatus.NeedsReview],
@@ -330,7 +330,7 @@ class MustReview extends ReviewQuery {
 
   public readonly name: string = "Must Review";
 
-  protected filterRevision(revision: Differential$Revision$Search$Result): boolean {
+  protected override filterRevision(revision: Differential$Revision$Search$Result): boolean {
     return this.getReviewState(revision) == ReviewState.Blocking;
   }
 }
@@ -341,7 +341,7 @@ class CanReview extends ReviewQuery {
 
   public readonly name: string = "Review";
 
-  protected filterRevision(revision: Differential$Revision$Search$Result): boolean {
+  protected override filterRevision(revision: Differential$Revision$Search$Result): boolean {
     return this.getReviewState(revision) == ReviewState.Reviewable;
   }
 }
@@ -352,7 +352,7 @@ class Draft extends Query {
 
   public readonly name = "Draft";
 
-  protected getConstraints(): Differential$Revision$Search$Constraints {
+  protected override getConstraints(): Differential$Revision$Search$Constraints {
     return {
       authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.Draft],
@@ -366,7 +366,7 @@ class NeedsRevision extends Query {
 
   public readonly name = "Needs Changes";
 
-  protected getConstraints(): Differential$Revision$Search$Constraints {
+  protected override getConstraints(): Differential$Revision$Search$Constraints {
     return {
       authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.NeedsRevision, RevisionStatus.ChangesPlanned],
@@ -380,7 +380,7 @@ class Waiting extends Query {
 
   public readonly name = "In Review";
 
-  protected getConstraints(): Differential$Revision$Search$Constraints {
+  protected override getConstraints(): Differential$Revision$Search$Constraints {
     return {
       authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.NeedsReview],
@@ -394,7 +394,7 @@ class Accepted extends Query {
 
   public readonly name = "Accepted";
 
-  protected getConstraints(): Differential$Revision$Search$Constraints {
+  protected override getConstraints(): Differential$Revision$Search$Constraints {
     return {
       authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.Accepted],
@@ -439,7 +439,7 @@ export class Revision extends BaseItem {
     return this.record.title;
   }
 
-  public get url(): string {
+  public override get url(): string {
     return this.record.uri;
   }
 
@@ -454,7 +454,7 @@ export class Revision extends BaseItem {
     };
   }
 
-  public async update(revision?: Differential$Revision$Search$Result): Promise<void> {
+  public override async update(revision?: Differential$Revision$Search$Result): Promise<void> {
     if (!revision) {
       let revisions = await this.account.conduit.differential.revision.search({
         constraints: {
