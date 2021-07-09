@@ -1,4 +1,4 @@
-import type { ButtonProps as MuiButtonProps, OutlinedInputProps } from "@material-ui/core";
+import type { ButtonProps as MuiButtonProps, OutlinedInputProps, Theme } from "@material-ui/core";
 import {
   CircularProgress,
   createStyles, makeStyles,
@@ -277,7 +277,7 @@ export const BooleanCheckboxInput = ReactMemo(
   },
 );
 
-const useButtonStyles = makeStyles(() =>
+const useButtonStyles = makeStyles((theme: Theme) =>
   createStyles({
     buttonInner: {
       position: "relative",
@@ -294,6 +294,7 @@ const useButtonStyles = makeStyles(() =>
       right: 0,
       left: 0,
       bottom: 0,
+      color: theme.palette.primary.contrastText,
       ...flexCentered,
     },
   }));
@@ -324,7 +325,7 @@ export const Button = ReactMemo(function Button({
         isLoading && <div
           className={classes.loading}
         >
-          <CircularProgress size="1.5rem"/>
+          <CircularProgress color="inherit" size="1.5rem"/>
         </div>
       }
     </div>
