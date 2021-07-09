@@ -536,6 +536,7 @@ export type Query = {
   readonly googleLoginUrl: Scalars['String'];
   readonly pageContent: Scalars['String'];
   readonly problems: ReadonlyArray<Problem>;
+  readonly schemaVersion: Scalars['String'];
   readonly taskList: Maybe<TaskList>;
   readonly user: Maybe<User>;
   readonly users: ReadonlyArray<User>;

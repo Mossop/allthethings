@@ -236,6 +236,11 @@ export type ChangePasswordMutationVariables = Schema.Exact<{
 
 export type ChangePasswordMutation = { readonly __typename: 'Mutation', readonly changePassword: Schema.Maybe<{ readonly __typename: 'User', readonly id: string }> };
 
+export type SchemaVersionQueryVariables = Schema.Exact<{ [key: string]: never; }>;
+
+
+export type SchemaVersionQuery = { readonly __typename: 'Query', readonly schemaVersion: string };
+
 export type ListContextStateQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
@@ -1203,6 +1208,41 @@ export function useChangePasswordMutation(baseOptions?: Apollo.MutationHookOptio
 export type ChangePasswordMutationHookResult = ReturnType<typeof useChangePasswordMutation>;
 export type ChangePasswordMutationResult = Apollo.MutationResult<ChangePasswordMutation>;
 export type ChangePasswordMutationOptions = Apollo.BaseMutationOptions<ChangePasswordMutation, ChangePasswordMutationVariables>;
+export const SchemaVersionDocument = gql`
+    query SchemaVersion {
+  schemaVersion
+}
+    `;
+
+/**
+ * __useSchemaVersionQuery__
+ *
+ * To run a query within a React component, call `useSchemaVersionQuery` and pass it any options that fit your needs.
+ * When your component renders, `useSchemaVersionQuery` returns an object from Apollo Client that contains loading, error, and data properties
+ * you can use to render your UI.
+ *
+ * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
+ *
+ * @example
+ * const { data, loading, error } = useSchemaVersionQuery({
+ *   variables: {
+ *   },
+ * });
+ */
+export function useSchemaVersionQuery(baseOptions?: Apollo.QueryHookOptions<SchemaVersionQuery, SchemaVersionQueryVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useQuery<SchemaVersionQuery, SchemaVersionQueryVariables>(SchemaVersionDocument, options);
+      }
+export function useSchemaVersionLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<SchemaVersionQuery, SchemaVersionQueryVariables>) {
+          const options = {...defaultOptions, ...baseOptions}
+          return Apollo.useLazyQuery<SchemaVersionQuery, SchemaVersionQueryVariables>(SchemaVersionDocument, options);
+        }
+export type SchemaVersionQueryHookResult = ReturnType<typeof useSchemaVersionQuery>;
+export type SchemaVersionLazyQueryHookResult = ReturnType<typeof useSchemaVersionLazyQuery>;
+export type SchemaVersionQueryResult = Apollo.QueryResult<SchemaVersionQuery, SchemaVersionQueryVariables>;
+export function refetchSchemaVersionQuery(variables?: SchemaVersionQueryVariables) {
+      return { query: SchemaVersionDocument, variables: variables }
+    }
 export const ListContextStateDocument = gql`
     query ListContextState {
   user {

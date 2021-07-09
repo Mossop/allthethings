@@ -184,11 +184,12 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('googleLoginUrl' | 'pageContent' | 'problems' | 'taskList' | 'user' | 'users' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('googleLoginUrl' | 'pageContent' | 'problems' | 'schemaVersion' | 'taskList' | 'user' | 'users' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
 	googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>,
 	pageContent?: FieldPolicy<any> | FieldReadFunction<any>,
 	problems?: FieldPolicy<any> | FieldReadFunction<any>,
+	schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	users?: FieldPolicy<any> | FieldReadFunction<any>

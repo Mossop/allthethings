@@ -9,6 +9,8 @@ import type {
   ListContextStateQueryVariables,
 } from "../schema";
 import {
+  useSchemaVersionQuery,
+
   buildState,
   ListContextStateDocument,
 } from "../schema";
@@ -16,6 +18,9 @@ import { client } from "../schema/client";
 import { SharedState, useSharedState } from "./sharedstate";
 import type { View } from "./view";
 import { urlToView } from "./view";
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+declare let SCHEMA_VERSION: string;
 
 function urlForLocation(location: Location): URL {
   return new URL(`${location.pathname}${location.search}${location.hash}`, document.URL);
@@ -67,7 +72,19 @@ const GlobalState = new GlobalStateManager();
 export default GlobalState;
 
 export function useProblems(): readonly Problem[] {
+  let { data } = useSchemaVersionQuery({
+    pollInterval: 5000,
+  });
+
   let [appState] = useSharedState(GlobalState.appState);
+
+  if (data && data.schemaVersion != SCHEMA_VERSION) {
+    return [{
+      description: "This page is outdated and must be reloaded.",
+      url: "javascript:window.location.reload()",
+    }];
+  }
+
   return appState?.problems ?? [];
 }
 

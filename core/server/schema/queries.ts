@@ -22,7 +22,7 @@ async function loadFile(name: string): Promise<string | null> {
   }
 }
 
-const resolvers: QueryResolvers = {
+const resolvers: Omit<QueryResolvers, "schemaVersion" | "test"> = {
   user: resolver(async (ctx): Promise<User | null> => {
     if (!ctx.userId) {
       return null;
@@ -72,7 +72,4 @@ const resolvers: QueryResolvers = {
   }),
 };
 
-export default {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Query: resolvers,
-};
+export default resolvers;

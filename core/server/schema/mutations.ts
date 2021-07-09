@@ -548,7 +548,4 @@ const resolvers: MutationResolvers = {
   ),
 };
 
-export default {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  Mutation: resolvers,
-};
+export default resolvers;

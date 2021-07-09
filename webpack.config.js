@@ -1,3 +1,4 @@
+const { createHash } = require("crypto");
 const fs = require("fs");
 const path = require("path");
 
@@ -5,6 +6,7 @@ const CopyPlugin = require("copy-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
+const { DefinePlugin } = require("webpack");
 const { StatsWriterPlugin } = require("webpack-stats-plugin");
 
 let tsConfig = path.join(__dirname, "core", "client", "tsconfig.json");
@@ -58,6 +60,13 @@ function buildExternals() {
     };
   });
 }
+
+let baseSchema = fs.readFileSync(require.resolve("#schema/schema.graphql"), {
+  encoding: "utf8",
+});
+let hasher = createHash("sha256");
+hasher.update(baseSchema);
+let schemaVersion = `"${hasher.digest("hex")}"`;
 
 module.exports = {
   mode: "development",
@@ -128,6 +137,10 @@ module.exports = {
       stats: {
         chunkModules: true,
       },
+    }),
+    new DefinePlugin({
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      SCHEMA_VERSION: schemaVersion,
     }),
   ],
   optimization: {

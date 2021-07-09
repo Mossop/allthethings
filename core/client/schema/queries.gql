@@ -1,3 +1,7 @@
+query SchemaVersion {
+  schemaVersion
+}
+
 query ListContextState {
   user {
     id

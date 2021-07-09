@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 
 import { mergeResolvers } from "@graphql-tools/merge";
@@ -12,9 +13,9 @@ import type { TaskController } from "#schema";
 import * as Db from "../db";
 import PluginManager from "../plugins";
 import { buildResolverContext } from "./context";
-import MutationResolvers from "./mutations";
+import Mutations from "./mutations";
 import ServerPlugin from "./plugin";
-import QueryResolvers from "./queries";
+import Queries from "./queries";
 import type { Resolvers } from "./resolvers";
 
 type UnionTypes = "TaskList" | "ItemDetail";
@@ -27,7 +28,7 @@ type RootResolvers = Pick<Resolvers, CustomTypes | BaseResolvers> & {
   };
 };
 
-const rootResolvers: RootResolvers = {
+const rootResolvers = (schemaVersion: string): RootResolvers => ({
   DateTime: new GraphQLScalarType({
     name: "DateTime",
     description: "DateTime",
@@ -92,14 +93,22 @@ const rootResolvers: RootResolvers = {
     },
   },
 
-  ...QueryResolvers,
-  ...MutationResolvers,
-};
+  Query: {
+    schemaVersion: () => schemaVersion,
+
+    ...Queries,
+  },
+
+  Mutation: Mutations,
+});
 
 export async function createGqlServer(): Promise<ApolloServer> {
   let baseSchema = await fs.readFile(require.resolve("#schema/schema.graphql"), {
     encoding: "utf8",
   });
+  let hasher = createHash("sha256");
+  hasher.update(baseSchema);
+  let schemaVersion = hasher.digest("hex");
 
   return new ApolloServer({
     typeDefs: baseSchema,
@@ -110,7 +119,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
 
     // @ts-ignore
     resolvers: mergeResolvers([
-      rootResolvers,
+      rootResolvers(schemaVersion),
       ...await PluginManager.getResolvers(),
     ]),
     context: buildResolverContext,

@@ -117,6 +117,8 @@ type Problem {
 }
 
 type Query {
+  schemaVersion: String!
+
   user: User
   problems: [Problem!]!
 

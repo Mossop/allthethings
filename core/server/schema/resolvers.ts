@@ -277,6 +277,7 @@ export type ProjectResolvers<ContextType = ResolverContext, ParentType extends R
 };
 
 export type QueryResolvers<ContextType = ResolverContext, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
+  schemaVersion: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   user: Resolver<Schema.Maybe<ResolversTypes['User']>, ParentType, ContextType>;
   problems: Resolver<ReadonlyArray<ResolversTypes['Problem']>, ParentType, ContextType>;
   users: Resolver<ReadonlyArray<ResolversTypes['User']>, ParentType, ContextType>;
