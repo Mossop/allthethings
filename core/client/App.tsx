@@ -1,13 +1,14 @@
 import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
+import LuxonUtils from "@date-io/luxon";
 import {
   CssBaseline,
   createMuiTheme,
   ThemeProvider,
 } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
+import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
-import { UIProvider } from "#ui";
 import type { ReactResult } from "#ui";
 
 import ErrorHandler from "./ui/ErrorHandler";
@@ -127,11 +128,11 @@ export default function App({
       <ApolloProvider client={client}>
         <CssBaseline/>
         <ErrorHandler>
-          <UIProvider>
+          <MuiPickersUtilsProvider utils={LuxonUtils}>
             <DragContext>
               <Main/>
             </DragContext>
-          </UIProvider>
+          </MuiPickersUtilsProvider>
         </ErrorHandler>
       </ApolloProvider>
     </ThemeProvider>

@@ -15,7 +15,6 @@ export * from "./Settings";
 export * as Styles from "./styles";
 export * from "./Text";
 export * from "./types";
-export * from "./UIProvider";
 export * from "./url";
 
 export * as Apollo from "@apollo/client";
