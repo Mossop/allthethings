@@ -115,10 +115,6 @@ export default class PluginInstance implements PluginServer {
     return getField(this.plugin, this.plugin.deleteItem, undefined, context, id);
   }
 
-  public getClientScripts(ctx: Koa.Context): Promise<string[]> {
-    return getField(this.plugin, this.plugin.clientScripts, [], ctx);
-  }
-
   public getDbMigrations(): Promise<PluginDbMigration[]> {
     return getField(this.plugin, this.plugin.dbMigrations, []);
   }

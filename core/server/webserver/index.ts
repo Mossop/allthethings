@@ -63,13 +63,6 @@ export async function createWebServer(
       encoding: "utf8",
     });
 
-    html = html.replace(
-      "{plugins}",
-      (await PluginManager.getClientScripts(ctx)).map(
-        (script: string): string => `<script defer src="${script}"></script>`,
-      ).join("\n"),
-    );
-
     ctx.status = 200;
     ctx.type = "text/html";
     ctx.body = html;

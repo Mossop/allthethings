@@ -345,24 +345,6 @@ class PluginManager {
     return pluginItem.fields;
   }
 
-  public async getClientScripts(ctx: Koa.Context): Promise<string[]> {
-    let scripts = await this.withAll(
-      async (plugin: PluginInstance): Promise<string[]> => {
-        let scripts = await plugin.getClientScripts(ctx);
-        return scripts.map((script: string): string => {
-          if (script.startsWith("/") && !script.startsWith("//")) {
-            return `/plugin/${plugin.schema}${script}`;
-          }
-
-          return script;
-        });
-      },
-    );
-
-    let first = scripts.shift() ?? [];
-    return first.concat(...scripts);
-  }
-
   public async applyDbMigrations(knex: Knex): Promise<void> {
     await this.withAll(async (plugin: PluginInstance): Promise<void> => {
       let migrations = await plugin.getDbMigrations();
