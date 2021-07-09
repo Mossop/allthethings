@@ -1,6 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
-
 import type {
   ServerPlugin,
   AuthedPluginContext,
@@ -14,7 +11,7 @@ import {
   BasePlugin,
 } from "#server-utils";
 
-import { Account, Issue, Search } from "./db/implementation";
+import { Account, Issue, Search } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 
@@ -50,13 +47,6 @@ export class JiraPlugin extends BasePlugin implements ServerPlugin {
       await account.update();
     }
     await super.update(context);
-  }
-
-  public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "schema", "schema.graphql");
-    return fs.readFile(schemaFile, {
-      encoding: "utf8",
-    });
   }
 
   public resolvers(): Resolver<AuthedPluginContext> {

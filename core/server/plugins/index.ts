@@ -394,14 +394,6 @@ class PluginManager {
     });
   }
 
-  public async getSchemas(): Promise<string[]> {
-    let isString = (val: string | null): val is string => !!val;
-    return this.filteredAll(
-      (plugin: PluginInstance): Promise<string | null> => plugin.getSchema(),
-      isString,
-    );
-  }
-
   public async getResolvers(): Promise<Resolver<ResolverContext>[]> {
     let isResolver = (val: Resolver<ResolverContext> | null): val is Resolver<ResolverContext> => {
       return !!val;

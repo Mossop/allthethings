@@ -4,6 +4,7 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
+import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import type { ReactResult } from "#ui";
 import {
   Heading,
@@ -19,12 +20,11 @@ import {
 } from "#ui";
 
 import Icon from "../Icon";
-import type { BugzillaAccount, BugzillaSearch } from "../schema";
 import {
   refetchListBugzillaAccountsQuery,
   useDeleteBugzillaSearchMutation,
   useDeleteBugzillaAccountMutation,
-} from "../schema";
+} from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>

@@ -17,7 +17,6 @@ import type {
   AuthedPluginContext,
   PluginContext,
 } from "#server-utils";
-import type { GraphQLResolver } from "#utils";
 
 import { GooglePlugin } from "..";
 import type { GoogleAPIFile } from "../api";
@@ -27,7 +26,7 @@ import {
   decodeWebId,
   GoogleApi,
 } from "../api";
-import type { GoogleAccount, GoogleMailSearch } from "../schema";
+import type { GoogleAccountResolvers, GoogleMailSearchResolvers } from "../schema";
 import type {
   GoogleAccountRecord,
   GoogleFileRecord,
@@ -39,7 +38,7 @@ import type {
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
-export class Account extends BaseAccount implements GraphQLResolver<GoogleAccount> {
+export class Account extends BaseAccount implements GoogleAccountResolvers {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   private client: GoogleApi | null;
@@ -250,7 +249,7 @@ export class Account extends BaseAccount implements GraphQLResolver<GoogleAccoun
 }
 
 export class MailSearch extends BaseList<gmail_v1.Schema$Thread[]>
-  implements GraphQLResolver<GoogleMailSearch> {
+  implements GoogleMailSearchResolvers {
   public static readonly store = new OwnedItemsTable(
     Account.store,
     classBuilder(MailSearch),

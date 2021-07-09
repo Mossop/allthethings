@@ -163,10 +163,6 @@ export default class PluginInstance implements PluginServer {
     }
   }
 
-  public getSchema(): Promise<string | null> {
-    return getField(this.plugin, this.plugin.schema, null);
-  }
-
   public getResolvers(): Promise<Resolver<AuthedPluginContext> | null> {
     return getField(this.plugin, this.plugin.resolvers, null);
   }

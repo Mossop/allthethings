@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
-
-import { Account, Query } from "./db/implementations";
 import type {
   MutationCreatePhabricatorAccountArgs,
   MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
-  PhabricatorQuery,
-} from "./schema";
+} from "#schema";
+import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+
+import type { QueryClass } from "./db/implementations";
+import { Account, Query } from "./db/implementations";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
@@ -19,7 +19,7 @@ const Resolvers: Resolver<AuthedPluginContext> = {
       return Account.store.list(ctx, { userId: user.id() });
     },
 
-    phabricatorQueries(): PhabricatorQuery[] {
+    phabricatorQueries(): QueryClass[] {
       return Object.values(Query.queries);
     },
   },

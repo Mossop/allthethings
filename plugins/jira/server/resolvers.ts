@@ -1,13 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
-
-import { Account, Search } from "./db/implementation";
 import type {
   MutationCreateJiraAccountArgs,
   MutationCreateJiraSearchArgs,
   MutationDeleteJiraAccountArgs,
   MutationDeleteJiraSearchArgs,
-} from "./schema";
+} from "#schema";
+import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+
+import { Account, Search } from "./db/implementations";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {

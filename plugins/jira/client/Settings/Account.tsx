@@ -4,6 +4,7 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
+import type { JiraAccount, JiraSearch } from "#schema";
 import type { ReactResult } from "#ui";
 import {
   Heading,
@@ -19,12 +20,11 @@ import {
 } from "#ui";
 
 import Icon from "../Icon";
-import type { JiraAccount, JiraSearch } from "../schema";
 import {
   useDeleteJiraSearchMutation,
   refetchListJiraAccountsQuery,
   useDeleteJiraAccountMutation,
-} from "../schema";
+} from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>

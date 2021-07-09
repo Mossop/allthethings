@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { promises as fs } from "fs";
 
-import { mergeResolvers, mergeTypeDefs } from "@graphql-tools/merge";
+import { mergeResolvers } from "@graphql-tools/merge";
 import { ApolloServer } from "apollo-server-koa";
 import { GraphQLScalarType, Kind } from "graphql";
 import type { ValueNode } from "graphql";
@@ -102,10 +102,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
   });
 
   return new ApolloServer({
-    typeDefs: mergeTypeDefs([
-      baseSchema,
-      ...await PluginManager.getSchemas(),
-    ]),
+    typeDefs: baseSchema,
 
     // See https://github.com/apollographql/apollo-server/issues/4398
     mocks: true,

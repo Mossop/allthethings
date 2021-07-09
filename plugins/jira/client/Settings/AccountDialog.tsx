@@ -1,10 +1,10 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { JiraAccount } from "#schema";
 import { TextFieldInput, Dialog, useBoolState, FormState } from "#ui";
 
-import type { JiraAccount } from "../schema";
-import { refetchListJiraAccountsQuery, useCreateJiraAccountMutation } from "../schema";
+import { refetchListJiraAccountsQuery, useCreateJiraAccountMutation } from "../operations";
 
 interface AccountDialogProps {
   onAccountCreated: (account: JiraAccount) => void;

@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 
+import type { JiraAccount } from "#schema";
 import type { ReactResult } from "#ui";
 import { useBoolState, useSetSettingsPage, SettingsPageItem } from "#ui";
 
 import Icon from "../Icon";
-import type { JiraAccount } from "../schema";
-import { useListJiraAccountsQuery } from "../schema";
+import { useListJiraAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -20,7 +20,7 @@ export function SettingsPages(): ReactResult {
 
   let onAccountCreated = useCallback((account: Omit<JiraAccount, "username">) => {
     closeAccountDialog();
-    setSettingsPage(account.id, "@allthethings/bugzilla-server");
+    setSettingsPage(account.id, "bugzilla");
   }, [closeAccountDialog, setSettingsPage]);
 
   let { data } = useListJiraAccountsQuery();
@@ -30,7 +30,7 @@ export function SettingsPages(): ReactResult {
     {
       accounts.map((account:JiraAccount) => <SettingsPageItem
         key={account.id}
-        pluginId="@allthethings/jira-server"
+        pluginId="jira"
         page={account.id}
         icon={<Icon/>}
       >

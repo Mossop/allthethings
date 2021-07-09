@@ -1,6 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
-
 import type {
   PluginDbMigration,
   ServerPlugin,
@@ -38,13 +35,6 @@ class BugzillaPlugin extends BasePlugin implements ServerPlugin {
       }
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
-  }
-
-  public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "schema", "schema.graphql");
-    return fs.readFile(schemaFile, {
-      encoding: "utf8",
-    });
   }
 
   public resolvers(): Resolver<AuthedPluginContext> {

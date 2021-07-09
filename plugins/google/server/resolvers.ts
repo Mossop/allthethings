@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import type { MutationCreateGoogleMailSearchArgs } from "#schema";
 import type { Resolver, AuthedPluginContext, User } from "#server-utils";
 
 import { GoogleApi } from "./api";
 import { Account, MailSearch } from "./db/implementations";
-import type { MutationCreateGoogleMailSearchArgs } from "./schema";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {

@@ -2,6 +2,7 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import { useCallback, useMemo } from "react";
 
+import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 import type { ReactResult } from "#ui";
 import {
   Heading,
@@ -15,13 +16,12 @@ import {
   ReactMemo,
 } from "#ui";
 
-import type { PhabricatorAccount, PhabricatorQuery } from "../schema";
 import {
   useUpdatePhabricatorAccountMutation,
   useListPhabricatorQueriesQuery,
   refetchListPhabricatorAccountsQuery,
   useDeletePhabricatorAccountMutation,
-} from "../schema";
+} from "../operations";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

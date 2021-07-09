@@ -1,5 +1,5 @@
 import { useUser } from "../utils/globalState";
-import { useListInboxQuery } from "./queries";
+import { useListInboxQuery } from "./operations";
 import type { Item } from "./taskListState";
 import { buildItem } from "./taskListState";
 

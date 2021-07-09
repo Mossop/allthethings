@@ -1,5 +1,22 @@
 /* eslint-disable */
 import type { FieldPolicy, FieldReadFunction, TypePolicies, TypePolicy } from '@apollo/client/cache';
+export type BugzillaAccountKeySpecifier = ('id' | 'name' | 'icon' | 'url' | 'username' | 'searches' | BugzillaAccountKeySpecifier)[];
+export type BugzillaAccountFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	icon?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>,
+	username?: FieldPolicy<any> | FieldReadFunction<any>,
+	searches?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type BugzillaSearchKeySpecifier = ('id' | 'name' | 'type' | 'query' | 'url' | BugzillaSearchKeySpecifier)[];
+export type BugzillaSearchFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	type?: FieldPolicy<any> | FieldReadFunction<any>,
+	query?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type ContextKeySpecifier = ('subprojects' | 'sections' | 'items' | 'rootItems' | 'id' | 'user' | 'stub' | 'name' | 'projects' | 'projectById' | ContextKeySpecifier)[];
 export type ContextFieldPolicy = {
 	subprojects?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -18,6 +35,21 @@ export type FileDetailFieldPolicy = {
 	filename?: FieldPolicy<any> | FieldReadFunction<any>,
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type GoogleAccountKeySpecifier = ('id' | 'email' | 'avatar' | 'mailSearches' | 'loginUrl' | GoogleAccountKeySpecifier)[];
+export type GoogleAccountFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	avatar?: FieldPolicy<any> | FieldReadFunction<any>,
+	mailSearches?: FieldPolicy<any> | FieldReadFunction<any>,
+	loginUrl?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type GoogleMailSearchKeySpecifier = ('id' | 'name' | 'query' | 'url' | GoogleMailSearchKeySpecifier)[];
+export type GoogleMailSearchFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	query?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type ItemKeySpecifier = ('id' | 'summary' | 'created' | 'archived' | 'snoozed' | 'taskInfo' | 'detail' | ItemKeySpecifier)[];
 export type ItemFieldPolicy = {
@@ -38,44 +70,88 @@ export type ItemSetFieldPolicy = {
 	due?: FieldPolicy<any> | FieldReadFunction<any>,
 	isTask?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type JiraAccountKeySpecifier = ('id' | 'serverName' | 'userName' | 'url' | 'email' | 'apiToken' | 'searches' | JiraAccountKeySpecifier)[];
+export type JiraAccountFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	serverName?: FieldPolicy<any> | FieldReadFunction<any>,
+	userName?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>,
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	apiToken?: FieldPolicy<any> | FieldReadFunction<any>,
+	searches?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type JiraSearchKeySpecifier = ('id' | 'name' | 'query' | 'url' | JiraSearchKeySpecifier)[];
+export type JiraSearchFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	query?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type LinkDetailKeySpecifier = ('icon' | 'url' | LinkDetailKeySpecifier)[];
 export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('login' | 'logout' | 'createContext' | 'editContext' | 'deleteContext' | 'createProject' | 'moveProject' | 'editProject' | 'deleteProject' | 'createSection' | 'moveSection' | 'editSection' | 'deleteSection' | 'createTask' | 'createNote' | 'createLink' | 'editItem' | 'editTaskInfo' | 'editTaskController' | 'moveItem' | 'deleteItem' | 'archiveItem' | 'snoozeItem' | 'markItemDue' | 'createUser' | 'deleteUser' | 'changePassword' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('archiveItem' | 'changePassword' | 'createBugzillaAccount' | 'createBugzillaSearch' | 'createContext' | 'createGoogleMailSearch' | 'createJiraAccount' | 'createJiraSearch' | 'createLink' | 'createNote' | 'createPhabricatorAccount' | 'createProject' | 'createSection' | 'createTask' | 'createUser' | 'deleteBugzillaAccount' | 'deleteBugzillaSearch' | 'deleteContext' | 'deleteItem' | 'deleteJiraAccount' | 'deleteJiraSearch' | 'deletePhabricatorAccount' | 'deleteProject' | 'deleteSection' | 'deleteUser' | 'editContext' | 'editItem' | 'editProject' | 'editSection' | 'editTaskController' | 'editTaskInfo' | 'login' | 'logout' | 'markItemDue' | 'moveItem' | 'moveProject' | 'moveSection' | 'snoozeItem' | 'updatePhabricatorAccount' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
+	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	changePassword?: FieldPolicy<any> | FieldReadFunction<any>,
+	createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>,
+	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	createGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>,
+	createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>,
+	createLink?: FieldPolicy<any> | FieldReadFunction<any>,
+	createNote?: FieldPolicy<any> | FieldReadFunction<any>,
+	createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	createSection?: FieldPolicy<any> | FieldReadFunction<any>,
+	createTask?: FieldPolicy<any> | FieldReadFunction<any>,
+	createUser?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>,
+	deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteSection?: FieldPolicy<any> | FieldReadFunction<any>,
+	deleteUser?: FieldPolicy<any> | FieldReadFunction<any>,
+	editContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	editItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	editProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	editSection?: FieldPolicy<any> | FieldReadFunction<any>,
+	editTaskController?: FieldPolicy<any> | FieldReadFunction<any>,
+	editTaskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	login?: FieldPolicy<any> | FieldReadFunction<any>,
 	logout?: FieldPolicy<any> | FieldReadFunction<any>,
-	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
-	editContext?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteContext?: FieldPolicy<any> | FieldReadFunction<any>,
-	createProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	moveProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	editProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteProject?: FieldPolicy<any> | FieldReadFunction<any>,
-	createSection?: FieldPolicy<any> | FieldReadFunction<any>,
-	moveSection?: FieldPolicy<any> | FieldReadFunction<any>,
-	editSection?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteSection?: FieldPolicy<any> | FieldReadFunction<any>,
-	createTask?: FieldPolicy<any> | FieldReadFunction<any>,
-	createNote?: FieldPolicy<any> | FieldReadFunction<any>,
-	createLink?: FieldPolicy<any> | FieldReadFunction<any>,
-	editItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	editTaskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
-	editTaskController?: FieldPolicy<any> | FieldReadFunction<any>,
-	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
-	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	markItemDue?: FieldPolicy<any> | FieldReadFunction<any>,
-	createUser?: FieldPolicy<any> | FieldReadFunction<any>,
-	deleteUser?: FieldPolicy<any> | FieldReadFunction<any>,
-	changePassword?: FieldPolicy<any> | FieldReadFunction<any>
+	moveItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	moveProject?: FieldPolicy<any> | FieldReadFunction<any>,
+	moveSection?: FieldPolicy<any> | FieldReadFunction<any>,
+	snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>,
+	updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type NoteDetailKeySpecifier = ('note' | NoteDetailKeySpecifier)[];
 export type NoteDetailFieldPolicy = {
 	note?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type PhabricatorAccountKeySpecifier = ('id' | 'icon' | 'url' | 'email' | 'apiKey' | 'enabledQueries' | PhabricatorAccountKeySpecifier)[];
+export type PhabricatorAccountFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	icon?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>,
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	apiKey?: FieldPolicy<any> | FieldReadFunction<any>,
+	enabledQueries?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type PhabricatorQueryKeySpecifier = ('queryId' | 'name' | 'description' | PhabricatorQueryKeySpecifier)[];
+export type PhabricatorQueryFieldPolicy = {
+	queryId?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	description?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type PluginDetailKeySpecifier = ('pluginId' | 'hasTaskState' | 'wasEverListed' | 'isCurrentlyListed' | 'fields' | 'lists' | PluginDetailKeySpecifier)[];
 export type PluginDetailFieldPolicy = {
@@ -108,13 +184,14 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('user' | 'problems' | 'users' | 'taskList' | 'pageContent' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('googleLoginUrl' | 'pageContent' | 'problems' | 'taskList' | 'user' | 'users' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
-	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>,
+	pageContent?: FieldPolicy<any> | FieldReadFunction<any>,
 	problems?: FieldPolicy<any> | FieldReadFunction<any>,
-	users?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>,
-	pageContent?: FieldPolicy<any> | FieldReadFunction<any>
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	users?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type SectionKeySpecifier = ('items' | 'id' | 'name' | SectionKeySpecifier)[];
 export type SectionFieldPolicy = {
@@ -134,16 +211,29 @@ export type TaskListFieldPolicy = {
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('id' | 'email' | 'contexts' | 'inbox' | 'isAdmin' | 'allItems' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('allItems' | 'bugzillaAccounts' | 'contexts' | 'email' | 'googleAccounts' | 'id' | 'inbox' | 'isAdmin' | 'jiraAccounts' | 'phabricatorAccounts' | 'phabricatorQueries' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
-	id?: FieldPolicy<any> | FieldReadFunction<any>,
-	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	allItems?: FieldPolicy<any> | FieldReadFunction<any>,
+	bugzillaAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
+	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	googleAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	inbox?: FieldPolicy<any> | FieldReadFunction<any>,
 	isAdmin?: FieldPolicy<any> | FieldReadFunction<any>,
-	allItems?: FieldPolicy<any> | FieldReadFunction<any>
+	jiraAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
+	phabricatorAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
+	phabricatorQueries?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type TypedTypePolicies = TypePolicies & {
+	BugzillaAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | BugzillaAccountKeySpecifier | (() => undefined | BugzillaAccountKeySpecifier),
+		fields?: BugzillaAccountFieldPolicy,
+	},
+	BugzillaSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | BugzillaSearchKeySpecifier | (() => undefined | BugzillaSearchKeySpecifier),
+		fields?: BugzillaSearchFieldPolicy,
+	},
 	Context?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ContextKeySpecifier | (() => undefined | ContextKeySpecifier),
 		fields?: ContextFieldPolicy,
@@ -152,6 +242,14 @@ export type TypedTypePolicies = TypePolicies & {
 		keyFields?: false | FileDetailKeySpecifier | (() => undefined | FileDetailKeySpecifier),
 		fields?: FileDetailFieldPolicy,
 	},
+	GoogleAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | GoogleAccountKeySpecifier | (() => undefined | GoogleAccountKeySpecifier),
+		fields?: GoogleAccountFieldPolicy,
+	},
+	GoogleMailSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | GoogleMailSearchKeySpecifier | (() => undefined | GoogleMailSearchKeySpecifier),
+		fields?: GoogleMailSearchFieldPolicy,
+	},
 	Item?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ItemKeySpecifier | (() => undefined | ItemKeySpecifier),
 		fields?: ItemFieldPolicy,
@@ -159,6 +257,14 @@ export type TypedTypePolicies = TypePolicies & {
 	ItemSet?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | ItemSetKeySpecifier | (() => undefined | ItemSetKeySpecifier),
 		fields?: ItemSetFieldPolicy,
+	},
+	JiraAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | JiraAccountKeySpecifier | (() => undefined | JiraAccountKeySpecifier),
+		fields?: JiraAccountFieldPolicy,
+	},
+	JiraSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | JiraSearchKeySpecifier | (() => undefined | JiraSearchKeySpecifier),
+		fields?: JiraSearchFieldPolicy,
 	},
 	LinkDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | LinkDetailKeySpecifier | (() => undefined | LinkDetailKeySpecifier),
@@ -171,6 +277,14 @@ export type TypedTypePolicies = TypePolicies & {
 	NoteDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | NoteDetailKeySpecifier | (() => undefined | NoteDetailKeySpecifier),
 		fields?: NoteDetailFieldPolicy,
+	},
+	PhabricatorAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | PhabricatorAccountKeySpecifier | (() => undefined | PhabricatorAccountKeySpecifier),
+		fields?: PhabricatorAccountFieldPolicy,
+	},
+	PhabricatorQuery?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | PhabricatorQueryKeySpecifier | (() => undefined | PhabricatorQueryKeySpecifier),
+		fields?: PhabricatorQueryFieldPolicy,
 	},
 	PluginDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | PluginDetailKeySpecifier | (() => undefined | PluginDetailKeySpecifier),

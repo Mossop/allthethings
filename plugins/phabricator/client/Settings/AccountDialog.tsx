@@ -3,6 +3,7 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -13,12 +14,11 @@ import {
 } from "#ui";
 import type { ReactResult } from "#ui";
 
-import type { PhabricatorAccount, PhabricatorQuery } from "../schema";
 import {
   useListPhabricatorQueriesQuery,
   refetchListPhabricatorAccountsQuery,
   useCreatePhabricatorAccountMutation,
-} from "../schema";
+} from "../operations";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

@@ -7,6 +7,10 @@ import type { DateTime } from "luxon";
 import type { BugFields } from "#plugins/bugzilla/schema";
 import { SearchType } from "#plugins/bugzilla/schema";
 import { TaskController } from "#schema";
+import type {
+  BugzillaAccount,
+  BugzillaAccountParams,
+} from "#schema";
 import type { AuthedPluginContext, PluginContext } from "#server-utils";
 import {
   BaseItem,
@@ -16,13 +20,8 @@ import {
   OwnedItemsTable,
   classBuilder,
 } from "#server-utils";
-import type { GraphQLResolver, GraphQLType } from "#utils";
 
-import type {
-  BugzillaAccount,
-  BugzillaAccountParams,
-  BugzillaSearch,
-} from "../schema";
+import type { BugzillaAccountResolvers, BugzillaSearchResolvers } from "../schema";
 import type { BugzillaAccountRecord, BugzillaBugRecord, BugzillaSearchRecord } from "./types";
 
 function isDone(status: string): boolean {
@@ -36,7 +35,7 @@ function isDone(status: string): boolean {
   }
 }
 
-export class Account extends BaseAccount implements GraphQLResolver<BugzillaAccount> {
+export class Account extends BaseAccount implements BugzillaAccountResolvers {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   private api: BugzillaAPI | null = null;
@@ -239,7 +238,7 @@ export class Account extends BaseAccount implements GraphQLResolver<BugzillaAcco
   }
 }
 
-export class Search extends BaseList<BugzillaAPIBug[]> implements GraphQLType<BugzillaSearch> {
+export class Search extends BaseList<BugzillaAPIBug[]> implements BugzillaSearchResolvers {
   public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Search), "Search");
 
   public constructor(

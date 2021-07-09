@@ -1,12 +1,98 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const path = require("path");
 
+let customResolverFn = "Promise<TResult> | " +
+  "TResult | " +
+  "((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) " +
+    "=> Promise<TResult> | TResult)";
+
+const plugins = [
+  "bugzilla",
+  "google",
+  "jira",
+  "phabricator",
+];
+
+const scalars = {
+  DateTime: "luxon#DateTime",
+  TaskController: "./types#TaskController",
+};
+
+const clientOperationPlugins = {
+  "typescript-operations": {
+    avoidOptionals: true,
+    immutableTypes: true,
+    preResolveTypes: true,
+    useTypeImports: true,
+    onlyOperationTypes: true,
+    nonOptionalTypename: true,
+    namespacedImportName: "Schema",
+    scalars: Object.fromEntries(
+      Object.keys(scalars).map(key => [key, `Schema.Scalars['${key}']`]),
+    ),
+  },
+  "typescript-react-apollo": {
+    useTypeImports: true,
+    withRefetchFn: true,
+    namespacedImportName: "Schema",
+  },
+  "add": {
+    content: [
+      "/* eslint-disable */",
+      "import * as Schema from '#schema';",
+    ],
+  },
+};
+
+const resolverPlugins = (mappers = {}) => ({
+  "typescript-resolvers": {
+    useIndexSignature: false,
+    useTypeImports: true,
+    immutableTypes: true,
+    avoidOptionals: true,
+    namespacedImportName: "Schema",
+    customResolverFn,
+    mappers,
+  },
+  "add": {
+    content: [
+      "/* eslint-disable */",
+      "import * as Schema from '#schema';",
+    ],
+  },
+});
+
+const pluginTargets = (plugin, mappers = {}) => ({
+  [path.join(__dirname, "plugins", plugin, "client", "operations.ts")]: {
+    schema: [
+      path.join(__dirname, "core", "schema", "schema.graphql"),
+      path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+    ],
+    documents: path.join(__dirname, "plugins", plugin, "client", "*.gql"),
+    plugins: clientOperationPlugins,
+  },
+
+  [path.join(__dirname, "plugins", plugin, "server", "schema.ts")]: {
+    schema: [
+      path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+    ],
+    plugins: resolverPlugins(mappers),
+  },
+});
+
 module.exports = {
   overwrite: true,
-  schema: path.join(__dirname, "core", "schema", "schema.graphql"),
   errorsOnly: true,
+
   generates: {
     [path.join(__dirname, "core", "schema", "introspection.json")]: {
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+        ...plugins.map(
+          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+        ),
+      ],
+
       plugins: {
         introspection: {
           minify: true,
@@ -15,6 +101,13 @@ module.exports = {
     },
 
     [path.join(__dirname, "core", "schema", "schema.ts")]: {
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+        ...plugins.map(
+          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+        ),
+      ],
+
       plugins: {
         typescript: {
           immutableTypes: true,
@@ -23,10 +116,7 @@ module.exports = {
           preResolveTypes: true,
           useTypeImports: true,
           useIndexTypes: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-            TaskController: "./types#TaskController",
-          },
+          scalars,
         },
         add: {
           content: [
@@ -37,13 +127,26 @@ module.exports = {
     },
 
     [path.join(__dirname, "dist", "core", "schema", "schema.graphql")]: {
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+        ...plugins.map(
+          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+        ),
+      ],
+
       plugins: {
         "schema-ast": {},
       },
     },
 
     [path.join(__dirname, "core", "client", "schema", "types.ts")]: {
-      documents: path.join(__dirname, "core", "client", "schema", "*.gql"),
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+        ...plugins.map(
+          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+        ),
+      ],
+
       plugins: {
         "typescript-apollo-client-helpers": {
           useTypeImports: true,
@@ -58,40 +161,20 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "core", "client", "schema")]: {
+    [path.join(__dirname, "core", "client", "schema", "operations.ts")]: {
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+      ],
+
       documents: path.join(__dirname, "core", "client", "schema", "*.gql"),
-      preset: "near-operation-file",
-      presetConfig: {
-        baseTypesPath: "~#schema",
-        extension: ".ts",
-        importTypesNamespace: "Schema",
-      },
-      plugins: {
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-          scalars: {
-            DateTime: "Schema.Scalars['DateTime']",
-            TaskController: "Schema.Scalars['TaskController']",
-          },
-        },
-        "typescript-react-apollo": {
-          useTypeImports: true,
-          withRefetchFn: true,
-        },
-        "add": {
-          content: [
-            "/* eslint-disable */",
-          ],
-        },
-      },
+      plugins: clientOperationPlugins,
     },
 
     [path.join(__dirname, "core", "server", "schema", "resolvers.ts")]: {
+      schema: [
+        path.join(__dirname, "core", "schema", "schema.graphql"),
+      ],
+
       plugins: {
         "typescript-resolvers": {
           contextType: "./context#ResolverContext",
@@ -127,268 +210,24 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "dist", "plugins", "bugzilla", "schema", "schema.graphql")]: {
-      schema: path.join(__dirname, "plugins", "bugzilla", "schema", "schema.graphql"),
-      plugins: {
-        "schema-ast": {},
-      },
-    },
-    [path.join(__dirname, "plugins", "bugzilla", "client", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "bugzilla", "schema", "schema.graphql"),
-      ],
-      documents: path.join(__dirname, "plugins", "bugzilla", "client", "operations.gql"),
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-        },
-        "typescript-react-apollo": {
-          useTypeImports: true,
-          withRefetchFn: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
-    [path.join(__dirname, "plugins", "bugzilla", "server", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "bugzilla", "schema", "schema.graphql"),
-      ],
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-resolvers": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
+    ...pluginTargets("bugzilla", {
+      BugzillaAccount: "./db/implementations#Account",
+      BugzillaSearch: "./db/implementations#Search",
+    }),
 
-    [path.join(__dirname, "dist", "plugins", "google", "schema", "schema.graphql")]: {
-      schema: path.join(__dirname, "plugins", "google", "schema", "schema.graphql"),
-      plugins: {
-        "schema-ast": {},
-      },
-    },
-    [path.join(__dirname, "plugins", "google", "client", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "google", "schema", "schema.graphql"),
-      ],
-      documents: path.join(__dirname, "plugins", "google", "client", "operations.gql"),
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-        },
-        "typescript-react-apollo": {
-          useTypeImports: true,
-          withRefetchFn: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
-    [path.join(__dirname, "plugins", "google", "server", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "google", "schema", "schema.graphql"),
-      ],
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-resolvers": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
+    ...pluginTargets("google", {
+      GoogleAccount: "./db/implementations#Account",
+      GoogleMailSearch: "./db/implementations#MailSearch",
+    }),
 
-    [path.join(__dirname, "dist", "plugins", "jira", "schema", "schema.graphql")]: {
-      schema: path.join(__dirname, "plugins", "jira", "schema", "schema.graphql"),
-      plugins: {
-        "schema-ast": {},
-      },
-    },
-    [path.join(__dirname, "plugins", "jira", "client", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "jira", "schema", "schema.graphql"),
-      ],
-      documents: path.join(__dirname, "plugins", "jira", "client", "operations.gql"),
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-        },
-        "typescript-react-apollo": {
-          useTypeImports: true,
-          withRefetchFn: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
-    [path.join(__dirname, "plugins", "jira", "server", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "jira", "schema", "schema.graphql"),
-      ],
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-resolvers": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
+    ...pluginTargets("jira", {
+      JiraAccount: "./db/implementations#Account",
+      JiraSearch: "./db/implementations#Search",
+    }),
 
-    [path.join(__dirname, "dist", "plugins", "phabricator", "schema", "schema.graphql")]: {
-      schema: path.join(__dirname, "plugins", "phabricator", "schema", "schema.graphql"),
-      plugins: {
-        "schema-ast": {},
-      },
-    },
-    [path.join(__dirname, "plugins", "phabricator", "client", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "phabricator", "schema", "schema.graphql"),
-      ],
-      documents: path.join(__dirname, "plugins", "phabricator", "client", "operations.gql"),
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-        },
-        "typescript-react-apollo": {
-          useTypeImports: true,
-          withRefetchFn: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
-    [path.join(__dirname, "plugins", "phabricator", "server", "schema.ts")]: {
-      schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        path.join(__dirname, "plugins", "phabricator", "schema", "schema.graphql"),
-      ],
-      plugins: {
-        "typescript": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          scalars: {
-            DateTime: "luxon#DateTime",
-          },
-        },
-        "typescript-resolvers": {
-          useIndexSignature: true,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-        },
-        "add": {
-          content: "/* eslint-disable */",
-        },
-      },
-    },
+    ...pluginTargets("phabricator", {
+      PhabricatorAccount: "./db/implementations#Account",
+      PhabricatorQuery: "./db/implementations#QueryClass",
+    }),
   },
 };

@@ -1,7 +1,6 @@
 import type { FileFields, ThreadFields } from "#plugins/google/schema";
+import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import type { GraphQLType } from "#utils";
-
-import type { GoogleAccount, GoogleMailSearch } from "../schema";
 
 export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches" | "loginUrl"> & {
   userId: string;

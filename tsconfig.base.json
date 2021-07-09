@@ -43,5 +43,8 @@
       "#plugins/phabricator/client": ["./plugins/phabricator/client/index.tsx"],
       "#plugins/phabricator/server": ["./plugins/phabricator/server/index.ts"],
     },
-  }
+  },
+  "exclude": [
+    "**/tsconfig.json",
+  ]
 }

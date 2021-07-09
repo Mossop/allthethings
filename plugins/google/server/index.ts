@@ -1,6 +1,3 @@
-import { promises as fs } from "fs";
-import path from "path";
-
 import type Koa from "koa";
 import koaMount from "koa-mount";
 
@@ -118,13 +115,6 @@ export class GooglePlugin extends BasePlugin implements ServerPlugin {
       }
     }
     await super.update(context);
-  }
-
-  public schema(): Promise<string> {
-    let schemaFile = path.join(__dirname, "..", "schema", "schema.graphql");
-    return fs.readFile(schemaFile, {
-      encoding: "utf8",
-    });
   }
 
   public resolvers(): Resolver<AuthedPluginContext> {

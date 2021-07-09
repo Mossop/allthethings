@@ -1,17 +1,17 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { URL } from "url";
 
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
-import { bestIcon, loadPageInfo } from "#server-utils";
-
-import { Search, Account } from "./db/implementations";
-import type { BugzillaAccountRecord } from "./db/types";
 import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
   MutationDeleteBugzillaAccountArgs,
   MutationDeleteBugzillaSearchArgs,
-} from "./schema";
+} from "#schema";
+import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+import { bestIcon, loadPageInfo } from "#server-utils";
+
+import { Search, Account } from "./db/implementations";
+import type { BugzillaAccountRecord } from "./db/types";
 
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {

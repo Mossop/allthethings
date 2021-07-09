@@ -3,16 +3,16 @@ import type { Update, Location } from "history";
 
 import { history } from "#ui";
 
-import type { Problem, State, User } from "../schema";
-import { buildState } from "../schema";
-import { client } from "../schema/client";
 import type {
+  Problem, State, User,
   ListContextStateQuery,
   ListContextStateQueryVariables,
-} from "../schema/queries";
+} from "../schema";
 import {
+  buildState,
   ListContextStateDocument,
-} from "../schema/queries";
+} from "../schema";
+import { client } from "../schema/client";
 import { SharedState, useSharedState } from "./sharedstate";
 import type { View } from "./view";
 import { urlToView } from "./view";
@@ -29,7 +29,6 @@ class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
 
   public constructor() {
-    console.log("init");
     let query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
       query: ListContextStateDocument,
       pollInterval: 5000,

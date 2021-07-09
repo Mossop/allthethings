@@ -6,6 +6,9 @@ import { DateTime } from "luxon";
 
 import type { IssueFields } from "#plugins/jira/schema";
 import { TaskController } from "#schema";
+import type {
+  JiraAccountParams,
+} from "#schema";
 import type { AuthedPluginContext, PluginContext } from "#server-utils";
 import {
   BaseList,
@@ -15,18 +18,13 @@ import {
   ItemsTable,
   OwnedItemsTable,
 } from "#server-utils";
-import type { GraphQLResolver, GraphQLType } from "#utils";
 
-import type {
-  JiraAccount,
-  JiraAccountParams,
-  JiraSearch,
-} from "../schema";
+import type { JiraAccountResolvers, JiraSearchResolvers } from "../schema";
 import type { JiraAccountRecord, JiraIssueRecord, JiraSearchRecord } from "./types";
 
 type JiraIssue = Version3Models.IssueBean;
 
-export class Account extends BaseAccount implements GraphQLResolver<JiraAccount> {
+export class Account extends BaseAccount implements JiraAccountResolvers {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   public constructor(
@@ -140,7 +138,7 @@ export class Account extends BaseAccount implements GraphQLResolver<JiraAccount>
   }
 }
 
-export class Search extends BaseList<JiraIssue[]> implements GraphQLType<JiraSearch> {
+export class Search extends BaseList<JiraIssue[]> implements JiraSearchResolvers {
   public static readonly store = new OwnedItemsTable(Account.store, classBuilder(Search), "Search");
 
   public constructor(

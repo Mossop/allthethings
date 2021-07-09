@@ -1,13 +1,13 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { BugzillaAccount } from "#schema";
 import { RadioGroupInput, TextFieldInput, Dialog, useBoolState, FormState } from "#ui";
 
-import type { BugzillaAccount } from "../schema";
 import {
   refetchListBugzillaAccountsQuery,
   useCreateBugzillaAccountMutation,
-} from "../schema";
+} from "../operations";
 
 enum AuthType {
   Public = "public",

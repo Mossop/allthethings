@@ -1,6 +1,10 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type {
+  JiraAccount,
+  JiraSearch,
+} from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -9,14 +13,10 @@ import {
   FormState,
 } from "#ui";
 
-import type {
-  JiraAccount,
-  JiraSearch,
-} from "../schema";
 import {
   refetchListJiraAccountsQuery,
   useCreateJiraSearchMutation,
-} from "../schema";
+} from "../operations";
 
 interface SearchDialogProps {
   account: JiraAccount;

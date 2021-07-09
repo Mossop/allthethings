@@ -126,7 +126,6 @@ export interface ServerPluginExport {
 
 export interface ServerPlugin {
   readonly startup?: PluginField<void>;
-  readonly schema?: PluginField<string>;
   readonly resolvers?: PluginField<Resolver<AuthedPluginContext>>;
   readonly middleware?: PluginWebMiddleware;
   readonly clientScripts?: PluginField<string[], [ctx: Koa.Context]>;

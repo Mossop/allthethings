@@ -1,9 +1,8 @@
 import type { Bug as BugzillaAPIBug } from "bugzilla";
 
 import type { SearchType } from "#plugins/bugzilla/schema";
+import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import type { GraphQLType } from "#utils";
-
-import type { BugzillaAccount, BugzillaSearch } from "../schema";
 
 export type BugzillaAccountRecord = Omit<GraphQLType<BugzillaAccount>, "searches"> & {
   userId: string;

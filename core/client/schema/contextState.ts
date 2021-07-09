@@ -2,7 +2,7 @@
 import type { Overwrite } from "#utils";
 
 import type { GraphQLType } from ".";
-import type { ListContextStateQuery } from "./queries";
+import type { ListContextStateQuery } from "./operations";
 
 type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
 interface StateId {

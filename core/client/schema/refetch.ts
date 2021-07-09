@@ -6,7 +6,7 @@ import {
   refetchListContextStateQuery,
   refetchListInboxQuery,
   refetchListTaskListQuery,
-} from "./queries";
+} from "./operations";
 import type { Item, Section } from "./taskListState";
 import { sectionTaskList } from "./taskListState";
 

@@ -6,7 +6,7 @@ import { Styles, Loading, ReactMemo, Link } from "#ui";
 import type { ReactResult } from "#ui";
 
 import Page from "../components/Page";
-import { usePageContentQuery } from "../schema/queries";
+import { usePageContentQuery } from "../schema";
 import { useUrl, ViewType } from "../utils/view";
 import NotFound from "./NotFound";
 

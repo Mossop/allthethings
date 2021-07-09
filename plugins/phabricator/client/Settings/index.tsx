@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 
+import type { PhabricatorAccount } from "#schema";
 import type { ReactResult } from "#ui";
 import { useSetSettingsPage, SettingsPageItem, useBoolState } from "#ui";
 
 import Icon from "../Icon";
-import type { PhabricatorAccount } from "../schema";
-import { useListPhabricatorAccountsQuery } from "../schema";
+import { useListPhabricatorAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -20,7 +20,7 @@ export function SettingsPages(): ReactResult {
 
   let onAccountCreated = useCallback((account: Omit<PhabricatorAccount, "username">) => {
     closeAccountDialog();
-    setSettingsPage(account.id, "@allthethings/phabricator-server");
+    setSettingsPage(account.id, "phabricator");
   }, [closeAccountDialog, setSettingsPage]);
 
   let { data } = useListPhabricatorAccountsQuery();
@@ -30,7 +30,7 @@ export function SettingsPages(): ReactResult {
     {
       accounts.map((account: PhabricatorAccount) => <SettingsPageItem
         key={account.id}
-        pluginId="@allthethings/phabricator-server"
+        pluginId="phabricator"
         page={account.id}
         icon={account.icon}
       >

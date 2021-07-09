@@ -3,9 +3,8 @@ import type { Overwrite, ArrayContents } from "#utils";
 
 import type { GraphQLType } from ".";
 import type { Inbox, TaskList } from "./contextState";
-import type { ClientItemFieldsFragment } from "./fragments";
-import type { ListTaskListQuery } from "./queries";
-import { useListTaskListQuery } from "./queries";
+import type { ClientItemFieldsFragment, ListTaskListQuery } from "./operations";
+import { useListTaskListQuery } from "./operations";
 
 type StateQuery = ListTaskListQuery;
 type StateQuery$TaskList = NonNullable<StateQuery["taskList"]>;

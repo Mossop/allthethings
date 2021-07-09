@@ -1,11 +1,11 @@
 import { useCallback } from "react";
 
+import type { BugzillaAccount } from "#schema";
 import type { ReactResult } from "#ui";
 import { useSetSettingsPage, SettingsPageItem, useBoolState } from "#ui";
 
 import Icon from "../Icon";
-import type { BugzillaAccount } from "../schema";
-import { useListBugzillaAccountsQuery } from "../schema";
+import { useListBugzillaAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -20,7 +20,7 @@ export function SettingsPages(): ReactResult {
 
   let onAccountCreated = useCallback((account: Omit<BugzillaAccount, "username">) => {
     closeAccountDialog();
-    setSettingsPage(account.id, "@allthethings/bugzilla-server");
+    setSettingsPage(account.id, "bugzilla");
   }, [closeAccountDialog, setSettingsPage]);
 
   let { data } = useListBugzillaAccountsQuery();
@@ -30,7 +30,7 @@ export function SettingsPages(): ReactResult {
     {
       accounts.map((account: Omit<BugzillaAccount, "username">) => <SettingsPageItem
         key={account.id}
-        pluginId="@allthethings/bugzilla-server"
+        pluginId="bugzilla"
         page={account.id}
         icon={account.icon ?? <Icon/>}
       >

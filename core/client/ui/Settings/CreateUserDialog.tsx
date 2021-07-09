@@ -9,7 +9,7 @@ import {
 } from "#ui";
 
 import { useCreateUserMutation } from "../../schema";
-import { refetchListUsersQuery } from "../../schema/queries";
+import { refetchListUsersQuery } from "../../schema";
 
 interface CreateUserProps {
   onClosed: () => void;

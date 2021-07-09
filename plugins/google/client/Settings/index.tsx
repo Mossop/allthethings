@@ -1,9 +1,9 @@
+import type { GoogleAccount } from "#schema";
 import type { ReactResult } from "#ui";
 import { SettingsPageItem } from "#ui";
 
 import Google from "../logos/Google";
-import type { GoogleAccount } from "../schema";
-import { useListGoogleAccountsQuery, useRequestLoginUrlQuery } from "../schema";
+import { useListGoogleAccountsQuery, useRequestLoginUrlQuery } from "../operations";
 import AccountSettings from "./Account";
 
 export function SettingsPages(): ReactResult {
@@ -16,7 +16,7 @@ export function SettingsPages(): ReactResult {
     {
       accounts.map((account: GoogleAccount) => <SettingsPageItem
         key={account.id}
-        pluginId="@allthethings/google-server"
+        pluginId="google"
         page={account.id}
         icon={account.avatar ?? <Google/>}
       >

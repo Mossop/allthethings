@@ -1,20 +1,15 @@
 import { render } from "react-dom";
 
-import BugzillaPlugin from "#plugins/bugzilla/client";
-import GooglePlugin from "#plugins/google/client";
-import JiraPlugin from "#plugins/jira/client";
-import PhabricatorPlugin from "#plugins/phabricator/client";
 import { PluginManager } from "#ui";
 
-import App from "./App";
-import { connect } from "./schema";
-
 async function init(): Promise<void> {
-  let client = connect();
-  await PluginManager.registerPlugin(BugzillaPlugin);
-  await PluginManager.registerPlugin(GooglePlugin);
-  await PluginManager.registerPlugin(JiraPlugin);
-  await PluginManager.registerPlugin(PhabricatorPlugin);
+  await PluginManager.registerPlugin((await import("#plugins/bugzilla/client")).default);
+  await PluginManager.registerPlugin((await import("#plugins/google/client")).default);
+  await PluginManager.registerPlugin((await import("#plugins/jira/client")).default);
+  await PluginManager.registerPlugin((await import("#plugins/phabricator/client")).default);
+
+  let { client } = await import("./schema");
+  let { default: App } = await import("./App");
 
   render(
     <App client={client}/>,

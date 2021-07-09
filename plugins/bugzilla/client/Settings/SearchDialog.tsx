@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -9,11 +10,10 @@ import {
   FormState,
 } from "#ui";
 
-import type { BugzillaAccount, BugzillaSearch } from "../schema";
 import {
   refetchListBugzillaAccountsQuery,
   useCreateBugzillaSearchMutation,
-} from "../schema";
+} from "../operations";
 
 interface SearchDialogProps {
   account: Omit<BugzillaAccount, "username">;

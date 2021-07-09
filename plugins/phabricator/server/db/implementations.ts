@@ -15,6 +15,7 @@ import { DateTime } from "luxon";
 
 import type { RevisionFields } from "#plugins/phabricator/schema";
 import { TaskController } from "#schema";
+import type { CreatePhabricatorAccountParams } from "#schema";
 import type { AuthedPluginContext, PluginContext } from "#server-utils";
 import {
   bestIcon, loadPageInfo,
@@ -24,16 +25,15 @@ import {
   ItemsTable,
   classBuilder,
 } from "#server-utils";
-import type { GraphQLResolver } from "#utils";
 
-import type { PhabricatorAccount, CreatePhabricatorAccountParams } from "../schema";
+import type { PhabricatorAccountResolvers } from "../schema";
 import type {
   PhabricatorAccountRecord,
   PhabricatorQueryRecord,
   PhabricatorRevisionRecord,
 } from "./types";
 
-export class Account extends BaseAccount implements GraphQLResolver<PhabricatorAccount> {
+export class Account extends BaseAccount implements PhabricatorAccountResolvers {
   public static readonly store = new ItemsTable(classBuilder(Account), "Account");
 
   public constructor(
@@ -136,7 +136,7 @@ export class Account extends BaseAccount implements GraphQLResolver<PhabricatorA
   }
 }
 
-interface QueryClass {
+export interface QueryClass {
   new (account: Account, record: PhabricatorQueryRecord): Query;
 
   readonly queryId: string;

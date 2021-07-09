@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -9,11 +10,10 @@ import {
   FormState,
 } from "#ui";
 
-import type { GoogleAccount, GoogleMailSearch } from "../schema";
 import {
   refetchListGoogleAccountsQuery,
   useCreateGoogleMailSearchMutation,
-} from "../schema";
+} from "../operations";
 
 interface SearchDialogProps {
   account: GoogleAccount;
