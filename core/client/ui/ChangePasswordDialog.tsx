@@ -6,7 +6,7 @@ import {
   ReactMemo, Dialog,
   TextFieldInput,
   FormState,
-} from "#ui";
+} from "#client-utils";
 
 import { useChangePasswordMutation } from "../schema";
 

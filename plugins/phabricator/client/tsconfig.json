@@ -2,7 +2,7 @@
   "extends": "../../../tsconfig.client.json",
   "references": [
     { "path": "../../../core/schema" },
-    { "path": "../../../core/ui" },
+    { "path": "../../../core/client-utils" },
     { "path": "../schema" }
   ]
 }

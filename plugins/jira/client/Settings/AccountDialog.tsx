@@ -2,7 +2,7 @@ import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import type { JiraAccount } from "#schema";
-import { TextFieldInput, Dialog, useBoolState, FormState } from "#ui";
+import { TextFieldInput, Dialog, useBoolState, FormState } from "#client-utils";
 
 import { refetchListJiraAccountsQuery, useCreateJiraAccountMutation } from "../operations";
 

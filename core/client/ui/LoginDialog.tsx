@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { TextFieldInput, ReactMemo, Dialog, FormState, useBoolState } from "#ui";
+import { TextFieldInput, ReactMemo, Dialog, FormState, useBoolState } from "#client-utils";
 
 import { useLoginMutation, refetchListContextStateQuery } from "../schema";
 

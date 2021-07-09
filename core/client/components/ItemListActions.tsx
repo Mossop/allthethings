@@ -10,7 +10,7 @@ import {
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { useMemo } from "react";
 
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 import {
   Icons,
   Styles,
@@ -19,7 +19,7 @@ import {
   bindTrigger,
   useMenuState,
   Menu,
-} from "#ui";
+} from "#client-utils";
 
 import {
   isContext,

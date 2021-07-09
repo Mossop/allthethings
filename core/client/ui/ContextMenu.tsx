@@ -2,7 +2,7 @@ import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { forwardRef, useCallback, useMemo } from "react";
 
-import type { ReactRef, ReactResult } from "#ui";
+import type { ReactRef, ReactResult } from "#client-utils";
 import {
   Icons,
   Styles,
@@ -12,7 +12,7 @@ import {
   useMenuState,
   bindTrigger,
   useBoolState,
-} from "#ui";
+} from "#client-utils";
 
 import type { Context } from "../schema";
 import { nameSorted } from "../utils/collections";

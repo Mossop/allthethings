@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
 import type { JiraAccount } from "#schema";
-import type { ReactResult } from "#ui";
-import { useBoolState, useSetSettingsPage, SettingsPageItem } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { useBoolState, useSetSettingsPage, SettingsPageItem } from "#client-utils";
 
 import Icon from "../Icon";
 import { useListJiraAccountsQuery } from "../operations";

@@ -1,5 +1,5 @@
 import type { GoogleFields } from "#plugins/google/schema";
-import type { ClientPlugin, PluginItemProps, ReactResult } from "#ui";
+import type { ClientPlugin, PluginItemProps, ReactResult } from "#client-utils";
 
 import File from "./File";
 import { SettingsPage, SettingsPages } from "./Settings";

@@ -3,8 +3,8 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import UnreadMailIcon from "@material-ui/icons/Mail";
 
 import type { ThreadFields } from "#plugins/google/schema";
-import type { ReactResult } from "#ui";
-import { Styles, ReactMemo } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { Styles, ReactMemo } from "#client-utils";
 
 import GmailIcon from "./logos/Gmail";
 

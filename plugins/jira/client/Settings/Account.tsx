@@ -5,7 +5,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
 import type { JiraAccount, JiraSearch } from "#schema";
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 import {
   Heading,
   ImageIcon,
@@ -17,7 +17,7 @@ import {
   SettingsListSection,
   SubHeading,
   SettingsListItem,
-} from "#ui";
+} from "#client-utils";
 
 import Icon from "../Icon";
 import {

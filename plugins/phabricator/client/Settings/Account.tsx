@@ -3,7 +3,7 @@ import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import { useCallback, useMemo } from "react";
 
 import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 import {
   Heading,
   ImageIcon,
@@ -14,7 +14,7 @@ import {
   SettingsListSection,
   SubHeading,
   ReactMemo,
-} from "#ui";
+} from "#client-utils";
 
 import {
   useUpdatePhabricatorAccountMutation,

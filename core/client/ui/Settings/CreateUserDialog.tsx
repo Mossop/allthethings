@@ -6,7 +6,7 @@ import {
   ReactMemo, Dialog,
   TextFieldInput,
   BooleanCheckboxInput,
-} from "#ui";
+} from "#client-utils";
 
 import { useCreateUserMutation, refetchListUsersQuery } from "../../schema";
 

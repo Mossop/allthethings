@@ -1,7 +1,7 @@
 import type { ApolloQueryResult } from "@apollo/client";
 import type { Update, Location } from "history";
 
-import { history } from "#ui";
+import { history } from "#client-utils";
 
 import type {
   Problem, State, User,

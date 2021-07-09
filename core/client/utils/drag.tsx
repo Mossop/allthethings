@@ -2,8 +2,8 @@
 import type { Ref } from "react";
 import { useState, useMemo, useEffect, useRef, createContext, useContext } from "react";
 
-import type { ReactResult, ReactChildren } from "#ui";
-import { ReactMemo } from "#ui";
+import type { ReactResult, ReactChildren } from "#client-utils";
+import { ReactMemo } from "#client-utils";
 
 import type {
   GraphQLType,

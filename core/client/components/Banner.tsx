@@ -1,8 +1,8 @@
 import { AppBar, Button, createStyles, makeStyles } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 
-import { Styles, ReactMemo, useBoolState, Link } from "#ui";
-import type { ReactResult } from "#ui";
+import { Styles, ReactMemo, useBoolState, Link } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import ContextMenu from "../ui/ContextMenu";
 import LoginDialog from "../ui/LoginDialog";

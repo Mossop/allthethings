@@ -5,8 +5,8 @@ import { DateTime } from "luxon";
 import { useCallback } from "react";
 
 import { TaskController } from "#schema";
-import { Icons, ReactMemo } from "#ui";
-import type { ReactResult } from "#ui";
+import { Icons, ReactMemo } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import { useEditTaskInfoMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";

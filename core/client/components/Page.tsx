@@ -2,8 +2,8 @@ import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import type { ReactNode } from "react";
 
-import { ReactMemo, Styles } from "#ui";
-import type { ReactResult } from "#ui";
+import { ReactMemo, Styles } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import ProjectList from "../ui/ProjectList";
 import { useMaybeUser } from "../utils/globalState";

@@ -2,8 +2,8 @@ import type { Theme } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core";
 import { useCallback } from "react";
 
-import type { ReactResult } from "#ui";
-import { usePlugin, ReactMemo } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { usePlugin, ReactMemo } from "#client-utils";
 import type { Overwrite } from "#utils";
 
 import { refetchQueriesForItem } from "../schema";

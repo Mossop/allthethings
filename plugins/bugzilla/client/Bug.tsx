@@ -5,12 +5,12 @@ import {
 } from "@material-ui/core";
 
 import type { BugFields } from "#plugins/bugzilla/schema";
-import type { PluginItemProps, ReactResult } from "#ui";
+import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
-} from "#ui";
+} from "#client-utils";
 
 import Icon from "./Icon";
 

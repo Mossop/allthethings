@@ -15,8 +15,8 @@ import {
   Heading,
   ReactMemo,
   SettingsPage,
-} from "#ui";
-import type { ReactResult } from "#ui";
+} from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import { useDeleteUserMutation, refetchListUsersQuery, useListUsersQuery } from "../../schema";
 import { useUser } from "../../utils/globalState";

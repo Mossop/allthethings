@@ -22,7 +22,7 @@
     "strictBindCallApply": true,
 
     "paths": {
-      "#ui": ["./core/ui/index.ts"],
+      "#client-utils": ["./core/client-utils/index.ts"],
       "#utils": ["./core/utils/index.ts"],
       "#schema": ["./core/schema/index.ts"],
 

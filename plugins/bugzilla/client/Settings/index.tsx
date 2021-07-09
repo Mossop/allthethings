@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
 import type { BugzillaAccount } from "#schema";
-import type { ReactResult } from "#ui";
-import { useSetSettingsPage, SettingsPageItem, useBoolState } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { useSetSettingsPage, SettingsPageItem, useBoolState } from "#client-utils";
 
 import Icon from "../Icon";
 import { useListBugzillaAccountsQuery } from "../operations";

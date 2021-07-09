@@ -1,6 +1,6 @@
 import { render } from "react-dom";
 
-import { PluginManager } from "#ui";
+import { PluginManager } from "#client-utils";
 
 import App from "./App";
 import { client } from "./schema";

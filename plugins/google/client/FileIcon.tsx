@@ -1,5 +1,5 @@
-import type { ReactResult } from "#ui";
-import { ReactMemo } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { ReactMemo } from "#client-utils";
 
 import DocsIcon from "./logos/Docs";
 import DriveIcon from "./logos/Drive";

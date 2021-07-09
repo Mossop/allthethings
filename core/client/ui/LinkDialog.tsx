@@ -8,7 +8,7 @@ import {
   Dialog,
   BooleanCheckboxInput,
   FormState,
-} from "#ui";
+} from "#client-utils";
 
 import { useCreateLinkMutation, refetchQueriesForSection, isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";

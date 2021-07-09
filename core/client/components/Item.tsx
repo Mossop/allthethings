@@ -18,7 +18,7 @@ import { TaskController } from "#schema";
 import type {
   ReactResult,
   ReactRef,
-} from "#ui";
+} from "#client-utils";
 import {
   Icons,
   Styles,
@@ -26,7 +26,7 @@ import {
   useMenuState,
   bindTrigger,
   Menu,
-} from "#ui";
+} from "#client-utils";
 
 import type { Item } from "../schema";
 import {

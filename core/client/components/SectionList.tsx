@@ -4,8 +4,8 @@ import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
 
-import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "#ui";
-import type { ReactResult } from "#ui";
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import { useEditSectionMutation } from "../schema";
 import type { Item, Section } from "../schema";

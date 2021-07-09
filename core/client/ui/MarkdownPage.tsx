@@ -2,8 +2,8 @@ import type { Theme } from "@material-ui/core";
 import { Divider, makeStyles, createStyles } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 
-import { Styles, Loading, ReactMemo, Link } from "#ui";
-import type { ReactResult } from "#ui";
+import { Styles, Loading, ReactMemo, Link } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import Page from "../components/Page";
 import { usePageContentQuery } from "../schema";

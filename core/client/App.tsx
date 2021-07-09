@@ -9,7 +9,7 @@ import {
 import type { Theme } from "@material-ui/core";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 
 import ErrorHandler from "./ui/ErrorHandler";
 import Main from "./ui/Main";

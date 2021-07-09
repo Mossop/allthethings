@@ -12,8 +12,8 @@ import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
-import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "#ui";
-import type { ReactResult } from "#ui";
+import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import type { Inbox, TaskList } from "../schema";
 import { isInbox } from "../schema";

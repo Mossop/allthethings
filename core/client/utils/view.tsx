@@ -1,4 +1,4 @@
-import { pushUrl, replaceUrl } from "#ui";
+import { pushUrl, replaceUrl } from "#client-utils";
 
 import type { Context, Project, TaskList, User } from "../schema";
 import { isProject } from "../schema";

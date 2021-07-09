@@ -6,12 +6,12 @@ import {
 import { RevisionStatus } from "conduit-api";
 
 import type { RevisionFields } from "#plugins/phabricator/schema";
-import type { PluginItemProps, ReactResult } from "#ui";
+import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
-} from "#ui";
+} from "#client-utils";
 
 import Icon from "./Icon";
 

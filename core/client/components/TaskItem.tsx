@@ -1,5 +1,5 @@
-import { ReactMemo } from "#ui";
-import type { ReactResult } from "#ui";
+import { ReactMemo } from "#client-utils";
+import type { ReactResult } from "#client-utils";
 import type { Overwrite } from "#utils";
 
 import type { TaskItem } from "../schema";

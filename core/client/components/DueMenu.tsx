@@ -20,8 +20,8 @@ import {
   ReactMemo,
   Menu,
   DateTimeDialog,
-} from "#ui";
-import type { ReactRef, ReactResult } from "#ui";
+} from "#client-utils";
+import type { ReactRef, ReactResult } from "#client-utils";
 
 import { useMarkItemDueMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";

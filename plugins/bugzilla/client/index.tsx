@@ -1,4 +1,4 @@
-import type { ClientPlugin, PluginItemProps, ReactResult } from "#ui";
+import type { ClientPlugin, PluginItemProps, ReactResult } from "#client-utils";
 
 import Bug from "./Bug";
 import { SettingsPages, SettingsPage } from "./Settings";

@@ -3,8 +3,8 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 
-import { Heading } from "#ui";
-import type { ReactChildren, ReactResult } from "#ui";
+import { Heading } from "#client-utils";
+import type { ReactChildren, ReactResult } from "#client-utils";
 
 import Page from "../components/Page";
 

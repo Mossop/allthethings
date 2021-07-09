@@ -8,7 +8,7 @@
   },
   "references": [
     { "path": "../schema" },
-    { "path": "../ui" },
+    { "path": "../client-utils" },
     { "path": "../utils" },
     { "path": "../../plugins/bugzilla/client" },
     { "path": "../../plugins/google/client" },

@@ -16,8 +16,8 @@ import {
   bindTrigger,
   ReactMemo,
   Menu,
-} from "#ui";
-import type { ReactResult } from "#ui";
+} from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import type { Item } from "../schema";
 import {

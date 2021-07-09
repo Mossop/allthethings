@@ -11,8 +11,8 @@ import type { ReactElement } from "react";
 import { useMemo, forwardRef } from "react";
 import mergeRefs from "react-merge-refs";
 
-import type { ReactResult, ReactRef } from "#ui";
-import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#ui";
+import type { ReactResult, ReactRef } from "#client-utils";
+import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#client-utils";
 
 import { useInboxContents } from "../schema";
 import type { Project, TaskList, Item } from "../schema";

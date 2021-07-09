@@ -1,6 +1,6 @@
 import type { GoogleAccount } from "#schema";
-import type { ReactResult } from "#ui";
-import { SettingsPageItem } from "#ui";
+import type { ReactResult } from "#client-utils";
+import { SettingsPageItem } from "#client-utils";
 
 import Google from "../logos/Google";
 import { useListGoogleAccountsQuery, useRequestLoginUrlQuery } from "../operations";

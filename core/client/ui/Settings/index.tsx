@@ -19,8 +19,8 @@ import {
   Icons,
   Styles,
   Text,
-} from "#ui";
-import type { ClientPlugin, ReactResult } from "#ui";
+} from "#client-utils";
+import type { ClientPlugin, ReactResult } from "#client-utils";
 
 import Page from "../../components/Page";
 import { useUser } from "../../utils/globalState";

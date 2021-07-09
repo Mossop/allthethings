@@ -6,12 +6,12 @@ import {
 } from "@material-ui/core";
 
 import type { IssueFields } from "#plugins/jira/schema";
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
-} from "#ui";
+} from "#client-utils";
 
 import Icon from "./Icon";
 

@@ -6,7 +6,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
 import type { GoogleAccount, GoogleMailSearch } from "#schema";
-import type { ReactResult } from "#ui";
+import type { ReactResult } from "#client-utils";
 import {
   Heading,
   ImageIcon,
@@ -16,7 +16,7 @@ import {
   Styles,
   SubHeading,
   useBoolState,
-} from "#ui";
+} from "#client-utils";
 
 import Google from "../logos/Google";
 import SearchDialog from "./SearchDialog";

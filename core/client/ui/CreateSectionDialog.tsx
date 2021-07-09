@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { Dialog, useBoolState, ReactMemo, TextFieldInput, FormState } from "#ui";
+import { Dialog, useBoolState, ReactMemo, TextFieldInput, FormState } from "#client-utils";
 
 import type { TaskList } from "../schema";
 import { refetchQueriesForSection, useCreateSectionMutation } from "../schema";

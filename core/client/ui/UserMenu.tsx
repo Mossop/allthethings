@@ -8,8 +8,8 @@ import {
   Menu,
   useMenuState,
   bindTrigger,
-} from "#ui";
-import type { ReactResult } from "#ui";
+} from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { useUser } from "../utils/globalState";

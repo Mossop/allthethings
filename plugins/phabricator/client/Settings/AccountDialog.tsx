@@ -11,8 +11,8 @@ import {
   FormState,
   ReactMemo,
   Checkbox,
-} from "#ui";
-import type { ReactResult } from "#ui";
+} from "#client-utils";
+import type { ReactResult } from "#client-utils";
 
 import {
   useListPhabricatorQueriesQuery,
