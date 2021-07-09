@@ -1,8 +1,7 @@
 import type { RevisionStatus } from "conduit-api";
 
-import type { GraphQLType } from "#utils";
-
 import type { PhabricatorAccount } from "#schema";
+import type { GraphQLType } from "#utils";
 
 export type PhabricatorAccountRecord =
   Omit<GraphQLType<PhabricatorAccount>, "icon" | "enabledQueries"> & {

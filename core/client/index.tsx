@@ -9,6 +9,7 @@ async function init(): Promise<void> {
   await PluginManager.registerPlugin((await import("#plugins/phabricator/client")).default);
 
   let { client } = await import("./schema");
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   let { default: App } = await import("./App");
 
   render(

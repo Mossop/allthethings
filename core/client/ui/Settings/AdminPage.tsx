@@ -18,8 +18,7 @@ import {
 } from "#ui";
 import type { ReactResult } from "#ui";
 
-import { useDeleteUserMutation } from "../../schema";
-import { refetchListUsersQuery, useListUsersQuery } from "../../schema";
+import { useDeleteUserMutation, refetchListUsersQuery, useListUsersQuery } from "../../schema";
 import { useUser } from "../../utils/globalState";
 import CreateUserDialog from "./CreateUserDialog";
 
