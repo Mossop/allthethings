@@ -45,7 +45,6 @@ export async function createWebServer(
     "/static",
     koaStatic(path.join(webRoot, "static"), {
       maxAge: 1000 * 60 * 60 * 365,
-      immutable: true,
     }),
   ));
 

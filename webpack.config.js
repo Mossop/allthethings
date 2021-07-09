@@ -71,7 +71,7 @@ module.exports = {
   output: {
     path: path.join(__dirname, "dist", "web", "app"),
     publicPath: "/app/",
-    filename: "[name].js",
+    filename: "[name].[chunkhash].js",
     crossOriginLoading: "anonymous",
     clean: true,
   },
