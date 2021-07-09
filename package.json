@@ -131,6 +131,7 @@
     "eslint-plugin-mossop": "github:Mossop/eslint-plugin-mossop#1.0.12",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
+    "fork-ts-checker-webpack-plugin": "^6.2.12",
     "graphql": "^15.0.0",
     "graphql-tag": "^2.0.0",
     "history": "^5.0.0",

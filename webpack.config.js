@@ -3,6 +3,7 @@ const fs = require("fs");
 const path = require("path");
 
 const CopyPlugin = require("copy-webpack-plugin");
+const ForkTsCheckerWebpackPlugin = require("fork-ts-checker-webpack-plugin");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
 const HtmlWebpackTagsPlugin = require("html-webpack-tags-plugin");
 const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
@@ -98,6 +99,7 @@ module.exports = {
         options: {
           configFile: tsConfig,
           projectReferences: true,
+          transpileOnly: true,
           compilerOptions: {
             emitDeclarationOnly: false,
           },
@@ -141,6 +143,11 @@ module.exports = {
     new DefinePlugin({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       SCHEMA_VERSION: schemaVersion,
+    }),
+    new ForkTsCheckerWebpackPlugin({
+      typescript: {
+        configFile: path.join(__dirname, "core", "client", "tsconfig.json"),
+      },
     }),
   ],
   optimization: {
