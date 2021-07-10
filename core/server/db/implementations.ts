@@ -8,6 +8,10 @@ import * as Db from "./types";
 
 export type ImplBuilder<I, T> = (dataSources: Src.AppDataSources, dbObject: Db.DbObject<T>) => I;
 
+interface ItemSetArgs {
+  filter?: Schema.ItemFilter | null;
+}
+
 // eslint-disable-next-line @typescript-eslint/ban-types
 function assertValid<T extends {}>(val: T | null | undefined): T {
   if (val === null || val === undefined) {
@@ -123,8 +127,8 @@ abstract class TaskListImpl<
     });
   }
 
-  public items(): Src.ItemSet {
-    return this.dataSources.items.sectionItems(this._id);
+  public items(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+    return this.dataSources.items.sectionItems(this._id, filter);
   }
 }
 
@@ -140,12 +144,12 @@ export class User extends BaseImpl<Db.UserDbTable>
     });
   }
 
-  public async inbox(): Promise<Src.ItemSet> {
-    return this.dataSources.items.sectionItems(null);
+  public async inbox(parent: unknown, { filter }: ItemSetArgs): Promise<Src.ItemSet> {
+    return this.dataSources.items.sectionItems(null, filter);
   }
 
-  public allItems(): Src.ItemSet {
-    return this.dataSources.items.userItems(this.id());
+  public allItems(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+    return this.dataSources.items.userItems(this.id(), filter);
   }
 
   public readonly email = fields<Db.UserDbTable>()("email");
@@ -176,8 +180,8 @@ export class Context
     return results.length ? results[0] : null;
   }
 
-  public rootItems(): Src.ItemSet {
-    return this.dataSources.items.contextItems(this.id());
+  public rootItems(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+    return this.dataSources.items.contextItems(this.id(), filter);
   }
 
   public override async edit(
@@ -248,8 +252,8 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     return this.dataSources.sections;
   }
 
-  public items(): Src.ItemSet {
-    return this.dataSources.items.sectionItems(this._id);
+  public items(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+    return this.dataSources.items.sectionItems(this._id, filter);
   }
 
   public override async edit(

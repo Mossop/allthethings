@@ -14,11 +14,9 @@ import mergeRefs from "react-merge-refs";
 import type { ReactResult, ReactRef } from "#client-utils";
 import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#client-utils";
 
-import { useInboxContents } from "../schema";
-import type { Project, TaskList, Item } from "../schema";
+import type { Project, TaskList } from "../schema";
 import { nameSorted } from "../utils/collections";
 import { useDragSource, useDragState, useDropTarget } from "../utils/drag";
-import { Filters, isVisible } from "../utils/filter";
 import { useUser } from "../utils/globalState";
 import {
   useCurrentContext,
@@ -168,7 +166,7 @@ const ProjectItem = ReactMemo(function ProjectItem({
       label={project.name}
       selected={selected}
       depth={depth}
-      taskCount={project.remainingTasks}
+      taskCount={project.dueTasks}
       className={clsx(isDropping && classes.dropping, isDragging && classes.dragging)}
       icon={<Icons.Project className={classes.grabHandle}/>}
     />
@@ -219,14 +217,9 @@ export default ReactMemo(function ProjectList(): ReactResult {
     dropRef: rootDropRef,
   } = useDropTarget(context);
 
-  let inboxContents = useInboxContents();
   let inboxLabel = useMemo(() => {
-    let items = inboxContents.items.filter(
-      (item: Item): boolean => isVisible(item, Filters.Normal),
-    );
-
-    return items.length ? `Inbox (${items.length})` : "Inbox";
-  }, [inboxContents]);
+    return user.inbox.itemCount ? `Inbox (${user.inbox.itemCount})` : "Inbox";
+  }, [user]);
 
   return <Paper
     elevation={2}
@@ -249,7 +242,7 @@ export default ReactMemo(function ProjectList(): ReactResult {
         url={tasksUrl}
         icon={<Icons.Project/>}
         selected={view.type == ViewType.TaskList && taskList?.id == context.id}
-        taskCount={context.remainingTasks}
+        taskCount={context.dueTasks}
         label={context.name}
         depth={0}
         className={clsx(isRootDropping && classes.dropping)}

@@ -62,6 +62,16 @@ export type Context = TaskList & {
 };
 
 
+export type ContextItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
+
+export type ContextRootItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
+
 export type ContextProjectByIdArgs = {
   id: Scalars['ID'];
 };
@@ -119,6 +129,15 @@ export type Item = {
 
 export type ItemDetail = PluginDetail | LinkDetail | NoteDetail | FileDetail;
 
+export type ItemFilter = {
+  readonly isSnoozed: Maybe<Scalars['Boolean']>;
+  readonly isArchived: Maybe<Scalars['Boolean']>;
+  readonly dueBefore: Maybe<Scalars['DateTime']>;
+  readonly dueAfter: Maybe<Scalars['DateTime']>;
+  readonly isTask: Maybe<Scalars['Boolean']>;
+  readonly isPending: Maybe<Scalars['Boolean']>;
+};
+
 export type ItemParams = {
   readonly summary: Scalars['String'];
   readonly archived: Maybe<Scalars['DateTime']>;
@@ -129,31 +148,6 @@ export type ItemSet = {
   readonly __typename: 'ItemSet';
   readonly count: Scalars['Int'];
   readonly items: ReadonlyArray<Item>;
-  readonly snoozed: ItemSet;
-  readonly archived: ItemSet;
-  readonly due: ItemSet;
-  readonly isTask: ItemSet;
-};
-
-
-export type ItemSetSnoozedArgs = {
-  isSnoozed: Maybe<Scalars['Boolean']>;
-};
-
-
-export type ItemSetArchivedArgs = {
-  isArchived: Maybe<Scalars['Boolean']>;
-};
-
-
-export type ItemSetDueArgs = {
-  before: Maybe<Scalars['DateTime']>;
-  after: Maybe<Scalars['DateTime']>;
-};
-
-
-export type ItemSetIsTaskArgs = {
-  done: Maybe<Scalars['Boolean']>;
 };
 
 export type JiraAccount = {
@@ -527,6 +521,11 @@ export type Project = TaskList & {
   readonly taskList: TaskList;
 };
 
+
+export type ProjectItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
 export type ProjectParams = {
   readonly name: Scalars['String'];
 };
@@ -559,6 +558,11 @@ export type Section = {
   readonly name: Scalars['String'];
 };
 
+
+export type SectionItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
 export type SectionParams = {
   readonly name: Scalars['String'];
 };
@@ -582,6 +586,11 @@ export type TaskList = {
   readonly items: ItemSet;
 };
 
+
+export type TaskListItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
 export type UpdatePhabricatorAccountParams = {
   readonly url: Maybe<Scalars['String']>;
   readonly apiKey: Maybe<Scalars['String']>;
@@ -601,4 +610,14 @@ export type User = {
   readonly jiraAccounts: ReadonlyArray<JiraAccount>;
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
   readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
+};
+
+
+export type UserAllItemsArgs = {
+  filter: Maybe<ItemFilter>;
+};
+
+
+export type UserInboxArgs = {
+  filter: Maybe<ItemFilter>;
 };

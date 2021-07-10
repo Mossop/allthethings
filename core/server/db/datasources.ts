@@ -6,12 +6,7 @@ import type { Duration } from "luxon";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
-import type {
-  ItemSetArchivedArgs,
-  ItemSetDueArgs,
-  ItemSetIsTaskArgs,
-  ItemSetSnoozedArgs,
-} from "#schema";
+import type { ItemFilter } from "#schema";
 import type { PluginList } from "#server-utils";
 
 import type { ResolverContext } from "../schema/context";
@@ -60,30 +55,60 @@ async function count(query: Knex.QueryBuilder): Promise<number | null> {
 
 export type PartialId<T> = Omit<T, "id"> & { id?: string };
 
-interface ItemSetState {
-  taskJoined?: boolean;
+function isSet(val: unknown): boolean {
+  return val !== undefined && val !== null;
 }
 
 export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
+  protected readonly query: Knex.QueryBuilder;
+
   public constructor(
-    protected readonly query: Knex.QueryBuilder,
-    protected readonly state: ItemSetState = {},
+    query: Knex.QueryBuilder,
+    filter: ItemFilter | null = null,
   ) {
+    if (filter) {
+      if (isSet(filter.isTask) || filter.dueAfter || filter.dueBefore ||
+        filter.isPending === false) {
+        query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
+
+        if (filter.dueBefore || filter.dueAfter) {
+          query = query.whereNotNull("TaskInfo.due");
+        }
+
+        if (filter.dueBefore) {
+          query = query.where("TaskInfo.due", "<=", filter.dueBefore);
+        }
+
+        if (filter.dueAfter) {
+          query = query.where("TaskInfo.due", ">", filter.dueAfter);
+        }
+
+        if (filter.isPending === false) {
+          query = query.whereNotNull("TaskInfo.done");
+        }
+      } else if (filter.isPending) {
+        query = query.leftJoin("TaskInfo", "TaskInfo.id", "Item.id")
+          .whereNull("TaskInfo.done");
+      }
+
+      if (filter.isSnoozed === true) {
+        query = query.whereNotNull("Item.snoozed");
+      } else if (filter.isSnoozed === false) {
+        query = query.whereNull("Item.snoozed");
+      }
+
+      if (filter.isArchived === true) {
+        query = query.whereNotNull("Item.archived");
+      } else if (filter.isArchived === false) {
+        query = query.whereNull("Item.archived");
+      }
+    }
+
+    this.query = query;
   }
 
-  protected inner(query: Knex.QueryBuilder, state: Partial<ItemSetState> = {}): ItemSet {
-    return new ItemSet(query, {
-      ...this.state,
-      ...state,
-    });
-  }
-
-  public async count(
-    parent: ItemSet,
-    args: unknown,
-    context: ResolverContext,
-  ): Promise<number> {
-    return (await this.items(parent, args, context)).length;
+  public async count(): Promise<number> {
+    return (await this.records()).length;
   }
 
   public async records(): Promise<DbObject<Db.ItemDbTable>[]> {
@@ -99,92 +124,6 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
     return records.map(
       (record: DbObject<Db.ItemDbTable>): Impl.Item => new Impl.Item(context.dataSources, record),
     );
-  }
-
-  public snoozed(
-    parent: ItemSet,
-    { isSnoozed }: Partial<ItemSetSnoozedArgs>,
-  ): ItemSet {
-    isSnoozed = isSnoozed ?? true;
-
-    if (isSnoozed) {
-      return this.inner(
-        this.query.clone()
-          .whereNotNull("Item.snoozed")
-          .where("Item.snoozed", ">", DateTime.now()),
-      );
-    }
-
-    return this.inner(
-      this.query.clone()
-        .where((builder: Knex.QueryBuilder) => {
-          void builder.whereNull("Item.snoozed")
-            .orWhere("Item.snoozed", "<=", DateTime.now());
-        }),
-    );
-  }
-
-  public archived(
-    parent: ItemSet,
-    { isArchived }: Partial<ItemSetArchivedArgs>,
-  ): ItemSet {
-    isArchived = isArchived ?? true;
-
-    if (isArchived) {
-      return this.inner(
-        this.query.clone()
-          .whereNotNull("Item.archived"),
-      );
-    }
-
-    return this.inner(
-      this.query.clone()
-        .whereNull("Item.archived"),
-    );
-  }
-
-  public due(
-    parent: ItemSet,
-    { before, after }: Partial<ItemSetDueArgs>,
-  ): ItemSet {
-    if (!before && !after) {
-      before = DateTime.now();
-    }
-
-    let query = this.query.clone();
-
-    if (!this.state.taskJoined) {
-      query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
-    }
-
-    if (before) {
-      query = query.where("TaskInfo.due", "<=", before);
-    }
-
-    if (after) {
-      query = query.where("TaskInfo.due", ">", after);
-    }
-
-    return this.inner(query, { taskJoined: true });
-  }
-
-  public isTask(
-    parent: ItemSet,
-    { done }: Partial<ItemSetIsTaskArgs>,
-  ): ItemSet {
-    let query = this.query.clone();
-
-    if (!this.state.taskJoined) {
-      query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
-    }
-
-    if (done === true) {
-      query = query.whereNotNull("TaskInfo.done");
-    } else if (done === false) {
-      query = query.whereNull("TaskInfo.done");
-    }
-
-    return this.inner(query, { taskJoined: true });
   }
 }
 
@@ -716,11 +655,11 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
     }
   }
 
-  public findItems(fields: Partial<DbObject<Db.ItemDbTable>>): ItemSet {
-    return new ItemSet(this.records.where(fields));
+  public findItems(fields: Partial<DbObject<Db.ItemDbTable>>, filter?: ItemFilter | null): ItemSet {
+    return new ItemSet(this.records.where(fields), filter);
   }
 
-  public sectionItems(section: string | null): ItemSet {
+  public sectionItems(section: string | null, filter?: ItemFilter | null): ItemSet {
     if (section) {
       return new ItemSet(
         this.records
@@ -729,6 +668,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
           .orderBy([
             { column: "SectionItems.index", order: "asc" },
           ]),
+        filter,
       );
     }
 
@@ -739,20 +679,22 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
         .orderBy([
           { column: "Item.created", order: "desc" },
         ]),
+      filter,
     );
   }
 
-  public projectItems(project: string): ItemSet {
+  public projectItems(project: string, filter?: ItemFilter | null): ItemSet {
     return new ItemSet(
       this.records
         .join("SectionItems", "Item.id", "SectionItems.id")
         .join("Section", "Section.id", "SectionItems.ownerId")
         .join("Project", "Project.id", "Section.ownerId")
         .where("Project.id", project),
+      filter,
     );
   }
 
-  public contextItems(context: string): ItemSet {
+  public contextItems(context: string, filter?: ItemFilter | null): ItemSet {
     return new ItemSet(
       this.records
         .join("SectionItems", "Item.id", "SectionItems.id")
@@ -760,13 +702,15 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
         .join("Project", "Project.id", "Section.ownerId")
         .join("Context", "Context.id", "Project.contextId")
         .where("Context.id", context),
+      filter,
     );
   }
 
-  public userItems(user: string): ItemSet {
+  public userItems(user: string, filter?: ItemFilter | null): ItemSet {
     return new ItemSet(
       this.records
         .where("Item.userId", user),
+      filter,
     );
   }
 }

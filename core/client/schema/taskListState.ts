@@ -26,7 +26,6 @@ export type TaskInfo = Overwrite<StateQuery$TaskList$Item$TaskInfo, {
 }>;
 
 export type Section = Overwrite<StateQuery$TaskList$Section, {
-  remainingTasks: number;
   items: Item[];
   taskList: TaskList;
 }>;
@@ -126,7 +125,6 @@ function buildSection(taskList: TaskList, queryResult: StateQuery$TaskList$Secti
     ...queryResult,
     taskList,
     items: [],
-    remainingTasks: queryResult.items.remaining.count,
   };
 
   section.items = queryResult.items.items.map(buildItem.bind(null, section));

@@ -1,5 +1,6 @@
-import type { ApolloQueryResult } from "@apollo/client";
+import type { ApolloQueryResult, ObservableQuery } from "@apollo/client";
 import type { Update, Location } from "history";
+import { DateTime } from "luxon";
 
 import { history } from "#client-utils";
 
@@ -22,6 +23,8 @@ import { urlToView } from "./view";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let SCHEMA_VERSION: string;
 
+const TIMEOUT_PADDING = 1000;
+
 function urlForLocation(location: Location): URL {
   return new URL(`${location.pathname}${location.search}${location.hash}`, document.URL);
 }
@@ -32,14 +35,16 @@ export type AppState = State & {
 
 class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
+  private readonly query: ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables>;
 
   public constructor() {
-    let query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
+    this.query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
       query: ListContextStateDocument,
+      variables: this.getVariables(),
       pollInterval: 5000,
     });
 
-    query.subscribe((result: ApolloQueryResult<ListContextStateQuery>): void => {
+    this.query.subscribe((result: ApolloQueryResult<ListContextStateQuery>): void => {
       let userState = buildState(result.data);
       this.appState.set({
         ...userState,
@@ -57,6 +62,23 @@ class GlobalStateManager {
         view: urlToView(this.appState.value.user, urlForLocation(location)),
       });
     });
+  }
+
+  private getVariables(): ListContextStateQueryVariables {
+    let today = DateTime.now().endOf("day");
+    let now = DateTime.now();
+    window.setTimeout(
+      () => this.updateVariables(),
+      TIMEOUT_PADDING + (today.toMillis() - now.toMillis()),
+    );
+
+    return {
+      dueBefore: today,
+    };
+  }
+
+  private updateVariables(): void {
+    void this.query.refetch(this.getVariables());
   }
 
   public get user(): User | null {

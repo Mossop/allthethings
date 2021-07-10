@@ -2,13 +2,17 @@ query SchemaVersion {
   schemaVersion
 }
 
-query ListContextState {
+query ListContextState($dueBefore: DateTime!) {
   user {
     id
     email
     isAdmin
 
-    inbox{
+    inbox(filter: {
+      isArchived: false,
+      isSnoozed: false,
+      isPending: true,
+    }) {
       count
     }
 
@@ -17,10 +21,12 @@ query ListContextState {
       stub
       name
 
-      remainingTasks: items {
-        isTask(done: false) {
-          count
-        }
+      dueTasks: items(filter: {
+        isArchived: false,
+        isSnoozed: false,
+        dueBefore: $dueBefore,
+      }) {
+        count
       }
 
       subprojects {
@@ -32,10 +38,12 @@ query ListContextState {
         stub
         name
 
-        remainingTasks: items {
-          isTask(done: false) {
-            count
-          }
+        dueTasks: items(filter: {
+          isArchived: false,
+          isSnoozed: false,
+          dueBefore: $dueBefore,
+        }) {
+          count
         }
 
         subprojects {
@@ -86,10 +94,6 @@ query ListTaskList($taskList: ID!) {
       name
 
       items {
-        remaining: isTask(done: false) {
-          count
-        }
-
         items {
           ...clientItemFields
         }

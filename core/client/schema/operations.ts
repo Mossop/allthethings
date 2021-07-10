@@ -241,10 +241,12 @@ export type SchemaVersionQueryVariables = Schema.Exact<{ [key: string]: never; }
 
 export type SchemaVersionQuery = { readonly __typename: 'Query', readonly schemaVersion: string };
 
-export type ListContextStateQueryVariables = Schema.Exact<{ [key: string]: never; }>;
+export type ListContextStateQueryVariables = Schema.Exact<{
+  dueBefore: Schema.Scalars['DateTime'];
+}>;
 
 
-export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly remainingTasks: { readonly __typename: 'ItemSet', readonly isTask: { readonly __typename: 'ItemSet', readonly count: number } }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }>, readonly problems: ReadonlyArray<{ readonly __typename: 'Problem', readonly description: string, readonly url: string }> };
+export type ListContextStateQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly email: string, readonly isAdmin: boolean, readonly inbox: { readonly __typename: 'ItemSet', readonly count: number }, readonly contexts: ReadonlyArray<{ readonly __typename: 'Context', readonly id: string, readonly stub: string, readonly name: string, readonly dueTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }>, readonly projects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string, readonly stub: string, readonly name: string, readonly dueTasks: { readonly __typename: 'ItemSet', readonly count: number }, readonly subprojects: ReadonlyArray<{ readonly __typename: 'Project', readonly id: string }> }> }> }>, readonly problems: ReadonlyArray<{ readonly __typename: 'Problem', readonly description: string, readonly url: string }> };
 
 export type PageContentQueryVariables = Schema.Exact<{
   path: Schema.Scalars['String'];
@@ -274,13 +276,13 @@ export type ListTaskListQueryVariables = Schema.Exact<{
 export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskList: Schema.Maybe<{ readonly __typename: 'Context', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
         )> } }> } | { readonly __typename: 'Project', readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
         { readonly __typename: 'Item' }
         & ClientItemFieldsFragment
-      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly remaining: { readonly __typename: 'ItemSet', readonly count: number }, readonly items: ReadonlyArray<(
+      )> }, readonly sections: ReadonlyArray<{ readonly __typename: 'Section', readonly id: string, readonly name: string, readonly items: { readonly __typename: 'ItemSet', readonly items: ReadonlyArray<(
           { readonly __typename: 'Item' }
           & ClientItemFieldsFragment
         )> } }> }> };
@@ -1244,22 +1246,22 @@ export function refetchSchemaVersionQuery(variables?: SchemaVersionQueryVariable
       return { query: SchemaVersionDocument, variables: variables }
     }
 export const ListContextStateDocument = gql`
-    query ListContextState {
+    query ListContextState($dueBefore: DateTime!) {
   user {
     id
     email
     isAdmin
-    inbox {
+    inbox(filter: {isArchived: false, isSnoozed: false, isPending: true}) {
       count
     }
     contexts {
       id
       stub
       name
-      remainingTasks: items {
-        isTask(done: false) {
-          count
-        }
+      dueTasks: items(
+        filter: {isArchived: false, isSnoozed: false, dueBefore: $dueBefore}
+      ) {
+        count
       }
       subprojects {
         id
@@ -1268,10 +1270,10 @@ export const ListContextStateDocument = gql`
         id
         stub
         name
-        remainingTasks: items {
-          isTask(done: false) {
-            count
-          }
+        dueTasks: items(
+          filter: {isArchived: false, isSnoozed: false, dueBefore: $dueBefore}
+        ) {
+          count
         }
         subprojects {
           id
@@ -1298,10 +1300,11 @@ export const ListContextStateDocument = gql`
  * @example
  * const { data, loading, error } = useListContextStateQuery({
  *   variables: {
+ *      dueBefore: // value for 'dueBefore'
  *   },
  * });
  */
-export function useListContextStateQuery(baseOptions?: Apollo.QueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
+export function useListContextStateQuery(baseOptions: Apollo.QueryHookOptions<ListContextStateQuery, ListContextStateQueryVariables>) {
         const options = {...defaultOptions, ...baseOptions}
         return Apollo.useQuery<ListContextStateQuery, ListContextStateQueryVariables>(ListContextStateDocument, options);
       }
@@ -1443,9 +1446,6 @@ export const ListTaskListDocument = gql`
       id
       name
       items {
-        remaining: isTask(done: false) {
-          count
-        }
         items {
           ...clientItemFields
         }

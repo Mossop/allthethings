@@ -61,14 +61,10 @@ export type ItemFieldPolicy = {
 	taskInfo?: FieldPolicy<any> | FieldReadFunction<any>,
 	detail?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type ItemSetKeySpecifier = ('count' | 'items' | 'snoozed' | 'archived' | 'due' | 'isTask' | ItemSetKeySpecifier)[];
+export type ItemSetKeySpecifier = ('count' | 'items' | ItemSetKeySpecifier)[];
 export type ItemSetFieldPolicy = {
 	count?: FieldPolicy<any> | FieldReadFunction<any>,
-	items?: FieldPolicy<any> | FieldReadFunction<any>,
-	snoozed?: FieldPolicy<any> | FieldReadFunction<any>,
-	archived?: FieldPolicy<any> | FieldReadFunction<any>,
-	due?: FieldPolicy<any> | FieldReadFunction<any>,
-	isTask?: FieldPolicy<any> | FieldReadFunction<any>
+	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type JiraAccountKeySpecifier = ('id' | 'serverName' | 'userName' | 'url' | 'email' | 'apiToken' | 'searches' | JiraAccountKeySpecifier)[];
 export type JiraAccountFieldPolicy = {

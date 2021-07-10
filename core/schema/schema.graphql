@@ -51,37 +51,48 @@ type Item {
   detail: ItemDetail
 }
 
+input ItemFilter {
+  # True includes only items that are snoozed. False includes only items that are not snoozed.
+  isSnoozed: Boolean
+  # True includes only items that are archived. False includes only items that are not archived.
+  isArchived: Boolean
+  # Includes only tasks that are due before the given time (tasks with no due date are not included).
+  dueBefore: DateTime
+  # Includes only tasks that are due after the given time (tasks with no due date are not included).
+  dueAfter: DateTime
+  # Includes only items that are tasks.
+  isTask: Boolean
+  # True includes only items that are not tasks or are tasks that are not yet complete. False includes
+  # only items that are tasks and complete.
+  isPending: Boolean
+}
+
 type ItemSet {
   count: Int!
   items: [Item!]!
-
-  snoozed(isSnoozed: Boolean): ItemSet!
-  archived(isArchived: Boolean): ItemSet!
-  due(before: DateTime, after: DateTime): ItemSet!
-  isTask(done: Boolean): ItemSet!
 }
 
 interface TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
-  items: ItemSet!
+  items(filter: ItemFilter): ItemSet!
 }
 
 type User {
   id: ID!
   email: String!
   contexts: [Context!]!
-  inbox: ItemSet!
+  inbox(filter: ItemFilter): ItemSet!
   isAdmin: Boolean!
-  allItems: ItemSet!
+  allItems(filter: ItemFilter): ItemSet!
 }
 
 type Context implements TaskList {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
-  items: ItemSet!
-  rootItems: ItemSet!
+  items(filter: ItemFilter): ItemSet!
+  rootItems(filter: ItemFilter): ItemSet!
 
   id: ID!
   user: User!
@@ -96,7 +107,7 @@ type Project implements TaskList {
   # TaskList
   subprojects: [Project!]!
   sections: [Section!]!
-  items: ItemSet!
+  items(filter: ItemFilter): ItemSet!
 
   id: ID!
   stub: String!
@@ -105,7 +116,7 @@ type Project implements TaskList {
 }
 
 type Section {
-  items: ItemSet!
+  items(filter: ItemFilter): ItemSet!
 
   id: ID!
   name: String!
