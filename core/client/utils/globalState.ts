@@ -10,8 +10,6 @@ import type {
   ListContextStateQueryVariables,
 } from "../schema";
 import {
-  useSchemaVersionQuery,
-
   buildState,
   ListContextStateDocument,
 } from "../schema";
@@ -24,33 +22,29 @@ import { urlToView } from "./view";
 declare let SCHEMA_VERSION: string;
 
 const TIMEOUT_PADDING = 1000;
+const POLL_INTERVAL = 5000;
+const MAX_BACKOFF = 10000;
+
+let nextBackoff = (previous: number | null): number => previous
+  ? Math.min(MAX_BACKOFF, previous * 1.2)
+  : POLL_INTERVAL;
 
 function urlForLocation(location: Location): URL {
   return new URL(`${location.pathname}${location.search}${location.hash}`, document.URL);
 }
 
-export type AppState = State & {
+export type AppState = Omit<State, "problems"> & {
   view: View
 };
 
 class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
-  private readonly query: ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables>;
+  public readonly problems = new SharedState<readonly Problem[]>([]);
+  private query: ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables>;
+  private lastBackoff: number | null = null;
 
   public constructor() {
-    this.query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
-      query: ListContextStateDocument,
-      variables: this.getVariables(),
-      pollInterval: 5000,
-    });
-
-    this.query.subscribe((result: ApolloQueryResult<ListContextStateQuery>): void => {
-      let userState = buildState(result.data);
-      this.appState.set({
-        ...userState,
-        view: urlToView(userState.user, urlForLocation(history.location)),
-      });
-    });
+    this.query = this.startQuery();
 
     history.listen(({ location }: Update) => {
       if (!this.appState.value) {
@@ -62,6 +56,59 @@ class GlobalStateManager {
         view: urlToView(this.appState.value.user, urlForLocation(location)),
       });
     });
+  }
+
+  private startQuery(): ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables> {
+    let query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
+      query: ListContextStateDocument,
+      variables: this.getVariables(),
+      pollInterval: POLL_INTERVAL,
+      fetchPolicy: "network-only",
+    });
+
+    query.subscribe(
+      (result: ApolloQueryResult<ListContextStateQuery>): void => this.onNext(result),
+      (error: Error) => this.onError(error),
+    );
+
+    return query;
+  }
+
+  private onNext(result: ApolloQueryResult<ListContextStateQuery>): void {
+    this.lastBackoff = null;
+
+    let { problems, ...userState } = buildState(result.data);
+
+    this.appState.set({
+      ...userState,
+      view: urlToView(userState.user, urlForLocation(history.location)),
+    });
+
+    if (result.data.schemaVersion !== SCHEMA_VERSION) {
+      this.problems.set([{
+        description: "This page is outdated and must be reloaded.",
+        url: "javascript:window.location.reload()",
+      }]);
+    } else {
+      this.problems.set(problems);
+    }
+  }
+
+  private onError(error: Error): void {
+    console.error(error);
+
+    if (!this.lastBackoff) {
+      this.problems.set([{
+        description: "Lost connection to the server, try reloading.",
+        url: "javascript:window.location.reload()",
+      }]);
+    }
+
+    this.lastBackoff = nextBackoff(this.lastBackoff);
+    console.log("Backing off", this.lastBackoff);
+    window.setTimeout(() => {
+      this.query = this.startQuery();
+    }, this.lastBackoff);
   }
 
   private getVariables(): ListContextStateQueryVariables {
@@ -94,20 +141,7 @@ const GlobalState = new GlobalStateManager();
 export default GlobalState;
 
 export function useProblems(): readonly Problem[] {
-  let { data } = useSchemaVersionQuery({
-    pollInterval: 5000,
-  });
-
-  let [appState] = useSharedState(GlobalState.appState);
-
-  if (data && data.schemaVersion != SCHEMA_VERSION) {
-    return [{
-      description: "This page is outdated and must be reloaded.",
-      url: "javascript:window.location.reload()",
-    }];
-  }
-
-  return appState?.problems ?? [];
+  return useSharedState(GlobalState.problems)[0];
 }
 
 export function useUser(): User {
