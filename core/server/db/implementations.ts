@@ -20,24 +20,6 @@ function assertValid<T extends {}>(val: T | null | undefined): T {
   return val;
 }
 
-export function equals(
-  a: Db.DbEntity | string | null | undefined,
-  b: Db.DbEntity | string | null | undefined,
-): boolean {
-  if (!a) {
-    return !b;
-  }
-
-  if (!b) {
-    return false;
-  }
-
-  a = typeof a == "string" ? a : a.id;
-  b = typeof b == "string" ? b : b.id;
-
-  return a == b;
-}
-
 type FieldGetter<T> = <K extends keyof Db.DbObject<T>>(key: K) => () => Promise<Db.DbObject<T>[K]>;
 function fields<T extends Db.DbTable>(): FieldGetter<T> {
   return <K extends keyof Db.DbObject<T>>(key: K): () => Promise<Db.DbObject<T>[K]> => {
