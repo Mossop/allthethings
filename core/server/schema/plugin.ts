@@ -36,10 +36,10 @@ const requestListener: GraphQLRequestListener<ResolverContext> = {
   },
 };
 
-const serverPlugin: ApolloServerPlugin = {
-  requestDidStart(): GraphQLRequestListener<ResolverContext> | void {
+const serverPlugin: ApolloServerPlugin<ResolverContext> = {
+  async requestDidStart(): Promise<GraphQLRequestListener<ResolverContext> | void> {
     return requestListener;
   },
 };
 
-export default serverPlugin;
+export default serverPlugin as ApolloServerPlugin;

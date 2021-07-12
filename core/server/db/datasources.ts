@@ -116,7 +116,6 @@ export class ItemSet implements Omit<ItemSetResolvers, "__resolveType"> {
   }
 
   public async items(
-    parent: ItemSet,
     args: unknown,
     context: ResolverContext,
   ): Promise<Impl.Item[]> {

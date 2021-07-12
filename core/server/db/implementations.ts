@@ -109,7 +109,7 @@ abstract class TaskListImpl<
     });
   }
 
-  public items(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+  public items({ filter }: ItemSetArgs): Src.ItemSet {
     return this.dataSources.items.sectionItems(this._id, filter);
   }
 }
@@ -126,11 +126,11 @@ export class User extends BaseImpl<Db.UserDbTable>
     });
   }
 
-  public async inbox(parent: unknown, { filter }: ItemSetArgs): Promise<Src.ItemSet> {
+  public async inbox({ filter }: ItemSetArgs): Promise<Src.ItemSet> {
     return this.dataSources.items.sectionItems(null, filter);
   }
 
-  public allItems(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+  public allItems({ filter }: ItemSetArgs): Src.ItemSet {
     return this.dataSources.items.userItems(this.id(), filter);
   }
 
@@ -150,10 +150,7 @@ export class Context
     });
   }
 
-  public async projectById(
-    parent: unknown,
-    args: Schema.ContextProjectByIdArgs,
-  ): Promise<Project | null> {
+  public async projectById(args: Schema.ContextProjectByIdArgs): Promise<Project | null> {
     let results = await this.dataSources.projects.find({
       contextId: this._id,
       id: args.id,
@@ -162,7 +159,7 @@ export class Context
     return results.length ? results[0] : null;
   }
 
-  public rootItems(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+  public rootItems({ filter }: ItemSetArgs): Src.ItemSet {
     return this.dataSources.items.contextItems(this.id(), filter);
   }
 
@@ -234,7 +231,7 @@ export class Section extends BaseImpl<Db.SectionDbTable>
     return this.dataSources.sections;
   }
 
-  public items(parent: unknown, { filter }: ItemSetArgs): Src.ItemSet {
+  public items({ filter }: ItemSetArgs): Src.ItemSet {
     return this.dataSources.items.sectionItems(this._id, filter);
   }
 

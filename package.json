@@ -63,8 +63,8 @@
   "dependencies": {
     "@graphql-tools/merge": "^6.2.9",
     "apollo-datasource": "^0.9.0",
-    "apollo-server-koa": "^2.19.1",
-    "apollo-server-plugin-base": "^0.13.0",
+    "apollo-server-koa": "^3.0.0",
+    "apollo-server-plugin-base": "^3.0.0",
     "base-64": "^1.0.0",
     "bcrypt": "^5.0.0",
     "bugzilla": "^1.1.6",

@@ -5,32 +5,14 @@ import type { ItemSet } from '../db/datasources';
 import type { ResolverContext } from './context';
 import * as Schema from '#schema';
 import { Problem } from '#server-utils'
+import { Root, ResolverFunc } from './types'
+export type ResolverFn<TResult, TParent, TContext, TArgs> = ResolverFunc<TResult, TParent, TContext, TArgs>
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
-
-export type LegacyStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  fragment: string;
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
-};
-
-export type NewStitchingResolver<TResult, TParent, TContext, TArgs> = {
-  selectionSet: string;
-  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
-};
-export type StitchingResolver<TResult, TParent, TContext, TArgs> = LegacyStitchingResolver<TResult, TParent, TContext, TArgs> | NewStitchingResolver<TResult, TParent, TContext, TArgs>;
-export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
-  | ResolverFn<TResult, TParent, TContext, TArgs>
-  | StitchingResolver<TResult, TParent, TContext, TArgs>;
-
-export type ResolverFn<TResult, TParent, TContext, TArgs> = (
-  parent: TParent,
-  args: TArgs,
-  context: TContext,
-  info: GraphQLResolveInfo
-) => Promise<TResult> | TResult;
+export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> = ResolverFn<TResult, TParent, TContext, TArgs>;
 
 export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -99,7 +81,7 @@ export type ResolversTypes = {
   ItemSet: ResolverTypeWrapper<ItemSet>;
   LinkDetail: ResolverTypeWrapper<LinkDetail>;
   LinkDetailParams: Schema.LinkDetailParams;
-  Mutation: ResolverTypeWrapper<{}>;
+  Mutation: ResolverTypeWrapper<Root>;
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: ResolverTypeWrapper<PluginDetail>;
@@ -107,7 +89,7 @@ export type ResolversTypes = {
   Problem: ResolverTypeWrapper<Problem>;
   Project: ResolverTypeWrapper<Project>;
   ProjectParams: Schema.ProjectParams;
-  Query: ResolverTypeWrapper<{}>;
+  Query: ResolverTypeWrapper<Root>;
   Section: ResolverTypeWrapper<Section>;
   SectionParams: Schema.SectionParams;
   TaskController: ResolverTypeWrapper<Schema.Scalars['TaskController']>;
@@ -134,7 +116,7 @@ export type ResolversParentTypes = {
   ItemSet: ItemSet;
   LinkDetail: LinkDetail;
   LinkDetailParams: Schema.LinkDetailParams;
-  Mutation: {};
+  Mutation: Root;
   NoteDetail: NoteDetail;
   NoteDetailParams: Schema.NoteDetailParams;
   PluginDetail: PluginDetail;
@@ -142,7 +124,7 @@ export type ResolversParentTypes = {
   Problem: Problem;
   Project: Project;
   ProjectParams: Schema.ProjectParams;
-  Query: {};
+  Query: Root;
   Section: Section;
   SectionParams: Schema.SectionParams;
   TaskController: Schema.Scalars['TaskController'];

@@ -4,6 +4,7 @@ import type { AppDataSources, TaskList, User, ItemHolder } from "../db";
 import type { DatabaseConnection } from "../db/connection";
 import type { WebServerContext } from "../webserver/context";
 import type { ResolverFn } from "./resolvers";
+import type { Root } from "./types";
 
 export interface ResolverContext {
   db: DatabaseConnection;
@@ -20,25 +21,10 @@ export type AuthedResolverContext = Overwrite<ResolverContext, {
   userId: string;
 }>;
 
-interface Params<TContext, TParent, TArgs> {
-  outer: TParent;
-  ctx: TContext;
-  args: TArgs;
-}
-
-export type ResolverParams<
-  TParent = unknown,
-  TArgs = unknown,
-> = Params<ResolverContext, TParent, TArgs>;
-export type AuthedParams<
-  TParent = unknown,
-  TArgs = unknown,
-> = Params<AuthedResolverContext, TParent, TArgs>;
-
-export function admin<TResult, TParent, TArgs>(
-  resolver: (ctx: AuthedResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
-): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
-  return async (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> => {
+export function admin<TResult, TArgs>(
+  resolver: (ctx: AuthedResolverContext, args: TArgs) => Awaitable<TResult>,
+): ResolverFn<TResult, Root, ResolverContext, TArgs> {
+  return async (outer: Root, args: TArgs, ctx: ResolverContext): Promise<TResult> => {
     let { userId } = ctx;
     if (!userId) {
       throw new Error("Not logged in.");
@@ -49,28 +35,28 @@ export function admin<TResult, TParent, TArgs>(
       throw new Error("Not an admin.");
     }
 
-    return resolver(ctx as AuthedResolverContext, args, outer);
+    return resolver(ctx as AuthedResolverContext, args);
   };
 }
 
-export function authed<TResult, TParent, TArgs>(
-  resolver: (ctx: AuthedResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
-): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
-  return (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
+export function authed<TResult, TArgs>(
+  resolver: (ctx: AuthedResolverContext, args: TArgs) => Awaitable<TResult>,
+): ResolverFn<TResult, Root, ResolverContext, TArgs> {
+  return (outer: Root, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
     let { userId } = ctx;
     if (!userId) {
       throw new Error("Not logged in.");
     }
 
-    return resolver(ctx as AuthedResolverContext, args, outer);
+    return resolver(ctx as AuthedResolverContext, args);
   };
 }
 
-export function resolver<TResult, TParent, TArgs>(
-  resolver: (ctx: ResolverContext, args: TArgs, parent: TParent) => Awaitable<TResult>,
-): ResolverFn<TResult, TParent, ResolverContext, TArgs> {
-  return (outer: TParent, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
-    return resolver(ctx, args, outer);
+export function resolver<TResult, TArgs>(
+  resolver: (ctx: ResolverContext, args: TArgs) => Awaitable<TResult>,
+): ResolverFn<TResult, Root, ResolverContext, TArgs> {
+  return (outer: Root, args: TArgs, ctx: ResolverContext): Promise<TResult> | TResult => {
+    return resolver(ctx, args);
   };
 }
 

@@ -110,7 +110,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
   hasher.update(baseSchema);
   let schemaVersion = hasher.digest("hex");
 
-  return new ApolloServer({
+  let server = new ApolloServer({
     typeDefs: baseSchema,
 
     // See https://github.com/apollographql/apollo-server/issues/4398
@@ -127,4 +127,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
     dataSources: () => new Db.AppDataSources(),
     plugins: [ServerPlugin],
   });
+
+  await server.start();
+  return server;
 }
