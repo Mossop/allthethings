@@ -622,12 +622,13 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
   public async create(
     user: Impl.User,
     section: Impl.ItemHolder | null,
-    params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "userId">,
+    params: Omit<DbInsertObject<Db.ItemDbTable>, "id" | "userId" | "created">,
   ): Promise<Impl.Item> {
     let item = await this.build(this.insert({
+      ...params,
       id: await id(),
       userId: user.id(),
-      ...params,
+      created: DateTime.now(),
     }));
 
     if (section) {
@@ -678,6 +679,7 @@ export class ItemDataSource extends IndexedDbDataSource<Impl.Item, Db.ItemDbTabl
         .whereNull("SectionItems.ownerId")
         .orderBy([
           { column: "Item.created", order: "desc" },
+          { column: "Item.summary", order: "asc" },
         ]),
       filter,
     );

@@ -101,7 +101,6 @@ export type ItemDbTable = DbTable<{
   archived: DateTime | null;
   snoozed: DateTime | null;
   type: ItemType | null;
-}, {
   created: DateTime;
 }>;
 
