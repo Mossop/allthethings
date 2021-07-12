@@ -37,6 +37,17 @@ export type DeleteJiraSearchMutationVariables = Schema.Exact<{
 
 export type DeleteJiraSearchMutation = { readonly __typename: 'Mutation', readonly deleteJiraSearch: Schema.Maybe<boolean> };
 
+export const OperationNames = {
+  Query: {
+    ListJiraAccounts: 'ListJiraAccounts'
+  },
+  Mutation: {
+    CreateJiraAccount: 'CreateJiraAccount',
+    DeleteJiraAccount: 'DeleteJiraAccount',
+    CreateJiraSearch: 'CreateJiraSearch',
+    DeleteJiraSearch: 'DeleteJiraSearch'
+  }
+}
 
 export const ListJiraAccountsDocument = gql`
     query ListJiraAccounts {

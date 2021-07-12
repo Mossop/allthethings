@@ -35,6 +35,17 @@ export type DeletePhabricatorAccountMutationVariables = Schema.Exact<{
 
 export type DeletePhabricatorAccountMutation = { readonly __typename: 'Mutation', readonly deletePhabricatorAccount: Schema.Maybe<boolean> };
 
+export const OperationNames = {
+  Query: {
+    ListPhabricatorAccounts: 'ListPhabricatorAccounts',
+    ListPhabricatorQueries: 'ListPhabricatorQueries'
+  },
+  Mutation: {
+    CreatePhabricatorAccount: 'CreatePhabricatorAccount',
+    UpdatePhabricatorAccount: 'UpdatePhabricatorAccount',
+    DeletePhabricatorAccount: 'DeletePhabricatorAccount'
+  }
+}
 
 export const ListPhabricatorAccountsDocument = gql`
     query ListPhabricatorAccounts {

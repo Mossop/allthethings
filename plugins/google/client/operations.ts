@@ -21,6 +21,15 @@ export type CreateGoogleMailSearchMutationVariables = Schema.Exact<{
 
 export type CreateGoogleMailSearchMutation = { readonly __typename: 'Mutation', readonly createGoogleMailSearch: { readonly __typename: 'GoogleMailSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string } };
 
+export const OperationNames = {
+  Query: {
+    ListGoogleAccounts: 'ListGoogleAccounts',
+    RequestLoginUrl: 'RequestLoginUrl'
+  },
+  Mutation: {
+    CreateGoogleMailSearch: 'CreateGoogleMailSearch'
+  }
+}
 
 export const ListGoogleAccountsDocument = gql`
     query ListGoogleAccounts {

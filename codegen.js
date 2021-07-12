@@ -31,6 +31,9 @@ const clientOperationPlugins = {
       Object.keys(scalars).map(key => [key, `Schema.Scalars['${key}']`]),
     ),
   },
+  "named-operations-object": {
+    identifierName: "OperationNames",
+  },
   "typescript-react-apollo": {
     useTypeImports: true,
     withRefetchFn: true,

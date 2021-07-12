@@ -1,4 +1,3 @@
-import type { PureQueryOptions } from "@apollo/client";
 import {
   IconButton,
   ListItem,
@@ -14,10 +13,10 @@ import clsx from "clsx";
 import { DateTime } from "luxon";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
-import { TaskController } from "#schema";
 import type {
   ReactResult,
   ReactRef,
+  RefetchQueries,
 } from "#client-utils";
 import {
   Icons,
@@ -27,6 +26,7 @@ import {
   bindTrigger,
   Menu,
 } from "#client-utils";
+import { TaskController } from "#schema";
 
 import type { Item } from "../schema";
 import {
@@ -144,7 +144,7 @@ function titleForType(type: TaskController | null): string {
 
 interface TypeMenuItemProps {
   item: Item;
-  refetchQueries: PureQueryOptions[];
+  refetchQueries: RefetchQueries;
   controller: TaskController | null;
   selectedController: TaskController | null;
 }

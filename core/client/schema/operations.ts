@@ -282,6 +282,46 @@ export type ListTaskListQuery = { readonly __typename: 'Query', readonly taskLis
           & ClientItemFieldsFragment
         )> } }> }> };
 
+export const OperationNames = {
+  Query: {
+    ListContextState: 'ListContextState',
+    PageContent: 'PageContent',
+    ListUsers: 'ListUsers',
+    ListInbox: 'ListInbox',
+    ListTaskList: 'ListTaskList'
+  },
+  Mutation: {
+    Login: 'Login',
+    Logout: 'Logout',
+    CreateContext: 'CreateContext',
+    EditContext: 'EditContext',
+    DeleteContext: 'DeleteContext',
+    CreateSection: 'CreateSection',
+    EditSection: 'EditSection',
+    MoveSection: 'MoveSection',
+    DeleteSection: 'DeleteSection',
+    CreateProject: 'CreateProject',
+    EditProject: 'EditProject',
+    MoveProject: 'MoveProject',
+    DeleteProject: 'DeleteProject',
+    CreateTask: 'CreateTask',
+    CreateLink: 'CreateLink',
+    EditItem: 'EditItem',
+    EditTaskInfo: 'EditTaskInfo',
+    EditTaskController: 'EditTaskController',
+    MoveItem: 'MoveItem',
+    DeleteItem: 'DeleteItem',
+    ArchiveItem: 'ArchiveItem',
+    SnoozeItem: 'SnoozeItem',
+    MarkItemDue: 'MarkItemDue',
+    CreateUser: 'CreateUser',
+    DeleteUser: 'DeleteUser',
+    ChangePassword: 'ChangePassword'
+  },
+  Fragment: {
+    clientItemFields: 'clientItemFields'
+  }
+}
 export const ClientItemFieldsFragmentDoc = gql`
     fragment clientItemFields on Item {
   id

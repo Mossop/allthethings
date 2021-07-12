@@ -1,5 +1,9 @@
+import type { PureQueryOptions } from "@apollo/client";
 import type { MutableRefObject } from "react";
 import { memo } from "react";
+
+export type RefetchQuery = string | PureQueryOptions;
+export type RefetchQueries = RefetchQuery[];
 
 export interface ReactChildren {
   children?: React.ReactNode;

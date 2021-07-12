@@ -37,6 +37,17 @@ export type DeleteBugzillaSearchMutationVariables = Schema.Exact<{
 
 export type DeleteBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly deleteBugzillaSearch: Schema.Maybe<boolean> };
 
+export const OperationNames = {
+  Query: {
+    ListBugzillaAccounts: 'ListBugzillaAccounts'
+  },
+  Mutation: {
+    CreateBugzillaAccount: 'CreateBugzillaAccount',
+    DeleteBugzillaAccount: 'DeleteBugzillaAccount',
+    CreateBugzillaSearch: 'CreateBugzillaSearch',
+    DeleteBugzillaSearch: 'DeleteBugzillaSearch'
+  }
+}
 
 export const ListBugzillaAccountsDocument = gql`
     query ListBugzillaAccounts {

@@ -1174,6 +1174,15 @@
     "@graphql-codegen/plugin-helpers" "^1.18.5"
     tslib "~2.2.0"
 
+"@graphql-codegen/named-operations-object@^1.18.2":
+  version "1.18.2"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/named-operations-object/-/named-operations-object-1.18.2.tgz#5e55963bc324c80f4a5bac57ca4fc59b14c3ae10"
+  integrity sha512-ss2WNyi0/gFwkvPsuAAgthSnw3oJfxGljJN+Wdd+Z3AfwF71iTIoWpIK+sIdnDo04POCzc755jfie9o3kbz7NA==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "^1.18.5"
+    change-case-all "1.0.14"
+    tslib "~2.2.0"
+
 "@graphql-codegen/near-operation-file-preset@^1.17.13":
   version "1.18.4"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/near-operation-file-preset/-/near-operation-file-preset-1.18.4.tgz#bb322187c7fe90bf5a856dfb6d59fda2e7d5d13f"

@@ -1,13 +1,12 @@
-import type { PureQueryOptions } from "@apollo/client";
 import { useMemo, useEffect, useState } from "react";
 
-import type { ReactResult } from "./types";
+import type { ReactResult, RefetchQueries } from "./types";
 
 export type PluginFields = string;
 
 export interface PluginItemProps {
   fields: PluginFields;
-  refetchQueries: () => PureQueryOptions[];
+  refetchQueries: () => RefetchQueries;
 }
 
 export interface ClientPlugin {
