@@ -18,7 +18,7 @@ const useStyles = makeStyles(() =>
     },
     contentSplit: {
       flex: 1,
-      height: "100%",
+      overflow: "hidden",
       ...Styles.flexRow,
     },
   }));
