@@ -1,6 +1,7 @@
 import { URL } from "url";
 
 import sizeOf from "image-size";
+import type { Response } from "node-fetch";
 import fetch from "node-fetch";
 import type { HTMLElement } from "node-html-parser";
 import { parse } from "node-html-parser";
@@ -42,8 +43,14 @@ export function bestIcon(icons: Icon[], size: number): Icon | null {
 }
 
 async function loadIcon(url: URL): Promise<Icon[]> {
-  let response = await fetch(url);
-  if (!response.ok) {
+  let response: Response;
+  try {
+    response = await fetch(url);
+    if (!response.ok) {
+      return [];
+    }
+  } catch (e) {
+    console.error(e);
     return [];
   }
 
