@@ -5,12 +5,12 @@ import { Suspense } from "react";
 import type { ReactResult } from "#client-utils";
 import { Loading, Styles } from "#client-utils";
 
-import Page from "../components/Page";
+import Inbox from "../pages/Inbox";
+import MarkdownPage from "../pages/MarkdownPage";
+import Settings from "../pages/Settings";
+import TaskList from "../pages/TaskList";
 import { useView, ViewType } from "../utils/view";
-import Inbox from "./Inbox";
-import MarkdownPage from "./MarkdownPage";
-import Settings from "./Settings";
-import TaskList from "./TaskList";
+import Page from "./Page";
 
 const useStyles = makeStyles(() =>
   createStyles({

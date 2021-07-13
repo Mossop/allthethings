@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type { BugzillaAccount } from "#schema";
 import { RadioGroupInput, TextFieldInput, Dialog, useBoolState, FormState } from "#client-utils";
+import type { BugzillaAccount } from "#schema";
 
 import {
   refetchListBugzillaAccountsQuery,

@@ -4,7 +4,6 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { JiraAccount, JiraSearch } from "#schema";
 import type { ReactResult } from "#client-utils";
 import {
   Heading,
@@ -18,6 +17,7 @@ import {
   SubHeading,
   SettingsListItem,
 } from "#client-utils";
+import type { JiraAccount, JiraSearch } from "#schema";
 
 import Icon from "../Icon";
 import {

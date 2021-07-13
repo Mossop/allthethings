@@ -18,9 +18,9 @@ import {
 } from "#client-utils";
 import type { ReactResult } from "#client-utils";
 
-import { useDeleteUserMutation, refetchListUsersQuery, useListUsersQuery } from "../../schema";
-import { useUser } from "../../utils/globalState";
-import CreateUserDialog from "./CreateUserDialog";
+import CreateUserDialog from "../dialogs/CreateUser";
+import { useDeleteUserMutation, refetchListUsersQuery, useListUsersQuery } from "../schema";
+import { useUser } from "../utils/globalState";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

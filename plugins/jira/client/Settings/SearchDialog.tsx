@@ -1,10 +1,6 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type {
-  JiraAccount,
-  JiraSearch,
-} from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -12,6 +8,10 @@ import {
   useResetStore,
   FormState,
 } from "#client-utils";
+import type {
+  JiraAccount,
+  JiraSearch,
+} from "#schema";
 
 import {
   refetchListJiraAccountsQuery,

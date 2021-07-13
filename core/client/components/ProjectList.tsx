@@ -14,6 +14,7 @@ import mergeRefs from "react-merge-refs";
 import type { ReactResult, ReactRef } from "#client-utils";
 import { Icons, SelectableListItem, useBoolState, ReactMemo, Styles } from "#client-utils";
 
+import CreateProjectDialog from "../dialogs/CreateProject";
 import type { Project, TaskList } from "../schema";
 import { nameSorted } from "../utils/collections";
 import { useDragSource, useDragState, useDropTarget } from "../utils/drag";
@@ -24,7 +25,6 @@ import {
   useLoggedInView,
   ViewType,
 } from "../utils/view";
-import CreateProjectDialog from "./CreateProjectDialog";
 
 interface StyleProps {
   depth: number;

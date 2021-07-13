@@ -5,13 +5,13 @@ import {
 } from "@material-ui/core";
 import { RevisionStatus } from "conduit-api";
 
-import type { RevisionFields } from "#plugins/phabricator/schema";
 import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
 } from "#client-utils";
+import type { RevisionFields } from "#plugins/phabricator/schema";
 
 import Icon from "./Icon";
 

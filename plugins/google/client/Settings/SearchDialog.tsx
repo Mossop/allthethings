@@ -1,7 +1,6 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -9,6 +8,7 @@ import {
   useResetStore,
   FormState,
 } from "#client-utils";
+import type { GoogleAccount, GoogleMailSearch } from "#schema";
 
 import {
   refetchListGoogleAccountsQuery,

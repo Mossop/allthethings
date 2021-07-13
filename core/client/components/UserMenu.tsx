@@ -11,10 +11,10 @@ import {
 } from "#client-utils";
 import type { ReactResult } from "#client-utils";
 
+import ChangePasswordDialog from "../dialogs/ChangePassword";
 import { useLogoutMutation, refetchListContextStateQuery } from "../schema";
 import { useUser } from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
-import ChangePasswordDialog from "./ChangePasswordDialog";
 
 function avatarSources(email: string): string[] {
   let hash = md5(email);

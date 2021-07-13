@@ -22,15 +22,15 @@ import {
 } from "#client-utils";
 import type { ClientPlugin, ReactResult } from "#client-utils";
 
-import Page from "../../components/Page";
-import { useUser } from "../../utils/globalState";
+import Page from "../components/Page";
+import { useUser } from "../utils/globalState";
 import {
   pushView,
   useUrl,
   ViewType,
   useCurrentContext,
-} from "../../utils/view";
-import AdminPage from "./AdminPage";
+} from "../utils/view";
+import AdminPage from "./Admin";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

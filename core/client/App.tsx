@@ -11,8 +11,8 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 import type { ReactResult } from "#client-utils";
 
-import ErrorHandler from "./ui/ErrorHandler";
-import Main from "./ui/Main";
+import ErrorHandler from "./components/ErrorHandler";
+import Main from "./components/Main";
 import { DragContext } from "./utils/drag";
 
 const base = createMuiTheme();

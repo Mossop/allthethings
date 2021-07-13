@@ -5,13 +5,13 @@ import {
   Tooltip,
 } from "@material-ui/core";
 
-import type { IssueFields } from "#plugins/jira/schema";
 import type { ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
 } from "#client-utils";
+import type { IssueFields } from "#plugins/jira/schema";
 
 import Icon from "./Icon";
 

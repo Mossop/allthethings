@@ -8,7 +8,7 @@ import {
   BooleanCheckboxInput,
 } from "#client-utils";
 
-import { useCreateUserMutation, refetchListUsersQuery } from "../../schema";
+import { useCreateUserMutation, refetchListUsersQuery } from "../schema";
 
 interface CreateUserProps {
   onClosed: () => void;

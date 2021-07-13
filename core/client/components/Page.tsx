@@ -5,9 +5,9 @@ import type { ReactNode } from "react";
 import { ReactMemo, Styles } from "#client-utils";
 import type { ReactResult } from "#client-utils";
 
-import ProjectList from "../ui/ProjectList";
 import { useMaybeUser } from "../utils/globalState";
 import Banner from "./Banner";
+import ProjectList from "./ProjectList";
 
 const useStyles = makeStyles(() =>
   createStyles({

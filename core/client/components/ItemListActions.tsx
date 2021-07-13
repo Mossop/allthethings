@@ -21,6 +21,10 @@ import {
   Menu,
 } from "#client-utils";
 
+import CreateSectionDialog from "../dialogs/CreateSection";
+import LinkDialog from "../dialogs/Link";
+import TaskDialog from "../dialogs/Task";
+import type { Inbox, TaskList, Section } from "../schema";
 import {
   isContext,
   isInbox,
@@ -32,10 +36,6 @@ import {
   refetchQueriesForSection,
   isTaskList,
 } from "../schema";
-import type { Inbox, TaskList, Section } from "../schema";
-import CreateSectionDialog from "../ui/CreateSectionDialog";
-import LinkDialog from "../ui/LinkDialog";
-import TaskDialog from "../ui/TaskDialog";
 import { useUser } from "../utils/globalState";
 import { ViewType, replaceView, useLoggedInView } from "../utils/view";
 

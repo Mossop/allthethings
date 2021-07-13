@@ -19,6 +19,7 @@ import {
 } from "#client-utils";
 import type { ReactResult } from "#client-utils";
 
+import TaskDialog from "../dialogs/Task";
 import type { Item } from "../schema";
 import {
   useDeleteItemMutation,
@@ -28,7 +29,6 @@ import {
   isLinkItem,
   isPluginItem,
 } from "../schema";
-import TaskDialog from "../ui/TaskDialog";
 import { DueItemItems, DueItems } from "./DueMenu";
 import { SnoozeItems, WakeUpItems } from "./SnoozeMenu";
 

@@ -14,6 +14,7 @@ import {
   useBoolState,
 } from "#client-utils";
 
+import CreateContextDialog from "../dialogs/CreateContext";
 import type { Context } from "../schema";
 import { nameSorted } from "../utils/collections";
 import { useUser } from "../utils/globalState";
@@ -24,7 +25,6 @@ import {
   useLoggedInView,
   useUrl,
 } from "../utils/view";
-import CreateContextDialog from "./CreateContextDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

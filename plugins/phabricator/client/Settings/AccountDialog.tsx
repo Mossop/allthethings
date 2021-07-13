@@ -3,7 +3,6 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 import {
   TextFieldInput,
   Dialog,
@@ -13,6 +12,7 @@ import {
   Checkbox,
 } from "#client-utils";
 import type { ReactResult } from "#client-utils";
+import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 
 import {
   useListPhabricatorQueriesQuery,

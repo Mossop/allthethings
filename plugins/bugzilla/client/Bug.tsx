@@ -4,13 +4,13 @@ import {
   createStyles,
 } from "@material-ui/core";
 
-import type { BugFields } from "#plugins/bugzilla/schema";
 import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
   ImageIcon,
   Styles,
   ReactMemo,
 } from "#client-utils";
+import type { BugFields } from "#plugins/bugzilla/schema";
 
 import Icon from "./Icon";
 

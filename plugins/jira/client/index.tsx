@@ -1,5 +1,5 @@
-import type { IssueFields } from "#plugins/jira/schema";
 import type { ClientPlugin, ReactResult, PluginItemProps } from "#client-utils";
+import type { IssueFields } from "#plugins/jira/schema";
 
 import Issue from "./Issue";
 import { SettingsPage, SettingsPages } from "./Settings";

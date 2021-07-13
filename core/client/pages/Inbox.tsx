@@ -9,11 +9,11 @@ import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import { ItemList } from "../components/SectionList";
+import LinkDialog from "../dialogs/Link";
 import { useInboxContents } from "../schema";
 import { Filters } from "../utils/filter";
 import { useUser } from "../utils/globalState";
 import { replaceView, useLoggedInView, ViewType } from "../utils/view";
-import LinkDialog from "./LinkDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

@@ -1,8 +1,8 @@
 import { useCallback } from "react";
 
-import type { PhabricatorAccount } from "#schema";
 import type { ReactResult } from "#client-utils";
 import { useSetSettingsPage, SettingsPageItem, useBoolState } from "#client-utils";
+import type { PhabricatorAccount } from "#schema";
 
 import Icon from "../Icon";
 import { useListPhabricatorAccountsQuery } from "../operations";

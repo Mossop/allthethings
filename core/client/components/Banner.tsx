@@ -4,12 +4,12 @@ import type { Theme } from "@material-ui/core";
 import { Styles, ReactMemo, useBoolState, Link } from "#client-utils";
 import type { ReactResult } from "#client-utils";
 
-import ContextMenu from "../ui/ContextMenu";
-import LoginDialog from "../ui/LoginDialog";
-import ProblemsMenu from "../ui/ProblemsMenu";
-import UserMenu from "../ui/UserMenu";
+import LoginDialog from "../dialogs/Login";
 import { useMaybeUser } from "../utils/globalState";
+import ContextMenu from "./ContextMenu";
 import Logo from "./Logo";
+import ProblemsMenu from "./ProblemsMenu";
+import UserMenu from "./UserMenu";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

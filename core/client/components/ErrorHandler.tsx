@@ -6,7 +6,7 @@ import { PureComponent } from "react";
 import { Heading } from "#client-utils";
 import type { ReactChildren, ReactResult } from "#client-utils";
 
-import Page from "../components/Page";
+import Page from "./Page";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

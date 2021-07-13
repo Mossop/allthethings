@@ -1,9 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
-import type { FileFields } from "#plugins/google/schema";
 import type { ReactResult } from "#client-utils";
 import { Styles, ReactMemo } from "#client-utils";
+import type { FileFields } from "#plugins/google/schema";
 
 import FileIcon from "./FileIcon";
 

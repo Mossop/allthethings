@@ -5,7 +5,6 @@ import LoopIcon from "@material-ui/icons/Loop";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import type { ReactResult } from "#client-utils";
 import {
   Heading,
@@ -17,6 +16,7 @@ import {
   SubHeading,
   useBoolState,
 } from "#client-utils";
+import type { GoogleAccount, GoogleMailSearch } from "#schema";
 
 import Google from "../logos/Google";
 import SearchDialog from "./SearchDialog";

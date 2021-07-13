@@ -4,9 +4,9 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
-import { TaskController } from "#schema";
 import { Icons, ReactMemo } from "#client-utils";
 import type { ReactResult } from "#client-utils";
+import { TaskController } from "#schema";
 
 import { useEditTaskInfoMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
