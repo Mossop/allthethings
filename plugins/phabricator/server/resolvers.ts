@@ -4,12 +4,13 @@ import type {
   MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
 } from "#schema";
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+import type { AuthedPluginContext, User } from "#server-utils";
 
 import type { QueryClass } from "./db/implementations";
 import { Account, Query } from "./db/implementations";
+import { Resolvers } from "./schema";
 
-const Resolvers: Resolver<AuthedPluginContext> = {
+const Resolvers: Pick<Resolvers<AuthedPluginContext>, "User" | "Mutation"> = {
   User: {
     phabricatorAccounts(
       user: User,

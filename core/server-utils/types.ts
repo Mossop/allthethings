@@ -111,7 +111,10 @@ export type ResolverFn<TContext = any, TResult = any, TParent = any, TArgs = any
   args: TArgs,
   context: TContext,
 ) => Promise<TResult> | TResult;
-export type TypeResolver<TContext> = Record<string, ResolverFn<TContext>>;
+export type PropertyResolver<TContext, TResult = any> =
+  ResolverFn<TContext, TResult> | TResult | Promise<TResult>;
+export type TypeResolver<TContext, TResult = any> =
+  Record<string, PropertyResolver<TContext, TResult>>;
 export type Resolver<TContext> = Record<string, TypeResolver<TContext>>;
 
 export interface PluginServer {

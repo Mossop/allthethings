@@ -2,8 +2,8 @@
 import type { GraphQLResolveInfo } from 'graphql';
 import type { Account } from './db/implementations';
 import * as Schema from '#schema';
+import { User } from '#server-utils';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -66,7 +66,7 @@ export type ResolversTypes = {
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<Omit<Schema.User, 'githubAccounts'> & { githubAccounts: ReadonlyArray<ResolversTypes['GithubAccount']> }>;
+  User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 };
 
@@ -76,7 +76,7 @@ export type ResolversParentTypes = {
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
   Query: {};
-  User: Omit<Schema.User, 'githubAccounts'> & { githubAccounts: ReadonlyArray<ResolversParentTypes['GithubAccount']> };
+  User: User;
   Boolean: Schema.Scalars['Boolean'];
 };
 

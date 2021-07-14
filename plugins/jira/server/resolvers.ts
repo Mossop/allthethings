@@ -5,11 +5,12 @@ import type {
   MutationDeleteJiraAccountArgs,
   MutationDeleteJiraSearchArgs,
 } from "#schema";
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+import type { AuthedPluginContext, User } from "#server-utils";
 
 import { Account, Search } from "./db/implementations";
+import { Resolvers } from "./schema";
 
-const Resolvers: Resolver<AuthedPluginContext> = {
+const Resolvers: Pick<Resolvers<AuthedPluginContext>, "User" | "Mutation"> = {
   User: {
     jiraAccounts(
       user: User,

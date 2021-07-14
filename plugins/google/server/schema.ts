@@ -2,8 +2,8 @@
 import type { GraphQLResolveInfo } from 'graphql';
 import type { Account, MailSearch } from './db/implementations';
 import * as Schema from '#schema';
+import { User } from '#server-utils';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
@@ -70,7 +70,7 @@ export type ResolversTypes = {
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<Omit<Schema.User, 'googleAccounts'> & { googleAccounts: ReadonlyArray<ResolversTypes['GoogleAccount']> }>;
+  User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 };
 
@@ -83,7 +83,7 @@ export type ResolversParentTypes = {
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   Mutation: {};
   Query: {};
-  User: Omit<Schema.User, 'googleAccounts'> & { googleAccounts: ReadonlyArray<ResolversParentTypes['GoogleAccount']> };
+  User: User;
   Boolean: Schema.Scalars['Boolean'];
 };
 

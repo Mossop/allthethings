@@ -56,13 +56,17 @@ const resolverPlugins = (mappers = {}) => ({
     avoidOptionals: true,
     namespacedImportName: "Schema",
     customResolverFn,
-    mappers,
+    mappers: {
+      User: "User",
+      ...mappers,
+    },
     noSchemaStitching: true,
   },
   "add": {
     content: [
       "/* eslint-disable */",
       "import * as Schema from '#schema';",
+      "import { User } from '#server-utils';",
     ],
   },
 });

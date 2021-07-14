@@ -2,8 +2,8 @@
 import type { GraphQLResolveInfo } from 'graphql';
 import type { Account, QueryClass } from './db/implementations';
 import * as Schema from '#schema';
+import { User } from '#server-utils';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
@@ -71,7 +71,7 @@ export type ResolversTypes = {
   PhabricatorAccount: ResolverTypeWrapper<Account>;
   PhabricatorQuery: ResolverTypeWrapper<QueryClass>;
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
-  User: ResolverTypeWrapper<Omit<Schema.User, 'phabricatorAccounts' | 'phabricatorQueries'> & { phabricatorAccounts: ReadonlyArray<ResolversTypes['PhabricatorAccount']>, phabricatorQueries: ReadonlyArray<ResolversTypes['PhabricatorQuery']> }>;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -84,7 +84,7 @@ export type ResolversParentTypes = {
   PhabricatorAccount: Account;
   PhabricatorQuery: QueryClass;
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
-  User: Omit<Schema.User, 'phabricatorAccounts' | 'phabricatorQueries'> & { phabricatorAccounts: ReadonlyArray<ResolversParentTypes['PhabricatorAccount']>, phabricatorQueries: ReadonlyArray<ResolversParentTypes['PhabricatorQuery']> };
+  User: User;
 };
 
 export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {

@@ -7,13 +7,14 @@ import type {
   MutationDeleteBugzillaAccountArgs,
   MutationDeleteBugzillaSearchArgs,
 } from "#schema";
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+import type { AuthedPluginContext, User } from "#server-utils";
 import { bestIcon, loadPageInfo } from "#server-utils";
 
 import { Search, Account } from "./db/implementations";
 import type { BugzillaAccountRecord } from "./db/types";
+import { Resolvers } from "./schema";
 
-const Resolvers: Resolver<AuthedPluginContext> = {
+const Resolvers: Pick<Resolvers<AuthedPluginContext>, "User" | "Mutation"> = {
   User: {
     bugzillaAccounts(
       user: User,

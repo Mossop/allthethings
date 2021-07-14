@@ -2,8 +2,8 @@
 import type { GraphQLResolveInfo } from 'graphql';
 import type { Account, Search } from './db/implementations';
 import * as Schema from '#schema';
+import { User } from '#server-utils';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
@@ -71,7 +71,7 @@ export type ResolversTypes = {
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: ResolverTypeWrapper<{}>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
-  User: ResolverTypeWrapper<Omit<Schema.User, 'jiraAccounts'> & { jiraAccounts: ReadonlyArray<ResolversTypes['JiraAccount']> }>;
+  User: ResolverTypeWrapper<User>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -84,7 +84,7 @@ export type ResolversParentTypes = {
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: {};
   Boolean: Schema.Scalars['Boolean'];
-  User: Omit<Schema.User, 'jiraAccounts'> & { jiraAccounts: ReadonlyArray<ResolversParentTypes['JiraAccount']> };
+  User: User;
 };
 
 export type JiraAccountResolvers<ContextType = any, ParentType extends ResolversParentTypes['JiraAccount'] = ResolversParentTypes['JiraAccount']> = {

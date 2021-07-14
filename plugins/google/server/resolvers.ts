@@ -1,18 +1,19 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { MutationCreateGoogleMailSearchArgs } from "#schema";
-import type { Resolver, AuthedPluginContext, User } from "#server-utils";
+import type { AuthedPluginContext, User } from "#server-utils";
 
 import { GoogleApi } from "./api";
 import { Account, MailSearch } from "./db/implementations";
+import { Resolvers } from "./schema";
 
-const Resolvers: Resolver<AuthedPluginContext> = {
+const Resolvers: Pick<Resolvers<AuthedPluginContext>, "User" | "Query" | "Mutation"> = {
   User: {
     async googleAccounts(
       user: User,
       args: unknown,
       ctx: AuthedPluginContext,
     ): Promise<Account[]> {
-      return Account.store.list(ctx, { userId: ctx.userId });
+      return Account.store.list(ctx, { userId: user.id() });
     },
   },
 
