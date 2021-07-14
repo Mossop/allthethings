@@ -22033,7 +22033,7 @@ export type UserInfoQueryVariables = Exact<{ [key: string]: never; }>;
 export type UserInfoQuery = { readonly __typename: 'Query', readonly viewer: { readonly __typename: 'User', readonly login: string, readonly avatarUrl: string } };
 
 
-export const UserInfoDocument = `
+export const userInfoQuery = `
     query UserInfo {
   viewer {
     login
@@ -22041,12 +22041,3 @@ export const UserInfoDocument = `
   }
 }
     `;
-export type Requester<C= {}> = <R, V>(doc: string, vars?: V, options?: C) => Promise<R>
-export function getSdk<C>(requester: Requester<C>) {
-  return {
-    UserInfo(variables?: UserInfoQueryVariables, options?: C): Promise<UserInfoQuery> {
-      return requester<UserInfoQuery, UserInfoQueryVariables>(UserInfoDocument, variables, options);
-    }
-  };
-}
-export type Sdk = ReturnType<typeof getSdk>;

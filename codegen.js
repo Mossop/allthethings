@@ -219,40 +219,6 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "plugins", "github", "server", "operations.ts")]: {
-      schema: "https://docs.github.com/public/schema.docs.graphql",
-      documents: path.join(__dirname, "plugins", "github", "server", "*.gql"),
-
-      plugins: {
-        "typescript": {
-          immutableTypes: true,
-          avoidOptionals: true,
-          nonOptionalTypename: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          useIndexTypes: true,
-          defaultScalarType: "string",
-        },
-        "typescript-operations": {
-          avoidOptionals: true,
-          immutableTypes: true,
-          preResolveTypes: true,
-          useTypeImports: true,
-          onlyOperationTypes: true,
-          nonOptionalTypename: true,
-          defaultScalarType: "string",
-        },
-        "typescript-generic-sdk": {
-          documentMode: "string",
-        },
-        "add": {
-          content: [
-            "/* eslint-disable */",
-          ],
-        },
-      },
-    },
-
     ...pluginTargets("bugzilla", {
       BugzillaAccount: "./db/implementations#Account",
       BugzillaSearch: "./db/implementations#Search",
@@ -273,6 +239,10 @@ module.exports = {
       PhabricatorQuery: "./db/implementations#QueryClass",
     }),
 
-    ...pluginTargets("github", {}),
+    ...pluginTargets("github", {
+      GithubAccount: "./db/implementations#Account",
+    }),
+
+    ...require("./plugins/github/server/codegen"),
   },
 };

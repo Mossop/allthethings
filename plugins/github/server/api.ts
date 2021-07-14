@@ -8,7 +8,7 @@ import type { AuthedPluginContext } from "#server-utils";
 import { GitHubPlugin } from ".";
 import type { Account } from "./db/implementations";
 import type { UserInfoQuery } from "./operations";
-import { UserInfoDocument } from "./operations";
+import { userInfoQuery } from "./operations";
 
 const SCOPES = [
   "repo",
@@ -30,7 +30,7 @@ function generateLoginUrl(pluginUrl: URL, userId: string, user?: string): string
 }
 
 export function UserInfo(kit: Octokit): Promise<UserInfoQuery> {
-  return kit.graphql(UserInfoDocument);
+  return kit.graphql(userInfoQuery);
 }
 
 export class GitHubApi {

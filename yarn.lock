@@ -1223,6 +1223,16 @@
     change-case-all "1.0.14"
     tslib "~2.3.0"
 
+"@graphql-codegen/typescript-document-nodes@^1.17.16":
+  version "1.17.16"
+  resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript-document-nodes/-/typescript-document-nodes-1.17.16.tgz#f3483c0b67c72e1db046977d1479862af5058ac7"
+  integrity sha512-ggYO4DC64u9rmdbq/LdCHUvPVmZU84SV8anduxgjpqAQM8IlJvTW/k2M9RnKGzEH2H+Y0b+VP6KaUCFv4g2gzw==
+  dependencies:
+    "@graphql-codegen/plugin-helpers" "^1.18.8"
+    "@graphql-codegen/visitor-plugin-common" "1.22.0"
+    auto-bind "~4.0.0"
+    tslib "~2.3.0"
+
 "@graphql-codegen/typescript-generic-sdk@^1.17.15":
   version "1.17.15"
   resolved "https://registry.yarnpkg.com/@graphql-codegen/typescript-generic-sdk/-/typescript-generic-sdk-1.17.15.tgz#7fdab531c8d92a0bedbd05d6b1cad56bac6653fc"

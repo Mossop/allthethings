@@ -1,7 +1,9 @@
 /* eslint-disable */
 import type { GraphQLResolveInfo } from 'graphql';
+import type { Account } from './db/implementations';
 import * as Schema from '#schema';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
+export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -60,21 +62,21 @@ export type DirectiveResolverFn<TResult = {}, TParent = {}, TContext = {}, TArgs
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
-  GithubAccount: ResolverTypeWrapper<Schema.GithubAccount>;
+  GithubAccount: ResolverTypeWrapper<Account>;
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
   Query: ResolverTypeWrapper<{}>;
-  User: ResolverTypeWrapper<Schema.User>;
+  User: ResolverTypeWrapper<Omit<Schema.User, 'githubAccounts'> & { githubAccounts: ReadonlyArray<ResolversTypes['GithubAccount']> }>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
-  GithubAccount: Schema.GithubAccount;
+  GithubAccount: Account;
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
   Query: {};
-  User: Schema.User;
+  User: Omit<Schema.User, 'githubAccounts'> & { githubAccounts: ReadonlyArray<ResolversParentTypes['GithubAccount']> };
   Boolean: Schema.Scalars['Boolean'];
 };
 
