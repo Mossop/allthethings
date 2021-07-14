@@ -36,6 +36,13 @@ export type FileDetailFieldPolicy = {
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
 };
+export type GithubAccountKeySpecifier = ('id' | 'user' | 'avatar' | 'loginUrl' | GithubAccountKeySpecifier)[];
+export type GithubAccountFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	user?: FieldPolicy<any> | FieldReadFunction<any>,
+	avatar?: FieldPolicy<any> | FieldReadFunction<any>,
+	loginUrl?: FieldPolicy<any> | FieldReadFunction<any>
+};
 export type GoogleAccountKeySpecifier = ('id' | 'email' | 'avatar' | 'mailSearches' | 'loginUrl' | GoogleAccountKeySpecifier)[];
 export type GoogleAccountFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -180,8 +187,9 @@ export type ProjectFieldPolicy = {
 	name?: FieldPolicy<any> | FieldReadFunction<any>,
 	taskList?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type QueryKeySpecifier = ('googleLoginUrl' | 'pageContent' | 'problems' | 'schemaVersion' | 'taskList' | 'user' | 'users' | QueryKeySpecifier)[];
+export type QueryKeySpecifier = ('githubLoginUrl' | 'googleLoginUrl' | 'pageContent' | 'problems' | 'schemaVersion' | 'taskList' | 'user' | 'users' | QueryKeySpecifier)[];
 export type QueryFieldPolicy = {
+	githubLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>,
 	googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>,
 	pageContent?: FieldPolicy<any> | FieldReadFunction<any>,
 	problems?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -208,12 +216,13 @@ export type TaskListFieldPolicy = {
 	sections?: FieldPolicy<any> | FieldReadFunction<any>,
 	items?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type UserKeySpecifier = ('allItems' | 'bugzillaAccounts' | 'contexts' | 'email' | 'googleAccounts' | 'id' | 'inbox' | 'isAdmin' | 'jiraAccounts' | 'phabricatorAccounts' | 'phabricatorQueries' | UserKeySpecifier)[];
+export type UserKeySpecifier = ('allItems' | 'bugzillaAccounts' | 'contexts' | 'email' | 'githubAccounts' | 'googleAccounts' | 'id' | 'inbox' | 'isAdmin' | 'jiraAccounts' | 'phabricatorAccounts' | 'phabricatorQueries' | UserKeySpecifier)[];
 export type UserFieldPolicy = {
 	allItems?: FieldPolicy<any> | FieldReadFunction<any>,
 	bugzillaAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
 	contexts?: FieldPolicy<any> | FieldReadFunction<any>,
 	email?: FieldPolicy<any> | FieldReadFunction<any>,
+	githubAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
 	googleAccounts?: FieldPolicy<any> | FieldReadFunction<any>,
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	inbox?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -238,6 +247,10 @@ export type TypedTypePolicies = TypePolicies & {
 	FileDetail?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | FileDetailKeySpecifier | (() => undefined | FileDetailKeySpecifier),
 		fields?: FileDetailFieldPolicy,
+	},
+	GithubAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | GithubAccountKeySpecifier | (() => undefined | GithubAccountKeySpecifier),
+		fields?: GithubAccountFieldPolicy,
 	},
 	GoogleAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | GoogleAccountKeySpecifier | (() => undefined | GoogleAccountKeySpecifier),

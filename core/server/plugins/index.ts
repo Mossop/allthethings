@@ -6,6 +6,7 @@ import koaMount from "koa-mount";
 import { DateTime } from "luxon";
 
 import BugzillaPluginExport from "#plugins/bugzilla/server";
+import GithubPluginExport from "#plugins/github/server";
 import GooglePluginExport from "#plugins/google/server";
 import JiraPluginExport from "#plugins/jira/server";
 import PhabricatorPluginExport from "#plugins/phabricator/server";
@@ -451,6 +452,7 @@ class PluginManager {
     startupPromises.push(this.loadPlugin(db, serverConfig, GooglePluginExport));
     startupPromises.push(this.loadPlugin(db, serverConfig, JiraPluginExport));
     startupPromises.push(this.loadPlugin(db, serverConfig, PhabricatorPluginExport));
+    startupPromises.push(this.loadPlugin(db, serverConfig, GithubPluginExport));
 
     await Promise.all(startupPromises);
   }

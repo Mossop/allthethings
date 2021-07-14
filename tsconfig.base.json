@@ -43,6 +43,10 @@
       "#plugins/phabricator/schema": ["./plugins/phabricator/schema/index.ts"],
       "#plugins/phabricator/client": ["./plugins/phabricator/client/index.tsx"],
       "#plugins/phabricator/server": ["./plugins/phabricator/server/index.ts"],
+
+      "#plugins/github/schema": ["./plugins/github/schema/index.ts"],
+      "#plugins/github/client": ["./plugins/github/client/index.tsx"],
+      "#plugins/github/server": ["./plugins/github/server/index.ts"],
     },
   },
   "exclude": [

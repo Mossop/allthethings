@@ -94,6 +94,14 @@ export type FileDetail = {
   readonly size: Scalars['Int'];
 };
 
+export type GithubAccount = {
+  readonly __typename: 'GithubAccount';
+  readonly id: Scalars['ID'];
+  readonly user: Scalars['String'];
+  readonly avatar: Scalars['String'];
+  readonly loginUrl: Scalars['String'];
+};
+
 export type GoogleAccount = {
   readonly __typename: 'GoogleAccount';
   readonly id: Scalars['ID'];
@@ -532,6 +540,7 @@ export type ProjectParams = {
 
 export type Query = {
   readonly __typename: 'Query';
+  readonly githubLoginUrl: Scalars['String'];
   readonly googleLoginUrl: Scalars['String'];
   readonly pageContent: Scalars['String'];
   readonly problems: ReadonlyArray<Problem>;
@@ -603,6 +612,7 @@ export type User = {
   readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
   readonly contexts: ReadonlyArray<Context>;
   readonly email: Scalars['String'];
+  readonly githubAccounts: ReadonlyArray<GithubAccount>;
   readonly googleAccounts: ReadonlyArray<GoogleAccount>;
   readonly id: Scalars['ID'];
   readonly inbox: ItemSet;

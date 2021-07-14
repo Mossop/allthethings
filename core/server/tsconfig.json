@@ -8,5 +8,6 @@
     { "path": "../../plugins/google/server" },
     { "path": "../../plugins/jira/server" },
     { "path": "../../plugins/phabricator/server" },
+    { "path": "../../plugins/github/server" },
   ]
 }

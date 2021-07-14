@@ -1,0 +1,15 @@
+query ListGithubAccounts {
+  user {
+    id
+    githubAccounts {
+      id
+      user
+      avatar
+      loginUrl
+    }
+  }
+}
+
+query RequestLoginUrl {
+  githubLoginUrl
+}

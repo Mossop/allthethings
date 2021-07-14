@@ -58,10 +58,18 @@
     },
     "#plugins/phabricator/schema": {
       "default": "./dist/plugins/phabricator/schema/index.js"
+    },
+    "#plugins/github/server": {
+      "default": "./dist/plugins/github/server/index.js"
+    },
+    "#plugins/github/schema": {
+      "default": "./dist/plugins/github/schema/index.js"
     }
   },
   "dependencies": {
     "@graphql-tools/merge": "^6.2.9",
+    "@octokit/auth-oauth-app": "^4.3.0",
+    "@octokit/core": "^3.5.1",
     "apollo-datasource": "^3.0.0",
     "apollo-server-koa": "^3.0.0",
     "apollo-server-plugin-base": "^3.0.0",
@@ -100,6 +108,7 @@
     "@graphql-codegen/schema-ast": "^1.18.3",
     "@graphql-codegen/typescript": "^1.20.0",
     "@graphql-codegen/typescript-apollo-client-helpers": "^1.1.2",
+    "@graphql-codegen/typescript-generic-sdk": "^1.17.15",
     "@graphql-codegen/typescript-operations": "^1.17.13",
     "@graphql-codegen/typescript-react-apollo": "^2.2.1",
     "@graphql-codegen/typescript-resolvers": "^1.18.1",

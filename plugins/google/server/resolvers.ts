@@ -8,8 +8,8 @@ import { Account, MailSearch } from "./db/implementations";
 const Resolvers: Resolver<AuthedPluginContext> = {
   User: {
     async googleAccounts(
-      _user: User,
-      _args: unknown,
+      user: User,
+      args: unknown,
       ctx: AuthedPluginContext,
     ): Promise<Account[]> {
       return Account.store.list(ctx, { userId: ctx.userId });

@@ -1,0 +1,14 @@
+type GithubAccount {
+  id: ID!
+  user: String!
+  avatar: String!
+  loginUrl: String!
+}
+
+type User {
+  githubAccounts: [GithubAccount!]!
+}
+
+type Query {
+  githubLoginUrl: String!
+}
