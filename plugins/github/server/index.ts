@@ -17,7 +17,7 @@ import type {
   Problem,
 } from "#server-utils";
 
-import { Account } from "./db/implementations";
+import { Account, IssueLike } from "./db/implementations";
 import buildMigrations from "./db/migrations";
 import Resolvers from "./resolvers";
 import type { GithubPluginConfig } from "./types";
@@ -42,6 +42,7 @@ export class GitHubPlugin extends BasePlugin implements ServerPlugin {
   ];
 
   protected readonly itemProviders = [
+    IssueLike,
   ];
 
   public static get config(): GithubPluginConfig {

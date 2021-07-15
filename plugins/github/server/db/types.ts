@@ -6,3 +6,15 @@ export type GithubAccountRecord = Omit<GithubAccount, "__typename" | "loginUrl">
   user: string;
   avatar: string;
 };
+
+export interface GithubIssueLikeRecord {
+  id: string;
+  ownerId: string;
+  nodeId: string;
+  type: "pr" | "issue";
+  number: number;
+  title: string;
+  url: string;
+  repositoryOwner: string;
+  repositoryName: string;
+}

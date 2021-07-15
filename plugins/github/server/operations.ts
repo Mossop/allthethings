@@ -22032,7 +22032,82 @@ export type UserInfoQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type UserInfoQuery = { readonly __typename: 'Query', readonly viewer: { readonly __typename: 'User', readonly login: string, readonly avatarUrl: string } };
 
+export type IssueFieldsFragment = { readonly __typename: 'Issue', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly repository: { readonly __typename: 'Repository', readonly name: string, readonly owner: { readonly __typename: 'Organization', readonly login: string } | { readonly __typename: 'User', readonly login: string } } };
 
+export type PrFieldsFragment = { readonly __typename: 'PullRequest', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly repository: { readonly __typename: 'Repository', readonly name: string, readonly owner: { readonly __typename: 'Organization', readonly login: string } | { readonly __typename: 'User', readonly login: string } } };
+
+export type IssueLikeQueryVariables = Exact<{
+  owner: Scalars['String'];
+  repo: Scalars['String'];
+  number: Scalars['Int'];
+}>;
+
+
+export type IssueLikeQuery = { readonly __typename: 'Query', readonly repository: Maybe<{ readonly __typename: 'Repository', readonly issueOrPullRequest: Maybe<(
+      { readonly __typename: 'Issue' }
+      & IssueFieldsFragment
+    ) | (
+      { readonly __typename: 'PullRequest' }
+      & PrFieldsFragment
+    )> }> };
+
+export type SearchQueryVariables = Exact<{
+  query: Scalars['String'];
+  after: Maybe<Scalars['String']>;
+}>;
+
+
+export type SearchQuery = { readonly __typename: 'Query', readonly search: { readonly __typename: 'SearchResultItemConnection', readonly pageInfo: { readonly __typename: 'PageInfo', readonly endCursor: Maybe<string>, readonly hasNextPage: boolean }, readonly nodes: Maybe<ReadonlyArray<Maybe<{ readonly __typename: 'App' } | { readonly __typename: 'Discussion' } | (
+      { readonly __typename: 'Issue' }
+      & IssueFieldsFragment
+    ) | { readonly __typename: 'MarketplaceListing' } | { readonly __typename: 'Organization' } | (
+      { readonly __typename: 'PullRequest' }
+      & PrFieldsFragment
+    ) | { readonly __typename: 'Repository' } | { readonly __typename: 'User' }>>> } };
+
+export type NodeQueryVariables = Exact<{
+  nodeId: Scalars['ID'];
+}>;
+
+
+export type NodeQuery = { readonly __typename: 'Query', readonly node: Maybe<{ readonly __typename: 'AddedToProjectEvent' } | { readonly __typename: 'App' } | { readonly __typename: 'AssignedEvent' } | { readonly __typename: 'AutoMergeDisabledEvent' } | { readonly __typename: 'AutoMergeEnabledEvent' } | { readonly __typename: 'AutoRebaseEnabledEvent' } | { readonly __typename: 'AutoSquashEnabledEvent' } | { readonly __typename: 'AutomaticBaseChangeFailedEvent' } | { readonly __typename: 'AutomaticBaseChangeSucceededEvent' } | { readonly __typename: 'BaseRefChangedEvent' } | { readonly __typename: 'BaseRefDeletedEvent' } | { readonly __typename: 'BaseRefForcePushedEvent' } | { readonly __typename: 'Blob' } | { readonly __typename: 'Bot' } | { readonly __typename: 'BranchProtectionRule' } | { readonly __typename: 'CWE' } | { readonly __typename: 'CheckRun' } | { readonly __typename: 'CheckSuite' } | { readonly __typename: 'ClosedEvent' } | { readonly __typename: 'CodeOfConduct' } | { readonly __typename: 'CommentDeletedEvent' } | { readonly __typename: 'Commit' } | { readonly __typename: 'CommitComment' } | { readonly __typename: 'CommitCommentThread' } | { readonly __typename: 'ConnectedEvent' } | { readonly __typename: 'ConvertToDraftEvent' } | { readonly __typename: 'ConvertedNoteToIssueEvent' } | { readonly __typename: 'CrossReferencedEvent' } | { readonly __typename: 'DemilestonedEvent' } | { readonly __typename: 'DependencyGraphManifest' } | { readonly __typename: 'DeployKey' } | { readonly __typename: 'DeployedEvent' } | { readonly __typename: 'Deployment' } | { readonly __typename: 'DeploymentEnvironmentChangedEvent' } | { readonly __typename: 'DeploymentProtectionRule' } | { readonly __typename: 'DeploymentReview' } | { readonly __typename: 'DeploymentStatus' } | { readonly __typename: 'DisconnectedEvent' } | { readonly __typename: 'Discussion' } | { readonly __typename: 'DiscussionCategory' } | { readonly __typename: 'DiscussionComment' } | { readonly __typename: 'Enterprise' } | { readonly __typename: 'EnterpriseAdministratorInvitation' } | { readonly __typename: 'EnterpriseIdentityProvider' } | { readonly __typename: 'EnterpriseRepositoryInfo' } | { readonly __typename: 'EnterpriseServerInstallation' } | { readonly __typename: 'EnterpriseServerUserAccount' } | { readonly __typename: 'EnterpriseServerUserAccountEmail' } | { readonly __typename: 'EnterpriseServerUserAccountsUpload' } | { readonly __typename: 'EnterpriseUserAccount' } | { readonly __typename: 'Environment' } | { readonly __typename: 'ExternalIdentity' } | { readonly __typename: 'Gist' } | { readonly __typename: 'GistComment' } | { readonly __typename: 'HeadRefDeletedEvent' } | { readonly __typename: 'HeadRefForcePushedEvent' } | { readonly __typename: 'HeadRefRestoredEvent' } | { readonly __typename: 'IpAllowListEntry' } | (
+    { readonly __typename: 'Issue' }
+    & IssueFieldsFragment
+  ) | { readonly __typename: 'IssueComment' } | { readonly __typename: 'Label' } | { readonly __typename: 'LabeledEvent' } | { readonly __typename: 'Language' } | { readonly __typename: 'License' } | { readonly __typename: 'LockedEvent' } | { readonly __typename: 'Mannequin' } | { readonly __typename: 'MarkedAsDuplicateEvent' } | { readonly __typename: 'MarketplaceCategory' } | { readonly __typename: 'MarketplaceListing' } | { readonly __typename: 'MembersCanDeleteReposClearAuditEntry' } | { readonly __typename: 'MembersCanDeleteReposDisableAuditEntry' } | { readonly __typename: 'MembersCanDeleteReposEnableAuditEntry' } | { readonly __typename: 'MentionedEvent' } | { readonly __typename: 'MergedEvent' } | { readonly __typename: 'Milestone' } | { readonly __typename: 'MilestonedEvent' } | { readonly __typename: 'MovedColumnsInProjectEvent' } | { readonly __typename: 'OauthApplicationCreateAuditEntry' } | { readonly __typename: 'OrgAddBillingManagerAuditEntry' } | { readonly __typename: 'OrgAddMemberAuditEntry' } | { readonly __typename: 'OrgBlockUserAuditEntry' } | { readonly __typename: 'OrgConfigDisableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'OrgConfigEnableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'OrgCreateAuditEntry' } | { readonly __typename: 'OrgDisableOauthAppRestrictionsAuditEntry' } | { readonly __typename: 'OrgDisableSamlAuditEntry' } | { readonly __typename: 'OrgDisableTwoFactorRequirementAuditEntry' } | { readonly __typename: 'OrgEnableOauthAppRestrictionsAuditEntry' } | { readonly __typename: 'OrgEnableSamlAuditEntry' } | { readonly __typename: 'OrgEnableTwoFactorRequirementAuditEntry' } | { readonly __typename: 'OrgInviteMemberAuditEntry' } | { readonly __typename: 'OrgInviteToBusinessAuditEntry' } | { readonly __typename: 'OrgOauthAppAccessApprovedAuditEntry' } | { readonly __typename: 'OrgOauthAppAccessDeniedAuditEntry' } | { readonly __typename: 'OrgOauthAppAccessRequestedAuditEntry' } | { readonly __typename: 'OrgRemoveBillingManagerAuditEntry' } | { readonly __typename: 'OrgRemoveMemberAuditEntry' } | { readonly __typename: 'OrgRemoveOutsideCollaboratorAuditEntry' } | { readonly __typename: 'OrgRestoreMemberAuditEntry' } | { readonly __typename: 'OrgUnblockUserAuditEntry' } | { readonly __typename: 'OrgUpdateDefaultRepositoryPermissionAuditEntry' } | { readonly __typename: 'OrgUpdateMemberAuditEntry' } | { readonly __typename: 'OrgUpdateMemberRepositoryCreationPermissionAuditEntry' } | { readonly __typename: 'OrgUpdateMemberRepositoryInvitationPermissionAuditEntry' } | { readonly __typename: 'Organization' } | { readonly __typename: 'OrganizationIdentityProvider' } | { readonly __typename: 'OrganizationInvitation' } | { readonly __typename: 'Package' } | { readonly __typename: 'PackageFile' } | { readonly __typename: 'PackageTag' } | { readonly __typename: 'PackageVersion' } | { readonly __typename: 'PinnedDiscussion' } | { readonly __typename: 'PinnedEvent' } | { readonly __typename: 'PinnedIssue' } | { readonly __typename: 'PrivateRepositoryForkingDisableAuditEntry' } | { readonly __typename: 'PrivateRepositoryForkingEnableAuditEntry' } | { readonly __typename: 'Project' } | { readonly __typename: 'ProjectCard' } | { readonly __typename: 'ProjectColumn' } | { readonly __typename: 'PublicKey' } | (
+    { readonly __typename: 'PullRequest' }
+    & PrFieldsFragment
+  ) | { readonly __typename: 'PullRequestCommit' } | { readonly __typename: 'PullRequestCommitCommentThread' } | { readonly __typename: 'PullRequestReview' } | { readonly __typename: 'PullRequestReviewComment' } | { readonly __typename: 'PullRequestReviewThread' } | { readonly __typename: 'Push' } | { readonly __typename: 'PushAllowance' } | { readonly __typename: 'Reaction' } | { readonly __typename: 'ReadyForReviewEvent' } | { readonly __typename: 'Ref' } | { readonly __typename: 'ReferencedEvent' } | { readonly __typename: 'Release' } | { readonly __typename: 'ReleaseAsset' } | { readonly __typename: 'RemovedFromProjectEvent' } | { readonly __typename: 'RenamedTitleEvent' } | { readonly __typename: 'ReopenedEvent' } | { readonly __typename: 'RepoAccessAuditEntry' } | { readonly __typename: 'RepoAddMemberAuditEntry' } | { readonly __typename: 'RepoAddTopicAuditEntry' } | { readonly __typename: 'RepoArchivedAuditEntry' } | { readonly __typename: 'RepoChangeMergeSettingAuditEntry' } | { readonly __typename: 'RepoConfigDisableAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigDisableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigDisableContributorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigDisableSockpuppetDisallowedAuditEntry' } | { readonly __typename: 'RepoConfigEnableAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigEnableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigEnableContributorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigEnableSockpuppetDisallowedAuditEntry' } | { readonly __typename: 'RepoConfigLockAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigUnlockAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoCreateAuditEntry' } | { readonly __typename: 'RepoDestroyAuditEntry' } | { readonly __typename: 'RepoRemoveMemberAuditEntry' } | { readonly __typename: 'RepoRemoveTopicAuditEntry' } | { readonly __typename: 'Repository' } | { readonly __typename: 'RepositoryInvitation' } | { readonly __typename: 'RepositoryTopic' } | { readonly __typename: 'RepositoryVisibilityChangeDisableAuditEntry' } | { readonly __typename: 'RepositoryVisibilityChangeEnableAuditEntry' } | { readonly __typename: 'RepositoryVulnerabilityAlert' } | { readonly __typename: 'ReviewDismissalAllowance' } | { readonly __typename: 'ReviewDismissedEvent' } | { readonly __typename: 'ReviewRequest' } | { readonly __typename: 'ReviewRequestRemovedEvent' } | { readonly __typename: 'ReviewRequestedEvent' } | { readonly __typename: 'SavedReply' } | { readonly __typename: 'SecurityAdvisory' } | { readonly __typename: 'SponsorsActivity' } | { readonly __typename: 'SponsorsListing' } | { readonly __typename: 'SponsorsTier' } | { readonly __typename: 'Sponsorship' } | { readonly __typename: 'Status' } | { readonly __typename: 'StatusCheckRollup' } | { readonly __typename: 'StatusContext' } | { readonly __typename: 'SubscribedEvent' } | { readonly __typename: 'Tag' } | { readonly __typename: 'Team' } | { readonly __typename: 'TeamAddMemberAuditEntry' } | { readonly __typename: 'TeamAddRepositoryAuditEntry' } | { readonly __typename: 'TeamChangeParentTeamAuditEntry' } | { readonly __typename: 'TeamDiscussion' } | { readonly __typename: 'TeamDiscussionComment' } | { readonly __typename: 'TeamRemoveMemberAuditEntry' } | { readonly __typename: 'TeamRemoveRepositoryAuditEntry' } | { readonly __typename: 'Topic' } | { readonly __typename: 'TransferredEvent' } | { readonly __typename: 'Tree' } | { readonly __typename: 'UnassignedEvent' } | { readonly __typename: 'UnlabeledEvent' } | { readonly __typename: 'UnlockedEvent' } | { readonly __typename: 'UnmarkedAsDuplicateEvent' } | { readonly __typename: 'UnpinnedEvent' } | { readonly __typename: 'UnsubscribedEvent' } | { readonly __typename: 'User' } | { readonly __typename: 'UserBlockedEvent' } | { readonly __typename: 'UserContentEdit' } | { readonly __typename: 'UserStatus' } | { readonly __typename: 'VerifiableDomain' } | { readonly __typename: 'Workflow' } | { readonly __typename: 'WorkflowRun' }> };
+
+export const issueFields = `
+    fragment issueFields on Issue {
+  id
+  number
+  title
+  url
+  closedAt
+  repository {
+    owner {
+      login
+    }
+    name
+  }
+}
+    `;
+export const prFields = `
+    fragment prFields on PullRequest {
+  id
+  number
+  title
+  url
+  closedAt
+  repository {
+    owner {
+      login
+    }
+    name
+  }
+}
+    `;
 export const userInfoQuery = `
     query UserInfo {
   viewer {
@@ -22041,3 +22116,41 @@ export const userInfoQuery = `
   }
 }
     `;
+export const issueLikeQuery = `
+    query IssueLike($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    issueOrPullRequest(number: $number) {
+      __typename
+      ...issueFields
+      ...prFields
+    }
+  }
+}
+    ${issueFields}
+${prFields}`;
+export const searchQuery = `
+    query Search($query: String!, $after: String) {
+  search(query: $query, type: ISSUE, first: 100, after: $after) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    nodes {
+      __typename
+      ...issueFields
+      ...prFields
+    }
+  }
+}
+    ${issueFields}
+${prFields}`;
+export const nodeQuery = `
+    query Node($nodeId: ID!) {
+  node(id: $nodeId) {
+    __typename
+    ...issueFields
+    ...prFields
+  }
+}
+    ${issueFields}
+${prFields}`;

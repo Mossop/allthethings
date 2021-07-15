@@ -7,8 +7,9 @@ import type { AuthedPluginContext } from "#server-utils";
 
 import { GitHubPlugin } from ".";
 import type { Account } from "./db/implementations";
-import type { UserInfoQuery } from "./operations";
-import { userInfoQuery } from "./operations";
+import type { IssueLikeQuery, NodeQuery, SearchQuery, UserInfoQuery } from "./operations";
+import { nodeQuery, issueLikeQuery, searchQuery, userInfoQuery } from "./operations";
+import type { IssueLikeApiResult } from "./types";
 
 const SCOPES = [
   "repo",
@@ -40,6 +41,56 @@ export class GitHubApi {
     private readonly account: Account,
   ) {
     this.kit = GitHubApi.getKit(account.token);
+  }
+
+  public async node(nodeId: string): Promise<IssueLikeApiResult | null> {
+    let result = await this.kit.graphql<NodeQuery>(nodeQuery, {
+      nodeId,
+    });
+
+    if (result.node?.__typename == "Issue" || result.node?.__typename == "PullRequest") {
+      return result.node;
+    }
+    return null;
+  }
+
+  public async lookup(
+    owner: string,
+    repo: string,
+    number: number,
+  ): Promise<IssueLikeApiResult | null> {
+    let result = await this.kit.graphql<IssueLikeQuery>(issueLikeQuery, {
+      owner,
+      repo,
+      number,
+    });
+
+    return result.repository?.issueOrPullRequest ?? null;
+  }
+
+  public async search(query: string): Promise<readonly IssueLikeApiResult[]> {
+    let result = await this.kit.graphql<SearchQuery>(searchQuery, { query });
+    let issueLikes: IssueLikeApiResult[] = [];
+
+    let appendIssues = (result: SearchQuery): void => {
+      for (let node of result.search.nodes ?? []) {
+        if (node?.__typename == "Issue" || node?.__typename == "PullRequest") {
+          issueLikes.push(node);
+        }
+      }
+    };
+
+    appendIssues(result);
+    while (result.search.pageInfo.hasNextPage) {
+      result = await this.kit.graphql<SearchQuery>(searchQuery, {
+        query,
+        after: result.search.pageInfo.hasNextPage,
+      });
+
+      appendIssues(result);
+    }
+
+    return issueLikes;
   }
 
   public generateLoginUrl(): string {

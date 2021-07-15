@@ -23,6 +23,7 @@ module.exports = {
         onlyOperationTypes: true,
         nonOptionalTypename: true,
         defaultScalarType: "string",
+        skipTypename: true,
       },
       "typescript-document-nodes": {
         documentMode: "string",

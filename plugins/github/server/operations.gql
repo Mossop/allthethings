@@ -4,3 +4,63 @@ query UserInfo {
     avatarUrl(size: 24)
   }
 }
+
+fragment issueFields on Issue {
+  id
+  number
+  title
+  url
+  closedAt
+  repository {
+    owner {
+      login
+    }
+    name
+  }
+}
+
+fragment prFields on PullRequest {
+  id
+  number
+  title
+  url
+  closedAt
+  repository {
+    owner {
+      login
+    }
+    name
+  }
+}
+
+query IssueLike($owner: String!, $repo: String!, $number: Int!) {
+  repository(owner: $owner, name: $repo) {
+    issueOrPullRequest(number: $number) {
+      __typename
+      ...issueFields
+      ...prFields
+    }
+  }
+}
+
+query Search($query: String!, $after: String) {
+  search(query: $query, type: ISSUE, first: 100, after: $after) {
+    pageInfo {
+      endCursor
+      hasNextPage
+    }
+    nodes {
+      __typename
+      ...issueFields
+      ...prFields
+    }
+  }
+}
+
+query Node($nodeId: ID!) {
+  node(id: $nodeId) {
+    __typename
+    ...issueFields
+    ...prFields
+  }
+}

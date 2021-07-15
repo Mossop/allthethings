@@ -3,9 +3,10 @@ import { makeStyles, createStyles } from "@material-ui/core";
 
 import type { ReactResult } from "#client-utils";
 import { Styles, ReactMemo } from "#client-utils";
-import type { IssueFields } from "#plugins/github/schema";
+import type { IssueLikeFields } from "#plugins/github/schema";
 
 import IssueIcon from "./logos/Issue";
+import PullRequestIcon from "./logos/PullRequest";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,19 +28,19 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }));
 
-export interface IssueProps {
-  issue: IssueFields;
+export interface IssueLikeProps {
+  issueLike: IssueLikeFields;
 }
 
-export default ReactMemo(function Issue({
-  issue,
-}: IssueProps): ReactResult {
+export default ReactMemo(function IssueLike({
+  issueLike,
+}: IssueLikeProps): ReactResult {
   let classes = useStyles();
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href="">
+  return <a className={classes.link} rel="noreferrer" target="_blank" href={issueLike.url}>
     <div className={classes.iconContainer}>
-      <IssueIcon/>
+      {issueLike.type == "pr" ? <PullRequestIcon/> : <IssueIcon/>}
     </div>
-    <div className={classes.name}>Bleh</div>
+    <div className={classes.name}>{issueLike.title}</div>
   </a>;
 });

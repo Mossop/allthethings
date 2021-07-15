@@ -1,7 +1,7 @@
 import type { ClientPlugin, PluginItemProps, ReactResult } from "#client-utils";
-import type { IssueFields } from "#plugins/github/schema";
+import type { IssueLikeFields } from "#plugins/github/schema";
 
-import Issue from "./Issue";
+import IssueLike from "./IssueLike";
 import { SettingsPage, SettingsPages } from "./Settings";
 
 class GithubPlugin implements ClientPlugin {
@@ -17,8 +17,8 @@ class GithubPlugin implements ClientPlugin {
   }
 
   public renderItem(itemProps: PluginItemProps): ReactResult {
-    let fields: IssueFields = JSON.parse(itemProps.fields);
-    return <Issue issue={fields}/>;
+    let fields: IssueLikeFields = JSON.parse(itemProps.fields);
+    return <IssueLike issueLike={fields}/>;
   }
 }
 
