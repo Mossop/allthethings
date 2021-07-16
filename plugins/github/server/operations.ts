@@ -1,4 +1,5 @@
 /* eslint-disable */
+import gql from 'graphql-tag';
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = { [K in keyof T]: T[K] };
 export type MakeOptional<T, K extends keyof T> = Omit<T, K> & { [SubKey in K]?: Maybe<T[SubKey]> };
@@ -22032,9 +22033,25 @@ export type UserInfoQueryVariables = Exact<{ [key: string]: never; }>;
 
 export type UserInfoQuery = { readonly __typename: 'Query', readonly viewer: { readonly __typename: 'User', readonly login: string, readonly avatarUrl: string } };
 
-export type IssueFieldsFragment = { readonly __typename: 'Issue', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly repository: { readonly __typename: 'Repository', readonly name: string, readonly owner: { readonly __typename: 'Organization', readonly login: string } | { readonly __typename: 'User', readonly login: string } } };
+export type LabelFieldsFragment = { readonly __typename: 'Label', readonly id: string, readonly name: string, readonly color: string, readonly url: string };
 
-export type PrFieldsFragment = { readonly __typename: 'PullRequest', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly repository: { readonly __typename: 'Repository', readonly name: string, readonly owner: { readonly __typename: 'Organization', readonly login: string } | { readonly __typename: 'User', readonly login: string } } };
+export type RepositoryFieldsFragment = { readonly __typename: 'Repository', readonly id: string, readonly url: string, readonly name: string, readonly owner: { readonly __typename: 'Organization', readonly login: string } | { readonly __typename: 'User', readonly login: string } };
+
+export type IssueFieldsFragment = { readonly __typename: 'Issue', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly issueState: IssueState, readonly labels: Maybe<{ readonly __typename: 'LabelConnection', readonly nodes: Maybe<ReadonlyArray<Maybe<(
+      { readonly __typename: 'Label' }
+      & LabelFieldsFragment
+    )>>> }>, readonly repository: (
+    { readonly __typename: 'Repository' }
+    & RepositoryFieldsFragment
+  ) };
+
+export type PrFieldsFragment = { readonly __typename: 'PullRequest', readonly id: string, readonly number: number, readonly title: string, readonly url: string, readonly closedAt: Maybe<string>, readonly prState: PullRequestState, readonly labels: Maybe<{ readonly __typename: 'LabelConnection', readonly nodes: Maybe<ReadonlyArray<Maybe<(
+      { readonly __typename: 'Label' }
+      & LabelFieldsFragment
+    )>>> }>, readonly repository: (
+    { readonly __typename: 'Repository' }
+    & RepositoryFieldsFragment
+  ) };
 
 export type IssueLikeQueryVariables = Exact<{
   owner: Scalars['String'];
@@ -22078,37 +22095,63 @@ export type NodeQuery = { readonly __typename: 'Query', readonly node: Maybe<{ r
     & PrFieldsFragment
   ) | { readonly __typename: 'PullRequestCommit' } | { readonly __typename: 'PullRequestCommitCommentThread' } | { readonly __typename: 'PullRequestReview' } | { readonly __typename: 'PullRequestReviewComment' } | { readonly __typename: 'PullRequestReviewThread' } | { readonly __typename: 'Push' } | { readonly __typename: 'PushAllowance' } | { readonly __typename: 'Reaction' } | { readonly __typename: 'ReadyForReviewEvent' } | { readonly __typename: 'Ref' } | { readonly __typename: 'ReferencedEvent' } | { readonly __typename: 'Release' } | { readonly __typename: 'ReleaseAsset' } | { readonly __typename: 'RemovedFromProjectEvent' } | { readonly __typename: 'RenamedTitleEvent' } | { readonly __typename: 'ReopenedEvent' } | { readonly __typename: 'RepoAccessAuditEntry' } | { readonly __typename: 'RepoAddMemberAuditEntry' } | { readonly __typename: 'RepoAddTopicAuditEntry' } | { readonly __typename: 'RepoArchivedAuditEntry' } | { readonly __typename: 'RepoChangeMergeSettingAuditEntry' } | { readonly __typename: 'RepoConfigDisableAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigDisableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigDisableContributorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigDisableSockpuppetDisallowedAuditEntry' } | { readonly __typename: 'RepoConfigEnableAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigEnableCollaboratorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigEnableContributorsOnlyAuditEntry' } | { readonly __typename: 'RepoConfigEnableSockpuppetDisallowedAuditEntry' } | { readonly __typename: 'RepoConfigLockAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoConfigUnlockAnonymousGitAccessAuditEntry' } | { readonly __typename: 'RepoCreateAuditEntry' } | { readonly __typename: 'RepoDestroyAuditEntry' } | { readonly __typename: 'RepoRemoveMemberAuditEntry' } | { readonly __typename: 'RepoRemoveTopicAuditEntry' } | { readonly __typename: 'Repository' } | { readonly __typename: 'RepositoryInvitation' } | { readonly __typename: 'RepositoryTopic' } | { readonly __typename: 'RepositoryVisibilityChangeDisableAuditEntry' } | { readonly __typename: 'RepositoryVisibilityChangeEnableAuditEntry' } | { readonly __typename: 'RepositoryVulnerabilityAlert' } | { readonly __typename: 'ReviewDismissalAllowance' } | { readonly __typename: 'ReviewDismissedEvent' } | { readonly __typename: 'ReviewRequest' } | { readonly __typename: 'ReviewRequestRemovedEvent' } | { readonly __typename: 'ReviewRequestedEvent' } | { readonly __typename: 'SavedReply' } | { readonly __typename: 'SecurityAdvisory' } | { readonly __typename: 'SponsorsActivity' } | { readonly __typename: 'SponsorsListing' } | { readonly __typename: 'SponsorsTier' } | { readonly __typename: 'Sponsorship' } | { readonly __typename: 'Status' } | { readonly __typename: 'StatusCheckRollup' } | { readonly __typename: 'StatusContext' } | { readonly __typename: 'SubscribedEvent' } | { readonly __typename: 'Tag' } | { readonly __typename: 'Team' } | { readonly __typename: 'TeamAddMemberAuditEntry' } | { readonly __typename: 'TeamAddRepositoryAuditEntry' } | { readonly __typename: 'TeamChangeParentTeamAuditEntry' } | { readonly __typename: 'TeamDiscussion' } | { readonly __typename: 'TeamDiscussionComment' } | { readonly __typename: 'TeamRemoveMemberAuditEntry' } | { readonly __typename: 'TeamRemoveRepositoryAuditEntry' } | { readonly __typename: 'Topic' } | { readonly __typename: 'TransferredEvent' } | { readonly __typename: 'Tree' } | { readonly __typename: 'UnassignedEvent' } | { readonly __typename: 'UnlabeledEvent' } | { readonly __typename: 'UnlockedEvent' } | { readonly __typename: 'UnmarkedAsDuplicateEvent' } | { readonly __typename: 'UnpinnedEvent' } | { readonly __typename: 'UnsubscribedEvent' } | { readonly __typename: 'User' } | { readonly __typename: 'UserBlockedEvent' } | { readonly __typename: 'UserContentEdit' } | { readonly __typename: 'UserStatus' } | { readonly __typename: 'VerifiableDomain' } | { readonly __typename: 'Workflow' } | { readonly __typename: 'WorkflowRun' }> };
 
-export const issueFields = `
+export const labelFields = gql`
+    fragment labelFields on Label {
+  id
+  name
+  color
+  url
+}
+    `;
+export const repositoryFields = gql`
+    fragment repositoryFields on Repository {
+  id
+  url
+  owner {
+    login
+  }
+  name
+}
+    `;
+export const issueFields = gql`
     fragment issueFields on Issue {
   id
   number
   title
   url
+  issueState: state
   closedAt
-  repository {
-    owner {
-      login
+  labels(first: 10) {
+    nodes {
+      ...labelFields
     }
-    name
+  }
+  repository {
+    ...repositoryFields
   }
 }
-    `;
-export const prFields = `
+    ${labelFields}
+${repositoryFields}`;
+export const prFields = gql`
     fragment prFields on PullRequest {
   id
   number
   title
   url
+  prState: state
   closedAt
-  repository {
-    owner {
-      login
+  labels(first: 10) {
+    nodes {
+      ...labelFields
     }
-    name
+  }
+  repository {
+    ...repositoryFields
   }
 }
-    `;
-export const userInfoQuery = `
+    ${labelFields}
+${repositoryFields}`;
+export const userInfoQuery = gql`
     query UserInfo {
   viewer {
     login
@@ -22116,7 +22159,7 @@ export const userInfoQuery = `
   }
 }
     `;
-export const issueLikeQuery = `
+export const issueLikeQuery = gql`
     query IssueLike($owner: String!, $repo: String!, $number: Int!) {
   repository(owner: $owner, name: $repo) {
     issueOrPullRequest(number: $number) {
@@ -22128,7 +22171,7 @@ export const issueLikeQuery = `
 }
     ${issueFields}
 ${prFields}`;
-export const searchQuery = `
+export const searchQuery = gql`
     query Search($query: String!, $after: String) {
   search(query: $query, type: ISSUE, first: 100, after: $after) {
     pageInfo {
@@ -22144,7 +22187,7 @@ export const searchQuery = `
 }
     ${issueFields}
 ${prFields}`;
-export const nodeQuery = `
+export const nodeQuery = gql`
     query Node($nodeId: ID!) {
   node(id: $nodeId) {
     __typename

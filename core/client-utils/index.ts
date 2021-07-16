@@ -6,6 +6,7 @@ export * from "./HiddenInput";
 export * from "./hooks";
 export * as Icons from "./Icons";
 export * from "./ImageIcon";
+export * from "./ItemPill";
 export * from "./Link";
 export * from "./Loading";
 export * from "./Menu";

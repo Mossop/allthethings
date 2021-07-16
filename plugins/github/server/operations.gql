@@ -5,17 +5,36 @@ query UserInfo {
   }
 }
 
+fragment labelFields on Label {
+  id
+  name
+  color
+  url
+}
+
+fragment repositoryFields on Repository {
+  id
+  url
+  owner {
+    login
+  }
+  name
+}
+
 fragment issueFields on Issue {
   id
   number
   title
   url
+  issueState: state
   closedAt
-  repository {
-    owner {
-      login
+  labels(first: 10) {
+    nodes {
+      ...labelFields
     }
-    name
+  }
+  repository {
+    ...repositoryFields
   }
 }
 
@@ -24,12 +43,15 @@ fragment prFields on PullRequest {
   number
   title
   url
+  prState: state
   closedAt
-  repository {
-    owner {
-      login
+  labels(first: 10) {
+    nodes {
+      ...labelFields
     }
-    name
+  }
+  repository {
+    ...repositoryFields
   }
 }
 

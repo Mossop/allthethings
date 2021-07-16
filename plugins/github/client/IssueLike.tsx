@@ -2,8 +2,8 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
 import type { ReactResult } from "#client-utils";
-import { Styles, ReactMemo } from "#client-utils";
-import type { IssueLikeFields } from "#plugins/github/schema";
+import { ItemPill, Styles, ReactMemo } from "#client-utils";
+import type { IssueLikeFields, LabelFields } from "#plugins/github/schema";
 
 import IssueIcon from "./logos/Issue";
 import PullRequestIcon from "./logos/PullRequest";
@@ -42,5 +42,23 @@ export default ReactMemo(function IssueLike({
       {issueLike.type == "pr" ? <PullRequestIcon/> : <IssueIcon/>}
     </div>
     <div className={classes.name}>{issueLike.title}</div>
+    {
+      issueLike.labels.map((label: LabelFields) => <ItemPill
+        key={label.name}
+        url={label.url}
+        border={false}
+        style={
+          {
+            backgroundColor: `#${label.color}`,
+            color: "black",
+          }
+        }
+      >
+        {label.name}
+      </ItemPill>)
+    }
+    <ItemPill url={issueLike.repository.url}>
+      {issueLike.repository.owner}/{issueLike.repository.name}
+    </ItemPill>
   </a>;
 });

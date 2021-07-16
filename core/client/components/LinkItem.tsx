@@ -2,7 +2,7 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
 import type { ReactResult } from "#client-utils";
-import { Styles, Icons, ReactMemo } from "#client-utils";
+import { ItemPill, Styles, Icons, ReactMemo } from "#client-utils";
 import type { Overwrite } from "#utils";
 
 import type { LinkItem } from "../schema";
@@ -41,6 +41,7 @@ export default ReactMemo(function LinkItem({
   item,
 }: LinkItemProps): ReactResult {
   let classes = useStyles();
+  let url = new URL(item.detail.url);
 
   return <a className={classes.link} rel="noreferrer" target="_blank" href={item.detail.url}>
     <div className={classes.iconContainer}>
@@ -51,5 +52,6 @@ export default ReactMemo(function LinkItem({
       }
     </div>
     <div className={classes.summary}>{item.summary}</div>
+    <ItemPill>{url.hostname}</ItemPill>
   </a>;
 });

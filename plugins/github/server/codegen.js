@@ -26,7 +26,6 @@ module.exports = {
         skipTypename: true,
       },
       "typescript-document-nodes": {
-        documentMode: "string",
         defaultScalarType: "string",
         useTypeImports: true,
         nameSuffix: "Query",

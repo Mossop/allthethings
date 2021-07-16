@@ -7,6 +7,7 @@ import {
 
 import type { ReactResult } from "#client-utils";
 import {
+  ItemPill,
   ImageIcon,
   Styles,
   ReactMemo,
@@ -33,11 +34,6 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-    status: {
-      paddingLeft: theme.spacing(1),
-      textTransform: "uppercase",
-      fontSize: "0.7rem",
-    },
   }));
 
 export interface IssueProps {
@@ -56,6 +52,6 @@ export default ReactMemo(function Issue({
       </div>
     </Tooltip>
     <div className={classes.summary}>{issue.summary}</div>
-    <div className={classes.status}>{issue.status}</div>
+    <ItemPill border={false}>{issue.status}</ItemPill>
   </a>;
 });

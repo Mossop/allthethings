@@ -2,6 +2,7 @@ import { URL } from "url";
 
 import { createOAuthUserAuth } from "@octokit/auth-oauth-user";
 import { Octokit } from "@octokit/core";
+import { print } from "graphql";
 
 import type { AuthedPluginContext } from "#server-utils";
 
@@ -31,7 +32,7 @@ function generateLoginUrl(pluginUrl: URL, userId: string, user?: string): string
 }
 
 export function UserInfo(kit: Octokit): Promise<UserInfoQuery> {
-  return kit.graphql(userInfoQuery);
+  return kit.graphql(print(userInfoQuery));
 }
 
 export class GitHubApi {
@@ -43,8 +44,12 @@ export class GitHubApi {
     this.kit = GitHubApi.getKit(account.token);
   }
 
+  public async userInfo(): Promise<UserInfoQuery> {
+    return UserInfo(this.kit);
+  }
+
   public async node(nodeId: string): Promise<IssueLikeApiResult | null> {
-    let result = await this.kit.graphql<NodeQuery>(nodeQuery, {
+    let result = await this.kit.graphql<NodeQuery>(print(nodeQuery), {
       nodeId,
     });
 
@@ -59,7 +64,7 @@ export class GitHubApi {
     repo: string,
     number: number,
   ): Promise<IssueLikeApiResult | null> {
-    let result = await this.kit.graphql<IssueLikeQuery>(issueLikeQuery, {
+    let result = await this.kit.graphql<IssueLikeQuery>(print(issueLikeQuery), {
       owner,
       repo,
       number,
@@ -69,7 +74,7 @@ export class GitHubApi {
   }
 
   public async search(query: string): Promise<readonly IssueLikeApiResult[]> {
-    let result = await this.kit.graphql<SearchQuery>(searchQuery, { query });
+    let result = await this.kit.graphql<SearchQuery>(print(searchQuery), { query });
     let issueLikes: IssueLikeApiResult[] = [];
 
     let appendIssues = (result: SearchQuery): void => {
@@ -82,7 +87,7 @@ export class GitHubApi {
 
     appendIssues(result);
     while (result.search.pageInfo.hasNextPage) {
-      result = await this.kit.graphql<SearchQuery>(searchQuery, {
+      result = await this.kit.graphql<SearchQuery>(print(searchQuery), {
         query,
         after: result.search.pageInfo.hasNextPage,
       });

@@ -7,6 +7,7 @@ import { RevisionStatus } from "conduit-api";
 
 import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
+  ItemPill,
   ImageIcon,
   Styles,
   ReactMemo,
@@ -33,11 +34,6 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-    status: {
-      paddingLeft: theme.spacing(1),
-      textTransform: "uppercase",
-      fontSize: "0.7rem",
-    },
   }));
 
 const StatusMap: Record<RevisionStatus, string> = {
@@ -62,6 +58,6 @@ export default ReactMemo(function Revision({
       <ImageIcon icon={revision.icon ?? <Icon/>}/>
     </div>
     <div className={classes.summary}>{revision.title}</div>
-    <div className={classes.status}>{StatusMap[revision.status]}</div>
+    <ItemPill border={false}>{StatusMap[revision.status]}</ItemPill>
   </a>;
 });

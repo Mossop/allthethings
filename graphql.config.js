@@ -2,12 +2,12 @@ module.exports = {
   projects: {
     allthethings: {
       schema: [
-        "core/schema/*.graphql",
-        "plugins/*/schema/*.graphql",
+        "core/schema/**/*",
+        "plugins/*/schema/**/*",
       ],
       documents: [
-        "core/**/*.gql",
-        "plugins/*/client/*.gql",
+        "core/client/**/*",
+        "plugins/*/client/**/*",
       ],
     },
     github: {
@@ -15,7 +15,7 @@ module.exports = {
         "https://docs.github.com/public/schema.docs.graphql",
       ],
       documents: [
-        "plugins/github/server/*.gql",
+        "plugins/github/server/**/*",
       ],
     },
   },

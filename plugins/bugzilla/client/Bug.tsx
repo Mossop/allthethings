@@ -6,6 +6,7 @@ import {
 
 import type { PluginItemProps, ReactResult } from "#client-utils";
 import {
+  ItemPill,
   ImageIcon,
   Styles,
   ReactMemo,
@@ -32,16 +33,6 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-    status: {
-      paddingLeft: theme.spacing(1),
-      textTransform: "uppercase",
-      fontSize: "0.7rem",
-    },
-    resolution: {
-      paddingLeft: "0.5em",
-      textTransform: "uppercase",
-      fontSize: "0.7rem",
-    },
   }));
 
 export default ReactMemo(function Bug({
@@ -56,7 +47,7 @@ export default ReactMemo(function Bug({
       <ImageIcon icon={bug.icon ?? <Icon/>}/>
     </div>
     <div className={classes.summary}>{bug.summary}</div>
-    <div className={classes.status}>{bug.status}</div>
-    {bug.resolution && <div className={classes.resolution}>{bug.resolution}</div>}
+    <ItemPill border={false}>{bug.status}</ItemPill>
+    {bug.resolution && <ItemPill>{bug.resolution}</ItemPill>}
   </a>;
 });
