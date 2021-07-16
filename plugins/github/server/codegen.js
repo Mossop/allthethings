@@ -29,7 +29,7 @@ module.exports = {
         defaultScalarType: "string",
         useTypeImports: true,
         nameSuffix: "Query",
-        namingConvention: "camelCase",
+        namingConvention: "change-case-all#camelCase",
       },
       "add": {
         content: [
