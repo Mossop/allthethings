@@ -25,11 +25,9 @@ module.exports = {
         defaultScalarType: "string",
         skipTypename: true,
       },
-      "typescript-document-nodes": {
+      "typescript-generic-sdk": {
         defaultScalarType: "string",
         useTypeImports: true,
-        nameSuffix: "Query",
-        namingConvention: "change-case-all#camelCase",
       },
       "add": {
         content: [

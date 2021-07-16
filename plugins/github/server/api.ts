@@ -2,14 +2,16 @@ import { URL } from "url";
 
 import { createOAuthUserAuth } from "@octokit/auth-oauth-user";
 import { Octokit } from "@octokit/core";
+import type { RequestParameters } from "@octokit/types";
+import type { DocumentNode } from "graphql";
 import { print } from "graphql";
 
 import type { AuthedPluginContext } from "#server-utils";
 
 import { GitHubPlugin } from ".";
 import type { Account } from "./db/implementations";
-import type { IssueLikeQuery, NodeQuery, SearchQuery, UserInfoQuery } from "./operations";
-import { nodeQuery, issueLikeQuery, searchQuery, userInfoQuery } from "./operations";
+import type { SearchQuery, UserInfoQuery } from "./operations";
+import { getSdk } from "./operations";
 import type { IssueLikeApiResult } from "./types";
 
 const SCOPES = [
@@ -31,17 +33,38 @@ function generateLoginUrl(pluginUrl: URL, userId: string, user?: string): string
   return url.toString();
 }
 
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+function buildSdk(kit: Octokit) {
+  return getSdk(
+    async <R, V>(doc: DocumentNode, vars?: V, options?: RequestParameters): Promise<R> => {
+      let result = await kit.graphql<R | null>(print(doc), {
+        ...vars,
+        ...options,
+      });
+
+      if (result === null) {
+        throw new Error("Invalid server response.");
+      }
+
+      return result;
+    },
+  );
+}
+
 export function UserInfo(kit: Octokit): Promise<UserInfoQuery> {
-  return kit.graphql(print(userInfoQuery));
+  let sdk = buildSdk(kit);
+  return sdk.UserInfo();
 }
 
 export class GitHubApi {
   private readonly kit: Octokit;
+  private readonly sdk: ReturnType<typeof buildSdk>;
 
   public constructor(
     private readonly account: Account,
   ) {
     this.kit = GitHubApi.getKit(account.token);
+    this.sdk = buildSdk(this.kit);
   }
 
   public async userInfo(): Promise<UserInfoQuery> {
@@ -49,7 +72,7 @@ export class GitHubApi {
   }
 
   public async node(nodeId: string): Promise<IssueLikeApiResult | null> {
-    let result = await this.kit.graphql<NodeQuery>(print(nodeQuery), {
+    let result = await this.sdk.Node({
       nodeId,
     });
 
@@ -64,7 +87,7 @@ export class GitHubApi {
     repo: string,
     number: number,
   ): Promise<IssueLikeApiResult | null> {
-    let result = await this.kit.graphql<IssueLikeQuery>(print(issueLikeQuery), {
+    let result = await this.sdk.IssueLike({
       owner,
       repo,
       number,
@@ -74,7 +97,7 @@ export class GitHubApi {
   }
 
   public async search(query: string): Promise<readonly IssueLikeApiResult[]> {
-    let result = await this.kit.graphql<SearchQuery>(print(searchQuery), { query });
+    let result = await this.sdk.Search({ query, after: null });
     let issueLikes: IssueLikeApiResult[] = [];
 
     let appendIssues = (result: SearchQuery): void => {
@@ -87,9 +110,9 @@ export class GitHubApi {
 
     appendIssues(result);
     while (result.search.pageInfo.hasNextPage) {
-      result = await this.kit.graphql<SearchQuery>(print(searchQuery), {
+      result = await this.sdk.Search({
         query,
-        after: result.search.pageInfo.hasNextPage,
+        after: result.search.pageInfo.endCursor,
       });
 
       appendIssues(result);
