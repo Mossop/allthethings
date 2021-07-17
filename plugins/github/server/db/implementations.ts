@@ -348,15 +348,16 @@ export class Search extends BaseList<IssueLikeApiResult[]>
     let instances: IssueLike[] = [];
 
     for (let issue of issueList) {
+      let repo = await Repository.getOrCreate(this.account, issue.repository);
+
       let instance = await IssueLike.store.first(this.account.context, {
-        ownerId: this.account.id,
+        ownerId: repo.id,
         nodeId: issue.id,
       });
 
       if (instance) {
         await instance.update(issue);
       } else {
-        let repo = await Repository.getOrCreate(this.account, issue.repository);
         instance = await IssueLike.create(repo, issue, TaskController.PluginList);
       }
 
