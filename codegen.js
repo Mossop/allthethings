@@ -245,6 +245,7 @@ module.exports = {
 
     ...pluginTargets("github", {
       GithubAccount: "./db/implementations#Account",
+      GithubSearch: "./db/implementations#Search",
     }),
 
     ...require("./plugins/github/server/codegen"),

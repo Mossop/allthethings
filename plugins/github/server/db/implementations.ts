@@ -1,4 +1,4 @@
-import type { URL } from "url";
+import { URL } from "url";
 
 import { DateTime } from "luxon";
 
@@ -10,6 +10,7 @@ import {
   classBuilder,
   BaseItem,
   OwnedItemsTable,
+  BaseList,
 } from "#server-utils";
 import type {
   PluginContext,
@@ -17,13 +18,14 @@ import type {
 } from "#server-utils";
 
 import { GitHubApi, UserInfo } from "../api";
-import type { GithubAccountResolvers } from "../schema";
+import type { GithubAccountResolvers, GithubSearchResolvers } from "../schema";
 import type { IssueLikeApiResult, LabelApiResult, RepositoryApiResult } from "../types";
 import type {
   GithubAccountRecord,
   GithubIssueLikeRecord,
   GithubLabelRecord,
   GithubRepositoryRecord,
+  GithubSearchRecord,
   IssueLikeLabelsRecord,
 } from "./types";
 
@@ -76,6 +78,12 @@ export class Account extends BaseAccount implements GithubAccountResolvers {
 
   public get loginUrl(): string {
     return this.api.generateLoginUrl();
+  }
+
+  public searches(): Promise<Search[]> {
+    return Search.store.list(this.context, {
+      ownerId: this.id,
+    });
   }
 
   public async items(): Promise<BaseItem[]> {
@@ -222,12 +230,14 @@ export class Label {
       .where("issueLike", issueLike.id)
       .delete();
 
-    await issueLike.context.table<IssueLikeLabelsRecord>("IssueLikeLabels")
-      .insert(labelIds.map((label: string): IssueLikeLabelsRecord => ({
-        ownerId: issueLike.owner.id,
-        issueLike: issueLike.id,
-        label,
-      })));
+    if (labels.length) {
+      await issueLike.context.table<IssueLikeLabelsRecord>("IssueLikeLabels")
+        .insert(labelIds.map((label: string): IssueLikeLabelsRecord => ({
+          ownerId: issueLike.owner.id,
+          issueLike: issueLike.id,
+          label,
+        })));
+    }
   }
 
   public static async getOrCreate(
@@ -281,6 +291,102 @@ export class Label {
       color: this.record.color,
       url: this.record.url,
     };
+  }
+}
+
+export class Search extends BaseList<IssueLikeApiResult[]>
+  implements GithubSearchResolvers {
+  public static readonly store = new OwnedItemsTable(
+    Account.store,
+    classBuilder(Search),
+    "Search",
+  );
+
+  public constructor(
+    private readonly account: Account,
+    private record: GithubSearchRecord,
+  ) {
+    super(account.context);
+  }
+
+  public async onRecordUpdate(record: GithubSearchRecord): Promise<void> {
+    this.record = record;
+  }
+
+  public get owner(): Account {
+    return this.account;
+  }
+
+  public get id(): string {
+    return this.record.id;
+  }
+
+  public get name(): string {
+    return this.record.name;
+  }
+
+  public get query(): string {
+    return this.record.query;
+  }
+
+  public override get url(): string {
+    let url = new URL("https://github.com/issues");
+    url.searchParams.set("q", this.query);
+    return url.toString();
+  }
+
+  public override async delete(): Promise<void> {
+    await super.delete();
+    await Search.store.delete(this.context, this.id);
+  }
+
+  public async listItems(issueList?: readonly IssueLikeApiResult[]): Promise<IssueLike[]> {
+    if (!issueList) {
+      issueList = await this.account.api.search(this.query);
+    }
+
+    let instances: IssueLike[] = [];
+
+    for (let issue of issueList) {
+      let instance = await IssueLike.store.first(this.account.context, {
+        ownerId: this.account.id,
+        nodeId: issue.id,
+      });
+
+      if (instance) {
+        await instance.update(issue);
+      } else {
+        let repo = await Repository.getOrCreate(this.account, issue.repository);
+        instance = await IssueLike.create(repo, issue, TaskController.PluginList);
+      }
+
+      instances.push(instance);
+    }
+
+    return instances;
+  }
+
+  public static async create(
+    context: PluginContext,
+    account: Account,
+    record: Omit<GithubSearchRecord, "id" | "ownerId">,
+  ): Promise<Search> {
+    let issues = await account.api.search(record.query);
+
+    let id = await context.addList({
+      name: record.name,
+      url: null,
+    });
+
+    let dbRecord = {
+      ...record,
+      ownerId: account.id,
+      id,
+    };
+
+    let search = await Search.store.insert(account.context, dbRecord);
+    await search.update(issues);
+    return search;
   }
 }
 

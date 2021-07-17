@@ -7,6 +7,7 @@ import { useCallback } from "react";
 
 import type { ReactResult } from "#client-utils";
 import {
+  SettingsListItem,
   Heading,
   ImageIcon,
   SettingsListSection,
@@ -15,9 +16,10 @@ import {
   SubHeading,
   useBoolState,
 } from "#client-utils";
-import type { GithubAccount } from "#schema";
+import type { GithubAccount, GithubSearch } from "#schema";
 
 import GitHub from "../logos/GitHub";
+import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -41,6 +43,52 @@ const useStyles = makeStyles((theme: Theme) =>
       cursor: "pointer",
     },
   }));
+
+interface SearchSettingsItemProps {
+  search: GithubSearch;
+}
+
+function SearchSettingsItem({
+  search,
+}: SearchSettingsItemProps): ReactResult {
+  let classes = useStyles();
+  // let resetStore = useResetStore();
+
+  // let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
+  //   variables: {
+  //     search: search.id,
+  //   },
+  //   refetchQueries: [
+  //     refetchListBugzillaAccountsQuery(),
+  //   ],
+  // });
+
+  // let deleteSearch = useCallback(async () => {
+  //   await resetStore();
+  //   await deleteSearchMutation();
+  // }, [deleteSearchMutation]);
+
+  return <SettingsListItem>
+    <div className={classes.searchIcon}>
+      <SearchIcon/>
+    </div>
+    <div className={classes.searchName}>
+      <a
+        href={search.url}
+        target="_blank"
+        className={classes.searchLink}
+        rel="noreferrer"
+      >
+        {search.name}
+      </a>
+    </div>
+    <div className={classes.actions}>
+      {/* <IconButton onClick={deleteSearch}>
+        <Icons.Delete/>
+      </IconButton> */}
+    </div>
+  </SettingsListItem>;
+}
 
 interface AccountSettingsProps {
   account: GithubAccount;
@@ -78,6 +126,20 @@ export default function AccountSettings({
           </div>
         </>
       }
-    />
+    >
+      {
+        account.searches.map((search: GithubSearch) => <SearchSettingsItem
+          key={search.id}
+          search={search}
+        />)
+      }
+    </SettingsListSection>
+    {
+      showSearchDialog && <SearchDialog
+        account={account}
+        onClosed={closeSearchDialog}
+        onSearchCreated={closeSearchDialog}
+      />
+    }
   </SettingsPage>;
 }

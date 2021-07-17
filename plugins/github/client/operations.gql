@@ -6,10 +6,25 @@ query ListGithubAccounts {
       user
       avatar
       loginUrl
+      searches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
 
 query RequestLoginUrl {
   githubLoginUrl
+}
+
+mutation CreateGithubSearch($account: ID!, $params: GithubSearchParams!) {
+  createGithubSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
 }

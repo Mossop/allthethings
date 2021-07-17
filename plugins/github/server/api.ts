@@ -96,8 +96,8 @@ export class GitHubApi {
     return result.repository?.issueOrPullRequest ?? null;
   }
 
-  public async search(query: string): Promise<readonly IssueLikeApiResult[]> {
-    let result = await this.sdk.Search({ query, after: null });
+  public async search(query: string): Promise<IssueLikeApiResult[]> {
+    let result = await this.sdk.Search({ terms: query, after: null });
     let issueLikes: IssueLikeApiResult[] = [];
 
     let appendIssues = (result: SearchQuery): void => {
@@ -111,7 +111,7 @@ export class GitHubApi {
     appendIssues(result);
     while (result.search.pageInfo.hasNextPage) {
       result = await this.sdk.Search({
-        query,
+        terms: query,
         after: result.search.pageInfo.endCursor,
       });
 

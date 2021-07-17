@@ -36,12 +36,20 @@ export type FileDetailFieldPolicy = {
 	mimetype?: FieldPolicy<any> | FieldReadFunction<any>,
 	size?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type GithubAccountKeySpecifier = ('id' | 'user' | 'avatar' | 'loginUrl' | GithubAccountKeySpecifier)[];
+export type GithubAccountKeySpecifier = ('id' | 'user' | 'avatar' | 'loginUrl' | 'searches' | GithubAccountKeySpecifier)[];
 export type GithubAccountFieldPolicy = {
 	id?: FieldPolicy<any> | FieldReadFunction<any>,
 	user?: FieldPolicy<any> | FieldReadFunction<any>,
 	avatar?: FieldPolicy<any> | FieldReadFunction<any>,
-	loginUrl?: FieldPolicy<any> | FieldReadFunction<any>
+	loginUrl?: FieldPolicy<any> | FieldReadFunction<any>,
+	searches?: FieldPolicy<any> | FieldReadFunction<any>
+};
+export type GithubSearchKeySpecifier = ('id' | 'name' | 'query' | 'url' | GithubSearchKeySpecifier)[];
+export type GithubSearchFieldPolicy = {
+	id?: FieldPolicy<any> | FieldReadFunction<any>,
+	name?: FieldPolicy<any> | FieldReadFunction<any>,
+	query?: FieldPolicy<any> | FieldReadFunction<any>,
+	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
 export type GoogleAccountKeySpecifier = ('id' | 'email' | 'avatar' | 'mailSearches' | 'loginUrl' | GoogleAccountKeySpecifier)[];
 export type GoogleAccountFieldPolicy = {
@@ -95,13 +103,14 @@ export type LinkDetailFieldPolicy = {
 	icon?: FieldPolicy<any> | FieldReadFunction<any>,
 	url?: FieldPolicy<any> | FieldReadFunction<any>
 };
-export type MutationKeySpecifier = ('archiveItem' | 'changePassword' | 'createBugzillaAccount' | 'createBugzillaSearch' | 'createContext' | 'createGoogleMailSearch' | 'createJiraAccount' | 'createJiraSearch' | 'createLink' | 'createNote' | 'createPhabricatorAccount' | 'createProject' | 'createSection' | 'createTask' | 'createUser' | 'deleteBugzillaAccount' | 'deleteBugzillaSearch' | 'deleteContext' | 'deleteItem' | 'deleteJiraAccount' | 'deleteJiraSearch' | 'deletePhabricatorAccount' | 'deleteProject' | 'deleteSection' | 'deleteUser' | 'editContext' | 'editItem' | 'editProject' | 'editSection' | 'editTaskController' | 'editTaskInfo' | 'login' | 'logout' | 'markItemDue' | 'moveItem' | 'moveProject' | 'moveSection' | 'snoozeItem' | 'updatePhabricatorAccount' | MutationKeySpecifier)[];
+export type MutationKeySpecifier = ('archiveItem' | 'changePassword' | 'createBugzillaAccount' | 'createBugzillaSearch' | 'createContext' | 'createGithubSearch' | 'createGoogleMailSearch' | 'createJiraAccount' | 'createJiraSearch' | 'createLink' | 'createNote' | 'createPhabricatorAccount' | 'createProject' | 'createSection' | 'createTask' | 'createUser' | 'deleteBugzillaAccount' | 'deleteBugzillaSearch' | 'deleteContext' | 'deleteItem' | 'deleteJiraAccount' | 'deleteJiraSearch' | 'deletePhabricatorAccount' | 'deleteProject' | 'deleteSection' | 'deleteUser' | 'editContext' | 'editItem' | 'editProject' | 'editSection' | 'editTaskController' | 'editTaskInfo' | 'login' | 'logout' | 'markItemDue' | 'moveItem' | 'moveProject' | 'moveSection' | 'snoozeItem' | 'updatePhabricatorAccount' | MutationKeySpecifier)[];
 export type MutationFieldPolicy = {
 	archiveItem?: FieldPolicy<any> | FieldReadFunction<any>,
 	changePassword?: FieldPolicy<any> | FieldReadFunction<any>,
 	createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>,
 	createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>,
 	createContext?: FieldPolicy<any> | FieldReadFunction<any>,
+	createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>,
 	createGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>,
 	createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>,
 	createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>,
@@ -251,6 +260,10 @@ export type TypedTypePolicies = TypePolicies & {
 	GithubAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | GithubAccountKeySpecifier | (() => undefined | GithubAccountKeySpecifier),
 		fields?: GithubAccountFieldPolicy,
+	},
+	GithubSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
+		keyFields?: false | GithubSearchKeySpecifier | (() => undefined | GithubSearchKeySpecifier),
+		fields?: GithubSearchFieldPolicy,
 	},
 	GoogleAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
 		keyFields?: false | GoogleAccountKeySpecifier | (() => undefined | GoogleAccountKeySpecifier),

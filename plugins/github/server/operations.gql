@@ -65,8 +65,8 @@ query IssueLike($owner: String!, $repo: String!, $number: Int!) {
   }
 }
 
-query Search($query: String!, $after: String) {
-  search(query: $query, type: ISSUE, first: 100, after: $after) {
+query Search($terms: String!, $after: String) {
+  search(query: $terms, type: ISSUE, first: 100, after: $after) {
     pageInfo {
       endCursor
       hasNextPage

@@ -153,7 +153,7 @@ export class DatabaseConnection {
 
     let knexConfig: Knex.Config = {
       client: "pg",
-      asyncStackTraces: ["test", "development"].includes(process.env.NODE_ENV ?? ""),
+      asyncStackTraces: true,
       connection: `postgres://${auth}@${host}/${config.database}`,
       searchPath: schema ? [schema] : undefined,
     };

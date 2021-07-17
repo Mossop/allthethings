@@ -100,6 +100,20 @@ export type GithubAccount = {
   readonly user: Scalars['String'];
   readonly avatar: Scalars['String'];
   readonly loginUrl: Scalars['String'];
+  readonly searches: ReadonlyArray<GithubSearch>;
+};
+
+export type GithubSearch = {
+  readonly __typename: 'GithubSearch';
+  readonly id: Scalars['ID'];
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
+  readonly url: Scalars['String'];
+};
+
+export type GithubSearchParams = {
+  readonly name: Scalars['String'];
+  readonly query: Scalars['String'];
 };
 
 export type GoogleAccount = {
@@ -205,6 +219,7 @@ export type Mutation = {
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
   readonly createContext: Context;
+  readonly createGithubSearch: GithubSearch;
   readonly createGoogleMailSearch: GoogleMailSearch;
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
@@ -269,6 +284,12 @@ export type MutationCreateBugzillaSearchArgs = {
 export type MutationCreateContextArgs = {
   user: Maybe<Scalars['ID']>;
   params: ContextParams;
+};
+
+
+export type MutationCreateGithubSearchArgs = {
+  account: Scalars['ID'];
+  params: GithubSearchParams;
 };
 
 

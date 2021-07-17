@@ -1,15 +1,20 @@
-import type { GithubAccount } from "#schema";
+import type { GithubAccount, GithubSearch } from "#schema";
+import type { GraphQLType } from "#utils";
 
 import type { IssueState, PullRequestState } from "../operations";
 
-export type GithubAccountRecord = Omit<GithubAccount, "__typename" | "loginUrl"> & {
+export type GithubAccountRecord = Omit<GithubAccount, "__typename" | "loginUrl" | "searches"> & {
   userId: string;
   token: string;
   user: string;
   avatar: string;
 };
 
-export interface GithubRepositoryRecord{
+export type GithubSearchRecord = Omit<GraphQLType<GithubSearch>, "url"> & {
+  ownerId: string;
+};
+
+export interface GithubRepositoryRecord {
   id: string;
   ownerId: string;
   nodeId: string;

@@ -6,17 +6,28 @@ const defaultOptions =  {}
 export type ListGithubAccountsQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
-export type ListGithubAccountsQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly githubAccounts: ReadonlyArray<{ readonly __typename: 'GithubAccount', readonly id: string, readonly user: string, readonly avatar: string, readonly loginUrl: string }> }> };
+export type ListGithubAccountsQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly githubAccounts: ReadonlyArray<{ readonly __typename: 'GithubAccount', readonly id: string, readonly user: string, readonly avatar: string, readonly loginUrl: string, readonly searches: ReadonlyArray<{ readonly __typename: 'GithubSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
 
 export type RequestLoginUrlQueryVariables = Schema.Exact<{ [key: string]: never; }>;
 
 
 export type RequestLoginUrlQuery = { readonly __typename: 'Query', readonly githubLoginUrl: string };
 
+export type CreateGithubSearchMutationVariables = Schema.Exact<{
+  account: Schema.Scalars['ID'];
+  params: Schema.GithubSearchParams;
+}>;
+
+
+export type CreateGithubSearchMutation = { readonly __typename: 'Mutation', readonly createGithubSearch: { readonly __typename: 'GithubSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string } };
+
 export const OperationNames = {
   Query: {
     ListGithubAccounts: 'ListGithubAccounts',
     RequestLoginUrl: 'RequestLoginUrl'
+  },
+  Mutation: {
+    CreateGithubSearch: 'CreateGithubSearch'
   }
 }
 
@@ -29,6 +40,12 @@ export const ListGithubAccountsDocument = gql`
       user
       avatar
       loginUrl
+      searches {
+        id
+        name
+        query
+        url
+      }
     }
   }
 }
@@ -98,3 +115,40 @@ export type RequestLoginUrlQueryResult = Apollo.QueryResult<RequestLoginUrlQuery
 export function refetchRequestLoginUrlQuery(variables?: RequestLoginUrlQueryVariables) {
       return { query: RequestLoginUrlDocument, variables: variables }
     }
+export const CreateGithubSearchDocument = gql`
+    mutation CreateGithubSearch($account: ID!, $params: GithubSearchParams!) {
+  createGithubSearch(account: $account, params: $params) {
+    id
+    name
+    query
+    url
+  }
+}
+    `;
+export type CreateGithubSearchMutationFn = Apollo.MutationFunction<CreateGithubSearchMutation, CreateGithubSearchMutationVariables>;
+
+/**
+ * __useCreateGithubSearchMutation__
+ *
+ * To run a mutation, you first call `useCreateGithubSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useCreateGithubSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [createGithubSearchMutation, { data, loading, error }] = useCreateGithubSearchMutation({
+ *   variables: {
+ *      account: // value for 'account'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useCreateGithubSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateGithubSearchMutation, CreateGithubSearchMutationVariables>) {
+        const options = {...defaultOptions, ...baseOptions}
+        return Apollo.useMutation<CreateGithubSearchMutation, CreateGithubSearchMutationVariables>(CreateGithubSearchDocument, options);
+      }
+export type CreateGithubSearchMutationHookResult = ReturnType<typeof useCreateGithubSearchMutation>;
+export type CreateGithubSearchMutationResult = Apollo.MutationResult<CreateGithubSearchMutation>;
+export type CreateGithubSearchMutationOptions = Apollo.BaseMutationOptions<CreateGithubSearchMutation, CreateGithubSearchMutationVariables>;

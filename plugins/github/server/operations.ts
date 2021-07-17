@@ -22070,7 +22070,7 @@ export type IssueLikeQuery = { readonly __typename: 'Query', readonly repository
     )> }> };
 
 export type SearchQueryVariables = Exact<{
-  query: Scalars['String'];
+  terms: Scalars['String'];
   after: Maybe<Scalars['String']>;
 }>;
 
@@ -22173,8 +22173,8 @@ export const IssueLikeDocument = gql`
     ${IssueFieldsFragmentDoc}
 ${PrFieldsFragmentDoc}`;
 export const SearchDocument = gql`
-    query Search($query: String!, $after: String) {
-  search(query: $query, type: ISSUE, first: 100, after: $after) {
+    query Search($terms: String!, $after: String) {
+  search(query: $terms, type: ISSUE, first: 100, after: $after) {
     pageInfo {
       endCursor
       hasNextPage

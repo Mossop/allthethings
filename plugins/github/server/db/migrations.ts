@@ -139,9 +139,34 @@ class BaseMigration implements PluginDbMigration {
 
       table.unique(["issueLike", "label"]);
     });
+
+    await knex.schema.createTable("Search", (table: Knex.CreateTableBuilder): void => {
+      helper.idColumn(table, "id")
+        .notNullable()
+        .unique()
+        .primary();
+
+      helper.idColumn(table, "ownerId")
+        .notNullable()
+        .references("id")
+        .inTable(helper.tableName("Account"))
+        .onDelete("CASCADE")
+        .onUpdate("CASCADE");
+
+      table.text("name")
+        .notNullable();
+
+      table.text("query")
+        .notNullable();
+    });
   }
 
   public async down(knex: PluginKnex): Promise<void> {
+    await knex.schema.dropTableIfExists("Search");
+    await knex.schema.dropTableIfExists("IssueLikeLabels");
+    await knex.schema.dropTableIfExists("IssueLike");
+    await knex.schema.dropTableIfExists("Label");
+    await knex.schema.dropTableIfExists("Repository");
     await knex.schema.dropTableIfExists("Account");
   }
 }

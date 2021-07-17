@@ -1,9 +1,10 @@
 /* eslint-disable */
 import type { GraphQLResolveInfo } from 'graphql';
-import type { Account } from './db/implementations';
+import type { Account, Search } from './db/implementations';
 import * as Schema from '#schema';
 import { User } from '#server-utils';
 export type ResolverFn<TResult, TParent, TContext, TArgs> = Promise<TResult> | TResult | ((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) => Promise<TResult> | TResult)
+export type RequireFields<T, K extends keyof T> = { [X in Exclude<keyof T, K>]?: T[X] } & { [P in K]-?: NonNullable<T[P]> };
 
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
@@ -65,6 +66,9 @@ export type ResolversTypes = {
   GithubAccount: ResolverTypeWrapper<Account>;
   ID: ResolverTypeWrapper<Schema.Scalars['ID']>;
   String: ResolverTypeWrapper<Schema.Scalars['String']>;
+  GithubSearch: ResolverTypeWrapper<Search>;
+  GithubSearchParams: Schema.GithubSearchParams;
+  Mutation: ResolverTypeWrapper<{}>;
   Query: ResolverTypeWrapper<{}>;
   User: ResolverTypeWrapper<User>;
   Boolean: ResolverTypeWrapper<Schema.Scalars['Boolean']>;
@@ -75,6 +79,9 @@ export type ResolversParentTypes = {
   GithubAccount: Account;
   ID: Schema.Scalars['ID'];
   String: Schema.Scalars['String'];
+  GithubSearch: Search;
+  GithubSearchParams: Schema.GithubSearchParams;
+  Mutation: {};
   Query: {};
   User: User;
   Boolean: Schema.Scalars['Boolean'];
@@ -85,7 +92,20 @@ export type GithubAccountResolvers<ContextType = any, ParentType extends Resolve
   user: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   avatar: Resolver<ResolversTypes['String'], ParentType, ContextType>;
   loginUrl: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  searches: Resolver<ReadonlyArray<ResolversTypes['GithubSearch']>, ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type GithubSearchResolvers<ContextType = any, ParentType extends ResolversParentTypes['GithubSearch'] = ResolversParentTypes['GithubSearch']> = {
+  id: Resolver<ResolversTypes['ID'], ParentType, ContextType>;
+  name: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  query: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  url: Resolver<ResolversTypes['String'], ParentType, ContextType>;
+  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
+};
+
+export type MutationResolvers<ContextType = any, ParentType extends ResolversParentTypes['Mutation'] = ResolversParentTypes['Mutation']> = {
+  createGithubSearch: Resolver<ResolversTypes['GithubSearch'], ParentType, ContextType, RequireFields<Schema.MutationCreateGithubSearchArgs, 'account' | 'params'>>;
 };
 
 export type QueryResolvers<ContextType = any, ParentType extends ResolversParentTypes['Query'] = ResolversParentTypes['Query']> = {
@@ -99,6 +119,8 @@ export type UserResolvers<ContextType = any, ParentType extends ResolversParentT
 
 export type Resolvers<ContextType = any> = {
   GithubAccount: GithubAccountResolvers<ContextType>;
+  GithubSearch: GithubSearchResolvers<ContextType>;
+  Mutation: MutationResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   User: UserResolvers<ContextType>;
 };

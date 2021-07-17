@@ -8,16 +8,16 @@ import {
   useResetStore,
   FormState,
 } from "#client-utils";
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
+import type { GithubAccount, GithubSearch } from "#schema";
 
 import {
-  refetchListGoogleAccountsQuery,
-  useCreateGoogleMailSearchMutation,
+  refetchListGithubAccountsQuery,
+  useCreateGithubSearchMutation,
 } from "../operations";
 
 interface SearchDialogProps {
-  account: GoogleAccount;
-  onSearchCreated: (search: GoogleMailSearch) => void;
+  account: GithubAccount;
+  onSearchCreated: (search: GithubSearch) => void;
   onClosed: () => void;
 }
 
@@ -33,13 +33,13 @@ export default function SearchDialog({
   let [isOpen, , close] = useBoolState(true);
   let resetStore = useResetStore();
 
-  let [createSearch, { loading, error }] = useCreateGoogleMailSearchMutation({
+  let [createSearch, { loading, error }] = useCreateGithubSearchMutation({
     variables: {
       account: account.id,
       params: state,
     },
     refetchQueries: [
-      refetchListGoogleAccountsQuery(),
+      refetchListGithubAccountsQuery(),
     ],
   });
 
@@ -49,12 +49,12 @@ export default function SearchDialog({
       return;
     }
 
-    onSearchCreated(data.createGoogleMailSearch);
+    onSearchCreated(data.createGithubSearch);
     await resetStore();
   }, [createSearch, onSearchCreated, resetStore]);
 
   return <Dialog
-    title="Add GMail Search"
+    title="Add Search"
     submitLabel="Add"
     error={error}
     isOpen={isOpen}

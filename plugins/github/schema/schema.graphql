@@ -3,6 +3,19 @@ type GithubAccount {
   user: String!
   avatar: String!
   loginUrl: String!
+  searches: [GithubSearch!]!
+}
+
+type GithubSearch {
+  id: ID!
+  name: String!
+  query: String!
+  url: String!
+}
+
+input GithubSearchParams {
+  name: String!
+  query: String!
 }
 
 type User {
@@ -11,4 +24,8 @@ type User {
 
 type Query {
   githubLoginUrl: String!
+}
+
+type Mutation {
+  createGithubSearch(account: ID!, params: GithubSearchParams!): GithubSearch!
 }
