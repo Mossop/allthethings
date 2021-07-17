@@ -16,7 +16,7 @@ export function SettingsPages(): ReactResult {
     {
       accounts.map((account: GithubAccount) => <SettingsPageItem
         key={account.id}
-        pluginId="google"
+        pluginId="github"
         page={account.id}
         icon={account.avatar}
       >
