@@ -10,7 +10,7 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const { DefinePlugin } = require("webpack");
 const { StatsWriterPlugin } = require("webpack-stats-plugin");
 
-let tsConfig = path.join(__dirname, "core", "client", "tsconfig.json");
+let tsConfig = path.join(__dirname, "modules", "client", "init", "tsconfig.json");
 
 const PKG_REGEX = /^"?([a-zA-Z@\-_.]+)@.*/;
 const VERSION_REGEX = /version "([\d.]+)"/;
@@ -61,7 +61,6 @@ function buildExternals() {
     };
   });
 }
-
 let baseSchema = fs.readFileSync(require.resolve("#schema/schema.graphql"), {
   encoding: "utf8",
 });
@@ -72,7 +71,7 @@ let schemaVersion = `"${hasher.digest("hex")}"`;
 module.exports = {
   mode: "development",
   entry: {
-    app: path.join(__dirname, "core", "client", "index.tsx"),
+    app: path.join(__dirname, "modules", "client", "init", "index.tsx"),
   },
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
@@ -113,7 +112,7 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       filename: path.join(__dirname, "dist", "web", "index.html"),
-      template: path.join(__dirname, "core", "client", "index.ejs"),
+      template: path.join(__dirname, "modules", "client", "init", "index.ejs"),
       scriptLoading: "defer",
       inject: true,
       minify: false,
@@ -146,7 +145,7 @@ module.exports = {
     }),
     new ForkTsCheckerWebpackPlugin({
       typescript: {
-        configFile: path.join(__dirname, "core", "client", "tsconfig.json"),
+        configFile: path.join(__dirname, "modules", "client", "init", "tsconfig.json"),
       },
     }),
   ],

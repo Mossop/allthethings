@@ -1,18 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 const path = require("path");
 
-let customResolverFn = "Promise<TResult> | " +
-  "TResult | " +
-  "((parent: TParent, args: TArgs, context: TContext, info: GraphQLResolveInfo) " +
-    "=> Promise<TResult> | TResult)";
-
-const plugins = [
-  "bugzilla",
-  "google",
-  "jira",
-  "phabricator",
-  "github",
-];
+const rootDir = path.join(__dirname, "modules");
 
 const scalars = {
   DateTime: "luxon#DateTime",
@@ -55,35 +44,33 @@ const resolverPlugins = (mappers = {}) => ({
     immutableTypes: true,
     avoidOptionals: true,
     namespacedImportName: "Schema",
-    customResolverFn,
-    mappers: {
-      User: "User",
-      ...mappers,
-    },
+    customResolverFn: "ResolverFunc<TResult, TParent, TContext, TArgs>",
+    rootValueType: "Root",
+    mappers,
     noSchemaStitching: true,
   },
   "add": {
     content: [
       "/* eslint-disable */",
       "import * as Schema from '#schema';",
-      "import { User } from '#server-utils';",
+      "import { ResolverFunc, Root, Problem } from '#server/utils';",
     ],
   },
 });
 
-const pluginTargets = (plugin, mappers = {}) => ({
-  [path.join(__dirname, "plugins", plugin, "client", "operations.ts")]: {
+const serviceTargets = (service, mappers = {}) => ({
+  [path.join(rootDir, "services", service, "client", "operations.ts")]: {
     schema: [
-      path.join(__dirname, "core", "schema", "schema.graphql"),
-      path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+      path.join(rootDir, "**", "*.graphql"),
     ],
-    documents: path.join(__dirname, "plugins", plugin, "client", "*.gql"),
+    documents: path.join(rootDir, "services", service, "client", "*.gql"),
     plugins: clientOperationPlugins,
   },
 
-  [path.join(__dirname, "plugins", plugin, "server", "schema.ts")]: {
+  [path.join(rootDir, "services", service, "server", "schema.ts")]: {
     schema: [
-      path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
+      path.join(rootDir, "schema", "scalars.graphql"),
+      path.join(rootDir, "services", service, "schema", "schema.graphql"),
     ],
     plugins: resolverPlugins(mappers),
   },
@@ -94,12 +81,9 @@ module.exports = {
   errorsOnly: true,
 
   generates: {
-    [path.join(__dirname, "core", "schema", "introspection.json")]: {
+    [path.join(rootDir, "schema", "introspection.json")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        ...plugins.map(
-          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
-        ),
+        path.join(rootDir, "**", "*.graphql"),
       ],
 
       plugins: {
@@ -109,22 +93,19 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "core", "schema", "schema.ts")]: {
+    [path.join(rootDir, "schema", "schema.ts")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        ...plugins.map(
-          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
-        ),
+        path.join(rootDir, "**", "*.graphql"),
       ],
 
       plugins: {
         typescript: {
           immutableTypes: true,
-          avoidOptionals: true,
           nonOptionalTypename: true,
           preResolveTypes: true,
           useTypeImports: true,
           useIndexTypes: true,
+          useImplementingTypes: true,
           scalars,
         },
         add: {
@@ -135,12 +116,9 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "dist", "core", "schema", "schema.graphql")]: {
+    [path.join(__dirname, "dist", "schema", "schema.graphql")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        ...plugins.map(
-          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
-        ),
+        path.join(rootDir, "**", "*.graphql"),
       ],
 
       plugins: {
@@ -148,12 +126,9 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "core", "client", "schema", "types.ts")]: {
+    [path.join(rootDir, "client", "core", "schema", "types.ts")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
-        ...plugins.map(
-          plugin => path.join(__dirname, "plugins", plugin, "schema", "schema.graphql"),
-        ),
+        path.join(rootDir, "**", "*.graphql"),
       ],
 
       plugins: {
@@ -170,84 +145,80 @@ module.exports = {
       },
     },
 
-    [path.join(__dirname, "core", "client", "schema", "operations.ts")]: {
+    [path.join(rootDir, "client", "core", "schema", "operations.ts")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
+        path.join(rootDir, "schema", "scalars.graphql"),
+        path.join(rootDir, "server", "init", "schema.graphql"),
+        path.join(rootDir, "server", "core", "schema.graphql"),
       ],
 
-      documents: path.join(__dirname, "core", "client", "schema", "*.gql"),
+      documents: path.join(rootDir, "client", "core", "schema", "*.gql"),
       plugins: clientOperationPlugins,
     },
 
-    [path.join(__dirname, "core", "server", "schema", "resolvers.ts")]: {
+    [path.join(rootDir, "server", "init", "schema.ts")]: {
       schema: [
-        path.join(__dirname, "core", "schema", "schema.graphql"),
+        path.join(rootDir, "schema", "scalars.graphql"),
+        path.join(rootDir, "server", "init", "schema.graphql"),
       ],
 
       plugins: {
-        "typescript-resolvers": {
-          contextType: "./context#ResolverContext",
-          useIndexSignature: false,
-          useTypeImports: true,
-          immutableTypes: true,
-          avoidOptionals: true,
-          namespacedImportName: "Schema",
-          noSchemaStitching: true,
-          customResolverFn: "ResolverFunc<TResult, TParent, TContext, TArgs>",
-          rootValueType: "Root",
-          mappers: {
-            User: "../db/implementations#User",
-            Context: "../db/implementations#Context",
-            Project: "../db/implementations#Project",
-            Section: "../db/implementations#Section",
-            TaskList: "../db/implementations#TaskList",
-            Item: "../db/implementations#Item",
-            TaskInfo: "../db/implementations#TaskInfo",
-            LinkDetail: "../db/implementations#LinkDetail",
-            FileDetail: "../db/implementations#FileDetail",
-            NoteDetail: "../db/implementations#NoteDetail",
-            PluginDetail: "../db/implementations#PluginDetail",
-            PluginList: "../db/implementations#PluginList",
-            ItemSet: "../db/datasources#ItemSet",
-            Problem: "Problem",
-          },
-        },
-        "add": {
-          content: [
-            "/* eslint-disable */",
-            "import * as Schema from '#schema';",
-            "import { Problem } from '#server-utils'",
-            "import { Root, ResolverFunc } from './types'",
-          ],
-        },
+        ...resolverPlugins({
+          Problem: "Problem",
+        }),
       },
     },
 
-    ...pluginTargets("bugzilla", {
-      BugzillaAccount: "./db/implementations#Account",
-      BugzillaSearch: "./db/implementations#Search",
+    [path.join(rootDir, "server", "core", "schema.ts")]: {
+      schema: [
+        path.join(rootDir, "schema", "scalars.graphql"),
+        path.join(rootDir, "server", "core", "schema.graphql"),
+      ],
+
+      plugins: {
+        ...resolverPlugins({
+          User: "./implementations#User",
+          Context: "./implementations#Context",
+          Project: "./implementations#Project",
+          Section: "./implementations#Section",
+          TaskList: "./implementations#TaskList",
+          Item: "./implementations#Item",
+          TaskInfo: "./implementations#TaskInfo",
+          LinkDetail: "./implementations#LinkDetail",
+          FileDetail: "./implementations#FileDetail",
+          NoteDetail: "./implementations#NoteDetail",
+          ServiceDetail: "./implementations#ServiceDetail",
+          ServiceList: "./implementations#ServiceList",
+          ItemSet: "./implementations#ItemSet",
+        }),
+      },
+    },
+
+    ...serviceTargets("bugzilla", {
+      BugzillaAccount: "./implementations#Account",
+      BugzillaSearch: "./implementations#Search",
     }),
 
-    ...pluginTargets("google", {
-      GoogleAccount: "./db/implementations#Account",
-      GoogleMailSearch: "./db/implementations#MailSearch",
+    ...serviceTargets("github", {
+      GithubAccount: "./implementations#Account",
+      GithubSearch: "./implementations#Search",
     }),
 
-    ...pluginTargets("jira", {
-      JiraAccount: "./db/implementations#Account",
-      JiraSearch: "./db/implementations#Search",
+    ...serviceTargets("google", {
+      GoogleAccount: "./implementations#Account",
+      GoogleMailSearch: "./implementations#MailSearch",
     }),
 
-    ...pluginTargets("phabricator", {
-      PhabricatorAccount: "./db/implementations#Account",
-      PhabricatorQuery: "./db/implementations#QueryClass",
+    ...serviceTargets("jira", {
+      JiraAccount: "./implementations#Account",
+      JiraSearch: "./implementations#Search",
     }),
 
-    ...pluginTargets("github", {
-      GithubAccount: "./db/implementations#Account",
-      GithubSearch: "./db/implementations#Search",
+    ...serviceTargets("phabricator", {
+      PhabricatorAccount: "./implementations#Account",
+      PhabricatorQuery: "./implementations#QueryClass",
     }),
 
-    ...require("./plugins/github/server/codegen"),
+    ...require("./modules/services/github/server/codegen"),
   },
 };

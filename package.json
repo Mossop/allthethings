@@ -11,59 +11,80 @@
     "build": "yarn build-schema && yarn build-client && yarn build-server",
     "build-client": "webpack",
     "watch-client": "webpack --watch",
-    "build-server": "tsc -b core/server",
-    "watch-server": "tsc -b --watch core/server",
+    "build-server": "tsc -b modules/server/init",
+    "watch-server": "tsc -b --watch modules/server/init",
     "watch": "npm-run-all -p watch-client watch-server",
-    "start": "node dist/core/server testing/config.json",
+    "start": "node dist/server/init testing/config.json",
     "jslint": "eslint .",
     "depcheck": "depcheck",
     "lint": "yarn jslint && yarn depcheck"
   },
   "imports": {
-    "#client": {
-      "default": "./dist/core/client"
-    },
     "#schema": {
-      "default": "./dist/core/schema/index.js"
+      "default": "./dist/schema/index.js"
     },
     "#schema/schema.graphql": {
-      "default": "./dist/core/schema/schema.graphql"
+      "default": "./dist/schema/schema.graphql"
     },
     "#utils": {
-      "default": "./dist/core/utils/index.js"
+      "default": "./dist/utils/index.js"
     },
-    "#server-utils": {
-      "default": "./dist/core/server-utils/index.js"
+    "#client/core": {
+      "default": "./dist/client/core/index.js"
     },
-    "#plugins/jira/server": {
-      "default": "./dist/plugins/jira/server/index.js"
+    "#client/utils": {
+      "default": "./dist/client/utils/index.js"
     },
-    "#plugins/jira/schema": {
-      "default": "./dist/plugins/jira/schema/index.js"
+    "#server/core": {
+      "default": "./dist/server/core/index.js"
     },
-    "#plugins/bugzilla/server": {
-      "default": "./dist/plugins/bugzilla/server/index.js"
+    "#server/utils": {
+      "default": "./dist/server/utils/index.js"
     },
-    "#plugins/bugzilla/schema": {
-      "default": "./dist/plugins/bugzilla/schema/index.js"
+    "#services/jira/client": {
+      "default": "./dist/services/jira/client/index.js"
     },
-    "#plugins/google/server": {
-      "default": "./dist/plugins/google/server/index.js"
+    "#services/jira/server": {
+      "default": "./dist/services/jira/server/index.js"
     },
-    "#plugins/google/schema": {
-      "default": "./dist/plugins/google/schema/index.js"
+    "#services/jira/schema": {
+      "default": "./dist/services/jira/schema/index.js"
     },
-    "#plugins/phabricator/server": {
-      "default": "./dist/plugins/phabricator/server/index.js"
+    "#services/bugzilla/client": {
+      "default": "./dist/services/bugzilla/client/index.js"
     },
-    "#plugins/phabricator/schema": {
-      "default": "./dist/plugins/phabricator/schema/index.js"
+    "#services/bugzilla/server": {
+      "default": "./dist/services/bugzilla/server/index.js"
     },
-    "#plugins/github/server": {
-      "default": "./dist/plugins/github/server/index.js"
+    "#services/bugzilla/schema": {
+      "default": "./dist/services/bugzilla/schema/index.js"
     },
-    "#plugins/github/schema": {
-      "default": "./dist/plugins/github/schema/index.js"
+    "#services/google/client": {
+      "default": "./dist/services/google/client/index.js"
+    },
+    "#services/google/server": {
+      "default": "./dist/services/google/server/index.js"
+    },
+    "#services/google/schema": {
+      "default": "./dist/services/google/schema/index.js"
+    },
+    "#services/phabricator/client": {
+      "default": "./dist/services/phabricator/client/index.js"
+    },
+    "#services/phabricator/server": {
+      "default": "./dist/services/phabricator/server/index.js"
+    },
+    "#services/phabricator/schema": {
+      "default": "./dist/services/phabricator/schema/index.js"
+    },
+    "#services/github/client": {
+      "default": "./dist/services/github/client/index.js"
+    },
+    "#services/github/server": {
+      "default": "./dist/services/github/server/index.js"
+    },
+    "#services/github/schema": {
+      "default": "./dist/services/github/schema/index.js"
     }
   },
   "dependencies": {
@@ -74,6 +95,7 @@
     "apollo-datasource": "^3.0.0",
     "apollo-server-koa": "^3.0.0",
     "apollo-server-plugin-base": "^3.0.0",
+    "async-busboy": "^1.1.0",
     "base-64": "^1.0.0",
     "bcrypt": "^5.0.0",
     "bugzilla": "^1.1.6",
@@ -117,6 +139,7 @@
     "@material-ui/icons": "^4.11.2",
     "@material-ui/pickers": "^3.3.10",
     "@svgr/webpack": "^5.5.0",
+    "@types/async-busboy": "^0.7.1",
     "@types/base-64": "^1.0.0",
     "@types/bcrypt": "^5.0.0",
     "@types/koa": "^2.13.0",

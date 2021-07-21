@@ -1,0 +1,13 @@
+{
+  "extends": "../../../../tsconfig.server.json",
+  "compilerOptions": {
+    "lib": [
+      "ESNext",
+    ],
+  },
+  "references": [
+    { "path": "../../../utils" },
+    { "path": "../../../server/utils" },
+    { "path": "../schema" }
+  ]
+}

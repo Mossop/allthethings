@@ -8,8 +8,8 @@
     "declarationMap": true,
     "esModuleInterop": true,
     "noEmitOnError": true,
-    "rootDir": ".",
     "baseUrl": ".",
+    "rootDir": "./modules",
     "outDir": "./dist",
     "resolveJsonModule": true,
 
@@ -22,31 +22,34 @@
     "strictBindCallApply": true,
 
     "paths": {
-      "#client-utils": ["./core/client-utils/index.ts"],
-      "#utils": ["./core/utils/index.ts"],
-      "#schema": ["./core/schema/index.ts"],
+      "#schema": ["./modules/schema/index.ts"],
+      "#utils": ["./modules/utils/index.ts"],
 
-      "#server-utils": ["./core/server-utils/index.ts"],
+      "#client/core": ["./modules/client/core/index.ts"],
+      "#client/utils": ["./modules/client/utils/index.ts"],
 
-      "#plugins/bugzilla/schema": ["./plugins/bugzilla/schema/index.ts"],
-      "#plugins/bugzilla/client": ["./plugins/bugzilla/client/index.tsx"],
-      "#plugins/bugzilla/server": ["./plugins/bugzilla/server/index.ts"],
+      "#server/core": ["./modules/server/core/index.ts"],
+      "#server/utils": ["./modules/server/utils/index.ts"],
 
-      "#plugins/jira/schema": ["./plugins/jira/schema/index.ts"],
-      "#plugins/jira/client": ["./plugins/jira/client/index.tsx"],
-      "#plugins/jira/server": ["./plugins/jira/server/index.ts"],
+      "#services/bugzilla/client": ["./modules/services/bugzilla/client/index.tsx"],
+      "#services/bugzilla/server": ["./modules/services/bugzilla/server/index.ts"],
+      "#services/bugzilla/schema": ["./modules/services/bugzilla/schema/index.ts"],
 
-      "#plugins/google/schema": ["./plugins/google/schema/index.ts"],
-      "#plugins/google/client": ["./plugins/google/client/index.tsx"],
-      "#plugins/google/server": ["./plugins/google/server/index.ts"],
+      "#services/jira/client": ["./modules/services/jira/client/index.tsx"],
+      "#services/jira/server": ["./modules/services/jira/server/index.ts"],
+      "#services/jira/schema": ["./modules/services/jira/schema/index.ts"],
 
-      "#plugins/phabricator/schema": ["./plugins/phabricator/schema/index.ts"],
-      "#plugins/phabricator/client": ["./plugins/phabricator/client/index.tsx"],
-      "#plugins/phabricator/server": ["./plugins/phabricator/server/index.ts"],
+      "#services/google/client": ["./modules/services/google/client/index.tsx"],
+      "#services/google/server": ["./modules/services/google/server/index.ts"],
+      "#services/google/schema": ["./modules/services/google/schema/index.ts"],
 
-      "#plugins/github/schema": ["./plugins/github/schema/index.ts"],
-      "#plugins/github/client": ["./plugins/github/client/index.tsx"],
-      "#plugins/github/server": ["./plugins/github/server/index.ts"],
+      "#services/phabricator/client": ["./modules/services/phabricator/client/index.tsx"],
+      "#services/phabricator/server": ["./modules/services/phabricator/server/index.ts"],
+      "#services/phabricator/schema": ["./modules/services/phabricator/schema/index.ts"],
+
+      "#services/github/client": ["./modules/services/github/client/index.tsx"],
+      "#services/github/server": ["./modules/services/github/server/index.ts"],
+      "#services/github/schema": ["./modules/services/github/schema/index.ts"],
     },
   },
   "exclude": [

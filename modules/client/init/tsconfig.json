@@ -1,0 +1,18 @@
+{
+  "extends": "../../../tsconfig.client.json",
+  "compilerOptions": {
+    "declaration": false,
+    "declarationMap": false,
+    "composite": false,
+    "emitDeclarationOnly": false,
+  },
+  "references": [
+    { "path": "../core" },
+    { "path": "../utils" },
+    { "path": "../../services/bugzilla/client" },
+    { "path": "../../services/github/client" },
+    { "path": "../../services/google/client" },
+    { "path": "../../services/jira/client" },
+    { "path": "../../services/phabricator/client" },
+  ]
+}

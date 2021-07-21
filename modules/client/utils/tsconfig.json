@@ -1,0 +1,6 @@
+{
+  "extends": "../../../tsconfig.client.json",
+  "references": [
+    { "path": "../../utils" }
+  ]
+}

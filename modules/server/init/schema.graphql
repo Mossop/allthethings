@@ -1,0 +1,12 @@
+type Problem {
+  description: String!
+  url: String!
+}
+
+type Query {
+  schemaVersion: String!
+
+  problems: [Problem!]!
+
+  pageContent(path: String!): String!
+}

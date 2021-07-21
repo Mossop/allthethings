@@ -6,7 +6,6 @@ module.exports = {
     sourceType: "module",
     tsconfigRootDir: __dirname,
     project: [
-      "./tsconfig.json",
       "**/tsconfig.json",
     ],
   },
@@ -31,12 +30,10 @@ module.exports = {
 
   overrides: [{
     files: [
-      "core/client/**/*.ts",
-      "core/client/**/*.tsx",
-      "core/ui/**/*.ts",
-      "core/ui/**/*.tsx",
-      "plugins/*/client/**/*.ts",
-      "plugins/*/client/**/*.tsx",
+      "modules/client/**/*.ts",
+      "modules/client/**/*.tsx",
+      "services/*/client/**/*.ts",
+      "services/*/client/**/*.tsx",
     ],
 
     env: {

@@ -1,8 +1,0 @@
-{
-  "extends": "../../../tsconfig.server.json",
-  "references": [
-    { "path": "../../../core/utils" },
-    { "path": "../../../core/server-utils" },
-    { "path": "../schema" }
-  ]
-}

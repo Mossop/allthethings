@@ -1,0 +1,192 @@
+type TaskInfo {
+  due: DateTime
+  done: DateTime
+  controller: TaskController!
+}
+
+type ServiceDetail {
+  serviceId: String!
+  hasTaskState: Boolean!
+  wasEverListed: Boolean!
+  isCurrentlyListed: Boolean!
+  fields: String!
+  lists: [ServiceList!]!
+}
+
+type FileDetail {
+  filename: String!
+  mimetype: String!
+  size: Int!
+}
+
+type NoteDetail {
+  note: String!
+}
+
+type LinkDetail {
+  icon: String
+  url: String!
+}
+
+union ItemDetail = ServiceDetail | LinkDetail | NoteDetail | FileDetail
+
+type ServiceList {
+  id: ID!
+  serviceId: String!
+  name: String!
+  url: String
+}
+
+type Item {
+  id: ID!
+  summary: String!
+  created: DateTime!
+  archived: DateTime
+  snoozed: DateTime
+
+  taskInfo: TaskInfo
+  detail: ItemDetail
+}
+
+input ItemFilter {
+  # True includes only items that are snoozed. False includes only items that are not snoozed.
+  isSnoozed: Boolean
+  # True includes only items that are archived. False includes only items that are not archived.
+  isArchived: Boolean
+  # Includes only tasks that are due before the given time (tasks with no due date are not included).
+  dueBefore: DateTime
+  # Includes only tasks that are due after the given time (tasks with no due date are not included).
+  dueAfter: DateTime
+  # Includes only items that are tasks.
+  isTask: Boolean
+  # True includes only items that are not tasks or are tasks that are not yet complete. False includes
+  # only items that are tasks and complete.
+  isPending: Boolean
+}
+
+type ItemSet {
+  count: Int!
+  items: [Item!]!
+}
+
+interface TaskList {
+  subprojects: [Project!]!
+  sections: [Section!]!
+  items(filter: ItemFilter): ItemSet!
+}
+
+type User {
+  id: ID!
+  email: String!
+  contexts: [Context!]!
+  inbox(filter: ItemFilter): ItemSet!
+  isAdmin: Boolean!
+  allItems(filter: ItemFilter): ItemSet!
+}
+
+type Context implements TaskList {
+  # TaskList
+  subprojects: [Project!]!
+  sections: [Section!]!
+  items(filter: ItemFilter): ItemSet!
+  rootItems(filter: ItemFilter): ItemSet!
+
+  id: ID!
+  user: User!
+  stub: String!
+  name: String!
+
+  projects: [Project!]!
+  projectById(id: ID!): Project
+}
+
+type Project implements TaskList {
+  # TaskList
+  subprojects: [Project!]!
+  sections: [Section!]!
+  items(filter: ItemFilter): ItemSet!
+
+  id: ID!
+  stub: String!
+  name: String!
+  taskList: TaskList!
+}
+
+type Section {
+  items(filter: ItemFilter): ItemSet!
+
+  id: ID!
+  name: String!
+}
+
+type Query {
+  user: User
+  users: [User!]!
+  taskList(id: ID!): TaskList
+}
+
+input ContextParams {
+  name: String!
+}
+
+input ProjectParams {
+  name: String!
+}
+
+input SectionParams {
+  name: String!
+}
+
+input ItemParams {
+  summary: String!
+  archived: DateTime
+  snoozed: DateTime
+}
+
+input TaskInfoParams {
+  due: DateTime
+  done: DateTime
+}
+
+input LinkDetailParams {
+  url: String!
+}
+
+input NoteDetailParams {
+  note: String!
+}
+
+type Mutation {
+  createContext(params: ContextParams!): Context!
+  editContext(id: ID!, params: ContextParams!): Context
+  deleteContext(id: ID!): Boolean!
+
+  createProject(taskList: ID!, params: ProjectParams!): Project!
+  moveProject(id: ID!, taskList: ID!): Project
+  editProject(id: ID!, params: ProjectParams!): Project
+  deleteProject(id: ID!): Boolean!
+
+  createSection(taskList: ID!, before: ID, params: SectionParams!): Section!
+  moveSection(id: ID!, taskList: ID!, before: ID): Section
+  editSection(id: ID!, params: SectionParams!): Section
+  deleteSection(id: ID!): Boolean!
+
+  createTask(section: ID, item: ItemParams!): Item!
+  createNote(section: ID, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
+  createLink(section: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
+
+  editItem(id: ID!, item: ItemParams!): Item
+  editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
+  editTaskController(id: ID!, controller: TaskController): Item
+
+  moveItem(id: ID!, section: ID, before: ID): Item
+  deleteItem(id: ID!): Boolean!
+
+  archiveItem(id: ID!, archived: DateTime): Item
+  snoozeItem(id: ID!, snoozed: DateTime): Item
+  markItemDue(id: ID!, due: DateTime): Item
+
+  createUser(email: String!, password: String!, isAdmin: Boolean): User!
+  deleteUser(id: ID): Boolean
+  changePassword(currentPassword: String!, newPassword: String!): User
+}

@@ -1,0 +1,14 @@
+{
+  "extends": "../../../tsconfig.server.json",
+  "references": [
+    { "path": "../../schema" },
+    { "path": "../core" },
+    { "path": "../utils" },
+    { "path": "../../utils" },
+    { "path": "../../services/bugzilla/server" },
+    { "path": "../../services/github/server" },
+    { "path": "../../services/google/server" },
+    { "path": "../../services/jira/server" },
+    { "path": "../../services/phabricator/server" },
+  ]
+}
