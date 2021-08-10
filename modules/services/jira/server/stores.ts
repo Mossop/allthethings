@@ -7,7 +7,10 @@ export interface JiraTransaction extends ServiceTransaction {
   readonly stores: Stores;
 }
 
-export const buildTransaction = transactionBuilder<JiraTransaction, ServiceTransaction>({
+export const buildTransaction = transactionBuilder<
+  JiraTransaction,
+  ServiceTransaction
+>({
   stores: {
     enumerable: true,
     get(this: JiraTransaction): Stores {

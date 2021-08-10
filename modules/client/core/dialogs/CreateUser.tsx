@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 
 import {
   useBoolState,
-  ReactMemo, Dialog,
+  ReactMemo,
+  Dialog,
   TextFieldInput,
   BooleanCheckboxInput,
 } from "#client/utils";
@@ -23,13 +24,11 @@ export default ReactMemo(function CreateUserDialog({
     isAdmin: false,
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [createUserMutation, { error }] = useCreateUserMutation({
     variables: state,
-    refetchQueries: [
-      refetchListUsersQuery(),
-    ],
+    refetchQueries: [refetchListUsersQuery()],
   });
 
   let createUser = useCallback(async () => {
@@ -37,35 +36,37 @@ export default ReactMemo(function CreateUserDialog({
     onClosed();
   }, [createUserMutation, onClosed]);
 
-  return <Dialog
-    title="Create User"
-    submitLabel="Create"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={createUser}
-  >
-    <TextFieldInput
-      autoFocus={true}
-      id="email"
-      label="Email Address:"
-      state={state}
-      setState={setState}
-      stateKey="email"
-    />
-    <TextFieldInput
-      id="password"
-      label="Password:"
-      state={state}
-      setState={setState}
-      stateKey="password"
-    />
-    <BooleanCheckboxInput
-      label="Create as an admin user."
-      state={state}
-      setState={setState}
-      stateKey="isAdmin"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Create User"
+      submitLabel="Create"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={createUser}
+    >
+      <TextFieldInput
+        autoFocus={true}
+        id="email"
+        label="Email Address:"
+        state={state}
+        setState={setState}
+        stateKey="email"
+      />
+      <TextFieldInput
+        id="password"
+        label="Password:"
+        state={state}
+        setState={setState}
+        stateKey="password"
+      />
+      <BooleanCheckboxInput
+        label="Create as an admin user."
+        state={state}
+        setState={setState}
+        stateKey="isAdmin"
+      />
+    </Dialog>
+  );
 });

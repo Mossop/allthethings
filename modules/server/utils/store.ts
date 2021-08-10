@@ -26,7 +26,9 @@ function isConstructor<
   Record,
   Impl extends RecordHolder<Record>,
   Tx extends Transaction,
->(builder: ImplBuilder<Record, Impl, Tx>): builder is (new (tx: Tx, record: Record) => Impl) {
+>(
+  builder: ImplBuilder<Record, Impl, Tx>,
+): builder is new (tx: Tx, record: Record) => Impl {
   return !!builder.prototype;
 }
 
@@ -46,14 +48,15 @@ type Mapper<Tx extends Transaction, A, B> = (tx: Tx, record: A) => B;
 
 type TxInit<R, Tx extends Transaction> = (tx: Tx) => R;
 
-type RecordFilter = (builder: Knex.QueryBuilder, knex: Knex) => Knex.QueryBuilder;
+type RecordFilter = (
+  builder: Knex.QueryBuilder,
+  knex: Knex,
+) => Knex.QueryBuilder;
 
-export class BaseRecordHolder<Record, Tx extends Transaction> implements RecordHolder<Record> {
-  public constructor(
-    protected readonly tx: Tx,
-    protected record: Record,
-  ) {
-  }
+export class BaseRecordHolder<Record, Tx extends Transaction>
+  implements RecordHolder<Record>
+{
+  public constructor(protected readonly tx: Tx, protected record: Record) {}
 
   public updateRecord(record: Record): void {
     this.record = record;
@@ -65,12 +68,14 @@ export class BaseStore<Tx extends Transaction, Record, Repr, Insert = Record> {
     protected readonly tx: Tx,
     protected readonly tableName: string,
     protected readonly mapper: Mapper<Tx, Record, Repr>,
-    protected readonly recordsFilter: RecordFilter = (b: Knex.QueryBuilder) => b,
-  ) {
-  }
+    protected readonly recordsFilter: RecordFilter = (b: Knex.QueryBuilder) =>
+      b,
+  ) {}
 
   protected build(record: Awaitable<Record>): Promise<Repr>;
-  protected build(record: Awaitable<Record | null | undefined>): Promise<Repr | null>;
+  protected build(
+    record: Awaitable<Record | null | undefined>,
+  ): Promise<Repr | null>;
   protected build(records: Awaitable<Record[]>): Promise<Repr[]>;
   protected async build(
     record: Awaitable<null | undefined | Record | Record[]>,
@@ -100,37 +105,40 @@ export class BaseStore<Tx extends Transaction, Record, Repr, Insert = Record> {
   }
 
   public async first(params: Partial<Record>): Promise<Repr | null> {
-    return this.build(this.records()
-      .where(params)
-      .first(`${this.tableName}.*`) as Promise<Record | undefined>);
+    return this.build(
+      this.records().where(params).first(`${this.tableName}.*`) as Promise<
+        Record | undefined
+      >,
+    );
   }
 
   public async insert(records: Insert[]): Promise<Repr[]> {
-    return this.build(this.table()
-      .insert(records)
-      .returning("*"));
+    return this.build(this.table().insert(records).returning("*"));
   }
 
   public async list(params: Partial<Record> = {}): Promise<Repr[]> {
-    return this.build(this.records()
-      .where(params)
-      .select(`${this.tableName}.*`) as Promise<Record[]>);
+    return this.build(
+      this.records().where(params).select(`${this.tableName}.*`) as Promise<
+        Record[]
+      >,
+    );
   }
 
   public async update(
     params: Partial<Insert>,
     where: Partial<Record> = {},
   ): Promise<Repr[]> {
-    return this.build(this.table()
-      .where(where)
-      .update(params).returning("*") as Promise<Record[]>);
+    return this.build(
+      this.table().where(where).update(params).returning("*") as Promise<
+        Record[]
+      >,
+    );
   }
 
   public async delete(params: Partial<Record> = {}): Promise<Record[]> {
-    return this.table()
-      .where(params)
-      .delete()
-      .returning("*") as Promise<Record[]>;
+    return this.table().where(params).delete().returning("*") as Promise<
+      Record[]
+    >;
   }
 }
 
@@ -138,7 +146,8 @@ type JoinInit<Record> = <
   Tx extends Transaction,
   SourceKey extends string & keyof Record,
   TargetKey extends string & keyof Record,
->(tx: Tx,
+>(
+  tx: Tx,
   tableName: string,
   sourceKey: SourceKey,
   targetKey: TargetKey,
@@ -182,9 +191,7 @@ export class Join<
   }
 
   public async getItemIds(id: Record[SourceKey]): Promise<Record[TargetKey][]> {
-    return this.records()
-      .where(this.sourceKey, id)
-      .pluck(this.targetKey);
+    return this.records().where(this.sourceKey, id).pluck(this.targetKey);
   }
 
   public async setItems(
@@ -218,7 +225,10 @@ export class Join<
       [this.targetKey]: item,
     }));
 
-    await this.table().insert(records).onConflict([this.sourceKey, this.targetKey]).merge();
+    await this.table()
+      .insert(records)
+      .onConflict([this.sourceKey, this.targetKey])
+      .merge();
   }
 
   public async deleteItems(
@@ -246,17 +256,22 @@ export class Store<
     builder: ImplBuilder<Record, Impl, Tx>,
     recordsFilter?: RecordFilter,
   ) {
-    super(tx, tableName, (tx: Tx, record: Record): Impl => {
-      let existing = this.cache.get(record.id);
-      if (existing) {
-        existing.updateRecord(record);
-      } else {
-        existing = buildImpl(builder, tx, record);
-        this.cache.set(record.id, existing);
-      }
+    super(
+      tx,
+      tableName,
+      (tx: Tx, record: Record): Impl => {
+        let existing = this.cache.get(record.id);
+        if (existing) {
+          existing.updateRecord(record);
+        } else {
+          existing = buildImpl(builder, tx, record);
+          this.cache.set(record.id, existing);
+        }
 
-      return existing;
-    }, recordsFilter);
+        return existing;
+      },
+      recordsFilter,
+    );
   }
 
   public withInsert<I extends Identified>(): Store<Record, Impl, I, Tx> {
@@ -291,23 +306,26 @@ export class Store<
     if (toGet.length) {
       return [
         ...found,
-        ...await this.build(
+        ...(await this.build(
           this.records()
             .whereIn("id", toGet)
             .select(`${this.tableName}.*`) as Promise<Record[]>,
-        ),
+        )),
       ];
     }
 
     return found;
   }
 
-  public async insertOne(record: Omit<Insert, "id">, id?: string): Promise<Impl> {
+  public async insertOne(
+    record: Omit<Insert, "id">,
+    id?: string,
+  ): Promise<Impl> {
     let results = await this.insert([
       // @ts-ignore
       {
         ...record,
-        id: id ?? await newId(),
+        id: id ?? (await newId()),
       },
     ]);
 
@@ -318,7 +336,10 @@ export class Store<
     return results[0];
   }
 
-  public async updateOne(id: string, params: Partial<Omit<Insert, "id">>): Promise<Impl | null> {
+  public async updateOne(
+    id: string,
+    params: Partial<Omit<Insert, "id">>,
+  ): Promise<Impl | null> {
     // @ts-ignore
     let results = await this.update(params, { id });
     return results.length ? results[0] : null;
@@ -330,7 +351,9 @@ export class Store<
     return deleted.length == 1;
   }
 
-  public override async delete(params: Partial<Record> = {}): Promise<Record[]> {
+  public override async delete(
+    params: Partial<Record> = {},
+  ): Promise<Record[]> {
     let records = await super.delete(params);
 
     for (let record of records) {
@@ -341,7 +364,9 @@ export class Store<
   }
 }
 
-export function defineStoreBuilder<Tx extends Transaction, R>(build: TxInit<R, Tx>): TxInit<R, Tx> {
+export function defineStoreBuilder<Tx extends Transaction, R>(
+  build: TxInit<R, Tx>,
+): TxInit<R, Tx> {
   let cache = new WeakMap<Tx, R>();
 
   return (tx: Tx): R => {

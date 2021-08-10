@@ -10,13 +10,19 @@ const TsconfigPathsPlugin = require("tsconfig-paths-webpack-plugin");
 const { DefinePlugin } = require("webpack");
 const { StatsWriterPlugin } = require("webpack-stats-plugin");
 
-let tsConfig = path.join(__dirname, "modules", "client", "init", "tsconfig.json");
+let tsConfig = path.join(
+  __dirname,
+  "modules",
+  "client",
+  "init",
+  "tsconfig.json",
+);
 
 const PKG_REGEX = /^"?([a-zA-Z@\-_.]+)@.*/;
 const VERSION_REGEX = /version "([\d.]+)"/;
 
 const externals = {
-  "react": {
+  react: {
     variable: "React",
     path: "umd/react.production.min.js",
   },
@@ -24,7 +30,7 @@ const externals = {
     variable: "ReactDOM",
     path: "umd/react-dom.production.min.js",
   },
-  "luxon": {
+  luxon: {
     variable: "luxon",
     path: "build/global/luxon.min.js",
   },
@@ -90,24 +96,29 @@ module.exports = {
   },
   devtool: "source-map",
   module: {
-    rules: [{
-      test: /\.tsx?$/,
-      exclude: /node_modules/,
-      use: [{
-        loader: "ts-loader",
-        options: {
-          configFile: tsConfig,
-          projectReferences: true,
-          transpileOnly: true,
-          compilerOptions: {
-            emitDeclarationOnly: false,
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: "ts-loader",
+            options: {
+              configFile: tsConfig,
+              projectReferences: true,
+              transpileOnly: true,
+              compilerOptions: {
+                emitDeclarationOnly: false,
+              },
+            },
           },
-        },
-      }],
-    }, {
-      test: /\.svg$/,
-      use: ["@svgr/webpack"],
-    }],
+        ],
+      },
+      {
+        test: /\.svg$/,
+        use: ["@svgr/webpack"],
+      },
+    ],
   },
   plugins: [
     new HtmlWebpackPlugin({
@@ -128,10 +139,12 @@ module.exports = {
       ],
     }),
     new CopyPlugin({
-      patterns: [{
-        from: path.join(__dirname, "static"),
-        to: path.join(__dirname, "dist", "web", "static"),
-      }],
+      patterns: [
+        {
+          from: path.join(__dirname, "static"),
+          to: path.join(__dirname, "dist", "web", "static"),
+        },
+      ],
     }),
     new StatsWriterPlugin({
       filename: "stats.json",
@@ -145,7 +158,13 @@ module.exports = {
     }),
     new ForkTsCheckerWebpackPlugin({
       typescript: {
-        configFile: path.join(__dirname, "modules", "client", "init", "tsconfig.json"),
+        configFile: path.join(
+          __dirname,
+          "modules",
+          "client",
+          "init",
+          "tsconfig.json",
+        ),
       },
     }),
   ],

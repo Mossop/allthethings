@@ -3,7 +3,8 @@ import { useCallback, useState } from "react";
 
 import {
   useBoolState,
-  ReactMemo, Dialog,
+  ReactMemo,
+  Dialog,
   TextFieldInput,
   FormState,
 } from "#client/utils";
@@ -23,7 +24,7 @@ export default ReactMemo(function ChangePasswordDialog({
     newPasswordAgain: "",
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [changePasswordMutation, { loading, error }] = useChangePasswordMutation({
     variables: {
@@ -41,41 +42,46 @@ export default ReactMemo(function ChangePasswordDialog({
     onClosed();
   }, [changePasswordMutation, onClosed, state]);
 
-  return <Dialog
-    title="Change Password"
-    submitLabel="Change"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={changePassword}
-    canSubmit={state.newPassword.length > 0 && state.newPassword == state.newPasswordAgain}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      autoFocus={true}
-      required={true}
-      id="password"
-      label="Current Password:"
-      state={state}
-      setState={setState}
-      stateKey="currentPassword"
-    />
-    <TextFieldInput
-      required={true}
-      id="newPassword"
-      label="New Password:"
-      state={state}
-      setState={setState}
-      stateKey="newPassword"
-    />
-    <TextFieldInput
-      required={true}
-      id="againPassword"
-      label="New Password Again:"
-      state={state}
-      setState={setState}
-      stateKey="newPasswordAgain"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Change Password"
+      submitLabel="Change"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={changePassword}
+      canSubmit={
+        state.newPassword.length > 0 &&
+        state.newPassword == state.newPasswordAgain
+      }
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        autoFocus={true}
+        required={true}
+        id="password"
+        label="Current Password:"
+        state={state}
+        setState={setState}
+        stateKey="currentPassword"
+      />
+      <TextFieldInput
+        required={true}
+        id="newPassword"
+        label="New Password:"
+        state={state}
+        setState={setState}
+        stateKey="newPassword"
+      />
+      <TextFieldInput
+        required={true}
+        id="againPassword"
+        label="New Password Again:"
+        state={state}
+        setState={setState}
+        stateKey="newPasswordAgain"
+      />
+    </Dialog>
+  );
 });

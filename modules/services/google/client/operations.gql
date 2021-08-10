@@ -20,7 +20,10 @@ query RequestLoginUrl {
   googleLoginUrl
 }
 
-mutation CreateGoogleMailSearch($account: ID!, $params: GoogleMailSearchParams!) {
+mutation CreateGoogleMailSearch(
+  $account: ID!
+  $params: GoogleMailSearchParams!
+) {
   createGoogleMailSearch(account: $account, params: $params) {
     id
     name

@@ -38,31 +38,40 @@ export const Dialog = ReactMemo(function Dialog({
   canSubmit = true,
   children,
 }: DialogProps & ReactChildren): ReactResult {
-  let submit = useCallback((event: FormEvent<HTMLFormElement>): void => {
-    event.preventDefault();
-    onSubmit();
-  }, [onSubmit]);
+  let submit = useCallback(
+    (event: FormEvent<HTMLFormElement>): void => {
+      event.preventDefault();
+      onSubmit();
+    },
+    [onSubmit],
+  );
 
-  return <MuiDialog open={isOpen} onClose={onClose} onExited={onClosed}>
-    <FormStateProvider state={formState}>
-      <form onSubmit={submit}>
-        <DialogTitle>{title}</DialogTitle>
-        <DialogContent>
-          {error && <Error error={error}/>}
-          {children}
-        </DialogContent>
-        <DialogActions>
-          <Button
-            type="submit"
-            disabled={!canSubmit}
-            variant="contained"
-            color="primary"
-          >
-            {submitLabel}
-          </Button>
-          {cancelLabel && <Button onClick={onClose} variant="contained">{cancelLabel}</Button>}
-        </DialogActions>
-      </form>
-    </FormStateProvider>
-  </MuiDialog>;
+  return (
+    <MuiDialog open={isOpen} onClose={onClose} onExited={onClosed}>
+      <FormStateProvider state={formState}>
+        <form onSubmit={submit}>
+          <DialogTitle>{title}</DialogTitle>
+          <DialogContent>
+            {error && <Error error={error} />}
+            {children}
+          </DialogContent>
+          <DialogActions>
+            <Button
+              type="submit"
+              disabled={!canSubmit}
+              variant="contained"
+              color="primary"
+            >
+              {submitLabel}
+            </Button>
+            {cancelLabel && (
+              <Button onClick={onClose} variant="contained">
+                {cancelLabel}
+              </Button>
+            )}
+          </DialogActions>
+        </form>
+      </FormStateProvider>
+    </MuiDialog>
+  );
 });

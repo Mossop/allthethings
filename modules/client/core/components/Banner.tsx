@@ -37,36 +37,39 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexCenteredRow,
       columnGap: theme.spacing(2),
     },
-  }));
+  }),
+);
 
 export default ReactMemo(function Banner(): ReactResult {
   let classes = useStyles();
   let user = useMaybeUser();
   let [loginDialogShown, showLoginDialog, closeLoginDialog] = useBoolState();
 
-  return <AppBar
-    className={classes.banner}
-    position="static"
-    elevation={1}
-    role="banner"
-  >
-    <h1 className={classes.title}>
-      <Link href="/" className={classes.link}>
-        <Logo className={classes.logo}/>
-        <span>AllTheThings</span>
-      </Link>
-    </h1>
-    <div className={classes.pageControls}>
-      <ProblemsMenu/>
-      {
-        user
-          ? <>
-            <ContextMenu/>
-            <UserMenu/>
+  return (
+    <AppBar
+      className={classes.banner}
+      position="static"
+      elevation={1}
+      role="banner"
+    >
+      <h1 className={classes.title}>
+        <Link href="/" className={classes.link}>
+          <Logo className={classes.logo} />
+          <span>AllTheThings</span>
+        </Link>
+      </h1>
+      <div className={classes.pageControls}>
+        <ProblemsMenu />
+        {user ? (
+          <>
+            <ContextMenu />
+            <UserMenu />
           </>
-          : <Button onClick={showLoginDialog}>Login</Button>
-      }
-    </div>
-    {loginDialogShown && <LoginDialog onClosed={closeLoginDialog}/>}
-  </AppBar>;
+        ) : (
+          <Button onClick={showLoginDialog}>Login</Button>
+        )}
+      </div>
+      {loginDialogShown && <LoginDialog onClosed={closeLoginDialog} />}
+    </AppBar>
+  );
 });

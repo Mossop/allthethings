@@ -14,9 +14,7 @@ import type { JiraTransaction } from "./stores";
 
 export default rootResolvers<Resolvers, AuthedGraphQLCtx<JiraTransaction>>({
   User: {
-    jiraAccounts(
-      ctx: AuthedGraphQLCtx<JiraTransaction>,
-    ): Promise<Account[]> {
+    jiraAccounts(ctx: AuthedGraphQLCtx<JiraTransaction>): Promise<Account[]> {
       return ctx.transaction.stores.accounts.list({ userId: ctx.userId });
     },
   },
@@ -44,7 +42,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<JiraTransaction>>({
 
     async createJiraSearch(
       ctx: AuthedGraphQLCtx<JiraTransaction>,
-      { account: accountId, params: { name, query } }: MutationCreateJiraSearchArgs,
+      {
+        account: accountId,
+        params: { name, query },
+      }: MutationCreateJiraSearchArgs,
     ): Promise<Search> {
       let account = await ctx.transaction.stores.accounts.get(accountId);
       if (!account) {

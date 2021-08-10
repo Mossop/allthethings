@@ -9,6 +9,6 @@
     { "path": "../../services/github/server" },
     { "path": "../../services/google/server" },
     { "path": "../../services/jira/server" },
-    { "path": "../../services/phabricator/server" },
+    { "path": "../../services/phabricator/server" }
   ]
 }

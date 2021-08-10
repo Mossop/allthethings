@@ -3,20 +3,18 @@ import { URL } from "url";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
-import {
-  BaseAccount,
-  BaseItem,
-  BaseList,
-} from "#server/utils";
+import { BaseAccount, BaseItem, BaseList } from "#server/utils";
 import type {
   ResolverImpl,
   ServiceItem,
-
   Listable,
-
   ItemStore,
 } from "#server/utils";
-import type { IssueLikeFields, LabelFields, RepositoryFields } from "#services/github/schema";
+import type {
+  IssueLikeFields,
+  LabelFields,
+  RepositoryFields,
+} from "#services/github/schema";
 import { assert } from "#utils";
 
 import { GitHubApi, UserInfo } from "./api";
@@ -33,10 +31,13 @@ import type {
   RepositoryApiResult,
 } from "./types";
 
-const ISSUELIKE_REGEX = /https:\/\/github\.com\/([^/]+)\/(.+)\/(?:pull|issues)\/(\d+)/;
+const ISSUELIKE_REGEX =
+  /https:\/\/github\.com\/([^/]+)\/(.+)\/(?:pull|issues)\/(\d+)/;
 
-export class Account extends BaseAccount<GithubTransaction>
-  implements ResolverImpl<GithubAccountResolvers> {
+export class Account
+  extends BaseAccount<GithubTransaction>
+  implements ResolverImpl<GithubAccountResolvers>
+{
   private client: GitHubApi | null;
 
   public constructor(
@@ -138,8 +139,7 @@ export class Repository {
   public constructor(
     public readonly tx: GithubTransaction,
     private record: GithubRepositoryRecord,
-  ) {
-  }
+  ) {}
 
   public static async getOrCreate(
     account: Account,
@@ -197,21 +197,31 @@ export class Label {
   public constructor(
     private readonly tx: GithubTransaction,
     private record: GithubLabelRecord,
-  ) {
-  }
+  ) {}
 
   public static async issueLabels(issueLike: IssueLike): Promise<Label[]> {
-    let records = await issueLike.tx.stores.labels.table()
-      .join(issueLike.tx.tableRef("IssueLikeLabels"), "Label.id", "IssueLikeLabels.label")
+    let records = await issueLike.tx.stores.labels
+      .table()
+      .join(
+        issueLike.tx.tableRef("IssueLikeLabels"),
+        "Label.id",
+        "IssueLikeLabels.label",
+      )
       .where("IssueLikeLabels.issueLike", issueLike.id)
       .select<GithubLabelRecord[]>("Label.*");
 
-    return Promise.all(records.map(
-      async (record: GithubLabelRecord): Promise<Label> => new Label(issueLike.tx, record),
-    ));
+    return Promise.all(
+      records.map(
+        async (record: GithubLabelRecord): Promise<Label> =>
+          new Label(issueLike.tx, record),
+      ),
+    );
   }
 
-  public static async setIssueLabels(issueLike: IssueLike, labels: Label[]): Promise<void> {
+  public static async setIssueLabels(
+    issueLike: IssueLike,
+    labels: Label[],
+  ): Promise<void> {
     let labelIds = labels.map((label: Label): string => label.id);
 
     let repo = await issueLike.repository();
@@ -272,8 +282,10 @@ export class Label {
   }
 }
 
-export class Search extends BaseList<IssueLikeApiResult[], GithubTransaction>
-  implements ResolverImpl<GithubSearchResolvers> {
+export class Search
+  extends BaseList<IssueLikeApiResult[], GithubTransaction>
+  implements ResolverImpl<GithubSearchResolvers>
+{
   public static getStore(tx: GithubTransaction): Listable<Search> {
     return tx.stores.searches;
   }
@@ -316,7 +328,9 @@ export class Search extends BaseList<IssueLikeApiResult[], GithubTransaction>
     await this.tx.stores.searches.deleteOne(this.id);
   }
 
-  public async listItems(issueList?: readonly IssueLikeApiResult[]): Promise<IssueLike[]> {
+  public async listItems(
+    issueList?: readonly IssueLikeApiResult[],
+  ): Promise<IssueLike[]> {
     let account = await this.account();
 
     if (!issueList) {
@@ -336,7 +350,11 @@ export class Search extends BaseList<IssueLikeApiResult[], GithubTransaction>
       if (instance) {
         await instance.update(issue);
       } else {
-        instance = await IssueLike.create(repo, issue, TaskController.ServiceList);
+        instance = await IssueLike.create(
+          repo,
+          issue,
+          TaskController.ServiceList,
+        );
       }
 
       instances.push(instance);
@@ -368,7 +386,10 @@ export class Search extends BaseList<IssueLikeApiResult[], GithubTransaction>
   }
 }
 
-export class IssueLike extends BaseItem<GithubTransaction> implements ServiceItem<IssueLikeFields> {
+export class IssueLike
+  extends BaseItem<GithubTransaction>
+  implements ServiceItem<IssueLikeFields>
+{
   public static getStore(tx: GithubTransaction): ItemStore<IssueLike> {
     return tx.stores.issueLikes;
   }
@@ -419,13 +440,16 @@ export class IssueLike extends BaseItem<GithubTransaction> implements ServiceIte
     let account = await repository.account();
 
     if (!issueLike) {
-      issueLike = await account.api.node(this.nodeId) ?? undefined;
+      issueLike = (await account.api.node(this.nodeId)) ?? undefined;
       if (!issueLike) {
         return this.tx.deleteItem(this.id);
       }
     }
 
-    await this.tx.stores.issueLikes.updateOne(this.id, IssueLike.recordFromApi(issueLike));
+    await this.tx.stores.issueLikes.updateOne(
+      this.id,
+      IssueLike.recordFromApi(issueLike),
+    );
 
     let labels: Label[] = [];
     for (let apiLabel of issueLike.labels?.nodes ?? []) {
@@ -463,10 +487,13 @@ export class IssueLike extends BaseItem<GithubTransaction> implements ServiceIte
       controller,
     });
 
-    let issueLike = await repository.tx.stores.issueLikes.insertOne({
-      ...record,
-      repositoryId: repository.id,
-    }, id);
+    let issueLike = await repository.tx.stores.issueLikes.insertOne(
+      {
+        ...record,
+        repositoryId: repository.id,
+      },
+      id,
+    );
 
     let labels: Label[] = [];
     for (let apiLabel of data.labels?.nodes ?? []) {
@@ -513,27 +540,32 @@ export class IssueLike extends BaseItem<GithubTransaction> implements ServiceIte
       }
 
       let issueLike = await account.api.lookup(owner, repo, number);
-      if (issueLike?.__typename != "Issue" && issueLike?.__typename != "PullRequest") {
+      if (
+        issueLike?.__typename != "Issue" &&
+        issueLike?.__typename != "PullRequest"
+      ) {
         continue;
       }
 
       if (!repository) {
-        repository = await Repository.getOrCreate(account, issueLike.repository);
+        repository = await Repository.getOrCreate(
+          account,
+          issueLike.repository,
+        );
       }
 
-      return IssueLike.create(repository, issueLike, isTask ? TaskController.Service : null);
+      return IssueLike.create(
+        repository,
+        issueLike,
+        isTask ? TaskController.Service : null,
+      );
     }
 
     return null;
   }
 
   public async fields(): Promise<IssueLikeFields> {
-    let {
-      id,
-      repositoryId,
-      nodeId,
-      ...fields
-    } = this.record;
+    let { id, repositoryId, nodeId, ...fields } = this.record;
 
     let labels = await Label.issueLabels(this);
     let labelFields = Promise.all(

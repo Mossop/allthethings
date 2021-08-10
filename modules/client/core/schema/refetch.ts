@@ -20,9 +20,11 @@ export function refetchQueriesForSection(
   if (isInbox(taskList)) {
     refetchQueries.push(refetchListInboxQuery());
   } else {
-    refetchQueries.push(refetchListTaskListQuery({
-      taskList: taskList.id,
-    }));
+    refetchQueries.push(
+      refetchListTaskListQuery({
+        taskList: taskList.id,
+      }),
+    );
   }
 
   return refetchQueries;

@@ -12,14 +12,17 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.pageStyles(theme),
       flex: 1,
     },
-  }));
+  }),
+);
 
 export default ReactMemo(function NotFound(): ReactResult {
   let classes = useStyles();
 
-  return <Page>
-    <div className={classes.content}>
-      <Text>Not Found</Text>
-    </div>
-  </Page>;
+  return (
+    <Page>
+      <div className={classes.content}>
+        <Text>Not Found</Text>
+      </div>
+    </Page>
+  );
 });

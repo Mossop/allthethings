@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import PullRequestIcon from "./PullRequest.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={PullRequestIcon}
-    viewBox="0 0 16 16"
-  />;
+  return <SvgIcon component={PullRequestIcon} viewBox="0 0 16 16" />;
 }

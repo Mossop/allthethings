@@ -1,5 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ApolloClient, createHttpLink, InMemoryCache, ApolloLink } from "@apollo/client";
+import {
+  ApolloClient,
+  createHttpLink,
+  InMemoryCache,
+  ApolloLink,
+} from "@apollo/client";
 import { withScalars } from "apollo-link-scalars";
 import { buildClientSchema } from "graphql";
 import { DateTime } from "luxon";
@@ -10,7 +15,8 @@ import possibleTypes from "./types";
 import type { TypedTypePolicies } from "./types";
 
 const ArrayField = {
-  merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] => incoming,
+  merge: (_existing: unknown[] = [], incoming: unknown[]): unknown[] =>
+    incoming,
 };
 
 let typePolicies: TypedTypePolicies = {

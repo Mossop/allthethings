@@ -35,7 +35,9 @@ interface ExtraContext {
   rollbackTransaction(): Promise<void>;
 }
 
-export type WebServerContext = ExtraContext & Koa.DefaultContext & Koa.ExtendableContext;
+export type WebServerContext = ExtraContext &
+  Koa.DefaultContext &
+  Koa.ExtendableContext;
 
 interface TransactionHolder {
   transaction: Promise<Transaction>;
@@ -54,7 +56,7 @@ export async function buildWebServerContext(
     userId: {
       enumerable: true,
       get(this: WebServerContext): string | null {
-        return this.session?.userId as string | undefined ?? null;
+        return (this.session?.userId as string | undefined) ?? null;
       },
     },
 
@@ -101,10 +103,13 @@ export async function buildWebServerContext(
 
           transactions.set(this, holder);
 
-          holder.complete = withTransaction(knex, (tx: Transaction): Promise<void> => {
-            deferredTransaction.resolve(tx);
-            return deferred.promise;
-          });
+          holder.complete = withTransaction(
+            knex,
+            (tx: Transaction): Promise<void> => {
+              deferredTransaction.resolve(tx);
+              return deferred.promise;
+            },
+          );
         }
 
         return holder.transaction;
@@ -113,7 +118,9 @@ export async function buildWebServerContext(
 
     commitTransaction: {
       enumerable: true,
-      value: async function commitTransaction(this: WebServerContext): Promise<void> {
+      value: async function commitTransaction(
+        this: WebServerContext,
+      ): Promise<void> {
         let holder = transactions.get(this);
         if (!holder) {
           return;
@@ -128,7 +135,9 @@ export async function buildWebServerContext(
 
     rollbackTransaction: {
       enumerable: true,
-      value: async function rollbackTransaction(this: WebServerContext): Promise<void> {
+      value: async function rollbackTransaction(
+        this: WebServerContext,
+      ): Promise<void> {
         let holder = transactions.get(this);
         if (!holder) {
           return;
@@ -149,7 +158,10 @@ export async function buildWebServerContext(
 
 export type WebServer = Koa<Koa.DefaultState, WebServerContext>;
 
-async function transactionMiddleware(ctx: WebServerContext, next: Koa.Next): Promise<void> {
+async function transactionMiddleware(
+  ctx: WebServerContext,
+  next: Koa.Next,
+): Promise<void> {
   try {
     await next();
     await ctx.commitTransaction();
@@ -168,7 +180,7 @@ async function authMiddleware(ctx: WebServerContext): Promise<unknown> {
         if (fields.email && fields.password) {
           let tx = buildCoreTransaction(await ctx.startTransaction());
           let user = await tx.stores.users.first({ email: fields.email });
-          if (user && await user.verifyUser(fields.password)) {
+          if (user && (await user.verifyUser(fields.password))) {
             ctx.login(user.id);
             ctx.status = 200;
             ctx.body = "ok";
@@ -212,26 +224,35 @@ export async function createWebServer(
 
   app.keys = ["allthethings"];
 
-  app.use(koaMount(
-    "/app",
-    koaStatic(path.join(webRoot, "app"), {
-      maxAge: 1000 * 60 * 60 * 365,
-      immutable: true,
-    }),
-  ));
+  app.use(
+    koaMount(
+      "/app",
+      koaStatic(path.join(webRoot, "app"), {
+        maxAge: 1000 * 60 * 60 * 365,
+        immutable: true,
+      }),
+    ),
+  );
 
-  app.use(koaMount(
-    "/static",
-    koaStatic(path.join(webRoot, "static"), {
-      maxAge: 1000 * 60 * 60 * 365,
-    }),
-  ));
+  app.use(
+    koaMount(
+      "/static",
+      koaStatic(path.join(webRoot, "static"), {
+        maxAge: 1000 * 60 * 60 * 365,
+      }),
+    ),
+  );
 
-  app.use(koaSession({
-    renew: true,
-    sameSite: "lax",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
-  }, app as unknown as Koa));
+  app.use(
+    koaSession(
+      {
+        renew: true,
+        sameSite: "lax",
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+      },
+      app as unknown as Koa,
+    ),
+  );
 
   app.use(transactionMiddleware);
 
@@ -242,35 +263,39 @@ export async function createWebServer(
   ServiceManager.services.forEach((service: Service) => {
     if (service.webMiddleware) {
       let id = ServiceManager.getServiceId(service);
-      app.use(koaMount(
-        `/service/${id}`,
-        async (ctx: WebServerContext, next: Koa.Next): Promise<void> => {
-          if (!ctx.userId) {
-            throw new Error("Not authenticated.");
-          }
+      app.use(
+        koaMount(
+          `/service/${id}`,
+          async (ctx: WebServerContext, next: Koa.Next): Promise<void> => {
+            if (!ctx.userId) {
+              throw new Error("Not authenticated.");
+            }
 
-          let transaction = await ctx.startTransaction();
-          let serviceTransaction = await buildServiceTransaction(service, transaction);
+            let transaction = await ctx.startTransaction();
+            let serviceTransaction = await buildServiceTransaction(
+              service,
+              transaction,
+            );
 
-          let serviceContextDescriptors: DescriptorsFor<ServiceWebContextExtras> = {
-            userId: {
-              enumerable: true,
-              value: ctx.userId,
-            },
-            transaction: {
-              enumerable: true,
-              value: serviceTransaction,
-            },
-          };
+            let serviceContextDescriptors: DescriptorsFor<ServiceWebContextExtras> =
+              {
+                userId: {
+                  enumerable: true,
+                  value: ctx.userId,
+                },
+                transaction: {
+                  enumerable: true,
+                  value: serviceTransaction,
+                },
+              };
 
-          let sctx: Koa.ParameterizedContext<unknown, ServiceWebContext> = Object.create(
-            ctx,
-            serviceContextDescriptors,
-          );
+            let sctx: Koa.ParameterizedContext<unknown, ServiceWebContext> =
+              Object.create(ctx, serviceContextDescriptors);
 
-          return service.webMiddleware?.(sctx, next);
-        },
-      ));
+            return service.webMiddleware?.(sctx, next);
+          },
+        ),
+      );
     }
   });
 

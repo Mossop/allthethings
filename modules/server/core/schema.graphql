@@ -172,8 +172,18 @@ type Mutation {
   deleteSection(id: ID!): Boolean!
 
   createTask(section: ID, item: ItemParams!): Item!
-  createNote(section: ID, item: ItemParams!, detail: NoteDetailParams!, isTask: Boolean!): Item!
-  createLink(section: ID, item: ItemParams!, detail: LinkDetailParams!, isTask: Boolean!): Item!
+  createNote(
+    section: ID
+    item: ItemParams!
+    detail: NoteDetailParams!
+    isTask: Boolean!
+  ): Item!
+  createLink(
+    section: ID
+    item: ItemParams!
+    detail: LinkDetailParams!
+    isTask: Boolean!
+  ): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
   editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item

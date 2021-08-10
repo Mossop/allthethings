@@ -63,13 +63,15 @@ export type ProjectInsertRecord = Omit<ProjectRecord, "stub">;
 //
 // unique index on ownerId, index.
 // unique index on ownerId, stub.
-export type SectionRecord = Identifiable<IndexedEntity & {
-  // This will be empty for the anonymous section for the project. In this case ownerId == id and
-  // index = -1.
-  name: string;
-  // auto-generated from the name.
-  stub: string;
-}>;
+export type SectionRecord = Identifiable<
+  IndexedEntity & {
+    // This will be empty for the anonymous section for the project. In this case ownerId == id and
+    // index = -1.
+    name: string;
+    // auto-generated from the name.
+    stub: string;
+  }
+>;
 
 export type SectionInsertRecord = Omit<SectionRecord, "stub">;
 

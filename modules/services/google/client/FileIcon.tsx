@@ -15,12 +15,12 @@ export default ReactMemo(function FileIcon({
 }: FileIconProps): ReactResult {
   switch (mimeType) {
     case "application/vnd.google-apps.document":
-      return <DocsIcon/>;
+      return <DocsIcon />;
     case "application/vnd.google-apps.spreadsheet":
-      return <SheetsIcon/>;
+      return <SheetsIcon />;
     case "application/vnd.google-apps.presentation":
-      return <SlidesIcon/>;
+      return <SlidesIcon />;
     default:
-      return <DriveIcon/>;
+      return <DriveIcon />;
   }
 });

@@ -36,14 +36,17 @@ const useStyles = makeStyles((theme: Theme) =>
     headingText: {
       padding: theme.spacing(1) + 2,
     },
-  }));
+  }),
+);
 
 export default ReactMemo(function Inbox(): ReactResult {
   let classes = useStyles();
 
   let view = useLoggedInView();
   let [linkView] = useState(view.type == ViewType.AddLink ? view : null);
-  let [showAddLinkDialog,, closeAddLinkDialog] = useBoolState(linkView !== null);
+  let [showAddLinkDialog, , closeAddLinkDialog] = useBoolState(
+    linkView !== null,
+  );
 
   let user = useUser();
   let items = useInboxContents().items;
@@ -58,25 +61,27 @@ export default ReactMemo(function Inbox(): ReactResult {
     }
   }, [view]);
 
-  return <Page>
-    <div className={classes.content}>
-      <div className={classes.heading}>
-        <Icons.Inbox/>
-        <Heading className={classes.headingText}>Inbox</Heading>
-        <FilterMenu list={user.inbox} filter={filter} setFilter={setFilter}/>
-        <ItemListActions list={user.inbox}/>
+  return (
+    <Page>
+      <div className={classes.content}>
+        <div className={classes.heading}>
+          <Icons.Inbox />
+          <Heading className={classes.headingText}>Inbox</Heading>
+          <FilterMenu list={user.inbox} filter={filter} setFilter={setFilter} />
+          <ItemListActions list={user.inbox} />
+        </div>
+        <List disablePadding={true}>
+          <ItemList items={items} filter={filter} />
+        </List>
       </div>
-      <List disablePadding={true}>
-        <ItemList items={items} filter={filter}/>
-      </List>
-    </div>
-    {
-      linkView && showAddLinkDialog && <LinkDialog
-        list={user.inbox}
-        initialUrl={linkView.url}
-        title={linkView.title}
-        onClosed={closeAddLinkDialog}
-      />
-    }
-  </Page>;
+      {linkView && showAddLinkDialog && (
+        <LinkDialog
+          list={user.inbox}
+          initialUrl={linkView.url}
+          title={linkView.title}
+          onClosed={closeAddLinkDialog}
+        />
+      )}
+    </Page>
+  );
 });

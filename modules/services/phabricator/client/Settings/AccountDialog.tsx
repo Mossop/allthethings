@@ -31,7 +31,8 @@ const useStyles = makeStyles((theme: Theme) =>
       borderTopColor: theme.palette.divider,
       borderTopStyle: "solid",
     },
-  }));
+  }),
+);
 
 interface QueryCheckboxProps {
   query: PhabricatorQuery;
@@ -48,11 +49,9 @@ const QueryCheckbox = ReactMemo(function QueryCheckbox({
     (checked: boolean) => onChange(query.queryId, checked),
     [onChange, query.queryId],
   );
-  return <Checkbox
-    label={query.description}
-    onChange={change}
-    checked={checked}
-  />;
+  return (
+    <Checkbox label={query.description} onChange={change} checked={checked} />
+  );
 });
 
 interface AccountDialogProps {
@@ -81,14 +80,14 @@ const AccountDialog = ReactMemo(function AccountDialog({
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount, { loading, error }] = useCreatePhabricatorAccountMutation({
-    variables: {
-      params: state,
+  let [createAccount, { loading, error }] = useCreatePhabricatorAccountMutation(
+    {
+      variables: {
+        params: state,
+      },
+      refetchQueries: [refetchListPhabricatorAccountsQuery()],
     },
-    refetchQueries: [
-      refetchListPhabricatorAccountsQuery(),
-    ],
-  });
+  );
 
   let submit = useCallback(async (): Promise<void> => {
     let { data: account } = await createAccount();
@@ -101,7 +100,9 @@ const AccountDialog = ReactMemo(function AccountDialog({
 
   let changeQuery = useCallback((id: string, enabled: boolean): void => {
     setState((state: State): State => {
-      let queries = state.queries.filter((query: string): boolean => query != id);
+      let queries = state.queries.filter(
+        (query: string): boolean => query != id,
+      );
       if (enabled) {
         queries = [...queries, id];
       }
@@ -112,55 +113,61 @@ const AccountDialog = ReactMemo(function AccountDialog({
     });
   }, []);
 
-  return <Dialog
-    title="Add Phabricator Account"
-    submitLabel="Add"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="url"
-      label="Address:"
-      state={state}
-      setState={setState}
-      stateKey="url"
-      required={true}
-    />
+  return (
+    <Dialog
+      title="Add Phabricator Account"
+      submitLabel="Add"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="url"
+        label="Address:"
+        state={state}
+        setState={setState}
+        stateKey="url"
+        required={true}
+      />
 
-    <TextFieldInput
-      id="apikey"
-      label="API Key:"
-      state={state}
-      setState={setState}
-      stateKey="apiKey"
-      required={true}
-    />
+      <TextFieldInput
+        id="apikey"
+        label="API Key:"
+        state={state}
+        setState={setState}
+        stateKey="apiKey"
+        required={true}
+      />
 
-    <div className={classes.queriesHeader}>Queries</div>
+      <div className={classes.queriesHeader}>Queries</div>
 
-    {
-      queries.map((query: PhabricatorQuery) => <QueryCheckbox
-        key={query.queryId}
-        query={query}
-        onChange={changeQuery}
-        checked={state.queries.includes(query.queryId)}
-      />)
-    }
-  </Dialog>;
+      {queries.map((query: PhabricatorQuery) => (
+        <QueryCheckbox
+          key={query.queryId}
+          query={query}
+          onChange={changeQuery}
+          checked={state.queries.includes(query.queryId)}
+        />
+      ))}
+    </Dialog>
+  );
 });
 
 export type AccountDialogOuterProps = Omit<AccountDialogProps, "queries">;
 
-export default ReactMemo(function AccountDialogOuter(props: AccountDialogOuterProps): ReactResult {
+export default ReactMemo(function AccountDialogOuter(
+  props: AccountDialogOuterProps,
+): ReactResult {
   let { data } = useListPhabricatorQueriesQuery();
 
   if (data === undefined) {
     return null;
   }
 
-  return <AccountDialog {...props} queries={data.user?.phabricatorQueries ?? []}/>;
+  return (
+    <AccountDialog {...props} queries={data.user?.phabricatorQueries ?? []} />
+  );
 });

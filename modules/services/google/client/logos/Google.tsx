@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import GoogleIcon from "./Google.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={GoogleIcon}
-    viewBox="0 0 48 48"
-  />;
+  return <SvgIcon component={GoogleIcon} viewBox="0 0 48 48" />;
 }

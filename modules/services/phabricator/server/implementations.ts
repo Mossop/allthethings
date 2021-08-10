@@ -6,16 +6,17 @@ import type {
   Differential$Revision$Search$Params,
   Differential$Revision$Search$Result,
 } from "conduit-api";
-import conduit, {
-  RevisionStatus,
-
-  requestAll,
-} from "conduit-api";
+import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
 import type { CreatePhabricatorAccountParams } from "#schema";
-import type { ItemStore, Listable, ResolverImpl, ServiceItem } from "#server/utils";
+import type {
+  ItemStore,
+  Listable,
+  ResolverImpl,
+  ServiceItem,
+} from "#server/utils";
 import {
   bestIcon,
   loadPageInfo,
@@ -34,8 +35,10 @@ import type {
   PhabricatorRevisionRecord,
 } from "./types";
 
-export class Account extends BaseAccount<PhabricatorTransaction>
-  implements ResolverImpl<PhabricatorAccountResolvers> {
+export class Account
+  extends BaseAccount<PhabricatorTransaction>
+  implements ResolverImpl<PhabricatorAccountResolvers>
+{
   public constructor(
     tx: PhabricatorTransaction,
     private record: PhabricatorAccountRecord,
@@ -153,7 +156,10 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
     Query.queries[query.queryId] = query;
   }
 
-  public static buildQuery(tx: PhabricatorTransaction, record: PhabricatorQueryRecord): Query {
+  public static buildQuery(
+    tx: PhabricatorTransaction,
+    record: PhabricatorQueryRecord,
+  ): Query {
     let queryClass = Query.queries[record.queryId];
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
     if (!queryClass) {
@@ -163,7 +169,10 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
     return new queryClass(tx, record);
   }
 
-  public static async ensureQueries(account: Account, queryIds: readonly string[]): Promise<void> {
+  public static async ensureQueries(
+    account: Account,
+    queryIds: readonly string[],
+  ): Promise<void> {
     let queriesToCreate = new Set(queryIds);
 
     let existingQueries = await account.tx.stores.queries.list({
@@ -188,10 +197,13 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
         url: null,
       });
 
-      let query = await account.tx.stores.queries.insertOne({
-        queryId,
-        accountId: account.id,
-      }, id);
+      let query = await account.tx.stores.queries.insertOne(
+        {
+          queryId,
+          accountId: account.id,
+        },
+        id,
+      );
 
       await query.update();
     }
@@ -250,7 +262,7 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
       queryKey: "active",
       constraints: await this.getConstraints(),
       attachments: {
-        "reviewers": true,
+        reviewers: true,
         "reviewers-extra": true,
       },
     };
@@ -260,9 +272,13 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
     let account = await this.account();
 
     let api = account.conduit;
-    let revisions = await requestAll(api.differential.revision.search, await this.getParams());
+    let revisions = await requestAll(
+      api.differential.revision.search,
+      await this.getParams(),
+    );
     revisions = revisions.filter(
-      (revision: Differential$Revision$Search$Result) => this.filterRevision(account, revision),
+      (revision: Differential$Revision$Search$Result) =>
+        this.filterRevision(account, revision),
     );
 
     let results: Revision[] = [];
@@ -274,7 +290,11 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
       if (item) {
         await item.update(revision);
       } else {
-        item = await Revision.create(account, revision, TaskController.ServiceList);
+        item = await Revision.create(
+          account,
+          revision,
+          TaskController.ServiceList,
+        );
       }
 
       results.push(item);
@@ -308,7 +328,8 @@ abstract class ReviewQuery extends Query {
       return ReviewState.Reviewed;
     }
 
-    let extras = revision.attachments["reviewers-extra"]?.["reviewers-extra"] ?? [];
+    let extras =
+      revision.attachments["reviewers-extra"]?.["reviewers-extra"] ?? [];
 
     let reviewerExta = extras.find(
       // eslint-disable-next-line @typescript-eslint/typedef
@@ -431,8 +452,10 @@ Query.addQuery(NeedsRevision);
 Query.addQuery(Waiting);
 Query.addQuery(Accepted);
 
-export class Revision extends BaseItem<PhabricatorTransaction>
-  implements ServiceItem<RevisionFields> {
+export class Revision
+  extends BaseItem<PhabricatorTransaction>
+  implements ServiceItem<RevisionFields>
+{
   public static getStore(tx: PhabricatorTransaction): ItemStore<Revision> {
     return tx.stores.revisions;
   }
@@ -476,7 +499,9 @@ export class Revision extends BaseItem<PhabricatorTransaction>
     };
   }
 
-  public override async update(revision?: Differential$Revision$Search$Result): Promise<void> {
+  public override async update(
+    revision?: Differential$Revision$Search$Result,
+  ): Promise<void> {
     let account = await this.account();
 
     if (!revision) {

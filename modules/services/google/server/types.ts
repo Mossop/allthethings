@@ -2,7 +2,10 @@ import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import type { FileFields, ThreadFields } from "#services/google/schema";
 import type { GraphQLType } from "#utils";
 
-export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches" | "loginUrl"> & {
+export type GoogleAccountRecord = Omit<
+  GraphQLType<GoogleAccount>,
+  "mailSearches" | "loginUrl"
+> & {
   userId: string;
   avatar: string | null;
   accessToken: string;
@@ -10,7 +13,10 @@ export type GoogleAccountRecord = Omit<GraphQLType<GoogleAccount>, "mailSearches
   expiry: number;
 };
 
-export type GoogleMailSearchRecord = Omit<GraphQLType<GoogleMailSearch>, "url"> & {
+export type GoogleMailSearchRecord = Omit<
+  GraphQLType<GoogleMailSearch>,
+  "url"
+> & {
   accountId: string;
 };
 

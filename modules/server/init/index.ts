@@ -25,11 +25,15 @@ async function init(): Promise<void> {
   let config = await parseConfig(process.argv[2]);
   let knex = connect(config.database);
 
-  ServiceManager.addService((await import("#services/bugzilla/server")).default);
+  ServiceManager.addService(
+    (await import("#services/bugzilla/server")).default,
+  );
   ServiceManager.addService((await import("#services/github/server")).default);
   ServiceManager.addService((await import("#services/google/server")).default);
   ServiceManager.addService((await import("#services/jira/server")).default);
-  ServiceManager.addService((await import("#services/phabricator/server")).default);
+  ServiceManager.addService(
+    (await import("#services/phabricator/server")).default,
+  );
 
   if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
     await rollback(knex);

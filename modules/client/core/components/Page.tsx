@@ -21,7 +21,8 @@ const useStyles = makeStyles(() =>
       overflow: "hidden",
       ...Styles.flexRow,
     },
-  }));
+  }),
+);
 
 interface PageProps {
   sidebar?: ReactNode;
@@ -35,17 +36,19 @@ export default ReactMemo(function Page({
   let classes = useStyles();
   let user = useMaybeUser();
 
-  sidebar = sidebar ?? (user ? <ProjectList/> : null);
+  sidebar = sidebar ?? (user ? <ProjectList /> : null);
 
-  return <div className={clsx(classes.outer)}>
-    <Banner/>
-    {
-      sidebar
-        ? <div className={classes.contentSplit}>
+  return (
+    <div className={clsx(classes.outer)}>
+      <Banner />
+      {sidebar ? (
+        <div className={classes.contentSplit}>
           {sidebar}
           {children}
         </div>
-        : children
-    }
-  </div>;
+      ) : (
+        children
+      )}
+    </div>
+  );
 });

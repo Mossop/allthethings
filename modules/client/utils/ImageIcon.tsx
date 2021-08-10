@@ -21,27 +21,32 @@ export const useStyles = makeStyles(() =>
       objectFit: "contain",
       objectPosition: "center center",
     },
-  }));
+  }),
+);
 
 export interface ImageIconProps {
   icon: ReactElement | string | URL;
 }
 
-export const ImageIcon = ReactMemo(forwardRef(function ImageIcon({
-  icon,
-  ...props
-}: ImageIconProps, ref: ReactRef | null): ReactResult {
-  let classes = useStyles();
+export const ImageIcon = ReactMemo(
+  forwardRef(function ImageIcon(
+    { icon, ...props }: ImageIconProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let classes = useStyles();
 
-  if (icon instanceof URL) {
-    icon = icon.toString();
-  }
+    if (icon instanceof URL) {
+      icon = icon.toString();
+    }
 
-  if (typeof icon == "string") {
-    return <div ref={ref} className={classes.iconContainer} {...props}>
-      <img className={classes.icon} src={icon}/>
-    </div>;
-  } else {
-    return cloneElement(icon, { ref });
-  }
-}));
+    if (typeof icon == "string") {
+      return (
+        <div ref={ref} className={classes.iconContainer} {...props}>
+          <img className={classes.icon} src={icon} />
+        </div>
+      );
+    } else {
+      return cloneElement(icon, { ref });
+    }
+  }),
+);

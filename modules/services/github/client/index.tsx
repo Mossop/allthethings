@@ -1,4 +1,8 @@
-import type { ClientService, ServiceItemProps, ReactResult } from "#client/utils";
+import type {
+  ClientService,
+  ServiceItemProps,
+  ReactResult,
+} from "#client/utils";
 import type { IssueLikeFields } from "#services/github/schema";
 
 import IssueLike from "./IssueLike";
@@ -9,16 +13,16 @@ class GithubService implements ClientService {
   public readonly name = "GitHub";
 
   public renderServiceSettingsPageList(): ReactResult {
-    return <SettingsPages/>;
+    return <SettingsPages />;
   }
 
   public renderServiceSettingsPage(page: string): ReactResult {
-    return <SettingsPage page={page}/>;
+    return <SettingsPage page={page} />;
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
     let fields: IssueLikeFields = JSON.parse(itemProps.fields);
-    return <IssueLike issueLike={fields}/>;
+    return <IssueLike issueLike={fields} />;
   }
 }
 

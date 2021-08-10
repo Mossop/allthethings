@@ -12,7 +12,10 @@ import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
 
-type CreateColumn = (table: Knex.CreateTableBuilder, column: string) => Knex.ColumnBuilder;
+type CreateColumn = (
+  table: Knex.CreateTableBuilder,
+  column: string,
+) => Knex.ColumnBuilder;
 
 export interface DbMigrationHelper {
   readonly idColumn: CreateColumn;
@@ -54,7 +57,7 @@ export interface Server<Tx extends ServiceTransaction = ServiceTransaction> {
   readonly serviceUrl: URL;
   readonly taskManager: TaskManager;
 
-  withTransaction<R>(task: (tx: Tx) => Promise<R>): Promise<R>
+  withTransaction<R>(task: (tx: Tx) => Promise<R>): Promise<R>;
 }
 
 export type ServiceTransaction = Transaction & {
@@ -68,7 +71,11 @@ export type ServiceTransaction = Transaction & {
     due?: DateTime | null,
   ): Promise<void>;
   setItemSummary(id: string, summary: string): Promise<void>;
-  disconnectItem(id: string, url?: string | null, icon?: string | null): Promise<void>;
+  disconnectItem(
+    id: string,
+    url?: string | null,
+    icon?: string | null,
+  ): Promise<void>;
   deleteItem(id: string): Promise<void>;
 
   addList(list: ItemList): Promise<string>;
@@ -78,18 +85,21 @@ export type ServiceTransaction = Transaction & {
   settingsPageUrl(page: string): URL;
 };
 
-export interface ServiceWebContextExtras<Tx extends ServiceTransaction = ServiceTransaction> {
+export interface ServiceWebContextExtras<
+  Tx extends ServiceTransaction = ServiceTransaction,
+> {
   readonly userId: string;
   readonly transaction: Tx;
 }
 
-export type ServiceWebContext<Tx extends ServiceTransaction = ServiceTransaction> =
-  ServiceWebContextExtras<Tx> &
-  Koa.DefaultContext &
-  Koa.ExtendableContext;
+export type ServiceWebContext<
+  Tx extends ServiceTransaction = ServiceTransaction,
+> = ServiceWebContextExtras<Tx> & Koa.DefaultContext & Koa.ExtendableContext;
 
-export type ServiceWebMiddleware<Tx extends ServiceTransaction> =
-  (ctx: Koa.ParameterizedContext<unknown, ServiceWebContext<Tx>>, next: Koa.Next) => Promise<void>;
+export type ServiceWebMiddleware<Tx extends ServiceTransaction> = (
+  ctx: Koa.ParameterizedContext<unknown, ServiceWebContext<Tx>>,
+  next: Koa.Next,
+) => Promise<any>;
 
 export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
   readonly buildTransaction: (transaction: ServiceTransaction) => Awaitable<Tx>;
@@ -100,10 +110,7 @@ export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
     targetUrl: URL,
     isTask: boolean,
   ) => Promise<string | null>;
-  readonly getServiceItem: (
-    tx: Tx,
-    id: string,
-  ) => Awaitable<ServiceItem>;
+  readonly getServiceItem: (tx: Tx, id: string) => Awaitable<ServiceItem>;
   readonly webMiddleware?: ServiceWebMiddleware<Tx>;
   readonly listProblems?: (tx: Tx, userId: string | null) => Promise<Problem[]>;
 }

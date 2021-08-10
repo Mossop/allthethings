@@ -6,7 +6,10 @@ import type { QueryResolvers } from "./schema";
 import type { CoreTransaction } from "./transaction";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
-const queryResolvers: TypeResolver<QueryResolvers, GraphQLCtx<CoreTransaction>> = {
+const queryResolvers: TypeResolver<
+  QueryResolvers,
+  GraphQLCtx<CoreTransaction>
+> = {
   async user(ctx: GraphQLCtx<CoreTransaction>): Promise<User | null> {
     if (!ctx.userId) {
       return null;
@@ -15,11 +18,9 @@ const queryResolvers: TypeResolver<QueryResolvers, GraphQLCtx<CoreTransaction>> 
     return ctx.transaction.stores.users.get(ctx.userId);
   },
 
-  users: ensureAdmin(
-    async (tx: CoreTransaction): Promise<User[]> => {
-      return tx.stores.users.list();
-    },
-  ),
+  users: ensureAdmin(async (tx: CoreTransaction): Promise<User[]> => {
+    return tx.stores.users.list();
+  }),
 
   taskList: ensureAuthed(
     async (

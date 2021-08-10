@@ -15,11 +15,15 @@ const useStyles = makeStyles(() =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
-export type NoteItemProps = Overwrite<ItemRenderProps, {
-  item: NoteItem;
-}>;
+export type NoteItemProps = Overwrite<
+  ItemRenderProps,
+  {
+    item: NoteItem;
+  }
+>;
 
 export default ReactMemo(function NoteItem({
   item,

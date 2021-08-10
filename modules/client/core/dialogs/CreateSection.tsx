@@ -1,7 +1,13 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import { Dialog, useBoolState, ReactMemo, TextFieldInput, FormState } from "#client/utils";
+import {
+  Dialog,
+  useBoolState,
+  ReactMemo,
+  TextFieldInput,
+  FormState,
+} from "#client/utils";
 
 import type { TaskList } from "../schema";
 import { refetchQueriesForSection, useCreateSectionMutation } from "../schema";
@@ -19,7 +25,7 @@ export default ReactMemo(function CreateSectionDialog({
     name: "",
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [createSection, { loading, error }] = useCreateSectionMutation({
     variables: {
@@ -34,23 +40,25 @@ export default ReactMemo(function CreateSectionDialog({
     close();
   }, [createSection, close]);
 
-  return <Dialog
-    title="Create Section"
-    submitLabel="Create"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="name"
-      label="Name:"
-      autoFocus={true}
-      state={state}
-      setState={setState}
-      stateKey="name"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Create Section"
+      submitLabel="Create"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="name"
+        label="Name:"
+        autoFocus={true}
+        state={state}
+        setState={setState}
+        stateKey="name"
+      />
+    </Dialog>
+  );
 });

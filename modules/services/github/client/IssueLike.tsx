@@ -26,7 +26,8 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
 export interface IssueLikeProps {
   issueLike: IssueLikeFields;
@@ -37,28 +38,33 @@ export default ReactMemo(function IssueLike({
 }: IssueLikeProps): ReactResult {
   let classes = useStyles();
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={issueLike.url}>
-    <div className={classes.iconContainer}>
-      {issueLike.type == "pr" ? <PullRequestIcon/> : <IssueIcon/>}
-    </div>
-    <div className={classes.name}>{issueLike.title}</div>
-    {
-      issueLike.labels.map((label: LabelFields) => <ItemPill
-        key={label.name}
-        url={label.url}
-        border={false}
-        style={
-          {
+  return (
+    <a
+      className={classes.link}
+      rel="noreferrer"
+      target="_blank"
+      href={issueLike.url}
+    >
+      <div className={classes.iconContainer}>
+        {issueLike.type == "pr" ? <PullRequestIcon /> : <IssueIcon />}
+      </div>
+      <div className={classes.name}>{issueLike.title}</div>
+      {issueLike.labels.map((label: LabelFields) => (
+        <ItemPill
+          key={label.name}
+          url={label.url}
+          border={false}
+          style={{
             backgroundColor: `#${label.color}`,
             color: "black",
-          }
-        }
-      >
-        {label.name}
-      </ItemPill>)
-    }
-    <ItemPill url={issueLike.repository.url}>
-      {issueLike.repository.owner}/{issueLike.repository.name}
-    </ItemPill>
-  </a>;
+          }}
+        >
+          {label.name}
+        </ItemPill>
+      ))}
+      <ItemPill url={issueLike.repository.url}>
+        {issueLike.repository.owner}/{issueLike.repository.name}
+      </ItemPill>
+    </a>
+  );
 });

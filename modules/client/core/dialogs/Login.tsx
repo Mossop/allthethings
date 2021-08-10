@@ -25,7 +25,7 @@ export default ReactMemo(function LoginDialog({
   let [loading, setLoading] = useState(false);
   let [error, setError] = useState<Error | null>(null);
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let resetStore = useResetStore();
 
@@ -48,32 +48,34 @@ export default ReactMemo(function LoginDialog({
     await resetStore();
   }, [state, resetStore]);
 
-  return <Dialog
-    isOpen={isOpen}
-    onClose={close}
-    onSubmit={submit}
-    onClosed={onClosed}
-    title="Login"
-    submitLabel="Login"
-    cancelLabel={null}
-    error={error}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="email"
-      label="Email address:"
-      autoFocus={true}
-      state={state}
-      setState={setState}
-      stateKey="email"
-    />
-    <TextFieldInput
-      id="password"
-      label="Password:"
-      type="password"
-      state={state}
-      setState={setState}
-      stateKey="password"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      isOpen={isOpen}
+      onClose={close}
+      onSubmit={submit}
+      onClosed={onClosed}
+      title="Login"
+      submitLabel="Login"
+      cancelLabel={null}
+      error={error}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="email"
+        label="Email address:"
+        autoFocus={true}
+        state={state}
+        setState={setState}
+        stateKey="email"
+      />
+      <TextFieldInput
+        id="password"
+        label="Password:"
+        type="password"
+        state={state}
+        setState={setState}
+        stateKey="password"
+      />
+    </Dialog>
+  );
 });

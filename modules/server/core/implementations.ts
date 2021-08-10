@@ -17,12 +17,7 @@ import type {
   ItemParams,
   ItemFilter,
 } from "#schema";
-import type {
-  Identified,
-  ItemList,
-  ResolverImpl,
-  Store,
-} from "#server/utils";
+import type { Identified, ItemList, ResolverImpl, Store } from "#server/utils";
 import { id, min, count, max, BaseRecordHolder } from "#server/utils";
 import { assert, call, memoized, waitFor } from "#utils";
 
@@ -60,9 +55,7 @@ import type {
   UserRecord,
   ServiceListItemsRecord,
 } from "./types";
-import {
-  ItemType,
-} from "./types";
+import { ItemType } from "./types";
 
 export type TaskList = Project | Context;
 export type ItemHolder = TaskList | Section;
@@ -81,8 +74,12 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
     filter: ItemFilter | null = null,
   ) {
     if (filter) {
-      if (isSet(filter.isTask) || filter.dueAfter || filter.dueBefore ||
-        filter.isPending === false) {
+      if (
+        isSet(filter.isTask) ||
+        filter.dueAfter ||
+        filter.dueBefore ||
+        filter.isPending === false
+      ) {
         query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
 
         if (filter.dueBefore || filter.dueAfter) {
@@ -101,7 +98,8 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
           query = query.whereNotNull("TaskInfo.done");
         }
       } else if (filter.isPending) {
-        query = query.leftJoin("TaskInfo", "TaskInfo.id", "Item.id")
+        query = query
+          .leftJoin("TaskInfo", "TaskInfo.id", "Item.id")
           .whereNull("TaskInfo.done");
       }
 
@@ -130,7 +128,7 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
   }
 
   public async items(): Promise<Item[]> {
-    let records = await this.query.select("Item.*") as ItemRecord[];
+    let records = (await this.query.select("Item.*")) as ItemRecord[];
     return records.map(
       (record: ItemRecord): Item => new Item(this.transaction, record),
     );
@@ -138,10 +136,7 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
 }
 
 abstract class Base<Record> extends BaseRecordHolder<Record, CoreTransaction> {
-  public constructor(
-    tx: CoreTransaction,
-    record: Record,
-  ) {
+  public constructor(tx: CoreTransaction, record: Record) {
     super(tx, record);
   }
 
@@ -151,7 +146,6 @@ abstract class Base<Record> extends BaseRecordHolder<Record, CoreTransaction> {
 }
 
 abstract class IdentifiedBase<Record extends Identified> extends Base<Record> {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract readonly store: Store<any, any, any, any>;
 
   public get id(): string {
@@ -167,8 +161,10 @@ abstract class IdentifiedBase<Record extends Identified> extends Base<Record> {
   }
 }
 
-abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl extends Identified>
-  extends Base<Record> {
+abstract class OrderedBase<
+  Record extends Identified & IndexedEntity,
+  OwnerImpl extends Identified,
+> extends Base<Record> {
   protected static async insert<
     Record extends Identified & IndexedEntity,
     Impl extends OrderedBase<Record, Identified>,
@@ -187,7 +183,8 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
       }
 
       index = before.index;
-      await store.table()
+      await store
+        .table()
         .where("ownerId", ownerId)
         .andWhere("index", ">=", index)
         // @ts-ignore
@@ -195,19 +192,24 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
           index: before.tx.knex.raw("?? + 1", ["index"]),
         });
     } else {
-      let i = await max<IndexedEntity, "index">(store.table().where("ownerId", ownerId), "index");
+      let i = await max<IndexedEntity, "index">(
+        store.table().where("ownerId", ownerId),
+        "index",
+      );
       index = i !== null ? i + 1 : 0;
     }
 
-    // @ts-ignore
-    return store.insertOne({
-      ...record,
-      ownerId,
-      index,
-    }, id);
+    return store.insertOne(
+      // @ts-ignore
+      {
+        ...record,
+        ownerId,
+        index,
+      },
+      id,
+    );
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   protected abstract readonly store: Store<any, any, any, any>;
 
   public get id(): string {
@@ -231,7 +233,8 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
 
       targetIndex = before.index;
 
-      await this.store.table()
+      await this.store
+        .table()
         .where("ownerId", owner.id)
         .andWhere("index", ">=", targetIndex)
         // @ts-ignore
@@ -253,7 +256,8 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
       index: targetIndex,
     });
 
-    await this.store.table()
+    await this.store
+      .table()
       .where("ownerId", currentOwner)
       .andWhere("index", ">", currentIndex)
       .update({
@@ -270,7 +274,8 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
 
   public async delete(): Promise<void> {
     await this.store.deleteOne(this.id);
-    await this.store.table()
+    await this.store
+      .table()
       .where("ownerId", this.record.ownerId)
       .andWhere("index", ">=", this.record.index)
       .update({
@@ -279,7 +284,10 @@ abstract class OrderedBase<Record extends Identified & IndexedEntity, OwnerImpl 
   }
 }
 
-export class User extends Base<UserRecord> implements ResolverImpl<UserResolvers> {
+export class User
+  extends Base<UserRecord>
+  implements ResolverImpl<UserResolvers>
+{
   public static async create(
     tx: CoreTransaction,
     userRecord: Omit<UserRecord, "id">,
@@ -333,7 +341,8 @@ export class User extends Base<UserRecord> implements ResolverImpl<UserResolvers
   public async inbox({ filter }: UserInboxArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items.records()
+      this.stores.items
+        .records()
         .leftJoin("SectionItems", "Item.id", "SectionItems.id")
         .whereNull("SectionItems.ownerId")
         .orderBy([
@@ -347,15 +356,19 @@ export class User extends Base<UserRecord> implements ResolverImpl<UserResolvers
   public async allItems({ filter }: UserAllItemsArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items.records()
-        .where("Item.userId", this.id),
+      this.stores.items.records().where("Item.userId", this.id),
       filter,
     );
   }
 }
 
-export abstract class ItemHolderBase<Record extends Identified> extends IdentifiedBase<Record> {
-  public static async getItemHolder(tx: CoreTransaction, id: string): Promise<ItemHolder | null> {
+export abstract class ItemHolderBase<
+  Record extends Identified,
+> extends IdentifiedBase<Record> {
+  public static async getItemHolder(
+    tx: CoreTransaction,
+    id: string,
+  ): Promise<ItemHolder | null> {
     let context = await tx.stores.contexts.get(id);
     if (context) {
       return context;
@@ -372,19 +385,23 @@ export abstract class ItemHolderBase<Record extends Identified> extends Identifi
   public async items({ filter }: TaskListItemsArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items.records()
+      this.stores.items
+        .records()
         .leftJoin("SectionItems", "Item.id", "SectionItems.id")
         .where("SectionItems.ownerId", this.id)
-        .orderBy([
-          { column: "SectionItems.index", order: "asc" },
-        ]),
+        .orderBy([{ column: "SectionItems.index", order: "asc" }]),
       filter,
     );
   }
 }
 
-export abstract class TaskListBase<Record extends Identified> extends ItemHolderBase<Record> {
-  public static async getTaskList(tx: CoreTransaction, id: string): Promise<TaskList | null> {
+export abstract class TaskListBase<
+  Record extends Identified,
+> extends ItemHolderBase<Record> {
+  public static async getTaskList(
+    tx: CoreTransaction,
+    id: string,
+  ): Promise<TaskList | null> {
     let context = await tx.stores.contexts.get(id);
     if (context) {
       return context;
@@ -408,7 +425,10 @@ export abstract class TaskListBase<Record extends Identified> extends ItemHolder
   }
 }
 
-export class Context extends TaskListBase<ContextRecord> implements ResolverImpl<ContextResolvers> {
+export class Context
+  extends TaskListBase<ContextRecord>
+  implements ResolverImpl<ContextResolvers>
+{
   protected get store(): Stores["contexts"] {
     return this.stores.contexts;
   }
@@ -423,24 +443,30 @@ export class Context extends TaskListBase<ContextRecord> implements ResolverImpl
       userId: user.id,
     });
 
-    await tx.stores.projects.insertOne({
-      userId: user.id,
-      contextId: context.id,
-      parentId: null,
-      name: "",
-    }, context.id);
+    await tx.stores.projects.insertOne(
+      {
+        userId: user.id,
+        contextId: context.id,
+        parentId: null,
+        name: "",
+      },
+      context.id,
+    );
 
-    await tx.stores.sections.insertOne({
-      userId: user.id,
-      ownerId: context.id,
-      index: -1,
-      name: "",
-    }, context.id);
+    await tx.stores.sections.insertOne(
+      {
+        userId: user.id,
+        ownerId: context.id,
+        index: -1,
+        name: "",
+      },
+      context.id,
+    );
 
     return context;
   }
 
-  public readonly user = memoized(function(this: Context): Promise<User> {
+  public readonly user = memoized(function (this: Context): Promise<User> {
     return assert(this.stores.users.get(this.record.userId));
   });
 
@@ -472,7 +498,8 @@ export class Context extends TaskListBase<ContextRecord> implements ResolverImpl
   public async rootItems({ filter }: ContextRootItemsArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items.records()
+      this.stores.items
+        .records()
         .join("SectionItems", "Item.id", "SectionItems.id")
         .join("Section", "Section.id", "SectionItems.ownerId")
         .join("Project", "Project.id", "Section.ownerId")
@@ -483,7 +510,10 @@ export class Context extends TaskListBase<ContextRecord> implements ResolverImpl
   }
 }
 
-export class Project extends TaskListBase<ProjectRecord> implements ResolverImpl<ProjectResolvers> {
+export class Project
+  extends TaskListBase<ProjectRecord>
+  implements ResolverImpl<ProjectResolvers>
+{
   public static async create(
     tx: CoreTransaction,
     taskList: TaskList,
@@ -498,12 +528,15 @@ export class Project extends TaskListBase<ProjectRecord> implements ResolverImpl
       parentId: taskList.id,
     });
 
-    await tx.stores.sections.insertOne({
-      userId: user.id,
-      ownerId: project.id,
-      index: -1,
-      name: "",
-    }, project.id);
+    await tx.stores.sections.insertOne(
+      {
+        userId: user.id,
+        ownerId: project.id,
+        index: -1,
+        name: "",
+      },
+      project.id,
+    );
 
     return project;
   }
@@ -512,7 +545,7 @@ export class Project extends TaskListBase<ProjectRecord> implements ResolverImpl
     return this.stores.projects;
   }
 
-  public readonly user = memoized(function(this: Project): Promise<User> {
+  public readonly user = memoized(function (this: Project): Promise<User> {
     return assert(this.stores.users.get(this.record.userId));
   });
 
@@ -546,7 +579,9 @@ export class Project extends TaskListBase<ProjectRecord> implements ResolverImpl
 }
 
 export class Section
-  extends OrderedBase<SectionRecord, TaskList> implements ResolverImpl<SectionResolvers> {
+  extends OrderedBase<SectionRecord, TaskList>
+  implements ResolverImpl<SectionResolvers>
+{
   public static async create(
     tx: CoreTransaction,
     taskList: TaskList,
@@ -554,11 +589,16 @@ export class Section
     params: SectionParams,
   ): Promise<Section> {
     let user = await taskList.user();
-    return OrderedBase.insert(tx.stores.sections, {
-      ...params,
-      id: await id(),
-      userId: user.id,
-    }, taskList.id, before);
+    return OrderedBase.insert(
+      tx.stores.sections,
+      {
+        ...params,
+        id: await id(),
+        userId: user.id,
+      },
+      taskList.id,
+      before,
+    );
   }
   protected get store(): Stores["sections"] {
     return this.stores.sections;
@@ -571,18 +611,20 @@ export class Section
   public async items({ filter }: ContextItemsArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items.records()
+      this.stores.items
+        .records()
         .leftJoin("SectionItems", "Item.id", "SectionItems.id")
         .where("SectionItems.ownerId", this.id)
-        .orderBy([
-          { column: "SectionItems.index", order: "asc" },
-        ]),
+        .orderBy([{ column: "SectionItems.index", order: "asc" }]),
       filter,
     );
   }
 }
 
-export class Item extends IdentifiedBase<ItemRecord> implements ResolverImpl<ItemResolvers> {
+export class Item
+  extends IdentifiedBase<ItemRecord>
+  implements ResolverImpl<ItemResolvers>
+{
   public static async create(
     tx: CoreTransaction,
     user: User,
@@ -601,13 +643,16 @@ export class Item extends IdentifiedBase<ItemRecord> implements ResolverImpl<Ite
       });
 
       if (taskInfo) {
-        await tx.stores.taskInfo.insertOne({
-          ...taskInfo,
-          due: taskInfo.due ?? null,
-          manualDue: taskInfo.due ?? null,
-          done: taskInfo.done ?? null,
-          controller: TaskController.Manual,
-        }, item.id);
+        await tx.stores.taskInfo.insertOne(
+          {
+            ...taskInfo,
+            due: taskInfo.due ?? null,
+            manualDue: taskInfo.due ?? null,
+            done: taskInfo.done ?? null,
+            controller: TaskController.Manual,
+          },
+          item.id,
+        );
       }
 
       return item;
@@ -617,13 +662,16 @@ export class Item extends IdentifiedBase<ItemRecord> implements ResolverImpl<Ite
     }
   }
 
-  public static async deleteCompleteInboxTasks(tx: CoreTransaction): Promise<void> {
+  public static async deleteCompleteInboxTasks(
+    tx: CoreTransaction,
+  ): Promise<void> {
     let itemsInLists = tx.knex
       .from<ServiceListItemsRecord>("ServiceListItems")
       .whereNotNull("present")
       .distinct("itemId");
 
-    let items: ItemRecord[] = await tx.stores.items.records()
+    let items: ItemRecord[] = await tx.stores.items
+      .records()
       .join("TaskInfo", "TaskInfo.id", "Item.id")
       .leftJoin("SectionItems", "Item.id", "SectionItems.id")
       .whereNotNull("TaskInfo.done")
@@ -685,7 +733,10 @@ export class Item extends IdentifiedBase<ItemRecord> implements ResolverImpl<Ite
 
   public move(itemHolder: null): Promise<void>;
   public move(itemHolder: ItemHolder, before?: Item | null): Promise<void>;
-  public async move(itemHolder: ItemHolder | null, before?: Item | null): Promise<void> {
+  public async move(
+    itemHolder: ItemHolder | null,
+    before?: Item | null,
+  ): Promise<void> {
     let currentSection = await this.stores.sectionItems.get(this.id);
     if (currentSection) {
       await currentSection.delete();
@@ -713,10 +764,15 @@ export class SectionItem extends OrderedBase<SectionItemsRecord, ItemHolder> {
       }
     }
 
-    return OrderedBase.insert(tx.stores.sectionItems, {
-      id: item.id,
-      userId: user.id,
-    }, itemHolder.id, beforeSection);
+    return OrderedBase.insert(
+      tx.stores.sectionItems,
+      {
+        id: item.id,
+        userId: user.id,
+      },
+      itemHolder.id,
+      beforeSection,
+    );
   }
 
   protected get store(): Stores["sectionItems"] {
@@ -725,7 +781,9 @@ export class SectionItem extends OrderedBase<SectionItemsRecord, ItemHolder> {
 }
 
 export class TaskInfo
-  extends IdentifiedBase<TaskInfoRecord> implements ResolverImpl<TaskInfoResolvers> {
+  extends IdentifiedBase<TaskInfoRecord>
+  implements ResolverImpl<TaskInfoResolvers>
+{
   public static create(
     tx: CoreTransaction,
     item: Item,
@@ -755,11 +813,14 @@ export class TaskInfo
   }
 }
 
-abstract class DetailBase<Record extends Identified> extends IdentifiedBase<Record> {
-}
+abstract class DetailBase<
+  Record extends Identified,
+> extends IdentifiedBase<Record> {}
 
 export class LinkDetail
-  extends DetailBase<LinkDetailRecord> implements ResolverImpl<LinkDetailResolvers> {
+  extends DetailBase<LinkDetailRecord>
+  implements ResolverImpl<LinkDetailResolvers>
+{
   public static create(
     tx: CoreTransaction,
     item: Item,
@@ -786,7 +847,9 @@ export class LinkDetail
 }
 
 export class FileDetail
-  extends DetailBase<FileDetailRecord> implements ResolverImpl<FileDetailResolvers> {
+  extends DetailBase<FileDetailRecord>
+  implements ResolverImpl<FileDetailResolvers>
+{
   protected get store(): Stores["fileDetail"] {
     return this.stores.fileDetail;
   }
@@ -805,7 +868,9 @@ export class FileDetail
 }
 
 export class NoteDetail
-  extends DetailBase<NoteDetailRecord> implements ResolverImpl<NoteDetailResolvers> {
+  extends DetailBase<NoteDetailRecord>
+  implements ResolverImpl<NoteDetailResolvers>
+{
   protected get store(): Stores["noteDetail"] {
     return this.stores.noteDetail;
   }
@@ -816,7 +881,9 @@ export class NoteDetail
 }
 
 export class ServiceDetail
-  extends DetailBase<ServiceDetailRecord> implements ResolverImpl<ServiceDetailResolvers> {
+  extends DetailBase<ServiceDetailRecord>
+  implements ResolverImpl<ServiceDetailResolvers>
+{
   public static create(
     tx: CoreTransaction,
     item: Item,
@@ -857,38 +924,42 @@ export class ServiceDetail
   }
 
   public async lists(): Promise<ServiceList[]> {
-    let records: ServiceListRecord[] = await this.tx.knex.from("ServiceList")
+    let records: ServiceListRecord[] = await this.tx.knex
+      .from("ServiceList")
       .join("ServiceListItems", "ServiceList.id", "ServiceListItems.listId")
       .where("ServiceListItems.itemId", this.id)
       .select("ServiceList.*");
 
     return records.map(
-      (record: ServiceListRecord): ServiceList => new ServiceList(this.tx, record),
+      (record: ServiceListRecord): ServiceList =>
+        new ServiceList(this.tx, record),
     );
   }
 
   public async wasEverListed(): Promise<boolean> {
-    return await count(this.tx.knex
-      .from("ServiceListItems")
-      .where("itemId", this.id)
-      .limit(1))
+    return (await count(
+      this.tx.knex.from("ServiceListItems").where("itemId", this.id).limit(1),
+    ))
       ? true
       : false;
   }
 
   public async isCurrentlyListed(): Promise<boolean> {
-    return await count(this.tx.knex
-      .from("ServiceListItems")
-      .where("itemId", this.id)
-      .whereNotNull("present")
-      .limit(1))
+    return (await count(
+      this.tx.knex
+        .from("ServiceListItems")
+        .where("itemId", this.id)
+        .whereNotNull("present")
+        .limit(1),
+    ))
       ? true
       : false;
   }
 
   public async getItemDueForLists(): Promise<DateTime | null> {
     return min<ServiceListItemsRecord, "due">(
-      this.tx.knex.from<ServiceListItemsRecord>("ServiceListItems")
+      this.tx.knex
+        .from<ServiceListItemsRecord>("ServiceListItems")
         .where("itemId", this.id),
       "due",
     );
@@ -896,7 +967,9 @@ export class ServiceDetail
 }
 
 export class ServiceList
-  extends IdentifiedBase<ServiceListRecord> implements ResolverImpl<ServiceListResolvers> {
+  extends IdentifiedBase<ServiceListRecord>
+  implements ResolverImpl<ServiceListResolvers>
+{
   public static async create(
     tx: CoreTransaction,
     serviceId: string,
@@ -942,7 +1015,7 @@ export class ServiceList
       })
       .as("PresentItems");
 
-    let records = await tx.knex
+    let records = (await tx.knex
       .from("TaskInfo")
       .leftJoin(presentItems, "TaskInfo.id", "PresentItems.itemId")
       .where("TaskInfo.controller", TaskController.ServiceList)
@@ -953,7 +1026,7 @@ export class ServiceList
         due: "TaskInfo.due",
         presentCount: "PresentItems.presentCount",
         serviceDue: "PresentItems.serviceDue",
-      }) as Record[];
+      })) as Record[];
 
     for (let record of records) {
       if (record.presentCount === null) {
@@ -1025,7 +1098,6 @@ export class ServiceList
         itemIdsToUpdate.delete(record.itemId);
 
         if (due !== undefined) {
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           let taskDue = due ? record.present!.plus(due) : null;
           if (record.due != due) {
             await this.tx.knex
@@ -1044,7 +1116,7 @@ export class ServiceList
       let taskDue = due ? now.plus(due) : null;
 
       // Update any existing items that are newly present. We can set their due date directly.
-      let existingNotPresentItemIds = await this.tx.knex
+      let existingNotPresentItemIds = (await this.tx.knex
         .into<ServiceListItemsRecord>("ServiceListItems")
         .whereIn("itemId", items)
         .andWhere({
@@ -1055,7 +1127,7 @@ export class ServiceList
           present: now,
           due: taskDue,
         })
-        .returning("itemId") as string[];
+        .returning("itemId")) as string[];
 
       for (let itemId of existingNotPresentItemIds) {
         itemIdsToUpdate.delete(itemId);
@@ -1063,13 +1135,16 @@ export class ServiceList
 
       // Create any new records.
       if (itemIdsToUpdate.size) {
-        let records = Array.from(itemIdsToUpdate, (itemId: string): ServiceListItemsRecord => ({
-          serviceId: this.serviceId,
-          listId: this.id,
-          itemId,
-          present: now,
-          due: taskDue,
-        }));
+        let records = Array.from(
+          itemIdsToUpdate,
+          (itemId: string): ServiceListItemsRecord => ({
+            serviceId: this.serviceId,
+            listId: this.id,
+            itemId,
+            present: now,
+            due: taskDue,
+          }),
+        );
 
         await this.tx.knex
           .into<ServiceListItemsRecord>("ServiceListItems")
@@ -1097,7 +1172,6 @@ export class ServiceList
         .whereNotNull("present");
 
       for (let record of records) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         let taskDue = due ? record.present!.plus(due) : null;
         if (record.due != due) {
           await this.tx.knex

@@ -6,7 +6,9 @@ import { forwardRef } from "react";
 import type { ReactRef, ReactResult } from "./types";
 import { ReactMemo } from "./types";
 
-type Classes = typeof useTextStyles extends () => Record<infer K, unknown> ? K : never;
+type Classes = typeof useTextStyles extends () => Record<infer K, unknown>
+  ? K
+  : never;
 
 export const TextStyles = {
   heading: {
@@ -23,8 +25,7 @@ export const TextStyles = {
   },
 };
 
-export const useTextStyles = makeStyles(() =>
-  createStyles(TextStyles));
+export const useTextStyles = makeStyles(() => createStyles(TextStyles));
 
 function textBlock(
   name: string,
@@ -32,19 +33,21 @@ function textBlock(
   textClass: Classes,
 ): (props: BoxProps) => ReactResult {
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  let Element = ({
-    className,
-    ...boxProps
-  }: BoxProps, ref: ReactRef | null): ReactResult => {
+  let Element = (
+    { className, ...boxProps }: BoxProps,
+    ref: ReactRef | null,
+  ): ReactResult => {
     let classes = useTextStyles();
 
-    return <Box
-      // @ts-ignore
-      ref={ref}
-      component={defaultComponent}
-      className={clsx(className, classes[textClass])}
-      {...boxProps}
-    />;
+    return (
+      <Box
+        // @ts-ignore
+        ref={ref}
+        component={defaultComponent}
+        className={clsx(className, classes[textClass])}
+        {...boxProps}
+      />
+    );
   };
 
   // @ts-ignore

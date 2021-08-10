@@ -10,7 +10,11 @@ import {
   FormState,
 } from "#client/utils";
 
-import { useCreateLinkMutation, refetchQueriesForSection, isInbox } from "../schema";
+import {
+  useCreateLinkMutation,
+  refetchQueriesForSection,
+  isInbox,
+} from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
 
 interface LinkDialogProps {
@@ -31,7 +35,7 @@ export default ReactMemo(function LinkDialog({
     isTask: true,
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [createLink, { loading, error: createError }] = useCreateLinkMutation({
     refetchQueries: refetchQueriesForSection(list),
@@ -56,31 +60,33 @@ export default ReactMemo(function LinkDialog({
     close();
   }, [close, createLink, list, state, title]);
 
-  return <Dialog
-    title="Create Link"
-    submitLabel="Create"
-    error={createError}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="url"
-      label="Address:"
-      state={state}
-      setState={setState}
-      stateKey="url"
-      autoFocus={true}
-      autoComplete="url"
-      type="url"
-    />
-    <BooleanCheckboxInput
-      label="Create as task"
-      state={state}
-      setState={setState}
-      stateKey="isTask"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Create Link"
+      submitLabel="Create"
+      error={createError}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="url"
+        label="Address:"
+        state={state}
+        setState={setState}
+        stateKey="url"
+        autoFocus={true}
+        autoComplete="url"
+        type="url"
+      />
+      <BooleanCheckboxInput
+        label="Create as task"
+        state={state}
+        setState={setState}
+        stateKey="isTask"
+      />
+    </Dialog>
+  );
 });

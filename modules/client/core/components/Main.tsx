@@ -25,39 +25,44 @@ const useStyles = makeStyles(() =>
     loading: {
       flex: 1,
     },
-  }));
+  }),
+);
 
 function MainContent(): ReactResult {
   let view = useView();
   let classes = useStyles();
 
   if (view === undefined) {
-    return <Page>
-      <Loading className={classes.content}/>
-    </Page>;
+    return (
+      <Page>
+        <Loading className={classes.content} />
+      </Page>
+    );
   }
 
   if (view.type == ViewType.Page) {
-    return <MarkdownPage path={view.path}/>;
+    return <MarkdownPage path={view.path} />;
   }
 
   switch (view.type) {
     case ViewType.Inbox:
     case ViewType.AddLink:
-      return <Inbox/>;
+      return <Inbox />;
     case ViewType.TaskList:
-      return <TaskList view={view}/>;
+      return <TaskList view={view} />;
     case ViewType.Settings:
-      return <Settings page={view.page} serviceId={view.serviceId}/>;
+      return <Settings page={view.page} serviceId={view.serviceId} />;
   }
 }
 
 export default function Main(): ReactResult {
   let classes = useStyles();
 
-  return <div className={clsx(classes.outer)}>
-    <Suspense fallback={<Loading className={classes.loading}/>}>
-      <MainContent/>
-    </Suspense>
-  </div>;
+  return (
+    <div className={clsx(classes.outer)}>
+      <Suspense fallback={<Loading className={classes.loading} />}>
+        <MainContent />
+      </Suspense>
+    </div>
+  );
 }

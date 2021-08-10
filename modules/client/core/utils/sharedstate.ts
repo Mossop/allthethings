@@ -33,12 +33,18 @@ export function useSharedState<T>(state: SharedState<T>): [T, Dispatch<T>] {
   return [value, (val: T) => state.set(val)];
 }
 
-export function useAsyncSharedState<T>(state: SharedState<T>): [T, Dispatch<T>] {
+export function useAsyncSharedState<T>(
+  state: SharedState<T>,
+): [T, Dispatch<T>] {
   let [value, setValue] = useState<T>(state.value);
 
-  useEffect(() => state.listen((val: T) => {
-    requestAnimationFrame(() => setValue(val));
-  }), [state]);
+  useEffect(
+    () =>
+      state.listen((val: T) => {
+        requestAnimationFrame(() => setValue(val));
+      }),
+    [state],
+  );
 
   return [value, (val: T) => state.set(val)];
 }

@@ -36,13 +36,9 @@ export class GithubService extends BaseService<GithubTransaction> {
 
   private static _service: GithubService | null = null;
 
-  protected readonly listProviders = [
-    Search,
-  ];
+  protected readonly listProviders = [Search];
 
-  protected readonly itemProviders = [
-    IssueLike,
-  ];
+  protected readonly itemProviders = [IssueLike];
 
   public static get config(): GithubServiceConfig {
     return GithubService.service.config;
@@ -78,7 +74,7 @@ export class GithubService extends BaseService<GithubTransaction> {
     let oauthMiddleware: ServiceWebMiddleware<GithubTransaction> = async (
       ctx: ServiceWebContext<GithubTransaction>,
       next: Koa.Next,
-    ) => {
+    ): Promise<any> => {
       let code = first(ctx.query.code);
       let userId = first(ctx.query.state);
 
@@ -102,7 +98,9 @@ export class GithubService extends BaseService<GithubTransaction> {
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       try {
-        await this.server.withTransaction((tx: GithubTransaction) => this.update(tx));
+        await this.server.withTransaction((tx: GithubTransaction) =>
+          this.update(tx),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -130,7 +128,10 @@ export class GithubService extends BaseService<GithubTransaction> {
     return buildTransaction(tx);
   }
 
-  public async listProblems(tx: GithubTransaction, userId: string | null): Promise<Problem[]> {
+  public async listProblems(
+    tx: GithubTransaction,
+    userId: string | null,
+  ): Promise<Problem[]> {
     if (!userId) {
       return [];
     }
@@ -161,15 +162,16 @@ const serviceExport: ServiceExport<GithubServiceConfig, GithubTransaction> = {
     return buildMigrations();
   },
 
-  configDecoder: JsonDecoder.object<GithubServiceConfig>({
-    clientId: JsonDecoder.string,
-    clientSecret: JsonDecoder.string,
-  }, "Github Service Config"),
+  configDecoder: JsonDecoder.object<GithubServiceConfig>(
+    {
+      clientId: JsonDecoder.string,
+      clientSecret: JsonDecoder.string,
+    },
+    "Github Service Config",
+  ),
 
-  init: (
-    server: Server<GithubTransaction>,
-    config: GithubServiceConfig,
-  ) => new GithubService(server, config),
+  init: (server: Server<GithubTransaction>, config: GithubServiceConfig) =>
+    new GithubService(server, config),
 };
 
 export default serviceExport;

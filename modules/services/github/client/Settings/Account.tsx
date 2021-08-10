@@ -42,15 +42,14 @@ const useStyles = makeStyles((theme: Theme) =>
     searchLink: {
       cursor: "pointer",
     },
-  }));
+  }),
+);
 
 interface SearchSettingsItemProps {
   search: GithubSearch;
 }
 
-function SearchSettingsItem({
-  search,
-}: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
   // let resetStore = useResetStore();
 
@@ -68,26 +67,28 @@ function SearchSettingsItem({
   //   await deleteSearchMutation();
   // }, [deleteSearchMutation]);
 
-  return <SettingsListItem>
-    <div className={classes.searchIcon}>
-      <SearchIcon/>
-    </div>
-    <div className={classes.searchName}>
-      <a
-        href={search.url}
-        target="_blank"
-        className={classes.searchLink}
-        rel="noreferrer"
-      >
-        {search.name}
-      </a>
-    </div>
-    <div className={classes.actions}>
-      {/* <IconButton onClick={deleteSearch}>
+  return (
+    <SettingsListItem>
+      <div className={classes.searchIcon}>
+        <SearchIcon />
+      </div>
+      <div className={classes.searchName}>
+        <a
+          href={search.url}
+          target="_blank"
+          className={classes.searchLink}
+          rel="noreferrer"
+        >
+          {search.name}
+        </a>
+      </div>
+      <div className={classes.actions}>
+        {/* <IconButton onClick={deleteSearch}>
         <Icons.Delete/>
       </IconButton> */}
-    </div>
-  </SettingsListItem>;
+      </div>
+    </SettingsListItem>
+  );
 }
 
 interface AccountSettingsProps {
@@ -104,42 +105,43 @@ export default function AccountSettings({
     window.location.assign(account.loginUrl);
   }, [account]);
 
-  return <SettingsPage
-    heading={
-      <>
-        <ImageIcon icon={<GitHub/>}/>
-        <Heading className={classes.headingText}>Settings for {account.user}</Heading>
-        <IconButton onClick={reLogin}>
-          <LoopIcon/>
-        </IconButton>
-      </>
-    }
-  >
-    <SettingsListSection
+  return (
+    <SettingsPage
       heading={
         <>
-          <SubHeading>GitHub Searches</SubHeading>
-          <div className={classes.actions}>
-            <IconButton onClick={openSearchDialog}>
-              <AddCircleIcon/>
-            </IconButton>
-          </div>
+          <ImageIcon icon={<GitHub />} />
+          <Heading className={classes.headingText}>
+            Settings for {account.user}
+          </Heading>
+          <IconButton onClick={reLogin}>
+            <LoopIcon />
+          </IconButton>
         </>
       }
     >
-      {
-        account.searches.map((search: GithubSearch) => <SearchSettingsItem
-          key={search.id}
-          search={search}
-        />)
-      }
-    </SettingsListSection>
-    {
-      showSearchDialog && <SearchDialog
-        account={account}
-        onClosed={closeSearchDialog}
-        onSearchCreated={closeSearchDialog}
-      />
-    }
-  </SettingsPage>;
+      <SettingsListSection
+        heading={
+          <>
+            <SubHeading>GitHub Searches</SubHeading>
+            <div className={classes.actions}>
+              <IconButton onClick={openSearchDialog}>
+                <AddCircleIcon />
+              </IconButton>
+            </div>
+          </>
+        }
+      >
+        {account.searches.map((search: GithubSearch) => (
+          <SearchSettingsItem key={search.id} search={search} />
+        ))}
+      </SettingsListSection>
+      {showSearchDialog && (
+        <SearchDialog
+          account={account}
+          onClosed={closeSearchDialog}
+          onSearchCreated={closeSearchDialog}
+        />
+      )}
+    </SettingsPage>
+  );
 }

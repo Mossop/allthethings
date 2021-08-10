@@ -39,7 +39,8 @@ const useStyles = makeStyles((theme: Theme) =>
       fontSize: "1.2rem",
       marginRight: theme.spacing(1),
     },
-  }));
+  }),
+);
 
 export interface HiddenInputProps {
   initialValue: string;
@@ -81,49 +82,51 @@ export const HiddenInput = ReactMemo(function HiddenInput({
     ref.current?.blur();
   }, [initialValue]);
 
-  let keypress = useCallback((event: KeyboardEvent<HTMLInputElement>) => {
-    switch (event.key) {
-      case "Escape":
-        cancel();
-        break;
-      case "Enter":
-        submit();
-        break;
-    }
-  }, [submit, cancel]);
+  let keypress = useCallback(
+    (event: KeyboardEvent<HTMLInputElement>) => {
+      switch (event.key) {
+        case "Escape":
+          cancel();
+          break;
+        case "Enter":
+          submit();
+          break;
+      }
+    },
+    [submit, cancel],
+  );
 
   let handleChange = useCallback((event: ContentEditableEvent): void => {
     value.current = event.target.value;
   }, []);
 
-  return <div
-    className={clsx(classes.boxShared, showButtons ? classes.boxActive : classes.boxInactive)}
-  >
-    <ContentEditable
-      innerRef={ref}
-      onFocus={focus}
-      onBlur={blur}
-      className={clsx(className, classes.inputShared)}
-      onChange={handleChange}
-      onKeyDown={keypress}
-      spellCheck={showButtons}
-      html={value.current}
-    />
-    {
-      showButtons && <>
-        <IconButton
-          className={clsx(classes.buttonShared)}
-          onClick={submit}
-        >
-          <Icons.Save/>
-        </IconButton>
-        <IconButton
-          className={clsx(classes.buttonShared)}
-          onClick={cancel}
-        >
-          <Icons.Cancel/>
-        </IconButton>
-      </>
-    }
-  </div>;
+  return (
+    <div
+      className={clsx(
+        classes.boxShared,
+        showButtons ? classes.boxActive : classes.boxInactive,
+      )}
+    >
+      <ContentEditable
+        innerRef={ref}
+        onFocus={focus}
+        onBlur={blur}
+        className={clsx(className, classes.inputShared)}
+        onChange={handleChange}
+        onKeyDown={keypress}
+        spellCheck={showButtons}
+        html={value.current}
+      />
+      {showButtons && (
+        <>
+          <IconButton className={clsx(classes.buttonShared)} onClick={submit}>
+            <Icons.Save />
+          </IconButton>
+          <IconButton className={clsx(classes.buttonShared)} onClick={cancel}>
+            <Icons.Cancel />
+          </IconButton>
+        </>
+      )}
+    </div>
+  );
 });

@@ -2,10 +2,7 @@
   "extends": "./tsconfig.base.json",
   "references": [
     { "path": "./modules/server/init" },
-    { "path": "./modules/client/init" },
+    { "path": "./modules/client/init" }
   ],
-  "include": [
-    "*.js",
-    ".*.js"
-  ]
+  "include": ["*.js", ".*.js"]
 }

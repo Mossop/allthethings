@@ -4,12 +4,16 @@ import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import type { SearchType } from "#services/bugzilla/schema";
 import type { GraphQLType } from "#utils";
 
-export type BugzillaAccountRecord = Required<Omit<GraphQLType<BugzillaAccount>, "searches">> & {
+export type BugzillaAccountRecord = Required<
+  Omit<GraphQLType<BugzillaAccount>, "searches">
+> & {
   userId: string;
   password: string | null;
 };
 
-export type BugzillaSearchRecord = Required<Omit<GraphQLType<BugzillaSearch>, "url" | "type">> & {
+export type BugzillaSearchRecord = Required<
+  Omit<GraphQLType<BugzillaSearch>, "url" | "type">
+> & {
   accountId: string;
   type: SearchType;
 };

@@ -8,9 +8,12 @@ import { refetchQueriesForItem } from "../schema";
 import type { ServiceItem, ServiceList as ServiceListSchema } from "../schema";
 import type { ItemRenderProps } from "./Item";
 
-export type ServiceItemProps = Overwrite<ItemRenderProps, {
-  item: ServiceItem;
-}>;
+export type ServiceItemProps = Overwrite<
+  ItemRenderProps,
+  {
+    item: ServiceItem;
+  }
+>;
 
 export default ReactMemo(function ServiceItem({
   item,
@@ -23,20 +26,17 @@ export default ReactMemo(function ServiceItem({
     return <div>Unknown service</div>;
   }
 
-  return <>
-    {
-      service.renderItem({
+  return (
+    <>
+      {service.renderItem({
         fields: item.detail.fields,
         refetchQueries,
-      })
-    }
-    {
-      item.detail.lists.map((list: ServiceListSchema) => <ItemPill
-        key={list.id}
-        url={list.url}
-      >
-        {list.name}
-      </ItemPill>)
-    }
-  </>;
+      })}
+      {item.detail.lists.map((list: ServiceListSchema) => (
+        <ItemPill key={list.id} url={list.url}>
+          {list.name}
+        </ItemPill>
+      ))}
+    </>
+  );
 });

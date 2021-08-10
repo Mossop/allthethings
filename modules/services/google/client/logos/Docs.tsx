@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import DocsIcon from "./Docs.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={DocsIcon}
-    viewBox="0 0 47 65"
-  />;
+  return <SvgIcon component={DocsIcon} viewBox="0 0 47 65" />;
 }

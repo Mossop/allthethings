@@ -1,74 +1,125 @@
 /* eslint-disable */
-import * as Schema from '#schema';
-import { gql } from '@apollo/client';
-import * as Apollo from '@apollo/client';
-const defaultOptions =  {}
-export type ListBugzillaAccountsQueryVariables = Schema.Exact<{ [key: string]: never; }>;
+import * as Schema from "#schema";
+import { gql } from "@apollo/client";
+import * as Apollo from "@apollo/client";
+const defaultOptions = {};
+export type ListBugzillaAccountsQueryVariables = Schema.Exact<{
+  [key: string]: never;
+}>;
 
-
-export type ListBugzillaAccountsQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly bugzillaAccounts: ReadonlyArray<{ readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Schema.Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> }> }> };
+export type ListBugzillaAccountsQuery = {
+  readonly __typename: "Query";
+  readonly user: Schema.Maybe<{
+    readonly __typename: "User";
+    readonly id: string;
+    readonly bugzillaAccounts: ReadonlyArray<{
+      readonly __typename: "BugzillaAccount";
+      readonly id: string;
+      readonly name: string;
+      readonly icon: Schema.Maybe<string>;
+      readonly url: string;
+      readonly searches: ReadonlyArray<{
+        readonly __typename: "BugzillaSearch";
+        readonly id: string;
+        readonly name: string;
+        readonly type: string;
+        readonly query: string;
+        readonly url: string;
+      }>;
+    }>;
+  }>;
+};
 
 export type CreateBugzillaAccountMutationVariables = Schema.Exact<{
   params: Schema.BugzillaAccountParams;
 }>;
 
-
-export type CreateBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly createBugzillaAccount: { readonly __typename: 'BugzillaAccount', readonly id: string, readonly name: string, readonly icon: Schema.Maybe<string>, readonly url: string, readonly searches: ReadonlyArray<{ readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string }> } };
+export type CreateBugzillaAccountMutation = {
+  readonly __typename: "Mutation";
+  readonly createBugzillaAccount: {
+    readonly __typename: "BugzillaAccount";
+    readonly id: string;
+    readonly name: string;
+    readonly icon: Schema.Maybe<string>;
+    readonly url: string;
+    readonly searches: ReadonlyArray<{
+      readonly __typename: "BugzillaSearch";
+      readonly id: string;
+      readonly name: string;
+      readonly type: string;
+      readonly query: string;
+      readonly url: string;
+    }>;
+  };
+};
 
 export type DeleteBugzillaAccountMutationVariables = Schema.Exact<{
-  account: Schema.Scalars['ID'];
+  account: Schema.Scalars["ID"];
 }>;
 
-
-export type DeleteBugzillaAccountMutation = { readonly __typename: 'Mutation', readonly deleteBugzillaAccount: Schema.Maybe<boolean> };
+export type DeleteBugzillaAccountMutation = {
+  readonly __typename: "Mutation";
+  readonly deleteBugzillaAccount: Schema.Maybe<boolean>;
+};
 
 export type CreateBugzillaSearchMutationVariables = Schema.Exact<{
-  account: Schema.Scalars['ID'];
+  account: Schema.Scalars["ID"];
   params: Schema.BugzillaSearchParams;
 }>;
 
-
-export type CreateBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly createBugzillaSearch: { readonly __typename: 'BugzillaSearch', readonly id: string, readonly name: string, readonly type: string, readonly query: string, readonly url: string } };
+export type CreateBugzillaSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly createBugzillaSearch: {
+    readonly __typename: "BugzillaSearch";
+    readonly id: string;
+    readonly name: string;
+    readonly type: string;
+    readonly query: string;
+    readonly url: string;
+  };
+};
 
 export type DeleteBugzillaSearchMutationVariables = Schema.Exact<{
-  search: Schema.Scalars['ID'];
+  search: Schema.Scalars["ID"];
 }>;
 
-
-export type DeleteBugzillaSearchMutation = { readonly __typename: 'Mutation', readonly deleteBugzillaSearch: Schema.Maybe<boolean> };
+export type DeleteBugzillaSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly deleteBugzillaSearch: Schema.Maybe<boolean>;
+};
 
 export const OperationNames = {
   Query: {
-    ListBugzillaAccounts: 'ListBugzillaAccounts'
+    ListBugzillaAccounts: "ListBugzillaAccounts",
   },
   Mutation: {
-    CreateBugzillaAccount: 'CreateBugzillaAccount',
-    DeleteBugzillaAccount: 'DeleteBugzillaAccount',
-    CreateBugzillaSearch: 'CreateBugzillaSearch',
-    DeleteBugzillaSearch: 'DeleteBugzillaSearch'
-  }
-}
+    CreateBugzillaAccount: "CreateBugzillaAccount",
+    DeleteBugzillaAccount: "DeleteBugzillaAccount",
+    CreateBugzillaSearch: "CreateBugzillaSearch",
+    DeleteBugzillaSearch: "DeleteBugzillaSearch",
+  },
+};
 
 export const ListBugzillaAccountsDocument = gql`
-    query ListBugzillaAccounts {
-  user {
-    id
-    bugzillaAccounts {
+  query ListBugzillaAccounts {
+    user {
       id
-      name
-      icon
-      url
-      searches {
+      bugzillaAccounts {
         id
         name
-        type
-        query
+        icon
         url
+        searches {
+          id
+          name
+          type
+          query
+          url
+        }
       }
     }
   }
-}
-    `;
+`;
 
 /**
  * __useListBugzillaAccountsQuery__
@@ -85,38 +136,66 @@ export const ListBugzillaAccountsDocument = gql`
  *   },
  * });
  */
-export function useListBugzillaAccountsQuery(baseOptions?: Apollo.QueryHookOptions<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, options);
-      }
-export function useListBugzillaAccountsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>(ListBugzillaAccountsDocument, options);
-        }
-export type ListBugzillaAccountsQueryHookResult = ReturnType<typeof useListBugzillaAccountsQuery>;
-export type ListBugzillaAccountsLazyQueryHookResult = ReturnType<typeof useListBugzillaAccountsLazyQuery>;
-export type ListBugzillaAccountsQueryResult = Apollo.QueryResult<ListBugzillaAccountsQuery, ListBugzillaAccountsQueryVariables>;
-export function refetchListBugzillaAccountsQuery(variables?: ListBugzillaAccountsQueryVariables) {
-      return { query: ListBugzillaAccountsDocument, variables: variables }
-    }
+export function useListBugzillaAccountsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    ListBugzillaAccountsQuery,
+    ListBugzillaAccountsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<
+    ListBugzillaAccountsQuery,
+    ListBugzillaAccountsQueryVariables
+  >(ListBugzillaAccountsDocument, options);
+}
+export function useListBugzillaAccountsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    ListBugzillaAccountsQuery,
+    ListBugzillaAccountsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    ListBugzillaAccountsQuery,
+    ListBugzillaAccountsQueryVariables
+  >(ListBugzillaAccountsDocument, options);
+}
+export type ListBugzillaAccountsQueryHookResult = ReturnType<
+  typeof useListBugzillaAccountsQuery
+>;
+export type ListBugzillaAccountsLazyQueryHookResult = ReturnType<
+  typeof useListBugzillaAccountsLazyQuery
+>;
+export type ListBugzillaAccountsQueryResult = Apollo.QueryResult<
+  ListBugzillaAccountsQuery,
+  ListBugzillaAccountsQueryVariables
+>;
+export function refetchListBugzillaAccountsQuery(
+  variables?: ListBugzillaAccountsQueryVariables,
+) {
+  return { query: ListBugzillaAccountsDocument, variables: variables };
+}
 export const CreateBugzillaAccountDocument = gql`
-    mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
-  createBugzillaAccount(params: $params) {
-    id
-    name
-    icon
-    url
-    searches {
+  mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
+    createBugzillaAccount(params: $params) {
       id
       name
-      type
-      query
+      icon
       url
+      searches {
+        id
+        name
+        type
+        query
+        url
+      }
     }
   }
-}
-    `;
-export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>;
+`;
+export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<
+  CreateBugzillaAccountMutation,
+  CreateBugzillaAccountMutationVariables
+>;
 
 /**
  * __useCreateBugzillaAccountMutation__
@@ -135,19 +214,36 @@ export type CreateBugzillaAccountMutationFn = Apollo.MutationFunction<CreateBugz
  *   },
  * });
  */
-export function useCreateBugzillaAccountMutation(baseOptions?: Apollo.MutationHookOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>(CreateBugzillaAccountDocument, options);
-      }
-export type CreateBugzillaAccountMutationHookResult = ReturnType<typeof useCreateBugzillaAccountMutation>;
-export type CreateBugzillaAccountMutationResult = Apollo.MutationResult<CreateBugzillaAccountMutation>;
-export type CreateBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaAccountMutation, CreateBugzillaAccountMutationVariables>;
-export const DeleteBugzillaAccountDocument = gql`
-    mutation DeleteBugzillaAccount($account: ID!) {
-  deleteBugzillaAccount(account: $account)
+export function useCreateBugzillaAccountMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateBugzillaAccountMutation,
+    CreateBugzillaAccountMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateBugzillaAccountMutation,
+    CreateBugzillaAccountMutationVariables
+  >(CreateBugzillaAccountDocument, options);
 }
-    `;
-export type DeleteBugzillaAccountMutationFn = Apollo.MutationFunction<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>;
+export type CreateBugzillaAccountMutationHookResult = ReturnType<
+  typeof useCreateBugzillaAccountMutation
+>;
+export type CreateBugzillaAccountMutationResult =
+  Apollo.MutationResult<CreateBugzillaAccountMutation>;
+export type CreateBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<
+  CreateBugzillaAccountMutation,
+  CreateBugzillaAccountMutationVariables
+>;
+export const DeleteBugzillaAccountDocument = gql`
+  mutation DeleteBugzillaAccount($account: ID!) {
+    deleteBugzillaAccount(account: $account)
+  }
+`;
+export type DeleteBugzillaAccountMutationFn = Apollo.MutationFunction<
+  DeleteBugzillaAccountMutation,
+  DeleteBugzillaAccountMutationVariables
+>;
 
 /**
  * __useDeleteBugzillaAccountMutation__
@@ -166,25 +262,42 @@ export type DeleteBugzillaAccountMutationFn = Apollo.MutationFunction<DeleteBugz
  *   },
  * });
  */
-export function useDeleteBugzillaAccountMutation(baseOptions?: Apollo.MutationHookOptions<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>(DeleteBugzillaAccountDocument, options);
-      }
-export type DeleteBugzillaAccountMutationHookResult = ReturnType<typeof useDeleteBugzillaAccountMutation>;
-export type DeleteBugzillaAccountMutationResult = Apollo.MutationResult<DeleteBugzillaAccountMutation>;
-export type DeleteBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<DeleteBugzillaAccountMutation, DeleteBugzillaAccountMutationVariables>;
-export const CreateBugzillaSearchDocument = gql`
-    mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
-  createBugzillaSearch(account: $account, params: $params) {
-    id
-    name
-    type
-    query
-    url
-  }
+export function useDeleteBugzillaAccountMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteBugzillaAccountMutation,
+    DeleteBugzillaAccountMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DeleteBugzillaAccountMutation,
+    DeleteBugzillaAccountMutationVariables
+  >(DeleteBugzillaAccountDocument, options);
 }
-    `;
-export type CreateBugzillaSearchMutationFn = Apollo.MutationFunction<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
+export type DeleteBugzillaAccountMutationHookResult = ReturnType<
+  typeof useDeleteBugzillaAccountMutation
+>;
+export type DeleteBugzillaAccountMutationResult =
+  Apollo.MutationResult<DeleteBugzillaAccountMutation>;
+export type DeleteBugzillaAccountMutationOptions = Apollo.BaseMutationOptions<
+  DeleteBugzillaAccountMutation,
+  DeleteBugzillaAccountMutationVariables
+>;
+export const CreateBugzillaSearchDocument = gql`
+  mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
+    createBugzillaSearch(account: $account, params: $params) {
+      id
+      name
+      type
+      query
+      url
+    }
+  }
+`;
+export type CreateBugzillaSearchMutationFn = Apollo.MutationFunction<
+  CreateBugzillaSearchMutation,
+  CreateBugzillaSearchMutationVariables
+>;
 
 /**
  * __useCreateBugzillaSearchMutation__
@@ -204,19 +317,36 @@ export type CreateBugzillaSearchMutationFn = Apollo.MutationFunction<CreateBugzi
  *   },
  * });
  */
-export function useCreateBugzillaSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>(CreateBugzillaSearchDocument, options);
-      }
-export type CreateBugzillaSearchMutationHookResult = ReturnType<typeof useCreateBugzillaSearchMutation>;
-export type CreateBugzillaSearchMutationResult = Apollo.MutationResult<CreateBugzillaSearchMutation>;
-export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<CreateBugzillaSearchMutation, CreateBugzillaSearchMutationVariables>;
-export const DeleteBugzillaSearchDocument = gql`
-    mutation DeleteBugzillaSearch($search: ID!) {
-  deleteBugzillaSearch(search: $search)
+export function useCreateBugzillaSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateBugzillaSearchMutation,
+    CreateBugzillaSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateBugzillaSearchMutation,
+    CreateBugzillaSearchMutationVariables
+  >(CreateBugzillaSearchDocument, options);
 }
-    `;
-export type DeleteBugzillaSearchMutationFn = Apollo.MutationFunction<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>;
+export type CreateBugzillaSearchMutationHookResult = ReturnType<
+  typeof useCreateBugzillaSearchMutation
+>;
+export type CreateBugzillaSearchMutationResult =
+  Apollo.MutationResult<CreateBugzillaSearchMutation>;
+export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<
+  CreateBugzillaSearchMutation,
+  CreateBugzillaSearchMutationVariables
+>;
+export const DeleteBugzillaSearchDocument = gql`
+  mutation DeleteBugzillaSearch($search: ID!) {
+    deleteBugzillaSearch(search: $search)
+  }
+`;
+export type DeleteBugzillaSearchMutationFn = Apollo.MutationFunction<
+  DeleteBugzillaSearchMutation,
+  DeleteBugzillaSearchMutationVariables
+>;
 
 /**
  * __useDeleteBugzillaSearchMutation__
@@ -235,10 +365,24 @@ export type DeleteBugzillaSearchMutationFn = Apollo.MutationFunction<DeleteBugzi
  *   },
  * });
  */
-export function useDeleteBugzillaSearchMutation(baseOptions?: Apollo.MutationHookOptions<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>(DeleteBugzillaSearchDocument, options);
-      }
-export type DeleteBugzillaSearchMutationHookResult = ReturnType<typeof useDeleteBugzillaSearchMutation>;
-export type DeleteBugzillaSearchMutationResult = Apollo.MutationResult<DeleteBugzillaSearchMutation>;
-export type DeleteBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<DeleteBugzillaSearchMutation, DeleteBugzillaSearchMutationVariables>;
+export function useDeleteBugzillaSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteBugzillaSearchMutation,
+    DeleteBugzillaSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DeleteBugzillaSearchMutation,
+    DeleteBugzillaSearchMutationVariables
+  >(DeleteBugzillaSearchDocument, options);
+}
+export type DeleteBugzillaSearchMutationHookResult = ReturnType<
+  typeof useDeleteBugzillaSearchMutation
+>;
+export type DeleteBugzillaSearchMutationResult =
+  Apollo.MutationResult<DeleteBugzillaSearchMutation>;
+export type DeleteBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<
+  DeleteBugzillaSearchMutation,
+  DeleteBugzillaSearchMutationVariables
+>;

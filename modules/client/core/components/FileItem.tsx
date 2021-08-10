@@ -15,11 +15,15 @@ const useStyles = makeStyles(() =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
-export type FileItemProps = Overwrite<ItemRenderProps, {
-  item: FileItem;
-}>;
+export type FileItemProps = Overwrite<
+  ItemRenderProps,
+  {
+    item: FileItem;
+  }
+>;
 
 export default ReactMemo(function FileItem({
   item,

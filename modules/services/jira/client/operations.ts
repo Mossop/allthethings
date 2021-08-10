@@ -1,75 +1,127 @@
 /* eslint-disable */
-import * as Schema from '#schema';
-import { gql } from '@apollo/client';
-import * as Apollo from '@apollo/client';
-const defaultOptions =  {}
-export type ListJiraAccountsQueryVariables = Schema.Exact<{ [key: string]: never; }>;
+import * as Schema from "#schema";
+import { gql } from "@apollo/client";
+import * as Apollo from "@apollo/client";
+const defaultOptions = {};
+export type ListJiraAccountsQueryVariables = Schema.Exact<{
+  [key: string]: never;
+}>;
 
-
-export type ListJiraAccountsQuery = { readonly __typename: 'Query', readonly user: Schema.Maybe<{ readonly __typename: 'User', readonly id: string, readonly jiraAccounts: ReadonlyArray<{ readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string, readonly searches: ReadonlyArray<{ readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> }> }> };
+export type ListJiraAccountsQuery = {
+  readonly __typename: "Query";
+  readonly user: Schema.Maybe<{
+    readonly __typename: "User";
+    readonly id: string;
+    readonly jiraAccounts: ReadonlyArray<{
+      readonly __typename: "JiraAccount";
+      readonly id: string;
+      readonly serverName: string;
+      readonly userName: string;
+      readonly url: string;
+      readonly email: string;
+      readonly apiToken: string;
+      readonly searches: ReadonlyArray<{
+        readonly __typename: "JiraSearch";
+        readonly id: string;
+        readonly name: string;
+        readonly query: string;
+        readonly url: string;
+      }>;
+    }>;
+  }>;
+};
 
 export type CreateJiraAccountMutationVariables = Schema.Exact<{
   params: Schema.JiraAccountParams;
 }>;
 
-
-export type CreateJiraAccountMutation = { readonly __typename: 'Mutation', readonly createJiraAccount: { readonly __typename: 'JiraAccount', readonly id: string, readonly serverName: string, readonly userName: string, readonly url: string, readonly email: string, readonly apiToken: string, readonly searches: ReadonlyArray<{ readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string }> } };
+export type CreateJiraAccountMutation = {
+  readonly __typename: "Mutation";
+  readonly createJiraAccount: {
+    readonly __typename: "JiraAccount";
+    readonly id: string;
+    readonly serverName: string;
+    readonly userName: string;
+    readonly url: string;
+    readonly email: string;
+    readonly apiToken: string;
+    readonly searches: ReadonlyArray<{
+      readonly __typename: "JiraSearch";
+      readonly id: string;
+      readonly name: string;
+      readonly query: string;
+      readonly url: string;
+    }>;
+  };
+};
 
 export type DeleteJiraAccountMutationVariables = Schema.Exact<{
-  account: Schema.Scalars['ID'];
+  account: Schema.Scalars["ID"];
 }>;
 
-
-export type DeleteJiraAccountMutation = { readonly __typename: 'Mutation', readonly deleteJiraAccount: Schema.Maybe<boolean> };
+export type DeleteJiraAccountMutation = {
+  readonly __typename: "Mutation";
+  readonly deleteJiraAccount: Schema.Maybe<boolean>;
+};
 
 export type CreateJiraSearchMutationVariables = Schema.Exact<{
-  account: Schema.Scalars['ID'];
+  account: Schema.Scalars["ID"];
   params: Schema.JiraSearchParams;
 }>;
 
-
-export type CreateJiraSearchMutation = { readonly __typename: 'Mutation', readonly createJiraSearch: { readonly __typename: 'JiraSearch', readonly id: string, readonly name: string, readonly query: string, readonly url: string } };
+export type CreateJiraSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly createJiraSearch: {
+    readonly __typename: "JiraSearch";
+    readonly id: string;
+    readonly name: string;
+    readonly query: string;
+    readonly url: string;
+  };
+};
 
 export type DeleteJiraSearchMutationVariables = Schema.Exact<{
-  id: Schema.Scalars['ID'];
+  id: Schema.Scalars["ID"];
 }>;
 
-
-export type DeleteJiraSearchMutation = { readonly __typename: 'Mutation', readonly deleteJiraSearch: Schema.Maybe<boolean> };
+export type DeleteJiraSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly deleteJiraSearch: Schema.Maybe<boolean>;
+};
 
 export const OperationNames = {
   Query: {
-    ListJiraAccounts: 'ListJiraAccounts'
+    ListJiraAccounts: "ListJiraAccounts",
   },
   Mutation: {
-    CreateJiraAccount: 'CreateJiraAccount',
-    DeleteJiraAccount: 'DeleteJiraAccount',
-    CreateJiraSearch: 'CreateJiraSearch',
-    DeleteJiraSearch: 'DeleteJiraSearch'
-  }
-}
+    CreateJiraAccount: "CreateJiraAccount",
+    DeleteJiraAccount: "DeleteJiraAccount",
+    CreateJiraSearch: "CreateJiraSearch",
+    DeleteJiraSearch: "DeleteJiraSearch",
+  },
+};
 
 export const ListJiraAccountsDocument = gql`
-    query ListJiraAccounts {
-  user {
-    id
-    jiraAccounts {
+  query ListJiraAccounts {
+    user {
       id
-      serverName
-      userName
-      url
-      email
-      apiToken
-      searches {
+      jiraAccounts {
         id
-        name
-        query
+        serverName
+        userName
         url
+        email
+        apiToken
+        searches {
+          id
+          name
+          query
+          url
+        }
       }
     }
   }
-}
-    `;
+`;
 
 /**
  * __useListJiraAccountsQuery__
@@ -86,39 +138,67 @@ export const ListJiraAccountsDocument = gql`
  *   },
  * });
  */
-export function useListJiraAccountsQuery(baseOptions?: Apollo.QueryHookOptions<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useQuery<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>(ListJiraAccountsDocument, options);
-      }
-export function useListJiraAccountsLazyQuery(baseOptions?: Apollo.LazyQueryHookOptions<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>) {
-          const options = {...defaultOptions, ...baseOptions}
-          return Apollo.useLazyQuery<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>(ListJiraAccountsDocument, options);
-        }
-export type ListJiraAccountsQueryHookResult = ReturnType<typeof useListJiraAccountsQuery>;
-export type ListJiraAccountsLazyQueryHookResult = ReturnType<typeof useListJiraAccountsLazyQuery>;
-export type ListJiraAccountsQueryResult = Apollo.QueryResult<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>;
-export function refetchListJiraAccountsQuery(variables?: ListJiraAccountsQueryVariables) {
-      return { query: ListJiraAccountsDocument, variables: variables }
-    }
+export function useListJiraAccountsQuery(
+  baseOptions?: Apollo.QueryHookOptions<
+    ListJiraAccountsQuery,
+    ListJiraAccountsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useQuery<ListJiraAccountsQuery, ListJiraAccountsQueryVariables>(
+    ListJiraAccountsDocument,
+    options,
+  );
+}
+export function useListJiraAccountsLazyQuery(
+  baseOptions?: Apollo.LazyQueryHookOptions<
+    ListJiraAccountsQuery,
+    ListJiraAccountsQueryVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useLazyQuery<
+    ListJiraAccountsQuery,
+    ListJiraAccountsQueryVariables
+  >(ListJiraAccountsDocument, options);
+}
+export type ListJiraAccountsQueryHookResult = ReturnType<
+  typeof useListJiraAccountsQuery
+>;
+export type ListJiraAccountsLazyQueryHookResult = ReturnType<
+  typeof useListJiraAccountsLazyQuery
+>;
+export type ListJiraAccountsQueryResult = Apollo.QueryResult<
+  ListJiraAccountsQuery,
+  ListJiraAccountsQueryVariables
+>;
+export function refetchListJiraAccountsQuery(
+  variables?: ListJiraAccountsQueryVariables,
+) {
+  return { query: ListJiraAccountsDocument, variables: variables };
+}
 export const CreateJiraAccountDocument = gql`
-    mutation CreateJiraAccount($params: JiraAccountParams!) {
-  createJiraAccount(params: $params) {
-    id
-    serverName
-    userName
-    url
-    email
-    apiToken
-    searches {
+  mutation CreateJiraAccount($params: JiraAccountParams!) {
+    createJiraAccount(params: $params) {
       id
-      name
-      query
+      serverName
+      userName
       url
+      email
+      apiToken
+      searches {
+        id
+        name
+        query
+        url
+      }
     }
   }
-}
-    `;
-export type CreateJiraAccountMutationFn = Apollo.MutationFunction<CreateJiraAccountMutation, CreateJiraAccountMutationVariables>;
+`;
+export type CreateJiraAccountMutationFn = Apollo.MutationFunction<
+  CreateJiraAccountMutation,
+  CreateJiraAccountMutationVariables
+>;
 
 /**
  * __useCreateJiraAccountMutation__
@@ -137,19 +217,36 @@ export type CreateJiraAccountMutationFn = Apollo.MutationFunction<CreateJiraAcco
  *   },
  * });
  */
-export function useCreateJiraAccountMutation(baseOptions?: Apollo.MutationHookOptions<CreateJiraAccountMutation, CreateJiraAccountMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateJiraAccountMutation, CreateJiraAccountMutationVariables>(CreateJiraAccountDocument, options);
-      }
-export type CreateJiraAccountMutationHookResult = ReturnType<typeof useCreateJiraAccountMutation>;
-export type CreateJiraAccountMutationResult = Apollo.MutationResult<CreateJiraAccountMutation>;
-export type CreateJiraAccountMutationOptions = Apollo.BaseMutationOptions<CreateJiraAccountMutation, CreateJiraAccountMutationVariables>;
-export const DeleteJiraAccountDocument = gql`
-    mutation DeleteJiraAccount($account: ID!) {
-  deleteJiraAccount(account: $account)
+export function useCreateJiraAccountMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateJiraAccountMutation,
+    CreateJiraAccountMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateJiraAccountMutation,
+    CreateJiraAccountMutationVariables
+  >(CreateJiraAccountDocument, options);
 }
-    `;
-export type DeleteJiraAccountMutationFn = Apollo.MutationFunction<DeleteJiraAccountMutation, DeleteJiraAccountMutationVariables>;
+export type CreateJiraAccountMutationHookResult = ReturnType<
+  typeof useCreateJiraAccountMutation
+>;
+export type CreateJiraAccountMutationResult =
+  Apollo.MutationResult<CreateJiraAccountMutation>;
+export type CreateJiraAccountMutationOptions = Apollo.BaseMutationOptions<
+  CreateJiraAccountMutation,
+  CreateJiraAccountMutationVariables
+>;
+export const DeleteJiraAccountDocument = gql`
+  mutation DeleteJiraAccount($account: ID!) {
+    deleteJiraAccount(account: $account)
+  }
+`;
+export type DeleteJiraAccountMutationFn = Apollo.MutationFunction<
+  DeleteJiraAccountMutation,
+  DeleteJiraAccountMutationVariables
+>;
 
 /**
  * __useDeleteJiraAccountMutation__
@@ -168,24 +265,41 @@ export type DeleteJiraAccountMutationFn = Apollo.MutationFunction<DeleteJiraAcco
  *   },
  * });
  */
-export function useDeleteJiraAccountMutation(baseOptions?: Apollo.MutationHookOptions<DeleteJiraAccountMutation, DeleteJiraAccountMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteJiraAccountMutation, DeleteJiraAccountMutationVariables>(DeleteJiraAccountDocument, options);
-      }
-export type DeleteJiraAccountMutationHookResult = ReturnType<typeof useDeleteJiraAccountMutation>;
-export type DeleteJiraAccountMutationResult = Apollo.MutationResult<DeleteJiraAccountMutation>;
-export type DeleteJiraAccountMutationOptions = Apollo.BaseMutationOptions<DeleteJiraAccountMutation, DeleteJiraAccountMutationVariables>;
-export const CreateJiraSearchDocument = gql`
-    mutation CreateJiraSearch($account: ID!, $params: JiraSearchParams!) {
-  createJiraSearch(account: $account, params: $params) {
-    id
-    name
-    query
-    url
-  }
+export function useDeleteJiraAccountMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteJiraAccountMutation,
+    DeleteJiraAccountMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DeleteJiraAccountMutation,
+    DeleteJiraAccountMutationVariables
+  >(DeleteJiraAccountDocument, options);
 }
-    `;
-export type CreateJiraSearchMutationFn = Apollo.MutationFunction<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>;
+export type DeleteJiraAccountMutationHookResult = ReturnType<
+  typeof useDeleteJiraAccountMutation
+>;
+export type DeleteJiraAccountMutationResult =
+  Apollo.MutationResult<DeleteJiraAccountMutation>;
+export type DeleteJiraAccountMutationOptions = Apollo.BaseMutationOptions<
+  DeleteJiraAccountMutation,
+  DeleteJiraAccountMutationVariables
+>;
+export const CreateJiraSearchDocument = gql`
+  mutation CreateJiraSearch($account: ID!, $params: JiraSearchParams!) {
+    createJiraSearch(account: $account, params: $params) {
+      id
+      name
+      query
+      url
+    }
+  }
+`;
+export type CreateJiraSearchMutationFn = Apollo.MutationFunction<
+  CreateJiraSearchMutation,
+  CreateJiraSearchMutationVariables
+>;
 
 /**
  * __useCreateJiraSearchMutation__
@@ -205,19 +319,36 @@ export type CreateJiraSearchMutationFn = Apollo.MutationFunction<CreateJiraSearc
  *   },
  * });
  */
-export function useCreateJiraSearchMutation(baseOptions?: Apollo.MutationHookOptions<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>(CreateJiraSearchDocument, options);
-      }
-export type CreateJiraSearchMutationHookResult = ReturnType<typeof useCreateJiraSearchMutation>;
-export type CreateJiraSearchMutationResult = Apollo.MutationResult<CreateJiraSearchMutation>;
-export type CreateJiraSearchMutationOptions = Apollo.BaseMutationOptions<CreateJiraSearchMutation, CreateJiraSearchMutationVariables>;
-export const DeleteJiraSearchDocument = gql`
-    mutation DeleteJiraSearch($id: ID!) {
-  deleteJiraSearch(search: $id)
+export function useCreateJiraSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    CreateJiraSearchMutation,
+    CreateJiraSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    CreateJiraSearchMutation,
+    CreateJiraSearchMutationVariables
+  >(CreateJiraSearchDocument, options);
 }
-    `;
-export type DeleteJiraSearchMutationFn = Apollo.MutationFunction<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>;
+export type CreateJiraSearchMutationHookResult = ReturnType<
+  typeof useCreateJiraSearchMutation
+>;
+export type CreateJiraSearchMutationResult =
+  Apollo.MutationResult<CreateJiraSearchMutation>;
+export type CreateJiraSearchMutationOptions = Apollo.BaseMutationOptions<
+  CreateJiraSearchMutation,
+  CreateJiraSearchMutationVariables
+>;
+export const DeleteJiraSearchDocument = gql`
+  mutation DeleteJiraSearch($id: ID!) {
+    deleteJiraSearch(search: $id)
+  }
+`;
+export type DeleteJiraSearchMutationFn = Apollo.MutationFunction<
+  DeleteJiraSearchMutation,
+  DeleteJiraSearchMutationVariables
+>;
 
 /**
  * __useDeleteJiraSearchMutation__
@@ -236,10 +367,24 @@ export type DeleteJiraSearchMutationFn = Apollo.MutationFunction<DeleteJiraSearc
  *   },
  * });
  */
-export function useDeleteJiraSearchMutation(baseOptions?: Apollo.MutationHookOptions<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>) {
-        const options = {...defaultOptions, ...baseOptions}
-        return Apollo.useMutation<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>(DeleteJiraSearchDocument, options);
-      }
-export type DeleteJiraSearchMutationHookResult = ReturnType<typeof useDeleteJiraSearchMutation>;
-export type DeleteJiraSearchMutationResult = Apollo.MutationResult<DeleteJiraSearchMutation>;
-export type DeleteJiraSearchMutationOptions = Apollo.BaseMutationOptions<DeleteJiraSearchMutation, DeleteJiraSearchMutationVariables>;
+export function useDeleteJiraSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteJiraSearchMutation,
+    DeleteJiraSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DeleteJiraSearchMutation,
+    DeleteJiraSearchMutationVariables
+  >(DeleteJiraSearchDocument, options);
+}
+export type DeleteJiraSearchMutationHookResult = ReturnType<
+  typeof useDeleteJiraSearchMutation
+>;
+export type DeleteJiraSearchMutationResult =
+  Apollo.MutationResult<DeleteJiraSearchMutation>;
+export type DeleteJiraSearchMutationOptions = Apollo.BaseMutationOptions<
+  DeleteJiraSearchMutation,
+  DeleteJiraSearchMutationVariables
+>;

@@ -12,7 +12,13 @@ import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
-import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "#client/utils";
+import {
+  useMenuState,
+  bindTrigger,
+  Icons,
+  ReactMemo,
+  Menu,
+} from "#client/utils";
 import type { ReactResult } from "#client/utils";
 
 import type { Inbox, TaskList } from "../schema";
@@ -24,7 +30,8 @@ const useStyles = makeStyles((theme: Theme) =>
     active: {
       color: theme.palette.primary.main,
     },
-  }));
+  }),
+);
 
 interface FilterMenuProps {
   list: TaskList | Inbox;
@@ -41,64 +48,79 @@ export default ReactMemo(function FilterMenu({
   let filterMenuState = useMenuState("filter");
 
   let toggleComplete = useCallback(() => {
-    setFilter((filter: ListFilter): ListFilter => ({
-      ...filter,
-      complete: !filter.complete,
-    }));
+    setFilter(
+      (filter: ListFilter): ListFilter => ({
+        ...filter,
+        complete: !filter.complete,
+      }),
+    );
   }, [setFilter]);
   let toggleArchived = useCallback(() => {
-    setFilter((filter: ListFilter): ListFilter => ({
-      ...filter,
-      archived: !filter.archived,
-    }));
+    setFilter(
+      (filter: ListFilter): ListFilter => ({
+        ...filter,
+        archived: !filter.archived,
+      }),
+    );
   }, [setFilter]);
   let toggleSnoozed = useCallback(() => {
-    setFilter((filter: ListFilter): ListFilter => ({
-      ...filter,
-      snoozed: !filter.snoozed,
-    }));
+    setFilter(
+      (filter: ListFilter): ListFilter => ({
+        ...filter,
+        snoozed: !filter.snoozed,
+      }),
+    );
   }, [setFilter]);
 
   let isFiltered = filter.archived || filter.complete || filter.snoozed;
 
-  return <>
-    <Tooltip title="Filter">
-      <IconButton {...bindTrigger(filterMenuState)} color={isFiltered ? "primary" : "default"}>
-        <Icons.Filter/>
-      </IconButton>
-    </Tooltip>
-    <Menu
-      state={filterMenuState}
-      anchor={
-        {
+  return (
+    <>
+      <Tooltip title="Filter">
+        <IconButton
+          {...bindTrigger(filterMenuState)}
+          color={isFiltered ? "primary" : "default"}
+        >
+          <Icons.Filter />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        state={filterMenuState}
+        anchor={{
           vertical: "bottom",
           horizontal: "right",
-        }
-      }
-    >
-      <MenuItem onClick={toggleComplete} className={clsx(filter.complete && classes.active)}>
-        <ListItemIcon>
-          <Icons.Checked/>
-        </ListItemIcon>
-        <ListItemText>Complete Tasks</ListItemText>
-      </MenuItem>
-      {
-        !isInbox(list) && <MenuItem
-          onClick={toggleArchived}
-          className={clsx(filter.archived && classes.active)}
+        }}
+      >
+        <MenuItem
+          onClick={toggleComplete}
+          className={clsx(filter.complete && classes.active)}
         >
           <ListItemIcon>
-            <Icons.Archive/>
+            <Icons.Checked />
           </ListItemIcon>
-          <ListItemText>Archived Items</ListItemText>
+          <ListItemText>Complete Tasks</ListItemText>
         </MenuItem>
-      }
-      <MenuItem onClick={toggleSnoozed} className={clsx(filter.snoozed && classes.active)}>
-        <ListItemIcon>
-          <Icons.Snooze/>
-        </ListItemIcon>
-        <ListItemText>Snoozed Items</ListItemText>
-      </MenuItem>
-    </Menu>
-  </>;
+        {!isInbox(list) && (
+          <MenuItem
+            onClick={toggleArchived}
+            className={clsx(filter.archived && classes.active)}
+          >
+            <ListItemIcon>
+              <Icons.Archive />
+            </ListItemIcon>
+            <ListItemText>Archived Items</ListItemText>
+          </MenuItem>
+        )}
+        <MenuItem
+          onClick={toggleSnoozed}
+          className={clsx(filter.snoozed && classes.active)}
+        >
+          <ListItemIcon>
+            <Icons.Snooze />
+          </ListItemIcon>
+          <ListItemText>Snoozed Items</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
+  );
 });

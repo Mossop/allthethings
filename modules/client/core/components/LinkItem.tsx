@@ -31,11 +31,15 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
-export type LinkItemProps = Overwrite<ItemRenderProps, {
-  item: LinkItem;
-}>;
+export type LinkItemProps = Overwrite<
+  ItemRenderProps,
+  {
+    item: LinkItem;
+  }
+>;
 
 export default ReactMemo(function LinkItem({
   item,
@@ -43,15 +47,22 @@ export default ReactMemo(function LinkItem({
   let classes = useStyles();
   let url = new URL(item.detail.url);
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={item.detail.url}>
-    <div className={classes.iconContainer}>
-      {
-        item.detail.icon
-          ? <img className={classes.favicon} src={item.detail.icon}/>
-          : <Icons.Link/>
-      }
-    </div>
-    <div className={classes.summary}>{item.summary}</div>
-    <ItemPill>{url.hostname}</ItemPill>
-  </a>;
+  return (
+    <a
+      className={classes.link}
+      rel="noreferrer"
+      target="_blank"
+      href={item.detail.url}
+    >
+      <div className={classes.iconContainer}>
+        {item.detail.icon ? (
+          <img className={classes.favicon} src={item.detail.icon} />
+        ) : (
+          <Icons.Link />
+        )}
+      </div>
+      <div className={classes.summary}>{item.summary}</div>
+      <ItemPill>{url.hostname}</ItemPill>
+    </a>
+  );
 });

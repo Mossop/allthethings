@@ -12,7 +12,8 @@ const useStyles = makeStyles(() =>
     pickerInput: {
       display: "none",
     },
-  }));
+  }),
+);
 
 export interface DateTimeDialogProps {
   initialValue?: DateTime | null;
@@ -26,29 +27,32 @@ export const DateTimeDialog = ReactMemo(function DateTimeDialog({
   onClosed,
 }: DateTimeDialogProps): ReactResult {
   let classes = useStyles();
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
-  let selected = useCallback((date: DateTime | null) => {
-    if (date) {
-      onSelect(date);
-    }
-  }, [onSelect]);
+  let selected = useCallback(
+    (date: DateTime | null) => {
+      if (date) {
+        onSelect(date);
+      }
+    },
+    [onSelect],
+  );
 
-  return <DateTimePicker
-    value={initialValue}
-    disablePast={true}
-    showTodayButton={true}
-    clearable={false}
-    okLabel="Snooze"
-    open={isOpen}
-    className={classes.pickerInput}
-    onChange={selected}
-    onClose={close}
-    DialogProps={
-      {
+  return (
+    <DateTimePicker
+      value={initialValue}
+      disablePast={true}
+      showTodayButton={true}
+      clearable={false}
+      okLabel="Snooze"
+      open={isOpen}
+      className={classes.pickerInput}
+      onChange={selected}
+      onClose={close}
+      DialogProps={{
         onClose: close,
         onExited: onClosed,
-      }
-    }
-  />;
+      }}
+    />
+  );
 });

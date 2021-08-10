@@ -1,17 +1,8 @@
 import type { Theme } from "@material-ui/core";
-import {
-  makeStyles,
-  createStyles,
-  Tooltip,
-} from "@material-ui/core";
+import { makeStyles, createStyles, Tooltip } from "@material-ui/core";
 
 import type { ReactResult } from "#client/utils";
-import {
-  ItemPill,
-  ImageIcon,
-  Styles,
-  ReactMemo,
-} from "#client/utils";
+import { ItemPill, ImageIcon, Styles, ReactMemo } from "#client/utils";
 import type { IssueFields } from "#services/jira/schema";
 
 import Icon from "./Icon";
@@ -34,24 +25,30 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
 export interface IssueProps {
-  issue: IssueFields,
+  issue: IssueFields;
 }
 
-export default ReactMemo(function Issue({
-  issue,
-}: IssueProps): ReactResult {
+export default ReactMemo(function Issue({ issue }: IssueProps): ReactResult {
   let classes = useStyles();
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={issue.url}>
-    <Tooltip title={issue.type}>
-      <div className={classes.iconContainer}>
-        <ImageIcon icon={issue.icon ?? <Icon/>}/>
-      </div>
-    </Tooltip>
-    <div className={classes.summary}>{issue.summary}</div>
-    <ItemPill border={false}>{issue.status}</ItemPill>
-  </a>;
+  return (
+    <a
+      className={classes.link}
+      rel="noreferrer"
+      target="_blank"
+      href={issue.url}
+    >
+      <Tooltip title={issue.type}>
+        <div className={classes.iconContainer}>
+          <ImageIcon icon={issue.icon ?? <Icon />} />
+        </div>
+      </Tooltip>
+      <div className={classes.summary}>{issue.summary}</div>
+      <ItemPill border={false}>{issue.status}</ItemPill>
+    </a>
+  );
 });

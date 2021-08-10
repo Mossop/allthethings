@@ -1,6 +1,12 @@
-/* eslint-disable @typescript-eslint/no-non-null-assertion */
 import type { Ref } from "react";
-import { useState, useMemo, useEffect, useRef, createContext, useContext } from "react";
+import {
+  useState,
+  useMemo,
+  useEffect,
+  useRef,
+  createContext,
+  useContext,
+} from "react";
 
 import type { ReactResult, ReactChildren } from "#client/utils";
 import { ReactMemo } from "#client/utils";
@@ -57,14 +63,15 @@ type Drag = ProjectDrag | SectionDrag | ItemDrag;
 abstract class DragOperation {
   public abstract startDrag(): void;
   public abstract completeDrag(): Promise<void>;
-  public abstract targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void;
+  public abstract targetEnter(
+    dropTarget: GraphQLType,
+    dropElement: HTMLElement,
+  ): void;
   public abstract targetLeave(): void;
 }
 
 abstract class BaseDragOperation<D extends Drag> {
-  public constructor(
-    protected readonly sharedState: SharedState<Drag | null>,
-  ) {
+  public constructor(protected readonly sharedState: SharedState<Drag | null>) {
     if (sharedState.value) {
       throw new Error("Illegal starting state.");
     }
@@ -110,7 +117,9 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
       mutation: MoveItemDocument,
       variables: {
         id: this.dragSource.id,
-        section: isInbox(this.state.dropTarget) ? null : this.state.dropTarget.id,
+        section: isInbox(this.state.dropTarget)
+          ? null
+          : this.state.dropTarget.id,
         before: null,
       },
       refetchQueries: [
@@ -123,7 +132,11 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
-    if (!isTaskList(dropTarget) && !isSection(dropTarget) && !isInbox(dropTarget)) {
+    if (
+      !isTaskList(dropTarget) &&
+      !isSection(dropTarget) &&
+      !isInbox(dropTarget)
+    ) {
       return this.targetLeave();
     }
 
@@ -169,15 +182,16 @@ class ProjectDragOperation extends BaseDragOperation<ProjectDrag> {
       return;
     }
 
-    await ApolloClient.mutate<MoveProjectMutation, MoveProjectMutationVariables>({
+    await ApolloClient.mutate<
+      MoveProjectMutation,
+      MoveProjectMutationVariables
+    >({
       mutation: MoveProjectDocument,
       variables: {
         id: this.dragSource.id,
         taskList: this.state.dropTarget.id,
       },
-      refetchQueries: [
-        OperationNames.Query.ListContextState,
-      ],
+      refetchQueries: [OperationNames.Query.ListContextState],
     });
   }
 
@@ -287,7 +301,9 @@ class DragManager {
     previewElement: HTMLElement | null,
   ): void {
     if (this.state.value) {
-      console.warn("Starting a new drag while a drop operation is still running.");
+      console.warn(
+        "Starting a new drag while a drop operation is still running.",
+      );
       this.state.set(null);
     }
 
@@ -301,9 +317,17 @@ class DragManager {
     };
 
     if (isProject(dragSource)) {
-      this.operation = new ProjectDragOperation(dragSource, this.state, baseDrag);
+      this.operation = new ProjectDragOperation(
+        dragSource,
+        this.state,
+        baseDrag,
+      );
     } else if (isSection(dragSource)) {
-      this.operation = new SectionDragOperation(dragSource, this.state, baseDrag);
+      this.operation = new SectionDragOperation(
+        dragSource,
+        this.state,
+        baseDrag,
+      );
     } else if (isItem(dragSource)) {
       this.operation = new ItemDragOperation(dragSource, this.state, baseDrag);
     } else {
@@ -327,7 +351,10 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation || drag.dragSource !== dragSource) {
-      console.warn("Saw drag event which no drag operation is being tracked.", event.type);
+      console.warn(
+        "Saw drag event which no drag operation is being tracked.",
+        event.type,
+      );
       this.state.set(null);
       return;
     }
@@ -336,9 +363,14 @@ class DragManager {
       event.preventDefault();
       event.stopPropagation();
 
-      this.operation.completeDrag()
-        .catch(
-          (e: unknown) => console.error("Failed to complete drag operation", this.state.value, e),
+      this.operation
+        .completeDrag()
+        .catch((e: unknown) =>
+          console.error(
+            "Failed to complete drag operation",
+            this.state.value,
+            e,
+          ),
         )
         .finally(() => this.state.set(null));
     } else {
@@ -350,7 +382,10 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn("Saw drag event which no drag operation is being tracked.", event.type);
+      console.warn(
+        "Saw drag event which no drag operation is being tracked.",
+        event.type,
+      );
       return;
     }
 
@@ -371,7 +406,10 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn("Saw drag event which no drag operation is being tracked.", event.type);
+      console.warn(
+        "Saw drag event which no drag operation is being tracked.",
+        event.type,
+      );
       return;
     }
 
@@ -388,7 +426,10 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn("Saw drag event which no drag operation is being tracked.", event.type);
+      console.warn(
+        "Saw drag event which no drag operation is being tracked.",
+        event.type,
+      );
       return;
     }
 
@@ -431,7 +472,9 @@ export const DragContext = ReactMemo(function DragContext({
 }: ReactChildren): ReactResult {
   let manager = useMemo(() => new DragManager(), []);
 
-  return <ReactContext.Provider value={manager}>{children}</ReactContext.Provider>;
+  return (
+    <ReactContext.Provider value={manager}>{children}</ReactContext.Provider>
+  );
 });
 
 function useDragManager(): [DragManager, Drag | null] {
@@ -451,7 +494,6 @@ export function useDragState(): Drag | null {
 
 export interface DropTargetProps {
   isDropping: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dropRef: Ref<any>;
 }
 
@@ -488,9 +530,11 @@ export function useDropTarget(dropTarget: GraphQLType): DropTargetProps {
     }
 
     return registerEvents(dropElement, {
-      dragenter: (event: DragEvent) => manager.dropTargetEnter(event, dropTarget),
+      dragenter: (event: DragEvent) =>
+        manager.dropTargetEnter(event, dropTarget),
       dragover: (event: DragEvent) => manager.dropTargetOver(event, dropTarget),
-      dragleave: (event: DragEvent) => manager.dropTargetLeave(event, dropTarget),
+      dragleave: (event: DragEvent) =>
+        manager.dropTargetLeave(event, dropTarget),
       drop: (event: DragEvent) => manager.dropTargetDrop(event, dropTarget),
     });
   }, [manager, dropTarget, dropElement]);
@@ -503,9 +547,7 @@ export function useDropTarget(dropTarget: GraphQLType): DropTargetProps {
 
 export interface DragSource {
   isDragging: boolean;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   previewRef: Ref<any>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   dragRef: Ref<any>;
 }
 
@@ -523,9 +565,8 @@ export function useDragSource(dragSource: GraphQLType): DragSource {
 
     dragElement.setAttribute("draggable", "true");
     return registerEvents(dragElement, {
-      dragstart: (
-        event: DragEvent,
-      ) => manager.dragSourceStart(event, dragSource, previewRef.current),
+      dragstart: (event: DragEvent) =>
+        manager.dragSourceStart(event, dragSource, previewRef.current),
       dragend: (event: DragEvent) => manager.dragSourceEnd(event, dragSource),
     });
   }, [manager, dragSource, dragElement]);

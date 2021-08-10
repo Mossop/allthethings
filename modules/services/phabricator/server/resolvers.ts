@@ -12,7 +12,10 @@ import { Account, Query } from "./implementations";
 import type { Resolvers } from "./schema";
 import type { PhabricatorTransaction } from "./stores";
 
-export default rootResolvers<Resolvers, AuthedGraphQLCtx<PhabricatorTransaction>>({
+export default rootResolvers<
+  Resolvers,
+  AuthedGraphQLCtx<PhabricatorTransaction>
+>({
   User: {
     phabricatorAccounts(
       ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
@@ -28,7 +31,9 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<PhabricatorTransaction>
   Mutation: {
     async createPhabricatorAccount(
       ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
-      { params: { url, apiKey, queries } }: MutationCreatePhabricatorAccountArgs,
+      {
+        params: { url, apiKey, queries },
+      }: MutationCreatePhabricatorAccountArgs,
     ): Promise<Account> {
       let account = await Account.create(ctx.transaction, ctx.userId, {
         url,
@@ -43,7 +48,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<PhabricatorTransaction>
 
     async updatePhabricatorAccount(
       ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
-      { id, params: { url, apiKey, queries } }: MutationUpdatePhabricatorAccountArgs,
+      {
+        id,
+        params: { url, apiKey, queries },
+      }: MutationUpdatePhabricatorAccountArgs,
     ): Promise<Account | null> {
       let account = await ctx.transaction.stores.accounts.updateOne(id, {
         url: url ?? undefined,

@@ -42,15 +42,14 @@ const useStyles = makeStyles((theme: Theme) =>
     searchLink: {
       cursor: "pointer",
     },
-  }));
+  }),
+);
 
 interface SearchSettingsItemProps {
   search: GoogleMailSearch;
 }
 
-function SearchSettingsItem({
-  search,
-}: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
   // let resetStore = useResetStore();
 
@@ -68,26 +67,28 @@ function SearchSettingsItem({
   //   await deleteSearchMutation();
   // }, [deleteSearchMutation]);
 
-  return <SettingsListItem>
-    <div className={classes.searchIcon}>
-      <SearchIcon/>
-    </div>
-    <div className={classes.searchName}>
-      <a
-        href={search.url}
-        target="_blank"
-        className={classes.searchLink}
-        rel="noreferrer"
-      >
-        {search.name}
-      </a>
-    </div>
-    <div className={classes.actions}>
-      {/* <IconButton onClick={deleteSearch}>
+  return (
+    <SettingsListItem>
+      <div className={classes.searchIcon}>
+        <SearchIcon />
+      </div>
+      <div className={classes.searchName}>
+        <a
+          href={search.url}
+          target="_blank"
+          className={classes.searchLink}
+          rel="noreferrer"
+        >
+          {search.name}
+        </a>
+      </div>
+      <div className={classes.actions}>
+        {/* <IconButton onClick={deleteSearch}>
         <Icons.Delete/>
       </IconButton> */}
-    </div>
-  </SettingsListItem>;
+      </div>
+    </SettingsListItem>
+  );
 }
 
 interface AccountSettingsProps {
@@ -104,42 +105,43 @@ export default function AccountSettings({
     window.location.assign(account.loginUrl);
   }, [account]);
 
-  return <SettingsPage
-    heading={
-      <>
-        <ImageIcon icon={<Google/>}/>
-        <Heading className={classes.headingText}>Settings for {account.email}</Heading>
-        <IconButton onClick={reLogin}>
-          <LoopIcon/>
-        </IconButton>
-      </>
-    }
-  >
-    <SettingsListSection
+  return (
+    <SettingsPage
       heading={
         <>
-          <SubHeading>GMail Searches</SubHeading>
-          <div className={classes.actions}>
-            <IconButton onClick={openSearchDialog}>
-              <AddCircleIcon/>
-            </IconButton>
-          </div>
+          <ImageIcon icon={<Google />} />
+          <Heading className={classes.headingText}>
+            Settings for {account.email}
+          </Heading>
+          <IconButton onClick={reLogin}>
+            <LoopIcon />
+          </IconButton>
         </>
       }
     >
-      {
-        account.mailSearches.map((search: GoogleMailSearch) => <SearchSettingsItem
-          key={search.id}
-          search={search}
-        />)
-      }
-    </SettingsListSection>
-    {
-      showSearchDialog && <SearchDialog
-        account={account}
-        onClosed={closeSearchDialog}
-        onSearchCreated={closeSearchDialog}
-      />
-    }
-  </SettingsPage>;
+      <SettingsListSection
+        heading={
+          <>
+            <SubHeading>GMail Searches</SubHeading>
+            <div className={classes.actions}>
+              <IconButton onClick={openSearchDialog}>
+                <AddCircleIcon />
+              </IconButton>
+            </div>
+          </>
+        }
+      >
+        {account.mailSearches.map((search: GoogleMailSearch) => (
+          <SearchSettingsItem key={search.id} search={search} />
+        ))}
+      </SettingsListSection>
+      {showSearchDialog && (
+        <SearchDialog
+          account={account}
+          onClosed={closeSearchDialog}
+          onSearchCreated={closeSearchDialog}
+        />
+      )}
+    </SettingsPage>
+  );
 }

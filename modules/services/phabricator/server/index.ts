@@ -1,4 +1,9 @@
-import type { Server, ServiceDbMigration, ServiceExport, ServiceTransaction } from "#server/utils";
+import type {
+  Server,
+  ServiceDbMigration,
+  ServiceExport,
+  ServiceTransaction,
+} from "#server/utils";
 import { BaseService } from "#server/utils";
 
 import { Query, Revision } from "./implementations";
@@ -10,20 +15,18 @@ import { buildTransaction } from "./stores";
 const UPDATE_DELAY = 60000;
 
 class PhabricatorService extends BaseService<PhabricatorTransaction> {
-  public readonly itemProviders = [
-    Revision,
-  ];
+  public readonly itemProviders = [Revision];
 
-  public readonly listProviders = [
-    Query,
-  ];
+  public readonly listProviders = [Query];
 
   public constructor(private readonly server: Server<PhabricatorTransaction>) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       try {
-        await this.server.withTransaction((tx: PhabricatorTransaction) => this.update(tx));
+        await this.server.withTransaction((tx: PhabricatorTransaction) =>
+          this.update(tx),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -47,7 +50,8 @@ const serviceExport: ServiceExport<unknown, PhabricatorTransaction> = {
     return buildMigrations();
   },
 
-  init: (server: Server<PhabricatorTransaction>) => new PhabricatorService(server),
+  init: (server: Server<PhabricatorTransaction>) =>
+    new PhabricatorService(server),
 };
 
 export default serviceExport;

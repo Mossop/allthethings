@@ -4,11 +4,7 @@ query ListContextState($dueBefore: DateTime!) {
     email
     isAdmin
 
-    inbox(filter: {
-      isArchived: false,
-      isSnoozed: false,
-      isPending: true,
-    }) {
+    inbox(filter: { isArchived: false, isSnoozed: false, isPending: true }) {
       count
     }
 
@@ -17,11 +13,9 @@ query ListContextState($dueBefore: DateTime!) {
       stub
       name
 
-      dueTasks: items(filter: {
-        isArchived: false,
-        isSnoozed: false,
-        dueBefore: $dueBefore,
-      }) {
+      dueTasks: items(
+        filter: { isArchived: false, isSnoozed: false, dueBefore: $dueBefore }
+      ) {
         count
       }
 
@@ -34,11 +28,9 @@ query ListContextState($dueBefore: DateTime!) {
         stub
         name
 
-        dueTasks: items(filter: {
-          isArchived: false,
-          isSnoozed: false,
-          dueBefore: $dueBefore,
-        }) {
+        dueTasks: items(
+          filter: { isArchived: false, isSnoozed: false, dueBefore: $dueBefore }
+        ) {
           count
         }
 

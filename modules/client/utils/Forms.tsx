@@ -1,7 +1,12 @@
-import type { ButtonProps as MuiButtonProps, OutlinedInputProps, Theme } from "@material-ui/core";
+import type {
+  ButtonProps as MuiButtonProps,
+  OutlinedInputProps,
+  Theme,
+} from "@material-ui/core";
 import {
   CircularProgress,
-  createStyles, makeStyles,
+  createStyles,
+  makeStyles,
   FormLabel,
   FormControl,
   InputLabel,
@@ -38,9 +43,11 @@ export const FormStateProvider = ReactMemo(function FormStateProvider({
   state,
   children,
 }: FormStateProviderProps & ReactChildren): ReactResult {
-  return <FormStateContext.Provider value={state}>
-    {children}
-  </FormStateContext.Provider>;
+  return (
+    <FormStateContext.Provider value={state}>
+      {children}
+    </FormStateContext.Provider>
+  );
 });
 
 export function useFormState(): FormState {
@@ -51,23 +58,26 @@ export function useScopedState<T, K extends keyof T>(
   key: K,
   setter: Dispatch<SetStateAction<T>>,
 ): Dispatch<SetStateAction<T[K]>> {
-  return useCallback((action: SetStateAction<T[K]>): void => {
-    setter((previous: T): T => {
-      if (typeof action === "function") {
-        // @ts-ignore
-        action = action(previous[key]);
-      }
+  return useCallback(
+    (action: SetStateAction<T[K]>): void => {
+      setter((previous: T): T => {
+        if (typeof action === "function") {
+          // @ts-ignore
+          action = action(previous[key]);
+        }
 
-      if (action !== previous[key]) {
-        return {
-          ...previous,
-          [key]: action,
-        };
-      }
+        if (action !== previous[key]) {
+          return {
+            ...previous,
+            [key]: action,
+          };
+        }
 
-      return previous;
-    });
-  }, [setter, key]);
+        return previous;
+      });
+    },
+    [setter, key],
+  );
 }
 
 interface FieldEvent<T> {
@@ -75,10 +85,15 @@ interface FieldEvent<T> {
     value: T;
   };
 }
-export function useFieldState<T>(setter: Dispatch<SetStateAction<T>>): Dispatch<FieldEvent<T>> {
-  return useCallback((event: FieldEvent<T>): void => {
-    setter(event.target.value);
-  }, [setter]);
+export function useFieldState<T>(
+  setter: Dispatch<SetStateAction<T>>,
+): Dispatch<FieldEvent<T>> {
+  return useCallback(
+    (event: FieldEvent<T>): void => {
+      setter(event.target.value);
+    },
+    [setter],
+  );
 }
 
 export interface FieldProps<T, K extends keyof T> {
@@ -95,33 +110,37 @@ type TextFieldInputProps<T, K extends keyof T> = Overwrite<
     label: string;
     type?: "email" | "password" | "text" | "url";
   }
-> & FieldProps<T, K>;
+> &
+  FieldProps<T, K>;
 
 export type TypedProps<S, T> = {
   [K in keyof S]: S[K] extends T ? K : never;
 }[keyof S];
 
-export const TextFieldInput = ReactMemo(
-  function TextFieldInput<T, K extends TypedProps<T, string>>({
-    id,
-    label,
-    state,
-    setState,
-    stateKey,
-    type = "text",
-    fieldState,
-    ...props
-  }: TextFieldInputProps<T, K>): ReactElement {
-    let value = useMemo(() => state[stateKey], [state, stateKey]);
+export const TextFieldInput = ReactMemo(function TextFieldInput<
+  T,
+  K extends TypedProps<T, string>,
+>({
+  id,
+  label,
+  state,
+  setState,
+  stateKey,
+  type = "text",
+  fieldState,
+  ...props
+}: TextFieldInputProps<T, K>): ReactElement {
+  let value = useMemo(() => state[stateKey], [state, stateKey]);
 
-    let change = useFieldState(
-      useScopedState(stateKey, setState),
-    ) as unknown as Dispatch<FieldEvent<string>>;
+  let change = useFieldState(
+    useScopedState(stateKey, setState),
+  ) as unknown as Dispatch<FieldEvent<string>>;
 
-    let globalState = useFormState();
-    fieldState = fieldState ?? globalState;
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
 
-    return <FormControl
+  return (
+    <FormControl
       margin="normal"
       variant="outlined"
       disabled={fieldState != FormState.Default}
@@ -135,9 +154,9 @@ export const TextFieldInput = ReactMemo(
         value={value}
         onChange={change}
       />
-    </FormControl>;
-  },
-);
+    </FormControl>
+  );
+});
 
 export interface RadioValue<T> {
   label: string;
@@ -146,31 +165,39 @@ export interface RadioValue<T> {
 
 type RadioGroupInputProps<T, K extends keyof T> = FieldProps<T, K> & {
   label: string;
-  values: RadioValue<T[K]>[]
+  values: RadioValue<T[K]>[];
 };
 
-export const RadioGroupInput = ReactMemo(
-  function RadioGroupInput<T, K extends keyof T>({
-    label,
-    state,
-    setState,
-    stateKey,
-    values,
-    fieldState,
-  }: RadioGroupInputProps<T, K>): ReactElement {
-    let value = useMemo(() => state[stateKey], [state, stateKey]);
+export const RadioGroupInput = ReactMemo(function RadioGroupInput<
+  T,
+  K extends keyof T,
+>({
+  label,
+  state,
+  setState,
+  stateKey,
+  values,
+  fieldState,
+}: RadioGroupInputProps<T, K>): ReactElement {
+  let value = useMemo(() => state[stateKey], [state, stateKey]);
 
-    let onChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-      setState((state: T): T => ({
-        ...state,
-        [stateKey]: event.target.value,
-      }));
-    }, [setState, stateKey]);
+  let onChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      setState(
+        (state: T): T => ({
+          ...state,
+          [stateKey]: event.target.value,
+        }),
+      );
+    },
+    [setState, stateKey],
+  );
 
-    let globalState = useFormState();
-    fieldState = fieldState ?? globalState;
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
 
-    return <FormControl
+  return (
+    <FormControl
       component="fieldset"
       margin="normal"
       variant="outlined"
@@ -178,18 +205,18 @@ export const RadioGroupInput = ReactMemo(
     >
       <FormLabel component="legend">{label}</FormLabel>
       <RadioGroup value={value} onChange={onChange}>
-        {
-          values.map(({ value, label }: RadioValue<T[K]>) => <FormControlLabel
+        {values.map(({ value, label }: RadioValue<T[K]>) => (
+          <FormControlLabel
             key={String(value)}
             value={value}
-            control={<Radio/>}
+            control={<Radio />}
             label={label}
-          />)
-        }
+          />
+        ))}
       </RadioGroup>
-    </FormControl>;
-  },
-);
+    </FormControl>
+  );
+});
 
 export interface CheckboxProps {
   checked: boolean;
@@ -198,66 +225,71 @@ export interface CheckboxProps {
   onChange: (checked: boolean) => void;
 }
 
-export const Checkbox = ReactMemo(
-  function Checkbox({
-    checked,
-    label,
-    fieldState,
-    onChange,
-  }: CheckboxProps): ReactElement {
-    let change = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+export const Checkbox = ReactMemo(function Checkbox({
+  checked,
+  label,
+  fieldState,
+  onChange,
+}: CheckboxProps): ReactElement {
+  let change = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
       onChange(event.target.checked);
-    }, [onChange]);
+    },
+    [onChange],
+  );
 
-    let globalState = useFormState();
-    fieldState = fieldState ?? globalState;
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
 
-    return <FormControlLabel
+  return (
+    <FormControlLabel
       disabled={fieldState != FormState.Default}
       control={
-        <MuiCheckbox
-          color="primary"
-          checked={checked}
-          onChange={change}
-        />
+        <MuiCheckbox color="primary" checked={checked} onChange={change} />
       }
       label={label}
-    />;
-  },
-);
+    />
+  );
+});
 
-type CheckboxInputProps<T, K extends keyof T> =
-  Omit<CheckboxProps, "onChange" | "checked"> &
+type CheckboxInputProps<T, K extends keyof T> = Omit<
+  CheckboxProps,
+  "onChange" | "checked"
+> &
   FieldProps<T, K> & {
     checkedValue: T[K];
     uncheckedValue: T[K];
   };
 
-export const CheckboxInput = ReactMemo(
-  function CheckboxInput<T, K extends keyof T>({
-    state,
-    setState,
-    stateKey,
-    checkedValue,
-    uncheckedValue,
-    ...props
-  }: CheckboxInputProps<T, K>): ReactElement {
-    let value = useMemo(() => state[stateKey], [state, stateKey]);
+export const CheckboxInput = ReactMemo(function CheckboxInput<
+  T,
+  K extends keyof T,
+>({
+  state,
+  setState,
+  stateKey,
+  checkedValue,
+  uncheckedValue,
+  ...props
+}: CheckboxInputProps<T, K>): ReactElement {
+  let value = useMemo(() => state[stateKey], [state, stateKey]);
 
-    let onChange = useCallback((checked: boolean) => {
-      setState((state: T): T => ({
-        ...state,
-        [stateKey]: checked ? checkedValue : uncheckedValue,
-      }));
-    }, [setState, stateKey, checkedValue, uncheckedValue]);
+  let onChange = useCallback(
+    (checked: boolean) => {
+      setState(
+        (state: T): T => ({
+          ...state,
+          [stateKey]: checked ? checkedValue : uncheckedValue,
+        }),
+      );
+    },
+    [setState, stateKey, checkedValue, uncheckedValue],
+  );
 
-    return <Checkbox
-      {...props}
-      onChange={onChange}
-      checked={value == checkedValue}
-    />;
-  },
-);
+  return (
+    <Checkbox {...props} onChange={onChange} checked={value == checkedValue} />
+  );
+});
 
 type BooleanCheckboxState<T extends string> = {
   [K in T]: boolean;
@@ -268,14 +300,15 @@ type BooleanCheckboxInputProps<
   T extends BooleanCheckboxState<K>,
 > = Omit<CheckboxInputProps<T, K>, "checkedValue" | "uncheckedValue">;
 
-export const BooleanCheckboxInput = ReactMemo(
-  function BooleanCheckboxInput<K extends string, T extends BooleanCheckboxState<K>>(
-    props: BooleanCheckboxInputProps<K, T>,
-  ): ReactElement {
+export const BooleanCheckboxInput = ReactMemo(function BooleanCheckboxInput<
+  K extends string,
+  T extends BooleanCheckboxState<K>,
+>(props: BooleanCheckboxInputProps<K, T>): ReactElement {
+  return (
     // @ts-ignore
-    return <CheckboxInput {...props} checkedValue={true} uncheckedValue={false}/>;
-  },
-);
+    <CheckboxInput {...props} checkedValue={true} uncheckedValue={false} />
+  );
+});
 
 const useButtonStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -297,7 +330,8 @@ const useButtonStyles = makeStyles((theme: Theme) =>
       color: theme.palette.primary.contrastText,
       ...flexCentered,
     },
-  }));
+  }),
+);
 
 export type ButtonProps = MuiButtonProps & {
   fieldState?: FormState;
@@ -318,16 +352,16 @@ export const Button = ReactMemo(function Button({
 
   let isLoading = fieldState == FormState.Loading && type == "submit";
 
-  return <MuiButton disabled={disabled} type={type} {...props}>
-    <div className={classes.buttonInner}>
-      <div className={clsx(isLoading && classes.hidden)}>{children}</div>
-      {
-        isLoading && <div
-          className={classes.loading}
-        >
-          <CircularProgress color="inherit" size="1.5rem"/>
-        </div>
-      }
-    </div>
-  </MuiButton>;
+  return (
+    <MuiButton disabled={disabled} type={type} {...props}>
+      <div className={classes.buttonInner}>
+        <div className={clsx(isLoading && classes.hidden)}>{children}</div>
+        {isLoading && (
+          <div className={classes.loading}>
+            <CircularProgress color="inherit" size="1.5rem" />
+          </div>
+        )}
+      </div>
+    </MuiButton>
+  );
 });

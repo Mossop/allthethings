@@ -2,14 +2,18 @@ import type { GithubAccount, GithubSearch } from "#schema";
 import type { GraphQLType } from "#utils";
 
 import type {
-  IssueState, PullRequestState,
+  IssueState,
+  PullRequestState,
   IssueFieldsFragment,
   LabelFieldsFragment,
   PrFieldsFragment,
   RepositoryFieldsFragment,
 } from "./operations";
 
-export type GithubAccountRecord = Omit<GithubAccount, "__typename" | "loginUrl" | "searches"> & {
+export type GithubAccountRecord = Omit<
+  GithubAccount,
+  "__typename" | "loginUrl" | "searches"
+> & {
   userId: string;
   token: string;
   user: string;

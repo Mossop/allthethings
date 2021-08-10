@@ -25,7 +25,8 @@ const useStyles = makeStyles((theme: Theme) =>
     errorMessage: {
       paddingLeft: theme.spacing(1),
     },
-  }));
+  }),
+);
 
 interface ErrorsProps {
   error: Error;
@@ -36,8 +37,10 @@ export const Error = ReactMemo(function Errors({
 }: ErrorsProps): ReactResult {
   let classes = useStyles();
 
-  return <div className={classes.errorBox}>
-    <Icons.Error/>
-    <Info className={classes.errorMessage}>{error.message}</Info>
-  </div>;
+  return (
+    <div className={classes.errorBox}>
+      <Icons.Error />
+      <Info className={classes.errorMessage}>{error.message}</Info>
+    </div>
+  );
 });

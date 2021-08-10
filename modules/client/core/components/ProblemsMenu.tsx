@@ -21,29 +21,29 @@ export default ReactMemo(function ProblemsMenu(): ReactResult {
     return null;
   }
 
-  return <>
-    <IconButton {...bindTrigger(problemsMenuState)}>
-      <Icons.Error color="error"/>
-    </IconButton>
-    <Menu
-      state={problemsMenuState}
-      anchor={
-        {
+  return (
+    <>
+      <IconButton {...bindTrigger(problemsMenuState)}>
+        <Icons.Error color="error" />
+      </IconButton>
+      <Menu
+        state={problemsMenuState}
+        anchor={{
           vertical: "bottom",
           horizontal: "right",
-        }
-      }
-    >
-      {
-        problems.map((problem: Problem) => <MenuItem
-          key={problem.description}
-          component="a"
-          href={problem.url}
-          onClick={pushClickedLink}
-        >
-          {problem.description}
-        </MenuItem>)
-      }
-    </Menu>
-  </>;
+        }}
+      >
+        {problems.map((problem: Problem) => (
+          <MenuItem
+            key={problem.description}
+            component="a"
+            href={problem.url}
+            onClick={pushClickedLink}
+          >
+            {problem.description}
+          </MenuItem>
+        ))}
+      </Menu>
+    </>
+  );
 });

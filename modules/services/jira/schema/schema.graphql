@@ -21,7 +21,7 @@ type JiraAccount {
 }
 
 input JiraAccountParams {
-  url: String!,
+  url: String!
   email: String!
   apiToken: String!
 }

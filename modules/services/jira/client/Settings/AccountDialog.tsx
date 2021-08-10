@@ -4,7 +4,10 @@ import { useState, useCallback } from "react";
 import { TextFieldInput, Dialog, useBoolState, FormState } from "#client/utils";
 import type { JiraAccount } from "#schema";
 
-import { refetchListJiraAccountsQuery, useCreateJiraAccountMutation } from "../operations";
+import {
+  refetchListJiraAccountsQuery,
+  useCreateJiraAccountMutation,
+} from "../operations";
 
 interface AccountDialogProps {
   onAccountCreated: (account: JiraAccount) => void;
@@ -26,9 +29,7 @@ export default function AccountDialog({
     variables: {
       params: state,
     },
-    refetchQueries: [
-      refetchListJiraAccountsQuery(),
-    ],
+    refetchQueries: [refetchListJiraAccountsQuery()],
   });
 
   let submit = useCallback(async (): Promise<void> => {
@@ -40,42 +41,44 @@ export default function AccountDialog({
     onAccountCreated(account.createJiraAccount);
   }, [createAccount, onAccountCreated]);
 
-  return <Dialog
-    title="Add Jira Account"
-    submitLabel="Add"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="url"
-      label="Address:"
-      state={state}
-      setState={setState}
-      stateKey="url"
-      required={true}
-      autoFocus={true}
-    />
+  return (
+    <Dialog
+      title="Add Jira Account"
+      submitLabel="Add"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="url"
+        label="Address:"
+        state={state}
+        setState={setState}
+        stateKey="url"
+        required={true}
+        autoFocus={true}
+      />
 
-    <TextFieldInput
-      id="email"
-      label="Email Address:"
-      state={state}
-      setState={setState}
-      stateKey="email"
-      required={true}
-    />
+      <TextFieldInput
+        id="email"
+        label="Email Address:"
+        state={state}
+        setState={setState}
+        stateKey="email"
+        required={true}
+      />
 
-    <TextFieldInput
-      id="apikey"
-      label="API Token:"
-      state={state}
-      setState={setState}
-      stateKey="apiToken"
-      required={true}
-    />
-  </Dialog>;
+      <TextFieldInput
+        id="apikey"
+        label="API Token:"
+        state={state}
+        setState={setState}
+        stateKey="apiToken"
+        required={true}
+      />
+    </Dialog>
+  );
 }

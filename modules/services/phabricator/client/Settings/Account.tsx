@@ -39,7 +39,8 @@ const useStyles = makeStyles((theme: Theme) =>
     queryDescription: {
       flex: 1,
     },
-  }));
+  }),
+);
 
 interface QueryProps {
   query: PhabricatorQuery;
@@ -58,14 +59,14 @@ const Query = ReactMemo(function Query({
     onChangeQuery(query.queryId, !enabled);
   }, [query, enabled, onChangeQuery]);
 
-  return <div className={classes.query}>
-    <IconButton onClick={click}>
-      {enabled ? <Icons.Checked/> : <Icons.Unchecked/>}
-    </IconButton>
-    <div className={classes.queryDescription}>
-      {query.description}
+  return (
+    <div className={classes.query}>
+      <IconButton onClick={click}>
+        {enabled ? <Icons.Checked /> : <Icons.Unchecked />}
+      </IconButton>
+      <div className={classes.queryDescription}>{query.description}</div>
     </div>
-  </div>;
+  );
 });
 
 interface AccountSettingsProps {
@@ -82,18 +83,14 @@ export default ReactMemo(function AccountSettings({
   let queries = queryList?.user?.phabricatorQueries ?? [];
 
   let [updateAccount] = useUpdatePhabricatorAccountMutation({
-    refetchQueries: [
-      refetchListPhabricatorAccountsQuery(),
-    ],
+    refetchQueries: [refetchListPhabricatorAccountsQuery()],
   });
 
   let [deleteAccountMutation] = useDeletePhabricatorAccountMutation({
     variables: {
       account: account.id,
     },
-    refetchQueries: [
-      refetchListPhabricatorAccountsQuery(),
-    ],
+    refetchQueries: [refetchListPhabricatorAccountsQuery()],
   });
 
   let deleteAccount = useCallback(async () => {
@@ -123,30 +120,32 @@ export default ReactMemo(function AccountSettings({
     };
   }, [account.enabledQueries, account.id, updateAccount]);
 
-  return <SettingsPage
-    heading={
-      <>
-        <ImageIcon icon={account.icon}/>
-        <Heading className={classes.headingText}>Settings for {account.url}</Heading>
-        <div className={classes.actions}>
-          <IconButton onClick={deleteAccount}>
-            <Icons.Delete/>
-          </IconButton>
-        </div>
-      </>
-    }
-  >
-    <SettingsListSection
-      heading={<SubHeading>Queries</SubHeading>}
-    >
-      {
-        queries.map((query: PhabricatorQuery) => <Query
-          key={query.queryId}
-          query={query}
-          enabled={account.enabledQueries.includes(query.queryId)}
-          onChangeQuery={onChangeQuery}
-        />)
+  return (
+    <SettingsPage
+      heading={
+        <>
+          <ImageIcon icon={account.icon} />
+          <Heading className={classes.headingText}>
+            Settings for {account.url}
+          </Heading>
+          <div className={classes.actions}>
+            <IconButton onClick={deleteAccount}>
+              <Icons.Delete />
+            </IconButton>
+          </div>
+        </>
       }
-    </SettingsListSection>
-  </SettingsPage>;
+    >
+      <SettingsListSection heading={<SubHeading>Queries</SubHeading>}>
+        {queries.map((query: PhabricatorQuery) => (
+          <Query
+            key={query.queryId}
+            query={query}
+            enabled={account.enabledQueries.includes(query.queryId)}
+            onChangeQuery={onChangeQuery}
+          />
+        ))}
+      </SettingsListSection>
+    </SettingsPage>
+  );
 });

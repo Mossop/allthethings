@@ -8,27 +8,40 @@ import { useListTaskListQuery } from "./operations";
 
 type StateQuery = ListTaskListQuery;
 type StateQuery$TaskList = NonNullable<StateQuery["taskList"]>;
-type StateQuery$TaskList$Section = ArrayContents<StateQuery$TaskList["sections"]>;
-type StateQuery$TaskList$Item$TaskInfo = NonNullable<ClientItemFieldsFragment["taskInfo"]>;
+type StateQuery$TaskList$Section = ArrayContents<
+  StateQuery$TaskList["sections"]
+>;
+type StateQuery$TaskList$Item$TaskInfo = NonNullable<
+  ClientItemFieldsFragment["taskInfo"]
+>;
 
 export type ServiceList = Schema.ServiceList;
 
 export type LinkDetail = Schema.LinkDetail;
 export type NoteDetail = Schema.NoteDetail;
-export type ServiceDetail = Overwrite<Schema.ServiceDetail, {
-  lists: ServiceList[];
-}>;
+export type ServiceDetail = Overwrite<
+  Schema.ServiceDetail,
+  {
+    lists: ServiceList[];
+  }
+>;
 export type FileDetail = Schema.FileDetail;
 export type Detail = LinkDetail | NoteDetail | ServiceDetail | FileDetail;
 
-export type TaskInfo = Overwrite<StateQuery$TaskList$Item$TaskInfo, {
-  controller: Schema.TaskController;
-}>;
+export type TaskInfo = Overwrite<
+  StateQuery$TaskList$Item$TaskInfo,
+  {
+    controller: Schema.TaskController;
+  }
+>;
 
-export type Section = Overwrite<StateQuery$TaskList$Section, {
-  items: Item[];
-  taskList: TaskList;
-}>;
+export type Section = Overwrite<
+  StateQuery$TaskList$Section,
+  {
+    items: Item[];
+    taskList: TaskList;
+  }
+>;
 
 export interface TaskListContents {
   taskList: TaskList;
@@ -36,33 +49,54 @@ export interface TaskListContents {
   sections: Section[];
 }
 
-type BaseItem = Overwrite<ClientItemFieldsFragment, {
-  parent: Section | TaskList | Inbox;
-  taskInfo: TaskInfo | null;
-  detail: Detail | null;
-}>;
+type BaseItem = Overwrite<
+  ClientItemFieldsFragment,
+  {
+    parent: Section | TaskList | Inbox;
+    taskInfo: TaskInfo | null;
+    detail: Detail | null;
+  }
+>;
 
-export type ServiceItem = Overwrite<BaseItem, {
-  detail: ServiceDetail;
-}>;
-export type NoteItem = Overwrite<BaseItem, {
-  detail: NoteDetail;
-}>;
-export type FileItem = Overwrite<BaseItem, {
-  detail: FileDetail;
-}>;
-export type LinkItem = Overwrite<BaseItem, {
-  detail: LinkDetail;
-}>;
-export type TaskItem = Overwrite<BaseItem, {
-  taskInfo: TaskInfo;
-  detail: null;
-}>;
+export type ServiceItem = Overwrite<
+  BaseItem,
+  {
+    detail: ServiceDetail;
+  }
+>;
+export type NoteItem = Overwrite<
+  BaseItem,
+  {
+    detail: NoteDetail;
+  }
+>;
+export type FileItem = Overwrite<
+  BaseItem,
+  {
+    detail: FileDetail;
+  }
+>;
+export type LinkItem = Overwrite<
+  BaseItem,
+  {
+    detail: LinkDetail;
+  }
+>;
+export type TaskItem = Overwrite<
+  BaseItem,
+  {
+    taskInfo: TaskInfo;
+    detail: null;
+  }
+>;
 export type Item = TaskItem | LinkItem | NoteItem | FileItem | ServiceItem;
 
-export type WithTask<T extends Item> = Overwrite<T, {
-  taskInfo: TaskInfo;
-}>;
+export type WithTask<T extends Item> = Overwrite<
+  T,
+  {
+    taskInfo: TaskInfo;
+  }
+>;
 
 export function isSection(val: GraphQLType): val is Section {
   return val.__typename == "Section";
@@ -101,7 +135,9 @@ export function isTask(item: Item): boolean {
   return !!item.taskInfo;
 }
 
-export function sectionTaskList(section: Inbox | Section | TaskList): Inbox | TaskList {
+export function sectionTaskList(
+  section: Inbox | Section | TaskList,
+): Inbox | TaskList {
   return isSection(section) ? section.taskList : section;
 }
 
@@ -120,7 +156,10 @@ export function buildItem(
   } as Item;
 }
 
-function buildSection(taskList: TaskList, queryResult: StateQuery$TaskList$Section): Section {
+function buildSection(
+  taskList: TaskList,
+  queryResult: StateQuery$TaskList$Section,
+): Section {
   let section: Section = {
     ...queryResult,
     taskList,

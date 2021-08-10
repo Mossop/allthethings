@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import SlidesIcon from "./Slides.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={SlidesIcon}
-    viewBox="0 0 48 66"
-  />;
+  return <SvgIcon component={SlidesIcon} viewBox="0 0 48 66" />;
 }

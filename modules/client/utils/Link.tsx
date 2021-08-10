@@ -10,7 +10,8 @@ const useStyles = makeStyles(() =>
     link: {
       cursor: "pointer",
     },
-  }));
+  }),
+);
 
 export interface LinkProps {
   href: string | URL;
@@ -25,12 +26,14 @@ export const Link = ReactMemo(function Link({
 }: LinkProps & ReactChildren): ReactResult {
   let classes = useStyles();
 
-  return <a
-    href={href.toString()}
-    className={clsx(className, classes.link)}
-    onClick={pushClickedLink}
-    {...props}
-  >
-    {children}
-  </a>;
+  return (
+    <a
+      href={href.toString()}
+      className={clsx(className, classes.link)}
+      onClick={pushClickedLink}
+      {...props}
+    >
+      {children}
+    </a>
+  );
 });

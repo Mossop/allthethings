@@ -5,23 +5,28 @@ import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
+import type { BugzillaAccount, BugzillaAccountParams } from "#schema";
 import type {
-  BugzillaAccount,
-  BugzillaAccountParams,
-} from "#schema";
-import type { ItemStore, Listable, ResolverImpl, ServiceItem } from "#server/utils";
-import {
-  BaseItem,
-  BaseAccount,
-  BaseList,
+  ItemStore,
+  Listable,
+  ResolverImpl,
+  ServiceItem,
 } from "#server/utils";
+import { BaseItem, BaseAccount, BaseList } from "#server/utils";
 import { SearchType } from "#services/bugzilla/schema";
 import type { BugFields } from "#services/bugzilla/schema";
 import { assert } from "#utils";
 
-import type { BugzillaAccountResolvers, BugzillaSearchResolvers } from "./schema";
+import type {
+  BugzillaAccountResolvers,
+  BugzillaSearchResolvers,
+} from "./schema";
 import type { BugzillaTransaction } from "./stores";
-import type { BugzillaAccountRecord, BugzillaBugRecord, BugzillaSearchRecord } from "./types";
+import type {
+  BugzillaAccountRecord,
+  BugzillaBugRecord,
+  BugzillaSearchRecord,
+} from "./types";
 
 function isDone(status: string): boolean {
   switch (status) {
@@ -34,8 +39,10 @@ function isDone(status: string): boolean {
   }
 }
 
-export class Account extends BaseAccount<BugzillaTransaction>
-  implements ResolverImpl<BugzillaAccountResolvers> {
+export class Account
+  extends BaseAccount<BugzillaTransaction>
+  implements ResolverImpl<BugzillaAccountResolvers>
+{
   private api: BugzillaAPI | null = null;
 
   public constructor(
@@ -61,7 +68,9 @@ export class Account extends BaseAccount<BugzillaTransaction>
     return this.tx.stores.searches.list({ accountId: this.id });
   }
 
-  public normalizeQuery(query: string): Pick<BugzillaSearchRecord, "query" | "type"> {
+  public normalizeQuery(
+    query: string,
+  ): Pick<BugzillaSearchRecord, "query" | "type"> {
     if (!query.startsWith("https://") && !query.startsWith("http://")) {
       return {
         query,
@@ -239,8 +248,10 @@ export class Account extends BaseAccount<BugzillaTransaction>
   }
 }
 
-export class Search extends BaseList<BugzillaAPIBug[], BugzillaTransaction>
-  implements ResolverImpl<BugzillaSearchResolvers> {
+export class Search
+  extends BaseList<BugzillaAPIBug[], BugzillaTransaction>
+  implements ResolverImpl<BugzillaSearchResolvers>
+{
   public static getStore(tx: BugzillaTransaction): Listable<Search> {
     return tx.stores.searches;
   }
@@ -358,7 +369,9 @@ export class Search extends BaseList<BugzillaAPIBug[], BugzillaTransaction>
 
 type FixedFields = "accountId" | "id";
 
-function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields> {
+function recordFromBug(
+  bug: BugzillaAPIBug,
+): Omit<BugzillaBugRecord, FixedFields> {
   return {
     bugId: bug.id,
     summary: bug.summary,
@@ -367,7 +380,10 @@ function recordFromBug(bug: BugzillaAPIBug): Omit<BugzillaBugRecord, FixedFields
   };
 }
 
-export class Bug extends BaseItem<BugzillaTransaction> implements ServiceItem<BugFields> {
+export class Bug
+  extends BaseItem<BugzillaTransaction>
+  implements ServiceItem<BugFields>
+{
   public static getStore(tx: BugzillaTransaction): ItemStore<Bug> {
     return tx.stores.bugs;
   }

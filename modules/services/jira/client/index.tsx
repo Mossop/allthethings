@@ -1,4 +1,8 @@
-import type { ClientService, ReactResult, ServiceItemProps } from "#client/utils";
+import type {
+  ClientService,
+  ReactResult,
+  ServiceItemProps,
+} from "#client/utils";
 import type { IssueFields } from "#services/jira/schema";
 
 import Issue from "./Issue";
@@ -9,15 +13,15 @@ class JiraService implements ClientService {
   public readonly name = "Jira";
 
   public renderServiceSettingsPage(page: string): ReactResult {
-    return <SettingsPage page={page}/>;
+    return <SettingsPage page={page} />;
   }
 
   public renderServiceSettingsPageList(): ReactResult {
-    return <SettingsPages/>;
+    return <SettingsPages />;
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
-    return <Issue issue={JSON.parse(itemProps.fields) as IssueFields}/>;
+    return <Issue issue={JSON.parse(itemProps.fields) as IssueFields} />;
   }
 }
 

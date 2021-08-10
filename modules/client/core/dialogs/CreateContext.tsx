@@ -1,7 +1,13 @@
 import type { ReactElement } from "react";
 import { useCallback, useState } from "react";
 
-import { useBoolState, ReactMemo, Dialog, TextFieldInput, FormState } from "#client/utils";
+import {
+  useBoolState,
+  ReactMemo,
+  Dialog,
+  TextFieldInput,
+  FormState,
+} from "#client/utils";
 
 import { useCreateContextMutation, OperationNames } from "../schema";
 import GlobalState from "../utils/globalState";
@@ -18,15 +24,13 @@ export default ReactMemo(function CreateContextDialog({
     name: "",
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [createContextMutation, { loading, error }] = useCreateContextMutation({
     variables: {
       params: state,
     },
-    refetchQueries: [
-      OperationNames.Query.ListContextState,
-    ],
+    refetchQueries: [OperationNames.Query.ListContextState],
   });
 
   let createContext = useCallback(async () => {
@@ -48,23 +52,25 @@ export default ReactMemo(function CreateContextDialog({
     });
   }, [createContextMutation]);
 
-  return <Dialog
-    title="Create Context"
-    submitLabel="Create"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={createContext}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="name"
-      label="Name:"
-      autoFocus={true}
-      state={state}
-      setState={setState}
-      stateKey="name"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Create Context"
+      submitLabel="Create"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={createContext}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="name"
+        label="Name:"
+        autoFocus={true}
+        state={state}
+        setState={setState}
+        stateKey="name"
+      />
+    </Dialog>
+  );
 });

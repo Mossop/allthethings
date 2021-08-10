@@ -27,18 +27,22 @@ import type {
 export const buildStores = defineStoreBuilder((tx: CoreTransaction) => ({
   users: new Store(tx, "User", User),
   contexts: new Store(tx, "Context", Context).withInsert<ContextInsertRecord>(),
-  projects: new Store(tx, "Project", Project, (
-    builder: Knex.QueryBuilder,
-    knex: Knex,
-  ): Knex.QueryBuilder => {
-    return builder.whereNot("id", knex.ref("contextId"));
-  }).withInsert<ProjectInsertRecord>(),
-  sections: new Store(tx, "Section", Section, (
-    builder: Knex.QueryBuilder,
-    knex: Knex,
-  ): Knex.QueryBuilder => {
-    return builder.whereNot("id", knex.ref("ownerId"));
-  }).withInsert<SectionInsertRecord>(),
+  projects: new Store(
+    tx,
+    "Project",
+    Project,
+    (builder: Knex.QueryBuilder, knex: Knex): Knex.QueryBuilder => {
+      return builder.whereNot("id", knex.ref("contextId"));
+    },
+  ).withInsert<ProjectInsertRecord>(),
+  sections: new Store(
+    tx,
+    "Section",
+    Section,
+    (builder: Knex.QueryBuilder, knex: Knex): Knex.QueryBuilder => {
+      return builder.whereNot("id", knex.ref("ownerId"));
+    },
+  ).withInsert<SectionInsertRecord>(),
   items: new Store(tx, "Item", Item),
   taskInfo: new Store(tx, "TaskInfo", TaskInfo),
   linkDetail: new Store(tx, "LinkDetail", LinkDetail),

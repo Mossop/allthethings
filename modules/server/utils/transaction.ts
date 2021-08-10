@@ -2,7 +2,8 @@ import type { Knex } from "knex";
 
 import type { DescriptorsFor } from "#utils";
 
-export type TableRef = Pick<Knex.Ref<string, {[K in string]: string}>, "as"> & Knex.Raw<string>;
+export type TableRef = Pick<Knex.Ref<string, { [K in string]: string }>, "as"> &
+  Knex.Raw<string>;
 
 export interface Transaction {
   readonly knex: Knex;

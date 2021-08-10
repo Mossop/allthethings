@@ -7,10 +7,8 @@ import type {
   GraphQLRequestListener,
   ApolloServerPlugin,
   GraphQLRequestContextWillSendResponse,
-} from "apollo-server-plugin-base";
-import type {
   GraphQLRequestContextDidEncounterErrors,
-} from "apollo-server-types";
+} from "apollo-server-plugin-base";
 import type { GraphQLError, GraphQLResolveInfo } from "graphql";
 
 import {
@@ -29,7 +27,7 @@ interface ResolverContext extends ContextBuilder {
   webserverContext: WebServerContext;
 }
 
-const requestListener: GraphQLRequestListener = {
+const requestListener: GraphQLRequestListener<ResolverContext> = {
   async didEncounterErrors(
     ctx: GraphQLRequestContextDidEncounterErrors<ResolverContext>,
   ): Promise<void> {
@@ -60,7 +58,9 @@ const serverPlugin: ApolloServerPlugin = {
 
 export async function buildResolverContext({
   ctx,
-}: { ctx: WebServerContext }): Promise<ResolverContext> {
+}: {
+  ctx: WebServerContext;
+}): Promise<ResolverContext> {
   return {
     webserverContext: ctx,
 
@@ -92,9 +92,12 @@ export async function buildResolverContext({
 }
 
 export async function createGqlServer(): Promise<ApolloServer> {
-  let baseSchema = await fs.readFile(require.resolve("#schema/schema.graphql"), {
-    encoding: "utf8",
-  });
+  let baseSchema = await fs.readFile(
+    require.resolve("#schema/schema.graphql"),
+    {
+      encoding: "utf8",
+    },
+  );
   let hasher = createHash("sha256");
   hasher.update(baseSchema);
   let schemaVersion = hasher.digest("hex");

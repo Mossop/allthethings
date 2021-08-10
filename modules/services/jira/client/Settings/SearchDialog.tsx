@@ -8,10 +8,7 @@ import {
   useResetStore,
   FormState,
 } from "#client/utils";
-import type {
-  JiraAccount,
-  JiraSearch,
-} from "#schema";
+import type { JiraAccount, JiraSearch } from "#schema";
 
 import {
   refetchListJiraAccountsQuery,
@@ -41,9 +38,7 @@ export default function SearchDialog({
       account: account.id,
       params: state,
     },
-    refetchQueries: [
-      refetchListJiraAccountsQuery(),
-    ],
+    refetchQueries: [refetchListJiraAccountsQuery()],
   });
 
   let submit = useCallback(async (): Promise<void> => {
@@ -56,33 +51,35 @@ export default function SearchDialog({
     await resetStore();
   }, [createSearch, onSearchCreated, resetStore]);
 
-  return <Dialog
-    title="Add Jira Issue Search"
-    submitLabel="Add"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="name"
-      label="Name:"
-      state={state}
-      setState={setState}
-      stateKey="name"
-      required={true}
-      autoFocus={true}
-    />
+  return (
+    <Dialog
+      title="Add Jira Issue Search"
+      submitLabel="Add"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="name"
+        label="Name:"
+        state={state}
+        setState={setState}
+        stateKey="name"
+        required={true}
+        autoFocus={true}
+      />
 
-    <TextFieldInput
-      id="query"
-      label="JQL Query:"
-      state={state}
-      setState={setState}
-      stateKey="query"
-      required={true}
-    />
-  </Dialog>;
+      <TextFieldInput
+        id="query"
+        label="JQL Query:"
+        state={state}
+        setState={setState}
+        stateKey="query"
+        required={true}
+      />
+    </Dialog>
+  );
 }

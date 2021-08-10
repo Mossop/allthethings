@@ -14,8 +14,8 @@ Services can be configured to pull items from elsewhere. Think GitHub issues, Em
 
 Currently supported services:
 
-* Bugzilla (Bugs)
-* Github (Issues)
-* Google (Emails and Drive files)
-* Jira
-* Phabricator (Revisions)
+- Bugzilla (Bugs)
+- Github (Issues)
+- Google (Emails and Drive files)
+- Jira
+- Phabricator (Revisions)

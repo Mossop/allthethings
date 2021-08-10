@@ -10,7 +10,8 @@ const useStyles = makeStyles(() =>
     loading: {
       ...flexCentered,
     },
-  }));
+  }),
+);
 
 export const Loading = ReactMemo(function Loading({
   className,
@@ -18,10 +19,9 @@ export const Loading = ReactMemo(function Loading({
 }: HTMLAttributes<HTMLDivElement>): React.ReactElement {
   let classes = useStyles();
 
-  return <div
-    className={clsx(classes.loading, className)}
-    {...divProps}
-  >
-    <CircularProgress/>
-  </div>;
+  return (
+    <div className={clsx(classes.loading, className)} {...divProps}>
+      <CircularProgress />
+    </div>
+  );
 });

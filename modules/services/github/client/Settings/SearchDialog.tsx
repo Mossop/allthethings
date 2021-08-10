@@ -38,9 +38,7 @@ export default function SearchDialog({
       account: account.id,
       params: state,
     },
-    refetchQueries: [
-      refetchListGithubAccountsQuery(),
-    ],
+    refetchQueries: [refetchListGithubAccountsQuery()],
   });
 
   let submit = useCallback(async (): Promise<void> => {
@@ -53,33 +51,35 @@ export default function SearchDialog({
     await resetStore();
   }, [createSearch, onSearchCreated, resetStore]);
 
-  return <Dialog
-    title="Add Search"
-    submitLabel="Add"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={submit}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="name"
-      label="Name:"
-      state={state}
-      setState={setState}
-      stateKey="name"
-      required={true}
-      autoFocus={true}
-    />
+  return (
+    <Dialog
+      title="Add Search"
+      submitLabel="Add"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={submit}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="name"
+        label="Name:"
+        state={state}
+        setState={setState}
+        stateKey="name"
+        required={true}
+        autoFocus={true}
+      />
 
-    <TextFieldInput
-      id="query"
-      label="Search Terms:"
-      state={state}
-      setState={setState}
-      stateKey="query"
-      required={true}
-    />
-  </Dialog>;
+      <TextFieldInput
+        id="query"
+        label="Search Terms:"
+        state={state}
+        setState={setState}
+        stateKey="query"
+        required={true}
+      />
+    </Dialog>
+  );
 }

@@ -48,15 +48,14 @@ const useStyles = makeStyles((theme: Theme) =>
     searchLink: {
       cursor: "pointer",
     },
-  }));
+  }),
+);
 
 interface SearchSettingsItemProps {
   search: BugzillaSearch;
 }
 
-function SearchSettingsItem({
-  search,
-}: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
   let resetStore = useResetStore();
 
@@ -64,9 +63,7 @@ function SearchSettingsItem({
     variables: {
       search: search.id,
     },
-    refetchQueries: [
-      refetchListBugzillaAccountsQuery(),
-    ],
+    refetchQueries: [refetchListBugzillaAccountsQuery()],
   });
 
   let deleteSearch = useCallback(async () => {
@@ -74,26 +71,28 @@ function SearchSettingsItem({
     await deleteSearchMutation();
   }, [deleteSearchMutation, resetStore]);
 
-  return <SettingsListItem>
-    <div className={classes.searchIcon}>
-      <SearchIcon/>
-    </div>
-    <div className={classes.searchName}>
-      <a
-        href={search.url}
-        target="_blank"
-        className={classes.searchLink}
-        rel="noreferrer"
-      >
-        {search.name}
-      </a>
-    </div>
-    <div className={classes.actions}>
-      <IconButton onClick={deleteSearch}>
-        <Icons.Delete/>
-      </IconButton>
-    </div>
-  </SettingsListItem>;
+  return (
+    <SettingsListItem>
+      <div className={classes.searchIcon}>
+        <SearchIcon />
+      </div>
+      <div className={classes.searchName}>
+        <a
+          href={search.url}
+          target="_blank"
+          className={classes.searchLink}
+          rel="noreferrer"
+        >
+          {search.name}
+        </a>
+      </div>
+      <div className={classes.actions}>
+        <IconButton onClick={deleteSearch}>
+          <Icons.Delete />
+        </IconButton>
+      </div>
+    </SettingsListItem>
+  );
 }
 
 interface AccountSettingsProps {
@@ -111,9 +110,7 @@ export default function AccountSettings({
     variables: {
       account: account.id,
     },
-    refetchQueries: [
-      refetchListBugzillaAccountsQuery(),
-    ],
+    refetchQueries: [refetchListBugzillaAccountsQuery()],
   });
 
   let deleteAccount = useCallback(async () => {
@@ -121,44 +118,45 @@ export default function AccountSettings({
     await deleteAccountMutation();
   }, [deleteAccountMutation, resetStore]);
 
-  return <SettingsPage
-    heading={
-      <>
-        <ImageIcon icon={account.icon ?? <Icon/>}/>
-        <Heading className={classes.headingText}>Settings for {account.name}</Heading>
-        <div className={classes.actions}>
-          <IconButton onClick={deleteAccount}>
-            <Icons.Delete/>
-          </IconButton>
-        </div>
-      </>
-    }
-  >
-    <SettingsListSection
+  return (
+    <SettingsPage
       heading={
         <>
-          <SubHeading>Searches</SubHeading>
+          <ImageIcon icon={account.icon ?? <Icon />} />
+          <Heading className={classes.headingText}>
+            Settings for {account.name}
+          </Heading>
           <div className={classes.actions}>
-            <IconButton onClick={openSearchDialog}>
-              <AddCircleIcon/>
+            <IconButton onClick={deleteAccount}>
+              <Icons.Delete />
             </IconButton>
           </div>
         </>
       }
     >
-      {
-        account.searches.map((search: BugzillaSearch) => <SearchSettingsItem
-          key={search.id}
-          search={search}
-        />)
-      }
-    </SettingsListSection>
-    {
-      showSearchDialog && <SearchDialog
-        account={account}
-        onClosed={closeSearchDialog}
-        onSearchCreated={closeSearchDialog}
-      />
-    }
-  </SettingsPage>;
+      <SettingsListSection
+        heading={
+          <>
+            <SubHeading>Searches</SubHeading>
+            <div className={classes.actions}>
+              <IconButton onClick={openSearchDialog}>
+                <AddCircleIcon />
+              </IconButton>
+            </div>
+          </>
+        }
+      >
+        {account.searches.map((search: BugzillaSearch) => (
+          <SearchSettingsItem key={search.id} search={search} />
+        ))}
+      </SettingsListSection>
+      {showSearchDialog && (
+        <SearchDialog
+          account={account}
+          onClosed={closeSearchDialog}
+          onSearchCreated={closeSearchDialog}
+        />
+      )}
+    </SettingsPage>
+  );
 }

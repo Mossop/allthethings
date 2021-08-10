@@ -30,10 +30,7 @@ export function pushUrl(url: URL | string): void {
     url = new URL(url);
   }
 
-  let {
-    pathname,
-    search,
-  } = url;
+  let { pathname, search } = url;
 
   let to: To = {
     pathname,

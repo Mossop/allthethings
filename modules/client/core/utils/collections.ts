@@ -7,7 +7,8 @@ export function sorted<T>(list: Iterable<T>, comparator: Comparator<T>): T[] {
 }
 
 export const numericComparator = (a: number, b: number): number => a - b;
-export const stringComparator = (a: string, b: string): number => a.localeCompare(b);
+export const stringComparator = (a: string, b: string): number =>
+  a.localeCompare(b);
 
 export function keyedComparator<T, K extends keyof T>(
   key: K,
@@ -24,7 +25,10 @@ export function nameSorted<T extends Named>(list: Iterable<T>): T[] {
   return sorted(list, keyedComparator("name", stringComparator));
 }
 
-export function indexOf<T extends { id: string }>(items: T[], item: T | string): number | null {
+export function indexOf<T extends { id: string }>(
+  items: T[],
+  item: T | string,
+): number | null {
   let id = typeof item == "string" ? item : item.id;
   let index = items.findIndex((val: T): boolean => val.id == id);
   return index >= 0 ? index : null;

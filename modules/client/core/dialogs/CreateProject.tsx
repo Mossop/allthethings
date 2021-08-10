@@ -1,7 +1,13 @@
 import type { ReactElement } from "react";
 import { useCallback, useState } from "react";
 
-import { ReactMemo, useBoolState, Dialog, TextFieldInput, FormState } from "#client/utils";
+import {
+  ReactMemo,
+  useBoolState,
+  Dialog,
+  TextFieldInput,
+  FormState,
+} from "#client/utils";
 
 import type { Project, TaskList } from "../schema";
 import { OperationNames, useCreateProjectMutation } from "../schema";
@@ -21,16 +27,14 @@ export default ReactMemo(function CreateProjectDialog({
     name: "",
   });
 
-  let [isOpen,, close] = useBoolState(true);
+  let [isOpen, , close] = useBoolState(true);
 
   let [createProjectMutation, { loading, error }] = useCreateProjectMutation({
     variables: {
       taskList: taskList.id,
       params: state,
     },
-    refetchQueries: [
-      OperationNames.Query.ListContextState,
-    ],
+    refetchQueries: [OperationNames.Query.ListContextState],
   });
 
   let createProject = useCallback(async () => {
@@ -61,23 +65,25 @@ export default ReactMemo(function CreateProjectDialog({
     close();
   }, [close, createProjectMutation]);
 
-  return <Dialog
-    title="Create Project"
-    submitLabel="Create"
-    error={error}
-    isOpen={isOpen}
-    onClose={close}
-    onClosed={onClosed}
-    onSubmit={createProject}
-    formState={loading ? FormState.Loading : FormState.Default}
-  >
-    <TextFieldInput
-      id="name"
-      label="Name:"
-      autoFocus={true}
-      state={state}
-      setState={setState}
-      stateKey="name"
-    />
-  </Dialog>;
+  return (
+    <Dialog
+      title="Create Project"
+      submitLabel="Create"
+      error={error}
+      isOpen={isOpen}
+      onClose={close}
+      onClosed={onClosed}
+      onSubmit={createProject}
+      formState={loading ? FormState.Loading : FormState.Default}
+    >
+      <TextFieldInput
+        id="name"
+        label="Name:"
+        autoFocus={true}
+        state={state}
+        setState={setState}
+        stateKey="name"
+      />
+    </Dialog>
+  );
 });

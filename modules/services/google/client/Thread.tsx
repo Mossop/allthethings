@@ -26,24 +26,30 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
 export interface FileProps {
   thread: ThreadFields;
 }
 
-export default ReactMemo(function Thread({
-  thread,
-}: FileProps): ReactResult {
+export default ReactMemo(function Thread({ thread }: FileProps): ReactResult {
   let classes = useStyles();
 
-  return <>
-    <a className={classes.link} rel="noreferrer" target="_blank" href={thread.url}>
-      <div className={classes.iconContainer}>
-        <GmailIcon/>
-      </div>
-      <div className={classes.subject}>{thread.subject}</div>
-    </a>
-    {thread.unread && <UnreadMailIcon/>}
-  </>;
+  return (
+    <>
+      <a
+        className={classes.link}
+        rel="noreferrer"
+        target="_blank"
+        href={thread.url}
+      >
+        <div className={classes.iconContainer}>
+          <GmailIcon />
+        </div>
+        <div className={classes.subject}>{thread.subject}</div>
+      </a>
+      {thread.unread && <UnreadMailIcon />}
+    </>
+  );
 });

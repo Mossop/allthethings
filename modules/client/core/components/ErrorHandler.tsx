@@ -17,30 +17,34 @@ const useStyles = makeStyles((theme: Theme) =>
       margin: theme.spacing(2),
       fontFamily: "monospace",
     },
-  }));
+  }),
+);
 
 interface ErrorPageProps {
   error: Error;
 }
 
-function ErrorPage({
-  error,
-}: ErrorPageProps): ReactResult {
+function ErrorPage({ error }: ErrorPageProps): ReactResult {
   let classes = useStyles();
 
-  return <Page>
-    <div>
-      <Heading className={classes.heading}>{error.message}</Heading>
-      {error.stack && <pre className={classes.stack}>{error.stack}</pre>}
-    </div>
-  </Page>;
+  return (
+    <Page>
+      <div>
+        <Heading className={classes.heading}>{error.message}</Heading>
+        {error.stack && <pre className={classes.stack}>{error.stack}</pre>}
+      </div>
+    </Page>
+  );
 }
 
 interface ErrorHandlerState {
   error: Error | null;
 }
 
-export default class ErrorHandler extends PureComponent<ReactChildren, ErrorHandlerState> {
+export default class ErrorHandler extends PureComponent<
+  ReactChildren,
+  ErrorHandlerState
+> {
   public constructor(props: ReactChildren) {
     super(props);
 
@@ -57,7 +61,7 @@ export default class ErrorHandler extends PureComponent<ReactChildren, ErrorHand
 
   public override render(): ReactNode {
     if (this.state.error) {
-      return <ErrorPage error={this.state.error}/>;
+      return <ErrorPage error={this.state.error} />;
     }
 
     return this.props.children;

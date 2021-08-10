@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import BugIcon from "./Icon.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={BugIcon}
-    viewBox="0 0 90 90"
-  />;
+  return <SvgIcon component={BugIcon} viewBox="0 0 90 90" />;
 }

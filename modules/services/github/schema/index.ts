@@ -40,12 +40,18 @@ export interface IssueLikeFields {
   labels: LabelFields[];
 }
 
-export type IssueFields = Overwrite<IssueLikeFields, {
-  type: "issue";
-  state: IssueState;
-}>;
+export type IssueFields = Overwrite<
+  IssueLikeFields,
+  {
+    type: "issue";
+    state: IssueState;
+  }
+>;
 
-export type PullRequestFields = Overwrite<IssueLikeFields, {
-  type: "pr";
-  state: PullRequestState;
-}>;
+export type PullRequestFields = Overwrite<
+  IssueLikeFields,
+  {
+    type: "pr";
+    state: PullRequestState;
+  }
+>;

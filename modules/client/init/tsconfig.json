@@ -4,7 +4,7 @@
     "declaration": false,
     "declarationMap": false,
     "composite": false,
-    "emitDeclarationOnly": false,
+    "emitDeclarationOnly": false
   },
   "references": [
     { "path": "../core" },
@@ -13,6 +13,6 @@
     { "path": "../../services/github/client" },
     { "path": "../../services/google/client" },
     { "path": "../../services/jira/client" },
-    { "path": "../../services/phabricator/client" },
+    { "path": "../../services/phabricator/client" }
   ]
 }

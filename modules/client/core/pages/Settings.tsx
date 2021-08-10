@@ -24,12 +24,7 @@ import type { ClientService, ReactResult } from "#client/utils";
 
 import Page from "../components/Page";
 import { useUser } from "../utils/globalState";
-import {
-  pushView,
-  useUrl,
-  ViewType,
-  useCurrentContext,
-} from "../utils/view";
+import { pushView, useUrl, ViewType, useCurrentContext } from "../utils/view";
 import AdminPage from "./Admin";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -53,7 +48,8 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingTop: theme.spacing(1),
       paddingBottom: theme.spacing(1),
     },
-  }));
+  }),
+);
 
 function SettingsSidebar(): ReactResult {
   let classes = useStyles();
@@ -66,48 +62,37 @@ function SettingsSidebar(): ReactResult {
 
   let user = useUser();
 
-  return <Paper
-    elevation={2}
-    component="nav"
-    square={true}
-  >
-    <List component="div" className={classes.list}>
-      <SettingsPageItem
-        href={taskLink.toString()}
-        icon={<Icons.Back/>}
-      >
-        Back to Tasks
-      </SettingsPageItem>
-      <Divider className={classes.divider}/>
-      <SettingsPageItem
-        page="general"
-        icon={<SettingsIcon/>}
-      >
-        General
-      </SettingsPageItem>
-      {
-        user.isAdmin && <SettingsPageItem
-          page="admin"
-          icon={<AdminIcon/>}
-        >
-          Administration
+  return (
+    <Paper elevation={2} component="nav" square={true}>
+      <List component="div" className={classes.list}>
+        <SettingsPageItem href={taskLink.toString()} icon={<Icons.Back />}>
+          Back to Tasks
         </SettingsPageItem>
-      }
-      {
-        services.map((service: ClientService) => service.renderServiceSettingsPageList
-          ? <Fragment key={service.serverId}>
-            <Divider className={classes.divider}/>
-            <List disablePadding={true}>
-              <ListSubheader className={classes.serviceHeader}>
-                {service.name}
-              </ListSubheader>
-              {service.renderServiceSettingsPageList()}
-            </List>
-          </Fragment>
-          : null)
-      }
-    </List>
-  </Paper>;
+        <Divider className={classes.divider} />
+        <SettingsPageItem page="general" icon={<SettingsIcon />}>
+          General
+        </SettingsPageItem>
+        {user.isAdmin && (
+          <SettingsPageItem page="admin" icon={<AdminIcon />}>
+            Administration
+          </SettingsPageItem>
+        )}
+        {services.map((service: ClientService) =>
+          service.renderServiceSettingsPageList ? (
+            <Fragment key={service.serverId}>
+              <Divider className={classes.divider} />
+              <List disablePadding={true}>
+                <ListSubheader className={classes.serviceHeader}>
+                  {service.name}
+                </ListSubheader>
+                {service.renderServiceSettingsPageList()}
+              </List>
+            </Fragment>
+          ) : null,
+        )}
+      </List>
+    </Paper>
+  );
 }
 
 interface SettingsPageProps {
@@ -132,7 +117,7 @@ const SettingsPage = ReactMemo(function SettingsPage({
       case "general":
         return <Text>General settings.</Text>;
       case "admin":
-        return <AdminPage/>;
+        return <AdminPage />;
     }
   }
 
@@ -158,11 +143,13 @@ export default ReactMemo(function Settings({
     });
   }, []);
 
-  return <SettingsContext.Provider value={{ page, setPage: updateSection }}>
-    <Page sidebar={<SettingsSidebar/>}>
-      <div className={classes.content}>
-        <SettingsPage page={page} serviceId={serviceId}/>
-      </div>
-    </Page>
-  </SettingsContext.Provider>;
+  return (
+    <SettingsContext.Provider value={{ page, setPage: updateSection }}>
+      <Page sidebar={<SettingsSidebar />}>
+        <div className={classes.content}>
+          <SettingsPage page={page} serviceId={serviceId} />
+        </div>
+      </Page>
+    </SettingsContext.Provider>
+  );
 });

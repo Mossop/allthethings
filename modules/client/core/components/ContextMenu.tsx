@@ -42,7 +42,8 @@ const useStyles = makeStyles((theme: Theme) =>
     context: {
       marginLeft: theme.spacing(1),
     },
-  }));
+  }),
+);
 
 interface ContextMenuItemProps {
   name: string;
@@ -73,26 +74,32 @@ const ContextMenuItem = ReactMemo(
 
     let url = useUrl(targetView, target);
 
-    let click = useCallback((event: React.MouseEvent) => {
-      event.preventDefault();
-      pushUrl(url);
-    }, [url]);
+    let click = useCallback(
+      (event: React.MouseEvent) => {
+        event.preventDefault();
+        pushUrl(url);
+      },
+      [url],
+    );
 
-    return <MenuItem
-      ref={ref}
-      onClick={click}
-      selected={selected}
-      component="a"
-      href={url.toString()}
-    >
-      {name}
-    </MenuItem>;
+    return (
+      <MenuItem
+        ref={ref}
+        onClick={click}
+        selected={selected}
+        component="a"
+        href={url.toString()}
+      >
+        {name}
+      </MenuItem>
+    );
   }),
 );
 
 export default ReactMemo(function ContextMenu(): ReactResult {
   let classes = useStyles();
-  let [showCreateDialog, openCreateDialog, closeCreateDialog] = useBoolState(false);
+  let [showCreateDialog, openCreateDialog, closeCreateDialog] =
+    useBoolState(false);
 
   let contextMenuState = useMenuState("context-menu");
   let contexts = useUser().contexts;
@@ -100,40 +107,38 @@ export default ReactMemo(function ContextMenu(): ReactResult {
 
   let sorted = useMemo(() => nameSorted(contexts.values()), [contexts]);
 
-  return <>
-    <Button
-      classes={
-        {
+  return (
+    <>
+      <Button
+        classes={{
           root: classes.button,
           label: classes.label,
-        }
-      }
-      variant="outlined"
-      color="inherit"
-      {...bindTrigger(contextMenuState)}
-    >
-      <Icons.Context className={classes.icon}/>
-      <div className={classes.context}>{currentContext.name}</div>
-    </Button>
-    <Menu
-      state={contextMenuState}
-      anchor={
-        {
+        }}
+        variant="outlined"
+        color="inherit"
+        {...bindTrigger(contextMenuState)}
+      >
+        <Icons.Context className={classes.icon} />
+        <div className={classes.context}>{currentContext.name}</div>
+      </Button>
+      <Menu
+        state={contextMenuState}
+        anchor={{
           vertical: "bottom",
           horizontal: "right",
-        }
-      }
-    >
-      {
-        sorted.map((context: Context) => <ContextMenuItem
-          key={context.id}
-          name={context.name}
-          target={context}
-          selected={context.id == currentContext.id}
-        />)
-      }
-      <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>
-    </Menu>
-    {showCreateDialog && <CreateContextDialog onClosed={closeCreateDialog}/>}
-  </>;
+        }}
+      >
+        {sorted.map((context: Context) => (
+          <ContextMenuItem
+            key={context.id}
+            name={context.name}
+            target={context}
+            selected={context.id == currentContext.id}
+          />
+        ))}
+        <MenuItem onClick={openCreateDialog}>Add Context...</MenuItem>
+      </Menu>
+      {showCreateDialog && <CreateContextDialog onClosed={closeCreateDialog} />}
+    </>
+  );
 });

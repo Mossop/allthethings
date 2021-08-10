@@ -9,7 +9,8 @@ import { useCallback } from "react";
 import {
   useBoolState,
   Styles,
-  Icons, SettingsListItem,
+  Icons,
+  SettingsListItem,
   SettingsListSection,
   SubHeading,
   Heading,
@@ -19,7 +20,11 @@ import {
 import type { ReactResult } from "#client/utils";
 
 import CreateUserDialog from "../dialogs/CreateUser";
-import { useDeleteUserMutation, refetchListUsersQuery, useListUsersQuery } from "../schema";
+import {
+  useDeleteUserMutation,
+  refetchListUsersQuery,
+  useListUsersQuery,
+} from "../schema";
 import { useUser } from "../utils/globalState";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -40,7 +45,8 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexCenteredRow,
       justifyContent: "end",
     },
-  }));
+  }),
+);
 
 interface UserProps {
   id: string;
@@ -60,26 +66,29 @@ const User = ReactMemo(function User({
     variables: {
       id,
     },
-    refetchQueries: [
-      refetchListUsersQuery(),
-    ],
+    refetchQueries: [refetchListUsersQuery()],
   });
 
-  let deleteUser = useCallback(() => deleteUserMutation(), [deleteUserMutation]);
+  let deleteUser = useCallback(
+    () => deleteUserMutation(),
+    [deleteUserMutation],
+  );
 
-  return <SettingsListItem>
-    <div className={classes.userIcon}>
-      {isAdmin ? <AdminUserIcon/> : <UserIcon/>}
-    </div>
-    <div className={classes.userName}>{email}</div>
-    <div>
-      {
-        id != user.id && <IconButton onClick={deleteUser}>
-          <Icons.Delete/>
-        </IconButton>
-      }
-    </div>
-  </SettingsListItem>;
+  return (
+    <SettingsListItem>
+      <div className={classes.userIcon}>
+        {isAdmin ? <AdminUserIcon /> : <UserIcon />}
+      </div>
+      <div className={classes.userName}>{email}</div>
+      <div>
+        {id != user.id && (
+          <IconButton onClick={deleteUser}>
+            <Icons.Delete />
+          </IconButton>
+        )}
+      </div>
+    </SettingsListItem>
+  );
 });
 
 export default ReactMemo(function AdminPage(): ReactResult {
@@ -88,33 +97,38 @@ export default ReactMemo(function AdminPage(): ReactResult {
   let { data } = useListUsersQuery();
   let users = data?.users ?? [];
 
-  let [createUserDialogOpen, openCreateUserDialog, closeCreateUserDialog] = useBoolState();
+  let [createUserDialogOpen, openCreateUserDialog, closeCreateUserDialog] =
+    useBoolState();
 
-  return <SettingsPage
-    heading={
-      <>
-        <AdminIcon/>
-        <Heading className={classes.headingText}>Administration</Heading>
-      </>
-    }
-  >
-    <SettingsListSection
+  return (
+    <SettingsPage
       heading={
         <>
-          <UsersIcon/>
-          <SubHeading className={classes.headingText}>Users</SubHeading>
-          <div className={classes.actions}>
-            <IconButton onClick={openCreateUserDialog}>
-              <Icons.Add/>
-            </IconButton>
-          </div>
+          <AdminIcon />
+          <Heading className={classes.headingText}>Administration</Heading>
         </>
       }
     >
-      {
-        users.map((user: UserProps) => <User key={user.id} {...user}/>)
-      }
-    </SettingsListSection>
-    {createUserDialogOpen && <CreateUserDialog onClosed={closeCreateUserDialog}/>}
-  </SettingsPage>;
+      <SettingsListSection
+        heading={
+          <>
+            <UsersIcon />
+            <SubHeading className={classes.headingText}>Users</SubHeading>
+            <div className={classes.actions}>
+              <IconButton onClick={openCreateUserDialog}>
+                <Icons.Add />
+              </IconButton>
+            </div>
+          </>
+        }
+      >
+        {users.map((user: UserProps) => (
+          <User key={user.id} {...user} />
+        ))}
+      </SettingsListSection>
+      {createUserDialogOpen && (
+        <CreateUserDialog onClosed={closeCreateUserDialog} />
+      )}
+    </SettingsPage>
+  );
 });

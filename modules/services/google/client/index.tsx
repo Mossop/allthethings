@@ -1,4 +1,8 @@
-import type { ClientService, ServiceItemProps, ReactResult } from "#client/utils";
+import type {
+  ClientService,
+  ServiceItemProps,
+  ReactResult,
+} from "#client/utils";
 import type { GoogleFields } from "#services/google/schema";
 
 import File from "./File";
@@ -10,19 +14,19 @@ class GoogleService implements ClientService {
   public readonly name = "Google";
 
   public renderServiceSettingsPageList(): ReactResult {
-    return <SettingsPages/>;
+    return <SettingsPages />;
   }
 
   public renderServiceSettingsPage(page: string): ReactResult {
-    return <SettingsPage page={page}/>;
+    return <SettingsPage page={page} />;
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
     let fields: GoogleFields = JSON.parse(itemProps.fields);
     if (fields.type == "file") {
-      return <File file={fields}/>;
+      return <File file={fields} />;
     }
-    return <Thread thread={fields}/>;
+    return <Thread thread={fields} />;
   }
 }
 

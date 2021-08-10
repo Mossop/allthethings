@@ -34,7 +34,10 @@ mutation CreatePhabricatorAccount($params: CreatePhabricatorAccountParams!) {
   }
 }
 
-mutation UpdatePhabricatorAccount($id: ID!, $params: UpdatePhabricatorAccountParams!) {
+mutation UpdatePhabricatorAccount(
+  $id: ID!
+  $params: UpdatePhabricatorAccountParams!
+) {
   updatePhabricatorAccount(id: $id, params: $params) {
     id
     email

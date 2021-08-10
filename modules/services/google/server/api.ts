@@ -43,18 +43,18 @@ function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
   return label.type == "user";
 }
 
-type Present<T, F extends keyof T> = Omit<T, F> & {
-  [K in F]-?: NonNullable<T[K]>;
-};
+type Present<T, F extends keyof T> = Omit<T, F> &
+  {
+    [K in F]-?: NonNullable<T[K]>;
+  };
 
-export type GoogleAPIFile = Present<Pick<drive_v3.Schema$File,
-  "id" |
-  "name" |
-  "mimeType" |
-  "description" |
-  "iconLink" |
-  "webViewLink"
->, "id" | "name" | "mimeType">;
+export type GoogleAPIFile = Present<
+  Pick<
+    drive_v3.Schema$File,
+    "id" | "name" | "mimeType" | "description" | "iconLink" | "webViewLink"
+  >,
+  "id" | "name" | "mimeType"
+>;
 
 const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
   "id",
@@ -103,7 +103,12 @@ export class GoogleApi {
       } = credentials;
 
       if (!accessToken || !expiry) {
-        console.error("Got bad access tokens", accessToken, refreshToken, expiry);
+        console.error(
+          "Got bad access tokens",
+          accessToken,
+          refreshToken,
+          expiry,
+        );
         GoogleService.service.setProblem(
           this.account,
           "Google API returned invalid access tokens.",
@@ -171,7 +176,9 @@ export class GoogleApi {
     return getAccountInfo(this.client);
   }
 
-  public async getThread(threadId: string): Promise<gmail_v1.Schema$Thread | null> {
+  public async getThread(
+    threadId: string,
+  ): Promise<gmail_v1.Schema$Thread | null> {
     let api = google.gmail({
       version: "v1",
       auth: this.client,
@@ -204,12 +211,13 @@ export class GoogleApi {
 
     let pageToken: string | null | undefined = undefined;
     while (pageToken !== null) {
-      let { data: response } = await this.apiCall(() => api.users.threads.list({
-        userId: "me",
-        q: query,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        pageToken: pageToken!,
-      }));
+      let { data: response } = await this.apiCall(() =>
+        api.users.threads.list({
+          userId: "me",
+          q: query,
+          pageToken: pageToken!,
+        }),
+      );
 
       for (let thread of response.threads ?? []) {
         if (thread.id) {
@@ -230,9 +238,13 @@ export class GoogleApi {
       auth: this.client,
     });
 
-    let { data: { labels } } = await this.apiCall(() => api.users.labels.list({
-      userId: "me",
-    }));
+    let {
+      data: { labels },
+    } = await this.apiCall(() =>
+      api.users.labels.list({
+        userId: "me",
+      }),
+    );
 
     if (!labels) {
       return [];
@@ -276,16 +288,17 @@ export class GoogleApi {
   }
 }
 
-const B64_CHARSET = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+const B64_CHARSET =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 const GML_CHARSET = "BCDFGHJKLMNPQRSTVWXZbcdfghjklmnpqrstvwxz";
 
-function *range(max: number): Iterable<number> {
+function* range(max: number): Iterable<number> {
   for (let i = 0; i < max; i++) {
     yield i;
   }
 }
 
-function *reversedRange(max: number): Iterable<number> {
+function* reversedRange(max: number): Iterable<number> {
   for (let i = max - 1; i >= 0; i--) {
     yield i;
   }
@@ -295,7 +308,7 @@ function *reversedRange(max: number): Iterable<number> {
 export function decodeWebId(id: string): string {
   let result = modifyCharset(id, GML_CHARSET, B64_CHARSET);
   if (result.length % 4 != 0) {
-    result += "=".repeat(4 - result.length % 4);
+    result += "=".repeat(4 - (result.length % 4));
   }
   return b64Decode(result);
 }
@@ -310,7 +323,11 @@ export function encodeWebId(id: string): string {
   return modifyCharset(data, B64_CHARSET, GML_CHARSET);
 }
 
-export function modifyCharset(id: string, sourceCharset: string, targetCharset: string): string {
+export function modifyCharset(
+  id: string,
+  sourceCharset: string,
+  targetCharset: string,
+): string {
   let charsetLength = targetCharset.length;
 
   let resultIndexes: number[] = [];

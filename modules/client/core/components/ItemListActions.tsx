@@ -46,7 +46,8 @@ const useStyles = makeStyles(() =>
       ...Styles.flexCenteredRow,
       justifyContent: "end",
     },
-  }));
+  }),
+);
 
 interface ItemListActionsProps {
   list: Inbox | TaskList | Section;
@@ -67,18 +68,14 @@ export default ReactMemo(function ItemListActions({
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation({
-    refetchQueries: [
-      OperationNames.Query.ListContextState,
-    ],
+    refetchQueries: [OperationNames.Query.ListContextState],
   });
   let [deleteContext] = useDeleteContextMutation({
-    refetchQueries: [
-      OperationNames.Query.ListContextState,
-    ],
+    refetchQueries: [OperationNames.Query.ListContextState],
   });
 
   let deleteList = useMemo(() => {
-    if (isContext(list) && list === user.defaultContext || isInbox(list)) {
+    if ((isContext(list) && list === user.defaultContext) || isInbox(list)) {
       return null;
     }
 
@@ -117,51 +114,51 @@ export default ReactMemo(function ItemListActions({
     };
   }, [deleteContext, deleteProject, deleteSection, list, view, user]);
 
-  return <div className={classes.actions}>
-    <Tooltip title="Add Task">
-      <IconButton onClick={openAddTask}>
-        <Icons.Checked/>
-      </IconButton>
-    </Tooltip>
-    <Tooltip title="Add Link">
-      <IconButton onClick={openAddLink}>
-        <Icons.Link/>
-      </IconButton>
-    </Tooltip>
-    {
-      isTaskList(list) && <Tooltip title="Add Section">
-        <IconButton onClick={openAddSection}>
-          <Icons.Section/>
+  return (
+    <div className={classes.actions}>
+      <Tooltip title="Add Task">
+        <IconButton onClick={openAddTask}>
+          <Icons.Checked />
         </IconButton>
       </Tooltip>
-    }
-    {
-      deleteList &&
+      <Tooltip title="Add Link">
+        <IconButton onClick={openAddLink}>
+          <Icons.Link />
+        </IconButton>
+      </Tooltip>
+      {isTaskList(list) && (
+        <Tooltip title="Add Section">
+          <IconButton onClick={openAddSection}>
+            <Icons.Section />
+          </IconButton>
+        </Tooltip>
+      )}
+      {deleteList && (
         <>
           <IconButton {...bindTrigger(actionMenu)}>
-            <MenuIcon/>
+            <MenuIcon />
           </IconButton>
           <Menu
             state={actionMenu}
-            anchor={
-              {
-                vertical: "bottom",
-                horizontal: "right",
-              }
-            }
+            anchor={{
+              vertical: "bottom",
+              horizontal: "right",
+            }}
           >
             <MenuItem onClick={deleteList}>
-              <ListItemIcon><Icons.Delete/></ListItemIcon>
+              <ListItemIcon>
+                <Icons.Delete />
+              </ListItemIcon>
               <ListItemText>Delete</ListItemText>
             </MenuItem>
           </Menu>
         </>
-    }
-    {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask}/>}
-    {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink}/>}
-    {
-      sectionAddDialogOpen && isTaskList(list) &&
-      <CreateSectionDialog taskList={list} onClosed={closeAddSection}/>
-    }
-  </div>;
+      )}
+      {taskAddDialogOpen && <TaskDialog list={list} onClosed={closeAddTask} />}
+      {linkAddDialogOpen && <LinkDialog list={list} onClosed={closeAddLink} />}
+      {sectionAddDialogOpen && isTaskList(list) && (
+        <CreateSectionDialog taskList={list} onClosed={closeAddSection} />
+      )}
+    </div>
+  );
 });

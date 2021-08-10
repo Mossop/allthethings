@@ -5,8 +5,5 @@ import type { ReactElement } from "react";
 import GmailIcon from "./Gmail.svg";
 
 export default function Icon(): ReactElement {
-  return <SvgIcon
-    component={GmailIcon}
-    viewBox="52 42 88 66"
-  />;
+  return <SvgIcon component={GmailIcon} viewBox="52 42 88 66" />;
 }

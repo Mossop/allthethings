@@ -17,7 +17,8 @@ const useStyles = makeStyles((theme: Theme) =>
       width: `calc(${theme.spacing(3)}px + 1.5rem)`,
       height: `calc(${theme.spacing(3)}px + 1.5rem)`,
     },
-  }));
+  }),
+);
 
 export interface TaskDoneToggleProps {
   item: Item;
@@ -51,13 +52,15 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
   }, [item, toggleDone]);
 
   if (!item.taskInfo) {
-    return <div className={classes.noTask}/>;
+    return <div className={classes.noTask} />;
   }
 
-  return <IconButton
-    onClick={toggle}
-    disabled={disabled || item.taskInfo.controller != TaskController.Manual}
-  >
-    {item.taskInfo.done ? <Icons.Checked/> : <Icons.Unchecked/>}
-  </IconButton>;
+  return (
+    <IconButton
+      onClick={toggle}
+      disabled={disabled || item.taskInfo.controller != TaskController.Manual}
+    >
+      {item.taskInfo.done ? <Icons.Checked /> : <Icons.Unchecked />}
+    </IconButton>
+  );
 });

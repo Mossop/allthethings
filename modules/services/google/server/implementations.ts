@@ -4,24 +4,23 @@ import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
-import type { ItemStore, Listable, ResolverImpl, ServiceItem } from "#server/utils";
-import {
-  BaseAccount,
-  BaseItem,
-  BaseList,
+import type {
+  ItemStore,
+  Listable,
+  ResolverImpl,
+  ServiceItem,
 } from "#server/utils";
+import { BaseAccount, BaseItem, BaseList } from "#server/utils";
 import type { FileFields, ThreadFields } from "#services/google/schema";
 import { assert } from "#utils";
 
 import { GoogleService } from ".";
 import type { GoogleAPIFile } from "./api";
-import {
-  encodeWebId,
-  getAccountInfo,
-  decodeWebId,
-  GoogleApi,
-} from "./api";
-import type { GoogleAccountResolvers, GoogleMailSearchResolvers } from "./schema";
+import { encodeWebId, getAccountInfo, decodeWebId, GoogleApi } from "./api";
+import type {
+  GoogleAccountResolvers,
+  GoogleMailSearchResolvers,
+} from "./schema";
 import type { GoogleTransaction } from "./stores";
 import type {
   GoogleAccountRecord,
@@ -33,8 +32,10 @@ import type {
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
-export class Account extends BaseAccount<GoogleTransaction>
-  implements ResolverImpl<GoogleAccountResolvers> {
+export class Account
+  extends BaseAccount<GoogleTransaction>
+  implements ResolverImpl<GoogleAccountResolvers>
+{
   private client: GoogleApi | null;
 
   public constructor(
@@ -71,8 +72,8 @@ export class Account extends BaseAccount<GoogleTransaction>
 
   public async items(): Promise<BaseItem[]> {
     return [
-      ...await this.tx.stores.threads.list({ accountId: this.id }),
-      ...await this.tx.stores.files.list({ accountId: this.id }),
+      ...(await this.tx.stores.threads.list({ accountId: this.id })),
+      ...(await this.tx.stores.files.list({ accountId: this.id })),
     ];
   }
 
@@ -112,7 +113,8 @@ export class Account extends BaseAccount<GoogleTransaction>
   public async updateLabels(): Promise<void> {
     let labels = await this.authClient.getLabels();
 
-    let labelIds = await this.tx.knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
+    let labelIds = await this.tx
+      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
       .where("accountId", this.id)
       .pluck("id");
 
@@ -129,7 +131,8 @@ export class Account extends BaseAccount<GoogleTransaction>
           name: label.name,
         });
       } else {
-        await this.tx.knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
+        await this.tx
+          .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
           .where("id", label.id)
           .update({
             name: label.name,
@@ -137,13 +140,15 @@ export class Account extends BaseAccount<GoogleTransaction>
       }
     }
 
-    await this.tx.knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
+    await this.tx
+      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
       .where("accountId", this.id)
       .whereNotIn("id", foundIds)
       .delete();
 
     if (newRecords.length) {
-      await this.tx.knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
+      await this.tx
+        .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
         .insert(newRecords);
     }
   }
@@ -173,7 +178,9 @@ export class Account extends BaseAccount<GoogleTransaction>
 
     if (!accessToken) {
       console.error("Bad credentials", credentials);
-      throw new Error("Failed to authenticate correctly, missing access token.");
+      throw new Error(
+        "Failed to authenticate correctly, missing access token.",
+      );
     }
 
     if (!expiry) {
@@ -239,8 +246,10 @@ export class Account extends BaseAccount<GoogleTransaction>
   }
 }
 
-export class MailSearch extends BaseList<gmail_v1.Schema$Thread[], GoogleTransaction>
-  implements ResolverImpl<GoogleMailSearchResolvers> {
+export class MailSearch
+  extends BaseList<gmail_v1.Schema$Thread[], GoogleTransaction>
+  implements ResolverImpl<GoogleMailSearchResolvers>
+{
   public static getStore(tx: GoogleTransaction): Listable<MailSearch> {
     return tx.stores.mailSearches;
   }
@@ -285,7 +294,9 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[], GoogleTransac
     await this.tx.stores.mailSearches.deleteOne(this.id);
   }
 
-  public async listItems(threadList?: gmail_v1.Schema$Thread[]): Promise<Thread[]> {
+  public async listItems(
+    threadList?: gmail_v1.Schema$Thread[],
+  ): Promise<Thread[]> {
     let account = await this.account();
 
     if (!threadList) {
@@ -307,7 +318,11 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[], GoogleTransac
       if (instance) {
         await instance.update(thread);
       } else {
-        instance = await Thread.create(account, thread, TaskController.ServiceList);
+        instance = await Thread.create(
+          account,
+          thread,
+          TaskController.ServiceList,
+        );
       }
 
       instances.push(instance);
@@ -338,7 +353,10 @@ export class MailSearch extends BaseList<gmail_v1.Schema$Thread[], GoogleTransac
   }
 }
 
-export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<ThreadFields> {
+export class Thread
+  extends BaseItem<GoogleTransaction>
+  implements ServiceItem<ThreadFields>
+{
   public static getStore(tx: GoogleTransaction): ItemStore<Thread> {
     return tx.stores.threads;
   }
@@ -379,7 +397,7 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
     let account = await this.account();
 
     if (!thread) {
-      thread = await account.authClient.getThread(this.threadId) ?? undefined;
+      thread = (await account.authClient.getThread(this.threadId)) ?? undefined;
       if (!thread) {
         return this.tx.deleteItem(this.id);
       }
@@ -396,9 +414,10 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
     });
   }
 
-  public static recordFromThread(
-    data: gmail_v1.Schema$Thread,
-  ): { record: Omit<GoogleThreadRecord, "id" | "accountId">, labels: string[] } {
+  public static recordFromThread(data: gmail_v1.Schema$Thread): {
+    record: Omit<GoogleThreadRecord, "id" | "accountId">;
+    labels: string[];
+  } {
     if (!data.id) {
       throw new Error("No ID.");
     }
@@ -464,10 +483,13 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
       controller,
     });
 
-    let thread = await account.tx.stores.threads.insertOne({
-      ...record,
-      accountId: account.id,
-    }, id);
+    let thread = await account.tx.stores.threads.insertOne(
+      {
+        ...record,
+        accountId: account.id,
+      },
+      id,
+    );
 
     await account.tx.stores.threadLabels.setItems(thread.id, labels, {
       accountId: account.id,
@@ -501,7 +523,10 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
     let threadId = BigInt(decoded).toString(16);
 
     for (let account of await tx.stores.accounts.list({ userId: userId })) {
-      let existing = await tx.stores.threads.first({ accountId: account.id, threadId });
+      let existing = await tx.stores.threads.first({
+        accountId: account.id,
+        threadId,
+      });
       if (existing) {
         return existing;
       }
@@ -512,14 +537,19 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
       }
 
       await account.updateLabels();
-      return Thread.create(account, apiThread, isTask ? TaskController.Service : null);
+      return Thread.create(
+        account,
+        apiThread,
+        isTask ? TaskController.Service : null,
+      );
     }
 
     return null;
   }
 
   public async fields(): Promise<ThreadFields> {
-    let labels: string[] = await this.tx.knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
+    let labels: string[] = await this.tx
+      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
       .join(this.tx.tableRef("ThreadLabel"), "Label.id", "ThreadLabel.labelId")
       .where("ThreadLabel.threadId", this.id)
       .pluck("Label.name");
@@ -533,7 +563,10 @@ export class Thread extends BaseItem<GoogleTransaction> implements ServiceItem<T
   }
 }
 
-export class File extends BaseItem<GoogleTransaction> implements ServiceItem<FileFields> {
+export class File
+  extends BaseItem<GoogleTransaction>
+  implements ServiceItem<FileFields>
+{
   public static getStore(tx: GoogleTransaction): ItemStore<File> {
     return tx.stores.files;
   }
@@ -577,7 +610,7 @@ export class File extends BaseItem<GoogleTransaction> implements ServiceItem<Fil
     let account = await this.account();
 
     if (!file) {
-      file = await account.authClient.getFile(this.fileId) ?? undefined;
+      file = (await account.authClient.getFile(this.fileId)) ?? undefined;
 
       if (!file) {
         return this.tx.deleteItem(this.id);
@@ -631,17 +664,24 @@ export class File extends BaseItem<GoogleTransaction> implements ServiceItem<Fil
     let fileId = matches[1];
 
     for (let account of await tx.stores.accounts.list({ userId: userId })) {
-      let existing = await tx.stores.files.first({ accountId: account.id, fileId });
+      let existing = await tx.stores.files.first({
+        accountId: account.id,
+        fileId,
+      });
       if (existing) {
         return existing;
       }
 
       let file = await account.authClient.getFile(matches[1]);
       if (file) {
-        return File.create(account, {
-          webViewLink: url.toString(),
-          ...file,
-        }, isTask);
+        return File.create(
+          account,
+          {
+            webViewLink: url.toString(),
+            ...file,
+          },
+          isTask,
+        );
       }
     }
 

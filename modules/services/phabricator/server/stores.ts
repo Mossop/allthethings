@@ -7,7 +7,10 @@ export interface PhabricatorTransaction extends ServiceTransaction {
   readonly stores: Stores;
 }
 
-export const buildTransaction = transactionBuilder<PhabricatorTransaction, ServiceTransaction>({
+export const buildTransaction = transactionBuilder<
+  PhabricatorTransaction,
+  ServiceTransaction
+>({
   stores: {
     enumerable: true,
     get(this: PhabricatorTransaction): Stores {
@@ -18,7 +21,6 @@ export const buildTransaction = transactionBuilder<PhabricatorTransaction, Servi
 
 const buildStores = defineStoreBuilder((tx: PhabricatorTransaction) => ({
   accounts: new Store(tx, "Account", Account),
-  // eslint-disable-next-line @typescript-eslint/unbound-method
   queries: new Store(tx, "Query", Query.buildQuery),
   revisions: new Store(tx, "Revision", Revision),
 }));

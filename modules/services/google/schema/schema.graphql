@@ -27,5 +27,8 @@ type Query {
 }
 
 type Mutation {
-  createGoogleMailSearch(account: ID!, params: GoogleMailSearchParams!): GoogleMailSearch!
+  createGoogleMailSearch(
+    account: ID!
+    params: GoogleMailSearchParams!
+  ): GoogleMailSearch!
 }

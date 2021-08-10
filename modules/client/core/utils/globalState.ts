@@ -5,14 +5,13 @@ import { DateTime } from "luxon";
 import { history } from "#client/utils";
 
 import type {
-  Problem, State, User,
+  Problem,
+  State,
+  User,
   ListContextStateQuery,
   ListContextStateQueryVariables,
 } from "../schema";
-import {
-  buildState,
-  ListContextStateDocument,
-} from "../schema";
+import { buildState, ListContextStateDocument } from "../schema";
 import { client } from "../schema/client";
 import { SharedState, useSharedState } from "./sharedstate";
 import type { View } from "./view";
@@ -25,22 +24,27 @@ const TIMEOUT_PADDING = 1000;
 const POLL_INTERVAL = 5000;
 const MAX_BACKOFF = 10000;
 
-let nextBackoff = (previous: number | null): number => previous
-  ? Math.min(MAX_BACKOFF, previous * 1.2)
-  : POLL_INTERVAL;
+let nextBackoff = (previous: number | null): number =>
+  previous ? Math.min(MAX_BACKOFF, previous * 1.2) : POLL_INTERVAL;
 
 function urlForLocation(location: Location): URL {
-  return new URL(`${location.pathname}${location.search}${location.hash}`, document.URL);
+  return new URL(
+    `${location.pathname}${location.search}${location.hash}`,
+    document.URL,
+  );
 }
 
 export type AppState = Omit<State, "problems"> & {
-  view: View
+  view: View;
 };
 
 class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
   public readonly problems = new SharedState<readonly Problem[]>([]);
-  private query: ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables>;
+  private query: ObservableQuery<
+    ListContextStateQuery,
+    ListContextStateQueryVariables
+  >;
   private lastBackoff: number | null = null;
 
   public constructor() {
@@ -58,8 +62,14 @@ class GlobalStateManager {
     });
   }
 
-  private startQuery(): ObservableQuery<ListContextStateQuery, ListContextStateQueryVariables> {
-    let query = client.watchQuery<ListContextStateQuery, ListContextStateQueryVariables>({
+  private startQuery(): ObservableQuery<
+    ListContextStateQuery,
+    ListContextStateQueryVariables
+  > {
+    let query = client.watchQuery<
+      ListContextStateQuery,
+      ListContextStateQueryVariables
+    >({
       query: ListContextStateDocument,
       variables: this.getVariables(),
       pollInterval: POLL_INTERVAL,
@@ -67,7 +77,8 @@ class GlobalStateManager {
     });
 
     query.subscribe(
-      (result: ApolloQueryResult<ListContextStateQuery>): void => this.onNext(result),
+      (result: ApolloQueryResult<ListContextStateQuery>): void =>
+        this.onNext(result),
       (error: Error) => this.onError(error),
     );
 
@@ -85,10 +96,12 @@ class GlobalStateManager {
     });
 
     if (result.data.schemaVersion !== SCHEMA_VERSION) {
-      this.problems.set([{
-        description: "This page is outdated and must be reloaded.",
-        url: "javascript:window.location.reload()",
-      }]);
+      this.problems.set([
+        {
+          description: "This page is outdated and must be reloaded.",
+          url: "javascript:window.location.reload()",
+        },
+      ]);
     } else {
       this.problems.set(problems);
     }
@@ -98,10 +111,12 @@ class GlobalStateManager {
     console.error(error);
 
     if (!this.lastBackoff) {
-      this.problems.set([{
-        description: "Lost connection to the server, try reloading.",
-        url: "javascript:window.location.reload()",
-      }]);
+      this.problems.set([
+        {
+          description: "Lost connection to the server, try reloading.",
+          url: "javascript:window.location.reload()",
+        },
+      ]);
     }
 
     this.lastBackoff = nextBackoff(this.lastBackoff);

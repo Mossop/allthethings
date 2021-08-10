@@ -2,15 +2,14 @@ import type Koa from "koa";
 import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
 
-import {
-  BaseService,
-} from "#server/utils";
+import { BaseService } from "#server/utils";
 import type {
   Problem,
   ServiceWebMiddleware,
   Server,
   ServiceWebContext,
-  ServiceDbMigration, ServiceExport,
+  ServiceDbMigration,
+  ServiceExport,
   ServiceTransaction,
 } from "#server/utils";
 
@@ -37,14 +36,9 @@ export class GoogleService extends BaseService<GoogleTransaction> {
 
   private static _service: GoogleService | null = null;
 
-  protected readonly listProviders = [
-    MailSearch,
-  ];
+  protected readonly listProviders = [MailSearch];
 
-  protected readonly itemProviders = [
-    File,
-    Thread,
-  ];
+  protected readonly itemProviders = [File, Thread];
 
   public static get config(): GoogleServiceConfig {
     return GoogleService.service.config;
@@ -80,7 +74,7 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     let oauthMiddleware: ServiceWebMiddleware<GoogleTransaction> = async (
       ctx: ServiceWebContext<GoogleTransaction>,
       next: Koa.Next,
-    ) => {
+    ): Promise<any> => {
       let code = first(ctx.query.code);
       let userId = first(ctx.query.state);
 
@@ -99,7 +93,9 @@ export class GoogleService extends BaseService<GoogleTransaction> {
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       try {
-        await this.server.withTransaction((tx: GoogleTransaction) => this.update(tx));
+        await this.server.withTransaction((tx: GoogleTransaction) =>
+          this.update(tx),
+        );
       } catch (e) {
         console.error(e);
       }
@@ -127,7 +123,10 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     return buildTransaction(tx);
   }
 
-  public async listProblems(tx: GoogleTransaction, userId: string | null): Promise<Problem[]> {
+  public async listProblems(
+    tx: GoogleTransaction,
+    userId: string | null,
+  ): Promise<Problem[]> {
     if (!userId) {
       return [];
     }
@@ -158,15 +157,16 @@ const serviceExport: ServiceExport<GoogleServiceConfig, GoogleTransaction> = {
     return buildMigrations();
   },
 
-  configDecoder: JsonDecoder.object<GoogleServiceConfig>({
-    clientId: JsonDecoder.string,
-    clientSecret: JsonDecoder.string,
-  }, "Google Service Config"),
+  configDecoder: JsonDecoder.object<GoogleServiceConfig>(
+    {
+      clientId: JsonDecoder.string,
+      clientSecret: JsonDecoder.string,
+    },
+    "Google Service Config",
+  ),
 
-  init: (
-    server: Server<GoogleTransaction>,
-    config: GoogleServiceConfig,
-  ) => new GoogleService(server, config),
+  init: (server: Server<GoogleTransaction>, config: GoogleServiceConfig) =>
+    new GoogleService(server, config),
 };
 
 export default serviceExport;

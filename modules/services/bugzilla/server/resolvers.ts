@@ -27,7 +27,9 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
   Mutation: {
     async createBugzillaAccount(
       ctx: AuthedGraphQLCtx<BugzillaTransaction>,
-      { params: { url, name, username, password } }: MutationCreateBugzillaAccountArgs,
+      {
+        params: { url, name, username, password },
+      }: MutationCreateBugzillaAccountArgs,
     ): Promise<Account> {
       let record: Omit<BugzillaAccountRecord, "id" | "icon" | "userId"> = {
         url,
@@ -67,7 +69,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
 
     async createBugzillaSearch(
       ctx: GraphQLCtx<BugzillaTransaction>,
-      { account: accountId, params: { name, query } }: MutationCreateBugzillaSearchArgs,
+      {
+        account: accountId,
+        params: { name, query },
+      }: MutationCreateBugzillaSearchArgs,
     ): Promise<Search> {
       let account = await ctx.transaction.stores.accounts.get(accountId);
       if (!account) {

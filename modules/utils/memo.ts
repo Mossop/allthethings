@@ -28,18 +28,19 @@ class WrappedMap {
   }
 }
 
-export function memoized<R, A extends unknown[]>(builder: (...args: A) => R): (...args: A) => R {
+export function memoized<R, A extends unknown[]>(
+  builder: (...args: A) => R,
+): (...args: A) => R {
   let values = new WeakMap<WrappedMap, R>();
   let memos = new WrappedMap();
 
-  return function(...args: A): R {
+  return function (...args: A): R {
     let inner = memos;
     for (let val of args) {
       inner = inner.get(val);
     }
 
     if (values.has(inner)) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return values.get(inner)!;
     }
 

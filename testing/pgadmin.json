@@ -1,13 +1,13 @@
 {
   "Servers": {
     "1": {
-        "Name": "allthethings",
-        "Group": "Servers",
-        "Port": 5432,
-        "Username": "allthethings",
-        "Host": "postgres",
-        "SSLMode": "prefer",
-        "MaintenanceDB": "postgres"
+      "Name": "allthethings",
+      "Group": "Servers",
+      "Port": 5432,
+      "Username": "allthethings",
+      "Host": "postgres",
+      "SSLMode": "prefer",
+      "MaintenanceDB": "postgres"
     }
   }
 }

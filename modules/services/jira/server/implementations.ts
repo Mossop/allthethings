@@ -5,30 +5,32 @@ import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
 
 import { TaskController } from "#schema";
+import type { JiraAccountParams } from "#schema";
 import type {
-  JiraAccountParams,
-} from "#schema";
-import type { ItemStore, Listable, ResolverImpl, ServiceItem } from "#server/utils";
-import {
-  BaseList,
-  BaseItem,
-  BaseAccount,
+  ItemStore,
+  Listable,
+  ResolverImpl,
+  ServiceItem,
 } from "#server/utils";
+import { BaseList, BaseItem, BaseAccount } from "#server/utils";
 import type { IssueFields } from "#services/jira/schema";
 import { assert } from "#utils";
 
 import type { JiraAccountResolvers, JiraSearchResolvers } from "./schema";
 import type { JiraTransaction } from "./stores";
-import type { JiraAccountRecord, JiraIssueRecord, JiraSearchRecord } from "./types";
+import type {
+  JiraAccountRecord,
+  JiraIssueRecord,
+  JiraSearchRecord,
+} from "./types";
 
 type JiraIssue = Version3Models.IssueBean;
 
-export class Account extends BaseAccount<JiraTransaction>
-  implements ResolverImpl<JiraAccountResolvers> {
-  public constructor(
-    tx: JiraTransaction,
-    private record: JiraAccountRecord,
-  ) {
+export class Account
+  extends BaseAccount<JiraTransaction>
+  implements ResolverImpl<JiraAccountResolvers>
+{
+  public constructor(tx: JiraTransaction, private record: JiraAccountRecord) {
     super(tx);
   }
 
@@ -134,16 +136,15 @@ export class Account extends BaseAccount<JiraTransaction>
   }
 }
 
-export class Search extends BaseList<JiraIssue[], JiraTransaction>
-  implements ResolverImpl<JiraSearchResolvers> {
+export class Search
+  extends BaseList<JiraIssue[], JiraTransaction>
+  implements ResolverImpl<JiraSearchResolvers>
+{
   public static getStore(tx: JiraTransaction): Listable<Search> {
     return tx.stores.searches;
   }
 
-  public constructor(
-    tx: JiraTransaction,
-    private record: JiraSearchRecord,
-  ) {
+  public constructor(tx: JiraTransaction, private record: JiraSearchRecord) {
     super(tx);
   }
 
@@ -197,7 +198,11 @@ export class Search extends BaseList<JiraIssue[], JiraTransaction>
       let instance = await this.tx.stores.issues.first({ issueKey: issue.key });
 
       if (!instance) {
-        instance = await Issue.create(account, issue, TaskController.ServiceList);
+        instance = await Issue.create(
+          account,
+          issue,
+          TaskController.ServiceList,
+        );
       } else {
         await instance.update(issue);
       }
@@ -212,9 +217,10 @@ export class Search extends BaseList<JiraIssue[], JiraTransaction>
     account: Account,
     query: string,
   ): Promise<JiraIssue[]> {
-    let results = await account.apiClient.issueSearch.searchForIssuesUsingJqlPost({
-      jql: query,
-    });
+    let results =
+      await account.apiClient.issueSearch.searchForIssuesUsingJqlPost({
+        jql: query,
+      });
 
     return results.issues ?? [];
   }
@@ -237,7 +243,9 @@ export class Search extends BaseList<JiraIssue[], JiraTransaction>
   }
 }
 
-function recordFromIssue(issue: JiraIssue): Omit<JiraIssueRecord, "id" | "accountId"> {
+function recordFromIssue(
+  issue: JiraIssue,
+): Omit<JiraIssueRecord, "id" | "accountId"> {
   if (!issue.key) {
     throw new Error("Invalid issue: no key.");
   }
@@ -251,15 +259,15 @@ function recordFromIssue(issue: JiraIssue): Omit<JiraIssueRecord, "id" | "accoun
   };
 }
 
-export class Issue extends BaseItem<JiraTransaction> implements ServiceItem<IssueFields> {
+export class Issue
+  extends BaseItem<JiraTransaction>
+  implements ServiceItem<IssueFields>
+{
   public static getStore(tx: JiraTransaction): ItemStore<Issue> {
     return tx.stores.issues;
   }
 
-  public constructor(
-    tx: JiraTransaction,
-    private record: JiraIssueRecord,
-  ) {
+  public constructor(tx: JiraTransaction, private record: JiraIssueRecord) {
     super(tx);
   }
 
@@ -344,7 +352,9 @@ export class Issue extends BaseItem<JiraTransaction> implements ServiceItem<Issu
       accountId: account.id,
     });
 
-    let done = issue.fields.resolutiondate ? DateTime.fromISO(issue.fields.resolutiondate) : null;
+    let done = issue.fields.resolutiondate
+      ? DateTime.fromISO(issue.fields.resolutiondate)
+      : null;
     await this.tx.setItemTaskDone(this.id, done);
     await this.tx.setItemSummary(this.id, issue.fields.summary);
   }
@@ -371,7 +381,9 @@ export class Issue extends BaseItem<JiraTransaction> implements ServiceItem<Issu
       summary: issue.fields.summary,
       archived: null,
       snoozed: null,
-      done: issue.fields.resolutiondate ? DateTime.fromISO(issue.fields.resolutiondate) : null,
+      done: issue.fields.resolutiondate
+        ? DateTime.fromISO(issue.fields.resolutiondate)
+        : null,
       controller,
     });
 

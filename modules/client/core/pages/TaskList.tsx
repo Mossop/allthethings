@@ -5,7 +5,13 @@ import type { Dispatch, SetStateAction } from "react";
 import { useState, forwardRef, useCallback } from "react";
 
 import type { ReactRef, ReactResult } from "#client/utils";
-import { Icons, Styles, TextStyles, HiddenInput, ReactMemo } from "#client/utils";
+import {
+  Icons,
+  Styles,
+  TextStyles,
+  HiddenInput,
+  ReactMemo,
+} from "#client/utils";
 
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
@@ -55,7 +61,8 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
     },
     dragging: Styles.dragging,
-  }));
+  }),
+);
 
 interface ContextHeaderProps {
   context: Context;
@@ -63,39 +70,45 @@ interface ContextHeaderProps {
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
-const ContextHeader = ReactMemo(forwardRef(function TasksHeader({
-  context,
-  filter,
-  setFilter,
-}: ContextHeaderProps, ref: ReactRef | null): ReactResult {
-  let classes = useStyles();
+const ContextHeader = ReactMemo(
+  forwardRef(function TasksHeader(
+    { context, filter, setFilter }: ContextHeaderProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let classes = useStyles();
 
-  let [editContext] = useEditContextMutation();
+    let [editContext] = useEditContextMutation();
 
-  let changeContextName = useCallback((name: string) => {
-    void editContext({
-      variables: {
-        id: context.id,
-        params: {
-          name,
-        },
+    let changeContextName = useCallback(
+      (name: string) => {
+        void editContext({
+          variables: {
+            id: context.id,
+            params: {
+              name,
+            },
+          },
+        });
       },
-    });
-  }, [context.id, editContext]);
+      [context.id, editContext],
+    );
 
-  return <div ref={ref} className={classes.heading}>
-    <div className={classes.icon}>
-      <Icons.Project/>
-    </div>
-    <HiddenInput
-      className={classes.headingInput}
-      initialValue={context.name}
-      onSubmit={changeContextName}
-    />
-    <FilterMenu list={context} filter={filter} setFilter={setFilter}/>
-    <ItemListActions list={context}/>
-  </div>;
-}));
+    return (
+      <div ref={ref} className={classes.heading}>
+        <div className={classes.icon}>
+          <Icons.Project />
+        </div>
+        <HiddenInput
+          className={classes.headingInput}
+          initialValue={context.name}
+          onSubmit={changeContextName}
+        />
+        <FilterMenu list={context} filter={filter} setFilter={setFilter} />
+        <ItemListActions list={context} />
+      </div>
+    );
+  }),
+);
 
 interface ProjectHeaderProps {
   project: Project;
@@ -103,49 +116,54 @@ interface ProjectHeaderProps {
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
-const ProjectHeader = ReactMemo(forwardRef(function ProjectHeader({
-  project,
-  filter,
-  setFilter,
-}: ProjectHeaderProps, ref: ReactRef | null): ReactResult {
-  let classes = useStyles();
-  let [editProject] = useEditProjectMutation();
+const ProjectHeader = ReactMemo(
+  forwardRef(function ProjectHeader(
+    { project, filter, setFilter }: ProjectHeaderProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let classes = useStyles();
+    let [editProject] = useEditProjectMutation();
 
-  let changeTaskListName = useCallback((name: string): void => {
-    void editProject({
-      variables: {
-        id: project.id,
-        params: {
-          name,
-        },
+    let changeTaskListName = useCallback(
+      (name: string): void => {
+        void editProject({
+          variables: {
+            id: project.id,
+            params: {
+              name,
+            },
+          },
+        });
       },
-    });
-  }, [editProject, project]);
+      [editProject, project],
+    );
 
-  let {
-    isDragging,
-    dragRef,
-    previewRef,
-  } = useDragSource(project);
+    let { isDragging, dragRef, previewRef } = useDragSource(project);
 
-  return <div ref={ref} className={clsx(classes.heading)}>
-    <div
-      className={clsx(classes.headingDragPreview, isDragging && classes.dragging)}
-      ref={previewRef}
-    >
-      <div className={classes.icon} ref={dragRef}>
-        <Icons.Project className={classes.dragHandle}/>
+    return (
+      <div ref={ref} className={clsx(classes.heading)}>
+        <div
+          className={clsx(
+            classes.headingDragPreview,
+            isDragging && classes.dragging,
+          )}
+          ref={previewRef}
+        >
+          <div className={classes.icon} ref={dragRef}>
+            <Icons.Project className={classes.dragHandle} />
+          </div>
+          <HiddenInput
+            className={classes.headingInput}
+            initialValue={project.name}
+            onSubmit={changeTaskListName}
+          />
+          <FilterMenu list={project} filter={filter} setFilter={setFilter} />
+        </div>
+        <ItemListActions list={project} />
       </div>
-      <HiddenInput
-        className={classes.headingInput}
-        initialValue={project.name}
-        onSubmit={changeTaskListName}
-      />
-      <FilterMenu list={project} filter={filter} setFilter={setFilter}/>
-    </div>
-    <ItemListActions list={project}/>
-  </div>;
-}));
+    );
+  }),
+);
 
 interface TaskListProps {
   view: TaskListState;
@@ -160,36 +178,38 @@ export default ReactMemo(function TaskList({
 
   let header: ReactResult;
   if (isProject(view.taskList)) {
-    header = <ProjectHeader
-      project={view.taskList}
-      filter={filter}
-      setFilter={setFilter}
-    />;
+    header = (
+      <ProjectHeader
+        project={view.taskList}
+        filter={filter}
+        setFilter={setFilter}
+      />
+    );
   } else {
-    header = <ContextHeader
-      context={view.taskList}
-      filter={filter}
-      setFilter={setFilter}
-    />;
+    header = (
+      <ContextHeader
+        context={view.taskList}
+        filter={filter}
+        setFilter={setFilter}
+      />
+    );
   }
 
-  return <Page>
-    <div className={classes.content}>
-      {header}
-      <List disablePadding={true}>
+  return (
+    <Page>
+      <div className={classes.content}>
+        {header}
         <List disablePadding={true}>
-          <ItemList items={contents.items} filter={filter}/>
+          <List disablePadding={true}>
+            <ItemList items={contents.items} filter={filter} />
+          </List>
+          <List disablePadding={true}>
+            {contents.sections.map((section: Section) => (
+              <SectionList key={section.id} section={section} filter={filter} />
+            ))}
+          </List>
         </List>
-        <List disablePadding={true}>
-          {
-            contents.sections.map((section: Section) => <SectionList
-              key={section.id}
-              section={section}
-              filter={filter}
-            />)
-          }
-        </List>
-      </List>
-    </div>
-  </Page>;
+      </div>
+    </Page>
+  );
 });

@@ -1,17 +1,9 @@
 import type { Theme } from "@material-ui/core";
-import {
-  makeStyles,
-  createStyles,
-} from "@material-ui/core";
+import { makeStyles, createStyles } from "@material-ui/core";
 import { RevisionStatus } from "conduit-api";
 
 import type { ServiceItemProps, ReactResult } from "#client/utils";
-import {
-  ItemPill,
-  ImageIcon,
-  Styles,
-  ReactMemo,
-} from "#client/utils";
+import { ItemPill, ImageIcon, Styles, ReactMemo } from "#client/utils";
 import type { RevisionFields } from "#services/phabricator/schema";
 
 import Icon from "./Icon";
@@ -34,7 +26,8 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
 const StatusMap: Record<RevisionStatus, string> = {
   [RevisionStatus.Draft]: "Draft",
@@ -53,11 +46,18 @@ export default ReactMemo(function Revision({
 
   let revision = JSON.parse(fields) as RevisionFields;
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={revision.uri}>
-    <div className={classes.iconContainer}>
-      <ImageIcon icon={revision.icon ?? <Icon/>}/>
-    </div>
-    <div className={classes.summary}>{revision.title}</div>
-    <ItemPill border={false}>{StatusMap[revision.status]}</ItemPill>
-  </a>;
+  return (
+    <a
+      className={classes.link}
+      rel="noreferrer"
+      target="_blank"
+      href={revision.uri}
+    >
+      <div className={classes.iconContainer}>
+        <ImageIcon icon={revision.icon ?? <Icon />} />
+      </div>
+      <div className={classes.summary}>{revision.title}</div>
+      <ItemPill border={false}>{StatusMap[revision.status]}</ItemPill>
+    </a>
+  );
 });

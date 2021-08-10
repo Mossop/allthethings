@@ -23,9 +23,13 @@ const useStyles = makeStyles((theme: Theme) =>
     pillLink: {
       cursor: "pointer",
     },
-  }));
+  }),
+);
 
-export type ItemPillProps = DetailedHTMLProps<HTMLAttributes<HTMLDivElement>, HTMLDivElement> & {
+export type ItemPillProps = DetailedHTMLProps<
+  HTMLAttributes<HTMLDivElement>,
+  HTMLDivElement
+> & {
   url?: string | null;
   border?: boolean;
 };
@@ -40,14 +44,29 @@ export const ItemPill = ReactMemo(function ItemPill({
   let classes = useStyles();
 
   if (url) {
-    return <div className={clsx(className, classes.pill, border && classes.pillBorder)} {...props}>
-      <a className={classes.pillLink} href={url} target="_blank" rel="noreferrer">
-        {children}
-      </a>
-    </div>;
+    return (
+      <div
+        className={clsx(className, classes.pill, border && classes.pillBorder)}
+        {...props}
+      >
+        <a
+          className={classes.pillLink}
+          href={url}
+          target="_blank"
+          rel="noreferrer"
+        >
+          {children}
+        </a>
+      </div>
+    );
   }
 
-  return <div className={clsx(className, classes.pill, border && classes.pillBorder)} {...props}>
-    {children}
-  </div>;
+  return (
+    <div
+      className={clsx(className, classes.pill, border && classes.pillBorder)}
+      {...props}
+    >
+      {children}
+    </div>
+  );
 });

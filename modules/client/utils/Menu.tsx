@@ -39,15 +39,17 @@ export const Menu = ReactMemo(function Menu({
 
   let closeMenu = useCallback(() => state.close(), [state]);
 
-  return <MuiMenu
-    {...bindMenu(state)}
-    anchorOrigin={anchorOrigin}
-    transformOrigin={transformOrigin}
-    keepMounted={false}
-    getContentAnchorEl={null}
-    onClick={closeMenu}
-    onExited={onClosed}
-  >
-    {children}
-  </MuiMenu>;
+  return (
+    <MuiMenu
+      {...bindMenu(state)}
+      anchorOrigin={anchorOrigin}
+      transformOrigin={transformOrigin}
+      keepMounted={false}
+      getContentAnchorEl={null}
+      onClick={closeMenu}
+      onExited={onClosed}
+    >
+      {children}
+    </MuiMenu>
+  );
 });

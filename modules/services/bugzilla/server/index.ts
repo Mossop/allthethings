@@ -4,9 +4,7 @@ import type {
   Server,
   ServiceTransaction,
 } from "#server/utils";
-import {
-  BaseService,
-} from "#server/utils";
+import { BaseService } from "#server/utils";
 
 import { Bug, Search } from "./implementations";
 import buildMigrations from "./migrations";
@@ -17,20 +15,18 @@ import { buildTransaction } from "./stores";
 const UPDATE_DELAY = 60000;
 
 class BugzillaService extends BaseService<BugzillaTransaction> {
-  public readonly itemProviders = [
-    Bug,
-  ];
+  public readonly itemProviders = [Bug];
 
-  public readonly listProviders = [
-    Search,
-  ];
+  public readonly listProviders = [Search];
 
   public constructor(private readonly server: Server<BugzillaTransaction>) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       try {
-        await this.server.withTransaction((tx: BugzillaTransaction) => this.update(tx));
+        await this.server.withTransaction((tx: BugzillaTransaction) =>
+          this.update(tx),
+        );
       } catch (e) {
         console.error(e);
       }

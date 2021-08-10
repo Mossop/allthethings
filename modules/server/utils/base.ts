@@ -15,10 +15,9 @@ export type ItemStore<T> = Listable<T> & {
   deleteOne(id: string): Promise<boolean>;
 };
 
-type SourceProvider<
-  T,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> = (tx: Tx) => T;
+type SourceProvider<T, Tx extends ServiceTransaction = ServiceTransaction> = (
+  tx: Tx,
+) => T;
 
 interface IItem extends ServiceItem {
   update(): Promise<void>;
@@ -33,7 +32,12 @@ interface IList {
 interface ItemProvider<Tx extends ServiceTransaction = ServiceTransaction> {
   getStore: SourceProvider<ItemStore<IItem>, Tx>;
 
-  createItemFromURL(tx: Tx, userId: string, url: URL, isTask: boolean): Promise<ServiceItem | null>;
+  createItemFromURL(
+    tx: Tx,
+    userId: string,
+    url: URL,
+    isTask: boolean,
+  ): Promise<ServiceItem | null>;
 }
 
 interface ListProvider<Tx extends ServiceTransaction = ServiceTransaction> {
@@ -42,7 +46,8 @@ interface ListProvider<Tx extends ServiceTransaction = ServiceTransaction> {
 
 export abstract class BaseService<
   Tx extends ServiceTransaction = ServiceTransaction,
-> implements Service<Tx> {
+> implements Service<Tx>
+{
   protected abstract readonly itemProviders: ItemProvider<Tx>[];
   protected abstract readonly listProviders: ListProvider<Tx>[];
   public abstract readonly resolvers: Record<string, unknown>;
@@ -114,10 +119,7 @@ export abstract class BaseService<
 }
 
 export abstract class Base<Tx extends ServiceTransaction = ServiceTransaction> {
-  public constructor(
-    public readonly tx: Tx,
-  ) {
-  }
+  public constructor(public readonly tx: Tx) {}
 }
 
 export abstract class BaseAccount<
@@ -150,9 +152,12 @@ export abstract class BaseAccount<
 }
 
 export abstract class BaseList<
-  SR,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends Base<Tx> implements IList {
+    SR,
+    Tx extends ServiceTransaction = ServiceTransaction,
+  >
+  extends Base<Tx>
+  implements IList
+{
   public abstract get id(): string;
 
   protected abstract listItems(results?: SR): Promise<ServiceItem[]>;
@@ -184,8 +189,11 @@ export abstract class BaseList<
 }
 
 export abstract class BaseItem<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends Base<Tx> implements IItem {
+    Tx extends ServiceTransaction = ServiceTransaction,
+  >
+  extends Base<Tx>
+  implements IItem
+{
   public abstract get id(): string;
   public abstract fields(): Awaitable<unknown>;
 

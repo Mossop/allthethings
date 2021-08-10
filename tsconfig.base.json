@@ -31,9 +31,15 @@
       "#server/core": ["./modules/server/core/index.ts"],
       "#server/utils": ["./modules/server/utils/index.ts"],
 
-      "#services/bugzilla/client": ["./modules/services/bugzilla/client/index.tsx"],
-      "#services/bugzilla/server": ["./modules/services/bugzilla/server/index.ts"],
-      "#services/bugzilla/schema": ["./modules/services/bugzilla/schema/index.ts"],
+      "#services/bugzilla/client": [
+        "./modules/services/bugzilla/client/index.tsx"
+      ],
+      "#services/bugzilla/server": [
+        "./modules/services/bugzilla/server/index.ts"
+      ],
+      "#services/bugzilla/schema": [
+        "./modules/services/bugzilla/schema/index.ts"
+      ],
 
       "#services/jira/client": ["./modules/services/jira/client/index.tsx"],
       "#services/jira/server": ["./modules/services/jira/server/index.ts"],
@@ -43,16 +49,20 @@
       "#services/google/server": ["./modules/services/google/server/index.ts"],
       "#services/google/schema": ["./modules/services/google/schema/index.ts"],
 
-      "#services/phabricator/client": ["./modules/services/phabricator/client/index.tsx"],
-      "#services/phabricator/server": ["./modules/services/phabricator/server/index.ts"],
-      "#services/phabricator/schema": ["./modules/services/phabricator/schema/index.ts"],
+      "#services/phabricator/client": [
+        "./modules/services/phabricator/client/index.tsx"
+      ],
+      "#services/phabricator/server": [
+        "./modules/services/phabricator/server/index.ts"
+      ],
+      "#services/phabricator/schema": [
+        "./modules/services/phabricator/schema/index.ts"
+      ],
 
       "#services/github/client": ["./modules/services/github/client/index.tsx"],
       "#services/github/server": ["./modules/services/github/server/index.ts"],
-      "#services/github/schema": ["./modules/services/github/schema/index.ts"],
-    },
+      "#services/github/schema": ["./modules/services/github/schema/index.ts"]
+    }
   },
-  "exclude": [
-    "**/tsconfig.json",
-  ]
+  "exclude": ["**/tsconfig.json"]
 }

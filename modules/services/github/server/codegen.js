@@ -6,7 +6,7 @@ module.exports = {
     documents: path.join(__dirname, "*.gql"),
 
     plugins: {
-      "typescript": {
+      typescript: {
         immutableTypes: true,
         avoidOptionals: true,
         nonOptionalTypename: true,
@@ -29,10 +29,8 @@ module.exports = {
         defaultScalarType: "string",
         useTypeImports: true,
       },
-      "add": {
-        content: [
-          "/* eslint-disable */",
-        ],
+      add: {
+        content: ["/* eslint-disable */"],
       },
     },
   },

@@ -1,4 +1,10 @@
-import { Avatar, IconButton, MenuItem, createStyles, makeStyles } from "@material-ui/core";
+import {
+  Avatar,
+  IconButton,
+  MenuItem,
+  createStyles,
+  makeStyles,
+} from "@material-ui/core";
 import md5 from "md5";
 import { useCallback } from "react";
 
@@ -31,13 +37,15 @@ const useStyles = makeStyles(() =>
       width: 32,
       height: 32,
     },
-  }));
+  }),
+);
 
 export default ReactMemo(function UserMenu(): ReactResult {
   let user = useUser();
   let classes = useStyles();
   let userMenuState = useMenuState("user-menu");
-  let [changePasswordOpen, showChangePassword, closeChangePassword] = useBoolState();
+  let [changePasswordOpen, showChangePassword, closeChangePassword] =
+    useBoolState();
   let resetStore = useResetStore();
 
   let doLogout = useCallback(async (): Promise<void> => {
@@ -55,27 +63,35 @@ export default ReactMemo(function UserMenu(): ReactResult {
     });
   }, []);
 
-  return <>
-    <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
-      <Avatar
-        srcSet={avatarSources(user.email).join(", ")}
-        src={avatarSources(user.email)[0]}
-        className={classes.avatar}
-      />
-    </IconButton>
-    <Menu
-      state={userMenuState}
-      anchor={
-        {
+  return (
+    <>
+      <IconButton id="banner-user-menu" {...bindTrigger(userMenuState)}>
+        <Avatar
+          srcSet={avatarSources(user.email).join(", ")}
+          src={avatarSources(user.email)[0]}
+          className={classes.avatar}
+        />
+      </IconButton>
+      <Menu
+        state={userMenuState}
+        anchor={{
           vertical: "bottom",
           horizontal: "right",
-        }
-      }
-    >
-      <MenuItem id="user-menu-settings" onClick={doSettings}>Settings</MenuItem>
-      <MenuItem id="user-menu-password" onClick={showChangePassword}>Change Password...</MenuItem>
-      <MenuItem id="user-menu-logout" onClick={doLogout}>Logout</MenuItem>
-    </Menu>
-    {changePasswordOpen && <ChangePasswordDialog onClosed={closeChangePassword}/>}
-  </>;
+        }}
+      >
+        <MenuItem id="user-menu-settings" onClick={doSettings}>
+          Settings
+        </MenuItem>
+        <MenuItem id="user-menu-password" onClick={showChangePassword}>
+          Change Password...
+        </MenuItem>
+        <MenuItem id="user-menu-logout" onClick={doLogout}>
+          Logout
+        </MenuItem>
+      </Menu>
+      {changePasswordOpen && (
+        <ChangePasswordDialog onClosed={closeChangePassword} />
+      )}
+    </>
+  );
 });

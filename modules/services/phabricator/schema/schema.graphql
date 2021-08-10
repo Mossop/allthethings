@@ -31,7 +31,12 @@ type User {
 }
 
 type Mutation {
-  createPhabricatorAccount(params: CreatePhabricatorAccountParams!): PhabricatorAccount!
-  updatePhabricatorAccount(id: ID!, params: UpdatePhabricatorAccountParams!): PhabricatorAccount
+  createPhabricatorAccount(
+    params: CreatePhabricatorAccountParams!
+  ): PhabricatorAccount!
+  updatePhabricatorAccount(
+    id: ID!
+    params: UpdatePhabricatorAccountParams!
+  ): PhabricatorAccount
   deletePhabricatorAccount(account: ID!): Boolean
 }

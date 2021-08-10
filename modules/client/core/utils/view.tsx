@@ -49,18 +49,21 @@ export interface SettingsState {
 }
 
 export type LoggedInViewState =
-  InboxState |
-  AddLinkState |
-  TaskListState |
-  SettingsState |
-  PageState;
+  | InboxState
+  | AddLinkState
+  | TaskListState
+  | SettingsState
+  | PageState;
 export type LoggedInView = LoggedInViewState & LoggedInState;
 export type LoggedOutViewState = PageState;
 export type LoggedOutView = LoggedOutViewState & LoggedOutState;
 
 export type View = LoggedInView | LoggedOutView;
 
-export function useUrl(view: LoggedInViewState | LoggedOutViewState, context?: Context): URL {
+export function useUrl(
+  view: LoggedInViewState | LoggedOutViewState,
+  context?: Context,
+): URL {
   let currentView = useView();
   if (!currentView) {
     // Uninitialized.
@@ -173,9 +176,10 @@ export function urlToView(user: User | null, url: URL): View {
   let context: Context = user.defaultContext;
   let selectedContext = url.searchParams.get("context");
   if (selectedContext) {
-    context = [...user.contexts.values()].find(
-      (context: Context): boolean => context.stub == selectedContext,
-    ) ?? user.defaultContext;
+    context =
+      [...user.contexts.values()].find(
+        (context: Context): boolean => context.stub == selectedContext,
+      ) ?? user.defaultContext;
   }
 
   let notFound: LoggedInView = {
@@ -258,14 +262,20 @@ export function urlToView(user: User | null, url: URL): View {
 }
 
 function descend(taskList: TaskList, stub: string): Project | null {
-  return taskList.subprojects.find((project: Project): boolean => project.stub == stub) ?? null;
+  return (
+    taskList.subprojects.find(
+      (project: Project): boolean => project.stub == stub,
+    ) ?? null
+  );
 }
 
 interface ContextChange {
   readonly context?: Context;
 }
 
-function buildView(view: (LoggedInViewState & ContextChange) | LoggedOutViewState): View {
+function buildView(
+  view: (LoggedInViewState & ContextChange) | LoggedOutViewState,
+): View {
   let currentView = GlobalState.view;
 
   // @ts-ignore
@@ -275,13 +285,17 @@ function buildView(view: (LoggedInViewState & ContextChange) | LoggedOutViewStat
   };
 }
 
-export function pushView(view: (LoggedInViewState & ContextChange) | LoggedOutViewState): void {
+export function pushView(
+  view: (LoggedInViewState & ContextChange) | LoggedOutViewState,
+): void {
   let newView = buildView(view);
 
   pushUrl(viewToUrl(newView));
 }
 
-export function replaceView(view: (LoggedInViewState & ContextChange) | LoggedOutViewState): void {
+export function replaceView(
+  view: (LoggedInViewState & ContextChange) | LoggedOutViewState,
+): void {
   let newView = buildView(view);
 
   replaceUrl(viewToUrl(newView));

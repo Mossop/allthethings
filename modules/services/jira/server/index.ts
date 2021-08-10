@@ -1,4 +1,9 @@
-import type { Server, ServiceDbMigration, ServiceExport, ServiceTransaction } from "#server/utils";
+import type {
+  Server,
+  ServiceDbMigration,
+  ServiceExport,
+  ServiceTransaction,
+} from "#server/utils";
 import { BaseService } from "#server/utils";
 
 import { Issue, Search } from "./implementations";
@@ -10,22 +15,18 @@ import { buildTransaction } from "./stores";
 const UPDATE_DELAY = 60000;
 
 export class JiraService extends BaseService<JiraTransaction> {
-  protected readonly listProviders = [
-    Search,
-  ];
+  protected readonly listProviders = [Search];
 
-  protected readonly itemProviders = [
-    Issue,
-  ];
+  protected readonly itemProviders = [Issue];
 
-  public constructor(
-    private readonly server: Server<JiraTransaction>,
-  ) {
+  public constructor(private readonly server: Server<JiraTransaction>) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       try {
-        await this.server.withTransaction((tx: JiraTransaction) => this.update(tx));
+        await this.server.withTransaction((tx: JiraTransaction) =>
+          this.update(tx),
+        );
       } catch (e) {
         console.error(e);
       }

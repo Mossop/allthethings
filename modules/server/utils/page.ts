@@ -64,10 +64,12 @@ async function loadIcon(url: URL): Promise<Icon[]> {
   }
 
   if (type == TYPE_SVG) {
-    return [{
-      url,
-      size: null,
-    }];
+    return [
+      {
+        url,
+        size: null,
+      },
+    ];
   }
 
   let icons: Icon[] = [];
@@ -99,7 +101,7 @@ export async function loadPageInfo(pageUrl: URL): Promise<PageInfo> {
 
   let icons: Icon[] = [];
 
-  let elements = root.querySelectorAll("link[rel~=\"icon\"]");
+  let elements = root.querySelectorAll('link[rel~="icon"]');
   for (let link of elements) {
     let href = link.getAttribute("href");
     if (!href) {

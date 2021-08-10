@@ -13,11 +13,13 @@ import { getSdk } from "./operations";
 import type { GithubTransaction } from "./stores";
 import type { IssueLikeApiResult } from "./types";
 
-const SCOPES = [
-  "repo",
-];
+const SCOPES = ["repo"];
 
-function generateLoginUrl(serviceUrl: URL, userId: string, user?: string): string {
+function generateLoginUrl(
+  serviceUrl: URL,
+  userId: string,
+  user?: string,
+): string {
   let callback = new URL("oauth", serviceUrl);
 
   let url = new URL("https://github.com/login/oauth/authorize");
@@ -35,7 +37,11 @@ function generateLoginUrl(serviceUrl: URL, userId: string, user?: string): strin
 // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
 function buildSdk(kit: Octokit) {
   return getSdk(
-    async <R, V>(doc: DocumentNode, vars?: V, options?: RequestParameters): Promise<R> => {
+    async <R, V>(
+      doc: DocumentNode,
+      vars?: V,
+      options?: RequestParameters,
+    ): Promise<R> => {
       let result = await kit.graphql<R | null>(print(doc), {
         ...vars,
         ...options,
@@ -59,9 +65,7 @@ export class GitHubApi {
   private readonly kit: Octokit;
   private readonly sdk: ReturnType<typeof buildSdk>;
 
-  public constructor(
-    private readonly account: Account,
-  ) {
+  public constructor(private readonly account: Account) {
     this.kit = GitHubApi.getKit(account.token);
     this.sdk = buildSdk(this.kit);
   }
@@ -75,7 +79,10 @@ export class GitHubApi {
       nodeId,
     });
 
-    if (result.node?.__typename == "Issue" || result.node?.__typename == "PullRequest") {
+    if (
+      result.node?.__typename == "Issue" ||
+      result.node?.__typename == "PullRequest"
+    ) {
       return result.node;
     }
     return null;
@@ -121,7 +128,11 @@ export class GitHubApi {
   }
 
   public generateLoginUrl(): string {
-    return generateLoginUrl(this.account.tx.serviceUrl, this.account.userId, this.account.user);
+    return generateLoginUrl(
+      this.account.tx.serviceUrl,
+      this.account.userId,
+      this.account.user,
+    );
   }
 
   public static generateLoginUrl(

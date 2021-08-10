@@ -5,7 +5,8 @@ export interface DbMigration extends Knex.Migration {
   readonly name: string;
 }
 
-const ALPHABET = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+const ALPHABET =
+  "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
 export const id = customAlphabet(ALPHABET, 28);
 
@@ -13,7 +14,9 @@ export async function max<Record, C extends keyof Record>(
   query: Knex.QueryBuilder,
   col: C,
 ): Promise<Record[C] | null> {
-  let result: { max: Record[C] | null } | undefined = await query.max(col).first();
+  let result: { max: Record[C] | null } | undefined = await query
+    .max(col)
+    .first();
   return result ? result.max : null;
 }
 
@@ -21,17 +24,21 @@ export async function min<Record, C extends keyof Record>(
   query: Knex.QueryBuilder,
   col: C,
 ): Promise<Record[C] | null> {
-  let result: { min: Record[C] | null } | undefined = await query.min(col).first();
+  let result: { min: Record[C] | null } | undefined = await query
+    .min(col)
+    .first();
   return result ? result.min : null;
 }
 
 export async function count(query: Knex.QueryBuilder): Promise<number | null> {
-  let result: { count: BigInt | null } | undefined = await query.count("*").first();
+  let result: { count: BigInt | null } | undefined = await query
+    .count("*")
+    .first();
   return result ? Number(result.count) : null;
 }
 
 export type Bindings = string[] | Record<string, string>;
-function *bindings(bindings: Bindings): Iterable<[string, string]> {
+function* bindings(bindings: Bindings): Iterable<[string, string]> {
   if (Array.isArray(bindings)) {
     for (let binding of bindings) {
       yield [binding, binding];
@@ -64,13 +71,12 @@ export async function updateFromTable(
     whereBindings.push(col, `s.${source}`);
   }
 
-  await knex.raw(`UPDATE ?? AS ?? SET ${setList.join(", ")} FROM ? WHERE ${whereList.join(", ")}`, [
-    targetTable,
-    "t",
-    ...setBindings,
-    sourceTable.as("s"),
-    ...whereBindings,
-  ]);
+  await knex.raw(
+    `UPDATE ?? AS ?? SET ${setList.join(", ")} FROM ? WHERE ${whereList.join(
+      ", ",
+    )}`,
+    [targetTable, "t", ...setBindings, sourceTable.as("s"), ...whereBindings],
+  );
 }
 
 export async function insertFromTable(
@@ -90,8 +96,7 @@ export async function insertFromTable(
 }
 
 export class DbMigrationSource implements Knex.MigrationSource<DbMigration> {
-  public constructor(private readonly migrations: DbMigration[]) {
-  }
+  public constructor(private readonly migrations: DbMigration[]) {}
 
   public async getMigrations(): Promise<DbMigration[]> {
     return this.migrations;

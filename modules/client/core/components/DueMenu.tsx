@@ -31,131 +31,148 @@ const useStyles = makeStyles((theme: Theme) =>
     inner: {
       paddingLeft: theme.spacing(4),
     },
-  }));
+  }),
+);
 
 interface DueMenuProps {
   item: Item;
   isInner?: boolean;
 }
 
-export const DueItemItems = ReactMemo(forwardRef(function DueItemItems({
-  item,
-}: DueMenuProps, ref: ReactRef | null): ReactResult {
-  let [markItemDueMutation] = useMarkItemDueMutation({
-    refetchQueries: refetchQueriesForItem(item),
-  });
-
-  let markDue = useCallback((due: DateTime | null) => {
-    return markItemDueMutation({
-      variables: {
-        id: item.id,
-        due,
-      },
+export const DueItemItems = ReactMemo(
+  forwardRef(function DueItemItems(
+    { item }: DueMenuProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let [markItemDueMutation] = useMarkItemDueMutation({
+      refetchQueries: refetchQueriesForItem(item),
     });
-  }, [item.id, markItemDueMutation]);
 
-  let notDue = useBoundCallback(markDue, null);
+    let markDue = useCallback(
+      (due: DateTime | null) => {
+        return markItemDueMutation({
+          variables: {
+            id: item.id,
+            due,
+          },
+        });
+      },
+      [item.id, markItemDueMutation],
+    );
 
-  let whenDue = useMemo(() => {
-    let now = DateTime.now();
+    let notDue = useBoundCallback(markDue, null);
 
-    if (!item.taskInfo?.due) {
+    let whenDue = useMemo(() => {
+      let now = DateTime.now();
+
+      if (!item.taskInfo?.due) {
+        return null;
+      }
+
+      let time = item.taskInfo.due.toLocaleString(DateTime.TIME_SIMPLE);
+
+      if (item.taskInfo.due.hasSame(now, "day")) {
+        return time;
+      }
+
+      let date = item.taskInfo.due.toRelative();
+
+      return `${time} ${date}`;
+    }, [item]);
+
+    if (!whenDue) {
       return null;
     }
 
-    let time = item.taskInfo.due.toLocaleString(DateTime.TIME_SIMPLE);
+    return (
+      <List ref={ref} disablePadding={true}>
+        <MenuItem disabled={true}>
+          <ListItemText>Due {whenDue}</ListItemText>
+        </MenuItem>
+        <MenuItem onClick={notDue}>
+          <ListItemText>Never Due</ListItemText>
+        </MenuItem>
+      </List>
+    );
+  }),
+);
 
-    if (item.taskInfo.due.hasSame(now, "day")) {
-      return time;
-    }
+export const DueItems = ReactMemo(
+  forwardRef(function DueItems(
+    { item, isInner }: DueMenuProps,
+    ref: ReactRef | null,
+  ): ReactResult {
+    let classes = useStyles();
+    let [pickerOpen, openPicker, closePicker] = useBoolState();
 
-    let date = item.taskInfo.due.toRelative();
-
-    return `${time} ${date}`;
-  }, [item]);
-
-  if (!whenDue) {
-    return null;
-  }
-
-  return <List ref={ref} disablePadding={true}>
-    <MenuItem disabled={true}>
-      <ListItemText>Due {whenDue}</ListItemText>
-    </MenuItem>
-    <MenuItem onClick={notDue}>
-      <ListItemText>Never Due</ListItemText>
-    </MenuItem>
-  </List>;
-}));
-
-export const DueItems = ReactMemo(forwardRef(function DueItems({
-  item,
-  isInner,
-}: DueMenuProps, ref: ReactRef | null): ReactResult {
-  let classes = useStyles();
-  let [pickerOpen, openPicker, closePicker] = useBoolState();
-
-  let [markItemDueMutation] = useMarkItemDueMutation({
-    refetchQueries: refetchQueriesForItem(item),
-  });
-
-  let markItemDue = useCallback((due: DateTime | null) => {
-    return markItemDueMutation({
-      variables: {
-        id: item.id,
-        due,
-      },
+    let [markItemDueMutation] = useMarkItemDueMutation({
+      refetchQueries: refetchQueriesForItem(item),
     });
-  }, [item.id, markItemDueMutation]);
 
-  let dueThisAfternoon = useMemo(() => {
-    let afternoon = DateTime.now().set({ hour: 17 }).startOf("hour");
-    if (afternoon <= DateTime.now()) {
-      return null;
-    }
+    let markItemDue = useCallback(
+      (due: DateTime | null) => {
+        return markItemDueMutation({
+          variables: {
+            id: item.id,
+            due,
+          },
+        });
+      },
+      [item.id, markItemDueMutation],
+    );
 
-    return () => markItemDue(afternoon);
-  }, [markItemDue]);
+    let dueThisAfternoon = useMemo(() => {
+      let afternoon = DateTime.now().set({ hour: 17 }).startOf("hour");
+      if (afternoon <= DateTime.now()) {
+        return null;
+      }
 
-  let dueTomorrow = useCallback(() => {
-    let tomorrow = DateTime.now().plus({ days: 1 }).set({ hour: 8 }).startOf("hour");
-    void markItemDue(tomorrow);
-  }, [markItemDue]);
+      return () => markItemDue(afternoon);
+    }, [markItemDue]);
 
-  let dueNextWeek = useCallback(() => {
-    let nextWeek = DateTime.now().plus({ weeks: 1 }).startOf("week").set({ hour: 8 });
-    void markItemDue(nextWeek);
-  }, [markItemDue]);
+    let dueTomorrow = useCallback(() => {
+      let tomorrow = DateTime.now()
+        .plus({ days: 1 })
+        .set({ hour: 8 })
+        .startOf("hour");
+      void markItemDue(tomorrow);
+    }, [markItemDue]);
 
-  let className = isInner ? classes.inner : undefined;
+    let dueNextWeek = useCallback(() => {
+      let nextWeek = DateTime.now()
+        .plus({ weeks: 1 })
+        .startOf("week")
+        .set({ hour: 8 });
+      void markItemDue(nextWeek);
+    }, [markItemDue]);
 
-  return <List ref={ref} disablePadding={true}>
-    {
-      dueThisAfternoon && <MenuItem className={className} onClick={dueThisAfternoon}>
-        <ListItemText>This Afternoon</ListItemText>
-      </MenuItem>
-    }
-    <MenuItem className={className} onClick={dueTomorrow}>
-      <ListItemText>Tomorrow</ListItemText>
-    </MenuItem>
-    <MenuItem className={className} onClick={dueNextWeek}>
-      <ListItemText>Next Week</ListItemText>
-    </MenuItem>
-    <MenuItem className={className} onClick={openPicker}>
-      <ListItemText>Custom...</ListItemText>
-    </MenuItem>
-    {
-      pickerOpen && <DateTimeDialog
-        onSelect={markItemDue}
-        onClosed={closePicker}
-      />
-    }
-  </List>;
-}));
+    let className = isInner ? classes.inner : undefined;
 
-export default ReactMemo(function DueMenu({
-  item,
-}: DueMenuProps): ReactResult {
+    return (
+      <List ref={ref} disablePadding={true}>
+        {dueThisAfternoon && (
+          <MenuItem className={className} onClick={dueThisAfternoon}>
+            <ListItemText>This Afternoon</ListItemText>
+          </MenuItem>
+        )}
+        <MenuItem className={className} onClick={dueTomorrow}>
+          <ListItemText>Tomorrow</ListItemText>
+        </MenuItem>
+        <MenuItem className={className} onClick={dueNextWeek}>
+          <ListItemText>Next Week</ListItemText>
+        </MenuItem>
+        <MenuItem className={className} onClick={openPicker}>
+          <ListItemText>Custom...</ListItemText>
+        </MenuItem>
+        {pickerOpen && (
+          <DateTimeDialog onSelect={markItemDue} onClosed={closePicker} />
+        )}
+      </List>
+    );
+  }),
+);
+
+export default ReactMemo(function DueMenu({ item }: DueMenuProps): ReactResult {
   let dueMenuState = useMenuState("due");
 
   let whenDue = useMemo(() => {
@@ -180,26 +197,23 @@ export default ReactMemo(function DueMenu({
     return null;
   }
 
-  return <>
-    <Tooltip title={`Due ${whenDue}`}>
-      <IconButton
-        color="primary"
-        {...bindTrigger(dueMenuState)}
-      >
-        <Icons.Due/>
-      </IconButton>
-    </Tooltip>
-    <Menu
-      state={dueMenuState}
-      anchor={
-        {
+  return (
+    <>
+      <Tooltip title={`Due ${whenDue}`}>
+        <IconButton color="primary" {...bindTrigger(dueMenuState)}>
+          <Icons.Due />
+        </IconButton>
+      </Tooltip>
+      <Menu
+        state={dueMenuState}
+        anchor={{
           vertical: "bottom",
           horizontal: "right",
-        }
-      }
-    >
-      <DueItemItems item={item}/>
-      <DueItems item={item}/>
-    </Menu>
-  </>;
+        }}
+      >
+        <DueItemItems item={item} />
+        <DueItems item={item} />
+      </Menu>
+    </>
+  );
 });

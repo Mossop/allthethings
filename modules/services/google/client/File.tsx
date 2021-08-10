@@ -25,21 +25,27 @@ const useStyles = makeStyles((theme: Theme) =>
       whiteSpace: "nowrap",
       overflow: "hidden",
     },
-  }));
+  }),
+);
 
 export interface FileProps {
   file: FileFields;
 }
 
-export default ReactMemo(function File({
-  file,
-}: FileProps): ReactResult {
+export default ReactMemo(function File({ file }: FileProps): ReactResult {
   let classes = useStyles();
 
-  return <a className={classes.link} rel="noreferrer" target="_blank" href={file.url ?? ""}>
-    <div className={classes.iconContainer}>
-      <FileIcon mimeType={file.mimeType}/>
-    </div>
-    <div className={classes.name}>{file.name}</div>
-  </a>;
+  return (
+    <a
+      className={classes.link}
+      rel="noreferrer"
+      target="_blank"
+      href={file.url ?? ""}
+    >
+      <div className={classes.iconContainer}>
+        <FileIcon mimeType={file.mimeType} />
+      </div>
+      <div className={classes.name}>{file.name}</div>
+    </a>
+  );
 });

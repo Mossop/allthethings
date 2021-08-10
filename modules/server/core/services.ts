@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import { URL } from "url";
 
 import type { Knex } from "knex";
@@ -14,9 +13,7 @@ import type {
   ServiceTransaction,
   Transaction,
 } from "#server/utils";
-import {
-  DbMigrationSource,
-} from "#server/utils";
+import { DbMigrationSource } from "#server/utils";
 import { assert, memoized } from "#utils";
 
 import type { ServerConfig } from "./config";
@@ -37,10 +34,12 @@ function wrapKnex(knex: Knex, dbSchema: string): Knex {
 }
 
 class MigrationHelper implements DbMigrationHelper {
-  public constructor(private readonly schema: string) {
-  }
+  public constructor(private readonly schema: string) {}
 
-  public idColumn(table: Knex.CreateTableBuilder, column: string): Knex.ColumnBuilder {
+  public idColumn(
+    table: Knex.CreateTableBuilder,
+    column: string,
+  ): Knex.ColumnBuilder {
     return table.text(column);
   }
 
@@ -48,7 +47,8 @@ class MigrationHelper implements DbMigrationHelper {
     table: Knex.CreateTableBuilder,
     column: string,
   ): Knex.ColumnBuilder {
-    return table.text(column)
+    return table
+      .text(column)
       .references("id")
       .inTable("public.User")
       .onDelete("CASCADE")
@@ -59,7 +59,8 @@ class MigrationHelper implements DbMigrationHelper {
     table: Knex.CreateTableBuilder,
     column: string,
   ): Knex.ColumnBuilder {
-    return table.text(column)
+    return table
+      .text(column)
       .references("id")
       .inTable("public.ServiceDetail")
       .onDelete("CASCADE")
@@ -70,7 +71,8 @@ class MigrationHelper implements DbMigrationHelper {
     table: Knex.CreateTableBuilder,
     column: string,
   ): Knex.ColumnBuilder {
-    return table.text(column)
+    return table
+      .text(column)
       .references("id")
       .inTable("public.ServiceList")
       .onDelete("CASCADE")
@@ -86,15 +88,17 @@ class ServiceMigration implements DbMigration {
   public constructor(
     private readonly schema: string,
     private readonly migration: ServiceDbMigration,
-  ) {
-  }
+  ) {}
 
   public get name(): string {
     return this.migration.name;
   }
 
   public up(knex: Knex): Promise<void> {
-    return this.migration.up(wrapKnex(knex, this.schema), new MigrationHelper(this.schema));
+    return this.migration.up(
+      wrapKnex(knex, this.schema),
+      new MigrationHelper(this.schema),
+    );
   }
 
   public async down(): Promise<void> {
@@ -105,8 +109,7 @@ class ServiceMigration implements DbMigration {
 class SchemaMigration implements DbMigration {
   public readonly name = "Schema";
 
-  public constructor(private readonly schema: string) {
-  }
+  public constructor(private readonly schema: string) {}
 
   public async up(knex: Knex): Promise<void> {
     await knex.raw("CREATE SCHEMA ??", [this.schema]);
@@ -124,9 +127,10 @@ export function getMigrationSource(
     tableName: `${serviceExport.id}_migrations`,
     migrationSource: new DbMigrationSource([
       new SchemaMigration(serviceExport.id),
-      ...serviceExport.dbMigrations.map((
-        migration: ServiceDbMigration,
-      ): DbMigration => new ServiceMigration(serviceExport.id, migration)),
+      ...serviceExport.dbMigrations.map(
+        (migration: ServiceDbMigration): DbMigration =>
+          new ServiceMigration(serviceExport.id, migration),
+      ),
     ]),
   };
 }
@@ -134,12 +138,15 @@ export function getMigrationSource(
 export class ServiceOwner<
   C = unknown,
   Tx extends ServiceTransaction = ServiceTransaction,
-> implements Server<Tx> {
+> implements Server<Tx>
+{
   private servicePromise: Promise<Service<Tx>> | null;
   public readonly taskManager = TaskManager;
 
-  private static ownerCache: Map<Service<any>, ServiceOwner<any, any>> = new Map();
-  private static resolverMap: WeakMap<Record<string, unknown>, ServiceOwner> = new WeakMap();
+  private static ownerCache: Map<Service<any>, ServiceOwner<any, any>> =
+    new Map();
+  private static resolverMap: WeakMap<Record<string, unknown>, ServiceOwner> =
+    new WeakMap();
 
   public static getOwner(service: Service<any>): ServiceOwner<any, any> {
     let owner = ServiceOwner.ownerCache.get(service);
@@ -198,22 +205,19 @@ export class ServiceOwner<
 
   public async withTransaction<R>(task: (tx: Tx) => Promise<R>): Promise<R> {
     let service = await this.service;
-    return withTransaction(
-      this.knex,
-      async (tx: Transaction): Promise<R> => {
-        return task(await buildServiceTransaction(service, tx));
-      },
-    );
+    return withTransaction(this.knex, async (tx: Transaction): Promise<R> => {
+      return task(await buildServiceTransaction(service, tx));
+    });
   }
 
-  public readonly resolvers = memoized(
-    async function resolvers(this: ServiceOwner): Promise<Record<string, unknown>> {
-      let service = await this.service;
-      let resolvers = service.resolvers;
-      ServiceOwner.resolverMap.set(resolvers, this);
-      return resolvers;
-    },
-  );
+  public readonly resolvers = memoized(async function resolvers(
+    this: ServiceOwner,
+  ): Promise<Record<string, unknown>> {
+    let service = await this.service;
+    let resolvers = service.resolvers;
+    ServiceOwner.resolverMap.set(resolvers, this);
+    return resolvers;
+  });
 
   public get id(): string {
     return this.serviceExport.id;
@@ -227,16 +231,22 @@ export class ServiceOwner<
 }
 
 class ServiceManagerImpl {
-  private readonly serviceExports: Map<string, ServiceExport<unknown, any>> = new Map();
-  private readonly serviceOwners =
-  new Map<ServiceExport<unknown, any>, ServiceOwner<unknown, any>>();
+  private readonly serviceExports: Map<string, ServiceExport<unknown, any>> =
+    new Map();
+  private readonly serviceOwners = new Map<
+    ServiceExport<unknown, any>,
+    ServiceOwner<unknown, any>
+  >();
   private readonly serviceCache = new Map<string, Service>();
 
   public addService(serviceExport: ServiceExport<any, any>): void {
     this.serviceExports.set(serviceExport.id, serviceExport);
   }
 
-  public async initServices(knex: Knex, serverConfig: ServerConfig): Promise<void> {
+  public async initServices(
+    knex: Knex,
+    serverConfig: ServerConfig,
+  ): Promise<void> {
     for (let serviceExport of this.serviceExports.values()) {
       let owner = new ServiceOwner(knex, serverConfig, serviceExport);
       this.serviceOwners.set(serviceExport, owner);
@@ -246,13 +256,18 @@ class ServiceManagerImpl {
     }
   }
 
-  public async listProblems(tx: Transaction, userId: string | null): Promise<Problem[]> {
+  public async listProblems(
+    tx: Transaction,
+    userId: string | null,
+  ): Promise<Problem[]> {
     let problems: Problem[] = [];
 
     for (let service of this.services) {
       if (service.listProblems) {
         let serviceTransaction = await buildServiceTransaction(service, tx);
-        problems = problems.concat(await service.listProblems(serviceTransaction, userId));
+        problems = problems.concat(
+          await service.listProblems(serviceTransaction, userId),
+        );
       }
     }
 
@@ -260,10 +275,13 @@ class ServiceManagerImpl {
   }
 
   public getServiceResolvers(): Promise<Record<string, unknown>[]> {
-    return Promise.all(Array.from(
-      this.serviceOwners.values(),
-      (owner: ServiceOwner): Promise<Record<string, unknown>> => owner.resolvers(),
-    ));
+    return Promise.all(
+      Array.from(
+        this.serviceOwners.values(),
+        (owner: ServiceOwner): Promise<Record<string, unknown>> =>
+          owner.resolvers(),
+      ),
+    );
   }
 
   public getServiceId(service: Service): string {
@@ -289,7 +307,12 @@ class ServiceManagerImpl {
       if (service.createItemFromURL) {
         let serviceTransaction = await buildServiceTransaction(service, tx);
         try {
-          let id = await service.createItemFromURL(serviceTransaction, userId, url, isTask);
+          let id = await service.createItemFromURL(
+            serviceTransaction,
+            userId,
+            url,
+            isTask,
+          );
           if (id) {
             return id;
           }

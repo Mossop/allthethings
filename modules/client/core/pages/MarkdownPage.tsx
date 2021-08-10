@@ -16,11 +16,11 @@ const useStyles = makeStyles((theme: Theme) =>
       flex: 1,
     },
     content: {
-      "padding": theme.spacing(2),
-      "flexGrow": 1,
-      "flexShrink": 1,
-      "overflowX": "hidden",
-      "overflowY": "auto",
+      padding: theme.spacing(2),
+      flexGrow: 1,
+      flexShrink: 1,
+      overflowX: "hidden",
+      overflowY: "auto",
 
       "& h1": {
         fontSize: "1.5rem",
@@ -60,7 +60,8 @@ const useStyles = makeStyles((theme: Theme) =>
     bottomLink: {
       color: theme.palette.primary.main,
     },
-  }));
+  }),
+);
 
 export interface MarkdownPageProps {
   path: string;
@@ -83,20 +84,26 @@ export default ReactMemo(function MarkdownPage({
   });
 
   if (error) {
-    return <NotFound/>;
+    return <NotFound />;
   }
 
-  return <Page>
-    {
-      data
-        ? <ReactMarkdown className={classes.content}>{data.pageContent}</ReactMarkdown>
-        : <Loading className={classes.loading}/>
-    }
-    <Divider className={classes.divider}/>
-    <div className={classes.bottom}>
-      <div className={classes.innerBottom}>
-        <Link className={classes.bottomLink} href={privacyUrl}>Privacy Policy</Link>
+  return (
+    <Page>
+      {data ? (
+        <ReactMarkdown className={classes.content}>
+          {data.pageContent}
+        </ReactMarkdown>
+      ) : (
+        <Loading className={classes.loading} />
+      )}
+      <Divider className={classes.divider} />
+      <div className={classes.bottom}>
+        <div className={classes.innerBottom}>
+          <Link className={classes.bottomLink} href={privacyUrl}>
+            Privacy Policy
+          </Link>
+        </div>
       </div>
-    </div>
-  </Page>;
+    </Page>
+  );
 });

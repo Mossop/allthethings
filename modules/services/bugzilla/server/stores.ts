@@ -7,7 +7,10 @@ export interface BugzillaTransaction extends ServiceTransaction {
   readonly stores: Stores;
 }
 
-export const buildTransaction = transactionBuilder<BugzillaTransaction, ServiceTransaction>({
+export const buildTransaction = transactionBuilder<
+  BugzillaTransaction,
+  ServiceTransaction
+>({
   stores: {
     enumerable: true,
     get(this: BugzillaTransaction): Stores {

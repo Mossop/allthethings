@@ -18,7 +18,7 @@ const clientOperationPlugins = {
     nonOptionalTypename: true,
     namespacedImportName: "Schema",
     scalars: Object.fromEntries(
-      Object.keys(scalars).map(key => [key, `Schema.Scalars['${key}']`]),
+      Object.keys(scalars).map((key) => [key, `Schema.Scalars['${key}']`]),
     ),
   },
   "named-operations-object": {
@@ -29,11 +29,8 @@ const clientOperationPlugins = {
     withRefetchFn: true,
     namespacedImportName: "Schema",
   },
-  "add": {
-    content: [
-      "/* eslint-disable */",
-      "import * as Schema from '#schema';",
-    ],
+  add: {
+    content: ["/* eslint-disable */", "import * as Schema from '#schema';"],
   },
 };
 
@@ -49,7 +46,7 @@ const resolverPlugins = (mappers = {}) => ({
     mappers,
     noSchemaStitching: true,
   },
-  "add": {
+  add: {
     content: [
       "/* eslint-disable */",
       "import * as Schema from '#schema';",
@@ -60,9 +57,7 @@ const resolverPlugins = (mappers = {}) => ({
 
 const serviceTargets = (service, mappers = {}) => ({
   [path.join(rootDir, "services", service, "client", "operations.ts")]: {
-    schema: [
-      path.join(rootDir, "**", "*.graphql"),
-    ],
+    schema: [path.join(rootDir, "**", "*.graphql")],
     documents: path.join(rootDir, "services", service, "client", "*.gql"),
     plugins: clientOperationPlugins,
   },
@@ -80,11 +75,13 @@ module.exports = {
   overwrite: true,
   errorsOnly: true,
 
+  hooks: {
+    afterOneFileWrite: "prettier --write",
+  },
+
   generates: {
     [path.join(rootDir, "schema", "introspection.json")]: {
-      schema: [
-        path.join(rootDir, "**", "*.graphql"),
-      ],
+      schema: [path.join(rootDir, "**", "*.graphql")],
 
       plugins: {
         introspection: {
@@ -94,9 +91,7 @@ module.exports = {
     },
 
     [path.join(rootDir, "schema", "schema.ts")]: {
-      schema: [
-        path.join(rootDir, "**", "*.graphql"),
-      ],
+      schema: [path.join(rootDir, "**", "*.graphql")],
 
       plugins: {
         typescript: {
@@ -109,17 +104,13 @@ module.exports = {
           scalars,
         },
         add: {
-          content: [
-            "/* eslint-disable */",
-          ],
+          content: ["/* eslint-disable */"],
         },
       },
     },
 
     [path.join(__dirname, "dist", "schema", "schema.graphql")]: {
-      schema: [
-        path.join(rootDir, "**", "*.graphql"),
-      ],
+      schema: [path.join(rootDir, "**", "*.graphql")],
 
       plugins: {
         "schema-ast": {},
@@ -127,20 +118,15 @@ module.exports = {
     },
 
     [path.join(rootDir, "client", "core", "schema", "types.ts")]: {
-      schema: [
-        path.join(rootDir, "**", "*.graphql"),
-      ],
+      schema: [path.join(rootDir, "**", "*.graphql")],
 
       plugins: {
         "typescript-apollo-client-helpers": {
           useTypeImports: true,
         },
-        "fragment-matcher": {
-        },
-        "add": {
-          content: [
-            "/* eslint-disable */",
-          ],
+        "fragment-matcher": {},
+        add: {
+          content: ["/* eslint-disable */"],
         },
       },
     },
