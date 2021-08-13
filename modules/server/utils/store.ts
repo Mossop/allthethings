@@ -72,12 +72,12 @@ export class BaseStore<Tx extends Transaction, Record, Repr, Insert = Record> {
       b,
   ) {}
 
-  protected build(record: Awaitable<Record>): Promise<Repr>;
-  protected build(
+  public build(record: Awaitable<Record>): Promise<Repr>;
+  public build(
     record: Awaitable<Record | null | undefined>,
   ): Promise<Repr | null>;
-  protected build(records: Awaitable<Record[]>): Promise<Repr[]>;
-  protected async build(
+  public build(records: Awaitable<Record[]>): Promise<Repr[]>;
+  public async build(
     record: Awaitable<null | undefined | Record | Record[]>,
   ): Promise<null | Repr | Repr[]> {
     record = await waitFor(record);

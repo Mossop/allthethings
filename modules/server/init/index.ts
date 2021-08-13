@@ -8,6 +8,7 @@ import {
   connect,
   migrate,
   rollback,
+  TaskInfo,
 } from "#server/core";
 import type { Transaction } from "#server/utils";
 
@@ -43,29 +44,31 @@ async function init(): Promise<void> {
 
   await ServiceManager.initServices(knex, config);
 
-  if (config.admin) {
-    let admin = config.admin;
-    await withTransaction(
-      knex,
-      async (transaction: Transaction): Promise<void> => {
-        let tx = buildCoreTransaction(transaction);
+  await withTransaction(
+    knex,
+    async (transaction: Transaction): Promise<void> => {
+      let tx = buildCoreTransaction(transaction);
+      if (config.admin) {
         let existing = await tx.stores.users.first({
-          email: admin.email,
+          email: config.admin.email,
         });
 
         if (!existing) {
-          console.log(`Creating admin user ${admin.email}`);
+          console.log(`Creating admin user ${config.admin.email}`);
           await User.create(tx, {
-            ...admin,
+            ...config.admin,
             isAdmin: true,
           });
         }
-      },
-    );
-  }
+      }
+
+      await TaskInfo.updateTaskDetails(tx);
+    },
+  );
 
   let gqlServer = await createGqlServer();
   await createWebServer(config, knex, gqlServer);
+  console.log("Startup complete");
 }
 
 init().catch((e: Error) => console.error(e));

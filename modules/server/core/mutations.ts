@@ -1,7 +1,5 @@
 import { URL } from "url";
 
-import { DateTime } from "luxon";
-
 import type {
   MutationArchiveItemArgs,
   MutationChangePasswordArgs,
@@ -424,16 +422,14 @@ const mutationResolvers: TypeResolver<
 
       if (!existing) {
         await TaskInfo.create(tx, item, {
-          due: taskInfoParams.due ?? null,
           manualDue: taskInfoParams.due ?? null,
-          done: taskInfoParams.done ?? null,
+          manualDone: taskInfoParams.done ?? null,
           controller: TaskController.Manual,
         });
       } else {
         await existing.edit({
-          due: taskInfoParams.due ?? null,
           manualDue: taskInfoParams.due ?? null,
-          done: taskInfoParams.done ?? null,
+          manualDone: taskInfoParams.done ?? null,
           controller: TaskController.Manual,
         });
       }
@@ -468,12 +464,6 @@ const mutationResolvers: TypeResolver<
         return item;
       }
 
-      let taskInfo = {
-        due: null as DateTime | null,
-        manualDue: existing?.manualDue ?? null,
-        done: existing?.done ?? null,
-        controller: controller,
-      };
       let detail = await item.detail();
 
       if (controller != TaskController.Manual) {
@@ -487,36 +477,27 @@ const mutationResolvers: TypeResolver<
             if (!wasListed) {
               throw new Error("Unsupported task controller.");
             }
-
-            let isListed = await detail.isCurrentlyListed();
-            if (isListed) {
-              taskInfo.done = null;
-            } else if (!taskInfo.done) {
-              taskInfo.done = DateTime.now();
-            }
-
-            taskInfo.due =
-              taskInfo.manualDue ?? (await detail.getItemDueForLists());
             break;
           }
           case TaskController.Service: {
             if (!detail.hasTaskState) {
               throw new Error("Unsupported task controller.");
             }
-
-            taskInfo.done = detail.taskDone;
-            taskInfo.due = taskInfo.manualDue ?? detail.taskDue;
             break;
           }
         }
-      } else {
-        taskInfo.due = taskInfo.manualDue;
       }
 
       if (existing) {
-        await existing.edit(taskInfo);
+        await existing.edit({
+          controller,
+        });
       } else {
-        await TaskInfo.create(tx, item, taskInfo);
+        await TaskInfo.create(tx, item, {
+          controller,
+          manualDue: null,
+          manualDone: null,
+        });
       }
 
       return item;
@@ -637,31 +618,9 @@ const mutationResolvers: TypeResolver<
         return null;
       }
 
-      if (due) {
-        await existing.edit({
-          due,
-          manualDue: due,
-        });
-      } else {
-        let due: DateTime | null = null;
-        if (existing.controller != TaskController.Manual) {
-          let detail = await item.detail();
-          if (!(detail instanceof ServiceDetail)) {
-            throw new Error("Invalid task controller.");
-          }
-
-          if (existing.controller == TaskController.Service) {
-            due = detail.taskDue;
-          } else {
-            due = await detail.getItemDueForLists();
-          }
-        }
-
-        await existing.edit({
-          due,
-          manualDue: null,
-        });
-      }
+      await existing.edit({
+        manualDue: due,
+      });
 
       return item;
     },

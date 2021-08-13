@@ -91,8 +91,9 @@ export type SectionItemsRecord = Identifiable<IndexedEntity>;
 // Task data for an item. id is a foreign key to ItemDbTable.id
 export type TaskInfoRecord = Identifiable<{
   due: DateTime | null;
-  manualDue: DateTime | null;
   done: DateTime | null;
+  manualDue: DateTime | null;
+  manualDone: DateTime | null;
   controller: TaskController;
 }>;
 
@@ -134,6 +135,7 @@ export interface ServiceListItemsRecord {
   serviceId: string;
   itemId: string;
   listId: string;
-  present: DateTime | null;
+  present: DateTime;
+  done: DateTime | null;
   due: DateTime | null;
 }

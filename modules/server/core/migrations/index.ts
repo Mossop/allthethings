@@ -37,4 +37,5 @@ export const databaseMigrations = [
   new ModuleMigration("./init", "Init"),
   new ModuleMigration("./noDefaultContext", "No Default Context"),
   new ModuleMigration("./services", "Plugin -> Service"),
+  new ModuleMigration("./due", "Due dates migration"),
 ];

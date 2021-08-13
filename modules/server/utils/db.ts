@@ -48,13 +48,13 @@ function* bindings(bindings: Bindings): Iterable<[string, string]> {
   }
 }
 
-export async function updateFromTable(
+export async function updateFromTable<T = unknown>(
   knex: Knex,
   targetTable: string,
   sourceTable: Knex.QueryBuilder,
   columnBindings: Bindings,
   matchBindings: string[] | Record<string, string> = ["id"],
-): Promise<void> {
+): Promise<T[]> {
   let setList: string[] = [];
   let setBindings: string[] = [];
 
@@ -68,27 +68,29 @@ export async function updateFromTable(
 
   for (let [col, source] of bindings(matchBindings)) {
     whereList.push("?? = ??");
-    whereBindings.push(col, `s.${source}`);
+    whereBindings.push(`t.${col}`, `s.${source}`);
   }
 
-  await knex.raw(
+  // @ts-ignore
+  return knex.raw(
     `UPDATE ?? AS ?? SET ${setList.join(", ")} FROM ? WHERE ${whereList.join(
       ", ",
-    )}`,
+    )} RETURNING *`,
     [targetTable, "t", ...setBindings, sourceTable.as("s"), ...whereBindings],
   );
 }
 
-export async function insertFromTable(
+export async function insertFromTable<T = unknown>(
   knex: Knex,
   targetTable: string,
   sourceTable: Knex.QueryBuilder,
   columns: string[],
-): Promise<void> {
+): Promise<T[]> {
   let columnList: string[] = new Array(columns.length);
   columnList.fill("??", 0, columns.length);
 
-  await knex.raw(`INSERT INTO ?? (${columnList.join(", ")}) ?`, [
+  // @ts-ignore
+  return knex.raw(`INSERT INTO ?? (${columnList.join(", ")}) ? RETURNING *`, [
     targetTable,
     ...columns,
     sourceTable,

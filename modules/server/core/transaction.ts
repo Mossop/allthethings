@@ -143,18 +143,10 @@ export const buildServiceTransaction = memoized(
             taskDue: due ?? null,
           });
 
-          if (done !== undefined && controller == TaskController.Service) {
+          if (done !== undefined && controller) {
             await TaskInfo.create(coreTransaction, itemImpl, {
-              due: due ?? null,
               manualDue: null,
-              done,
-              controller,
-            });
-          } else if (controller) {
-            await TaskInfo.create(coreTransaction, itemImpl, {
-              due: null,
-              manualDue: null,
-              done: null,
+              manualDone: null,
               controller,
             });
           }
@@ -200,16 +192,7 @@ export const buildServiceTransaction = memoized(
             taskDue: due,
           });
 
-          let existing = await item.taskInfo();
-          if (!existing || existing.controller != TaskController.Service) {
-            return;
-          }
-
-          await existing.edit({
-            done,
-            due: existing.manualDue ?? due,
-            controller: TaskController.Service,
-          });
+          await TaskInfo.updateTaskDetails(coreTransaction, [id]);
         },
       },
 
@@ -355,7 +338,6 @@ export async function withTransaction<R>(
       let result: R = await action(transaction);
 
       let coreTransaction = buildCoreTransaction(transaction);
-      await ServiceList.updateTaskStates(coreTransaction);
       await Item.deleteCompleteInboxTasks(coreTransaction);
 
       return result;

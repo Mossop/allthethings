@@ -18,7 +18,14 @@ import type {
   ItemFilter,
 } from "#schema";
 import type { Identified, ItemList, ResolverImpl, Store } from "#server/utils";
-import { id, min, count, max, BaseRecordHolder } from "#server/utils";
+import {
+  updateFromTable,
+  id,
+  min,
+  count,
+  max,
+  BaseRecordHolder,
+} from "#server/utils";
 import { assert, call, memoized, waitFor } from "#utils";
 
 import type {
@@ -643,16 +650,11 @@ export class Item
       });
 
       if (taskInfo) {
-        await tx.stores.taskInfo.insertOne(
-          {
-            ...taskInfo,
-            due: taskInfo.due ?? null,
-            manualDue: taskInfo.due ?? null,
-            done: taskInfo.done ?? null,
-            controller: TaskController.Manual,
-          },
-          item.id,
-        );
+        await TaskInfo.create(tx, item, {
+          manualDue: taskInfo.due ?? null,
+          manualDone: taskInfo.done ?? null,
+          controller: TaskController.Manual,
+        });
       }
 
       return item;
@@ -784,12 +786,110 @@ export class TaskInfo
   extends IdentifiedBase<TaskInfoRecord>
   implements ResolverImpl<TaskInfoResolvers>
 {
-  public static create(
+  public static async create(
     tx: CoreTransaction,
     item: Item,
-    taskInfo: Omit<TaskInfoRecord, "id">,
+    taskInfo: Omit<TaskInfoRecord, "id" | "due" | "done">,
   ): Promise<TaskInfo> {
-    return tx.stores.taskInfo.insertOne(taskInfo, item.id);
+    let task = await tx.stores.taskInfo.insertOne(
+      {
+        ...taskInfo,
+        due:
+          taskInfo.controller == TaskController.Manual
+            ? taskInfo.manualDue
+            : null,
+        done:
+          taskInfo.controller == TaskController.Manual
+            ? taskInfo.manualDone
+            : null,
+      },
+      item.id,
+    );
+
+    if (taskInfo.controller != TaskController.Manual) {
+      await TaskInfo.updateTaskDetails(tx, [item.id]);
+    }
+
+    return task;
+  }
+
+  public static async updateTaskDetails(
+    tx: CoreTransaction,
+    items?: string[],
+  ): Promise<TaskInfo[]> {
+    if (items?.length == 0) {
+      return [];
+    }
+
+    let listStates = tx
+      .knex<ServiceListItemsRecord>("ServiceListItems")
+      .groupBy("itemId")
+      .select({
+        id: "itemId",
+        due: tx.knex.raw("MIN(??)", ["due"]),
+        done: tx.knex.raw(
+          "CASE COUNT(*) - COUNT(:done:) WHEN 0 THEN MAX(:done:) ELSE NULL END",
+          { done: "done" },
+        ),
+      })
+      .as("ListStates");
+    let serviceStates = tx
+      .knex<ServiceDetail>("ServiceDetail")
+      .where("hasTaskState", true)
+      .select({
+        id: "id",
+        due: "taskDue",
+        done: "taskDone",
+      })
+      .as("ServiceStates");
+
+    let states = tx
+      .knex("TaskInfo")
+      .leftJoin(serviceStates, "TaskInfo.id", "ServiceStates.id")
+      .leftJoin(listStates, "TaskInfo.id", "ListStates.id")
+      .select({
+        id: "TaskInfo.id",
+        due: tx.knex.raw(
+          `COALESCE(:manualDue:, CASE :controller:
+             WHEN :service THEN :serviceDue:
+             WHEN :list THEN :listDue:
+           END)`,
+          {
+            controller: "TaskInfo.controller",
+            serviceDue: "ServiceStates.due",
+            listDue: "ListStates.due",
+            manualDue: "TaskInfo.manualDue",
+            service: TaskController.Service,
+            list: TaskController.ServiceList,
+          },
+        ),
+        done: tx.knex.raw(
+          `CASE :controller:
+             WHEN :service THEN :serviceDone:
+             WHEN :list THEN :listDone:
+             ELSE :manualDone:
+           END`,
+          {
+            controller: "TaskInfo.controller",
+            serviceDone: "ServiceStates.done",
+            listDone: "ListStates.done",
+            manualDone: "TaskInfo.manualDone",
+            service: TaskController.Service,
+            list: TaskController.ServiceList,
+          },
+        ),
+      });
+
+    if (items) {
+      states = states.whereIn("TaskInfo.id", items);
+    }
+
+    return tx.stores.taskInfo.build(
+      updateFromTable<TaskInfoRecord>(tx.knex, "TaskInfo", states, [
+        "due",
+        "done",
+      ]),
+    );
   }
 
   protected get store(): Stores["taskInfo"] {
@@ -800,16 +900,59 @@ export class TaskInfo
     return this.record.due;
   }
 
-  public get manualDue(): DateTime | null {
-    return this.record.manualDue;
-  }
-
   public get done(): DateTime | null {
     return this.record.done;
   }
 
+  public get manualDue(): DateTime | null {
+    return this.record.manualDue;
+  }
+
+  public get manualDone(): DateTime | null {
+    return this.record.manualDone;
+  }
+
   public get controller(): TaskController {
     return this.record.controller;
+  }
+
+  public override async edit({
+    due,
+    done,
+    ...taskInfo
+  }: Partial<Omit<TaskInfoRecord, "id">>): Promise<void> {
+    if ((taskInfo.controller ?? this.controller) == TaskController.Manual) {
+      // A manual task, simple to calculate.
+      await this.store.updateOne(this.id, {
+        ...this.record,
+        ...taskInfo,
+        due: taskInfo.manualDue ?? this.record.manualDue,
+        done: taskInfo.manualDone ?? this.record.manualDone,
+      });
+    } else if (!taskInfo.controller || taskInfo.controller == this.controller) {
+      // We're not changing the controller, done doesn't need to change and due only needs to change
+      // if manualDue is set.
+      let needsRecalc = !taskInfo.manualDue && this.record.manualDue;
+
+      await this.store.updateOne(this.id, {
+        ...this.record,
+        ...taskInfo,
+        due: taskInfo.manualDue ?? this.record.due,
+      });
+
+      if (needsRecalc) {
+        await TaskInfo.updateTaskDetails(this.tx, [this.id]);
+      }
+    } else {
+      // Do a full recalculation.
+
+      await this.store.updateOne(this.id, {
+        ...this.record,
+        ...taskInfo,
+      });
+
+      await TaskInfo.updateTaskDetails(this.tx, [this.id]);
+    }
   }
 }
 
@@ -930,10 +1073,7 @@ export class ServiceDetail
       .where("ServiceListItems.itemId", this.id)
       .select("ServiceList.*");
 
-    return records.map(
-      (record: ServiceListRecord): ServiceList =>
-        new ServiceList(this.tx, record),
-    );
+    return this.tx.stores.serviceList.build(records);
   }
 
   public async wasEverListed(): Promise<boolean> {
@@ -949,7 +1089,7 @@ export class ServiceDetail
       this.tx.knex
         .from("ServiceListItems")
         .where("itemId", this.id)
-        .whereNotNull("present")
+        .whereNull("done")
         .limit(1),
     ))
       ? true
@@ -986,73 +1126,12 @@ export class ServiceList
       await tx.stores.serviceListItems.setItems(list.id, items, {
         serviceId,
         present: now,
+        done: null,
         due: due ? now.plus(due) : null,
       });
     }
 
     return list;
-  }
-
-  public static async updateTaskStates(tx: CoreTransaction): Promise<void> {
-    interface Record {
-      id: string;
-      done: DateTime | null;
-      manualDue: DateTime | null;
-      due: DateTime | null;
-      presentCount: number | null;
-      serviceDue: DateTime | null;
-    }
-
-    let now = DateTime.now();
-
-    let presentItems = tx.knex
-      .from<ServiceListItemsRecord>("ServiceListItems")
-      .groupBy("itemId")
-      .select({
-        itemId: "itemId",
-        presentCount: tx.knex.raw("COUNT(??)", "present"),
-        serviceDue: tx.knex.raw("MIN(??)", "due"),
-      })
-      .as("PresentItems");
-
-    let records = (await tx.knex
-      .from("TaskInfo")
-      .leftJoin(presentItems, "TaskInfo.id", "PresentItems.itemId")
-      .where("TaskInfo.controller", TaskController.ServiceList)
-      .select({
-        id: "TaskInfo.id",
-        done: "TaskInfo.done",
-        manualDue: "TaskInfo.manualDue",
-        due: "TaskInfo.due",
-        presentCount: "PresentItems.presentCount",
-        serviceDue: "PresentItems.serviceDue",
-      })) as Record[];
-
-    for (let record of records) {
-      if (record.presentCount === null) {
-        // No lists left.
-        await tx.stores.taskInfo.updateOne(record.id, {
-          done: now,
-          due: record.manualDue,
-          controller: TaskController.Manual,
-        });
-      } else if (record.presentCount > 0) {
-        // Item is not done
-        let due = record.manualDue ?? record.serviceDue;
-        if (record.done || record.due != due) {
-          await tx.stores.taskInfo.updateOne(record.id, {
-            done: null,
-            due,
-          });
-        }
-      } else if (!record.done) {
-        // Item is done.
-        await tx.stores.taskInfo.updateOne(record.id, {
-          done: now,
-          due: record.manualDue ?? record.serviceDue,
-        });
-      }
-    }
   }
 
   protected get store(): Stores["serviceList"] {
@@ -1085,137 +1164,57 @@ export class ServiceList
 
       let now = DateTime.now();
 
-      // These are items that were already present for this list. We must update their due states.
-      let existingPresentRecords = await this.tx.knex
-        .from<ServiceListItemsRecord>("ServiceListItems")
-        .whereIn("itemId", items)
-        .andWhere({
-          listId: this.id,
-        })
-        .whereNotNull("present");
-
-      for (let record of existingPresentRecords) {
-        itemIdsToUpdate.delete(record.itemId);
-
-        if (due !== undefined) {
-          let taskDue = due ? record.present!.plus(due) : null;
-          if (record.due != due) {
-            await this.tx.knex
-              .into<ServiceListItemsRecord>("ServiceListItems")
-              .where({
-                itemId: record.itemId,
-                listId: this.id,
-              })
-              .update({
-                due: taskDue,
-              });
-          }
-        }
-      }
-
-      let taskDue = due ? now.plus(due) : null;
-
-      // Update any existing items that are newly present. We can set their due date directly.
-      let existingNotPresentItemIds = (await this.tx.knex
+      // Mark no longer present items as done.
+      let noLongerPresent = await this.tx.knex
         .into<ServiceListItemsRecord>("ServiceListItems")
-        .whereIn("itemId", items)
-        .andWhere({
-          listId: this.id,
-        })
-        .whereNull("present")
-        .update({
-          present: now,
-          due: taskDue,
-        })
-        .returning("itemId")) as string[];
-
-      for (let itemId of existingNotPresentItemIds) {
-        itemIdsToUpdate.delete(itemId);
-      }
-
-      // Create any new records.
-      if (itemIdsToUpdate.size) {
-        let records = Array.from(
-          itemIdsToUpdate,
-          (itemId: string): ServiceListItemsRecord => ({
-            serviceId: this.serviceId,
-            listId: this.id,
-            itemId,
-            present: now,
-            due: taskDue,
-          }),
-        );
-
-        await this.tx.knex
-          .into<ServiceListItemsRecord>("ServiceListItems")
-          .insert(records);
-      }
-
-      // Mark anything else as no longer present.
-      await this.tx.knex
-        .into<ServiceListItemsRecord>("ServiceListItems")
+        .where("listId", this.id)
+        .whereNull("done")
         .whereNotIn("itemId", items)
-        .andWhere({
-          listId: this.id,
-        })
-        .update({
-          present: null,
-          due: null,
-        });
-    } else if (due !== undefined) {
-      // Must update all due states.
-      let records = await this.tx.knex
-        .from<ServiceListItemsRecord>("ServiceListItems")
-        .where({
-          listId: this.id,
-        })
-        .whereNotNull("present");
+        .update({ done: now })
+        .returning("*");
 
-      for (let record of records) {
-        let taskDue = due ? record.present!.plus(due) : null;
-        if (record.due != due) {
-          await this.tx.knex
-            .into<ServiceListItemsRecord>("ServiceListItems")
-            .where({
-              listId: this.id,
-              itemId: record.itemId,
-            })
-            .update({
-              due: taskDue,
-            });
-        }
-      }
-    }
-
-    if (items && due !== undefined) {
-      if (!due) {
-        await this.tx.knex
-          .into<ServiceListItemsRecord>("ServiceListItems")
-          .where("listId", this.id)
-          .whereIn("itemId", items)
-          .update({
-            due: null,
-          });
-        return;
+      for (let record of noLongerPresent) {
+        itemIdsToUpdate.add(record.itemId);
       }
 
+      let itemSet = new Set(items);
       let records = await this.tx.knex
         .from<ServiceListItemsRecord>("ServiceListItems")
         .where("listId", this.id)
         .whereIn("itemId", items)
-        .whereNotNull("present");
+        .select("*");
 
       for (let record of records) {
+        itemSet.delete(record.itemId);
+
+        record.done = null;
+        if (due !== undefined) {
+          record.due = due ? record.present.plus(due) : null;
+        }
+      }
+
+      let itemDue = due ? now.plus(due) : null;
+
+      for (let itemId of itemSet) {
+        records.push({
+          serviceId: this.serviceId,
+          listId: this.id,
+          itemId,
+          present: now,
+          done: null,
+          due: itemDue,
+        });
+      }
+
+      if (records.length) {
         await this.tx.knex
           .into<ServiceListItemsRecord>("ServiceListItems")
-          .where({
-            listId: this.id,
-            itemId: record.itemId,
-          })
-          .update({
-            due: record.present?.plus(due) ?? null,
-          });
+          .insert(records)
+          .onConflict(["listId", "itemId"])
+          .merge();
       }
+
+      await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
     }
   }
 
