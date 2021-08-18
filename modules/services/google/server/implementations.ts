@@ -409,9 +409,13 @@ export class Thread
 
     await this.tx.setItemTaskDone(this.id, !record.unread);
 
-    await this.tx.stores.threadLabels.setItems(this.threadId, labels, {
-      accountId: account.id,
-    });
+    await this.tx.stores.threadLabels.setItems(
+      this.threadId,
+      labels.map((labelId: string) => ({
+        labelId,
+        accountId: account.id,
+      })),
+    );
   }
 
   public static recordFromThread(data: gmail_v1.Schema$Thread): {
@@ -491,9 +495,13 @@ export class Thread
       id,
     );
 
-    await account.tx.stores.threadLabels.setItems(thread.id, labels, {
-      accountId: account.id,
-    });
+    await account.tx.stores.threadLabels.setItems(
+      thread.threadId,
+      labels.map((labelId: string) => ({
+        labelId,
+        accountId: account.id,
+      })),
+    );
 
     return thread;
   }
@@ -551,7 +559,7 @@ export class Thread
     let labels: string[] = await this.tx
       .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
       .join(this.tx.tableRef("ThreadLabel"), "Label.id", "ThreadLabel.labelId")
-      .where("ThreadLabel.threadId", this.id)
+      .where("ThreadLabel.threadId", this.threadId)
       .pluck("Label.name");
 
     return {

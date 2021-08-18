@@ -213,6 +213,24 @@ class OwnerIdMigration implements ServiceDbMigration {
   }
 }
 
+class ThreadLabelUnique implements ServiceDbMigration {
+  public readonly name = "threadLabelUnique";
+
+  public async up(knex: Knex): Promise<void> {
+    await knex.schema.alterTable(
+      "ThreadLabel",
+      (table: Knex.CreateTableBuilder): void => {
+        table.unique(["threadId", "labelId"]);
+      },
+    );
+  }
+}
+
 export default function BuildMigrations(): ServiceDbMigration[] {
-  return [new BaseMigration(), new OptionalRefresh(), new OwnerIdMigration()];
+  return [
+    new BaseMigration(),
+    new OptionalRefresh(),
+    new OwnerIdMigration(),
+    new ThreadLabelUnique(),
+  ];
 }

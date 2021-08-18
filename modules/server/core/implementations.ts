@@ -1122,13 +1122,18 @@ export class ServiceList
 
     if (items) {
       let now = DateTime.now();
+      let itemDue = due ? now.plus(due) : null;
 
-      await tx.stores.serviceListItems.setItems(list.id, items, {
-        serviceId,
-        present: now,
-        done: null,
-        due: due ? now.plus(due) : null,
-      });
+      await tx.stores.serviceListItems.setItems(
+        list.id,
+        items.map((itemId: string) => ({
+          itemId,
+          serviceId,
+          present: now,
+          done: null,
+          due: itemDue,
+        })),
+      );
     }
 
     return list;
@@ -1206,14 +1211,7 @@ export class ServiceList
         });
       }
 
-      if (records.length) {
-        await this.tx.knex
-          .into<ServiceListItemsRecord>("ServiceListItems")
-          .insert(records)
-          .onConflict(["listId", "itemId"])
-          .merge();
-      }
-
+      await this.tx.stores.serviceListItems.addItems(this.id, records);
       await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
     }
   }

@@ -222,12 +222,14 @@ export class Label {
     issueLike: IssueLike,
     labels: Label[],
   ): Promise<void> {
-    let labelIds = labels.map((label: Label): string => label.id);
-
     let repo = await issueLike.repository();
-    await issueLike.tx.stores.issueLikeLabels.setItems(issueLike.id, labelIds, {
-      repositoryId: repo.id,
-    });
+    await issueLike.tx.stores.issueLikeLabels.setItems(
+      issueLike.id,
+      labels.map((label: Label) => ({
+        label: label.id,
+        repositoryId: repo.id,
+      })),
+    );
   }
 
   public static async getOrCreate(

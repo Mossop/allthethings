@@ -151,7 +151,6 @@ type JoinInit<Record> = <
   tableName: string,
   sourceKey: SourceKey,
   targetKey: TargetKey,
-  recordsFilter?: RecordFilter,
 ) => Join<Record, Tx, SourceKey, TargetKey>;
 
 export class Join<
@@ -165,9 +164,8 @@ export class Join<
     tableName: string,
     protected readonly sourceKey: SourceKey,
     protected readonly targetKey: TargetKey,
-    recordsFilter?: RecordFilter,
   ) {
-    super(tx, tableName, (tx: Tx, rec: Record): Record => rec, recordsFilter);
+    super(tx, tableName, (tx: Tx, rec: Record): Record => rec);
   }
 
   public static build<Record>(): JoinInit<Record> {
@@ -180,14 +178,7 @@ export class Join<
       tableName: string,
       sourceKey: SourceKey,
       targetKey: TargetKey,
-      recordsFilter?: RecordFilter,
-    ) => new Join(tx, tableName, sourceKey, targetKey, recordsFilter);
-  }
-
-  public async getItems(id: Record[SourceKey]): Promise<Record[]> {
-    return this.records()
-      .where(this.sourceKey, id)
-      .select(`${this.tableName}.*`) as Promise<Record[]>;
+    ) => new Join(tx, tableName, sourceKey, targetKey);
   }
 
   public async getItemIds(id: Record[SourceKey]): Promise<Record[TargetKey][]> {
@@ -196,34 +187,41 @@ export class Join<
 
   public async setItems(
     id: Record[SourceKey],
-    items: Record[TargetKey][],
-    shared: Omit<Record, SourceKey | TargetKey>,
+    items: Omit<Record, SourceKey>[],
   ): Promise<void> {
     await this.table()
       .where({
-        ...shared,
         [this.sourceKey]: id,
       })
-      .whereNotIn(this.targetKey, items)
+      .whereNotIn(
+        this.targetKey,
+        items.map(
+          (item: Omit<Record, SourceKey>): Record[TargetKey] =>
+            // @ts-ignore
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+            item[this.targetKey],
+        ),
+      )
       .delete();
 
-    await this.addItems(id, items, shared);
+    await this.addItems(id, items);
   }
 
   public async addItems(
     id: Record[SourceKey],
-    items: Record[TargetKey][],
-    shared: Omit<Record, SourceKey | TargetKey>,
+    items: Omit<Record, SourceKey>[],
   ): Promise<void> {
     if (items.length == 0) {
       return;
     }
 
-    let records = items.map((item: Record[TargetKey]): unknown => ({
-      ...shared,
-      [this.sourceKey]: id,
-      [this.targetKey]: item,
-    }));
+    let records: Record[] = items.map(
+      // @ts-ignore
+      (item: Omit<Record, SourceKey>): Record => ({
+        ...item,
+        [this.sourceKey]: id,
+      }),
+    );
 
     await this.table()
       .insert(records)
