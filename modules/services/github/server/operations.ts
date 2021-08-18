@@ -17951,8 +17951,6 @@ export enum SecurityAdvisoryEcosystem {
   Npm = "NPM",
   /** .NET packages hosted at the NuGet Gallery */
   Nuget = "NUGET",
-  /** Applications, runtimes, operating systems and other kinds of software */
-  Other = "OTHER",
   /** Python packages hosted at PyPI.org */
   Pip = "PIP",
   /** Ruby gems hosted at RubyGems.org */
@@ -22361,13 +22359,25 @@ export type IssueFieldsFragment = {
     readonly __typename: "LabelConnection";
     readonly nodes: Maybe<
       ReadonlyArray<
-        Maybe<{ readonly __typename: "Label" } & LabelFieldsFragment>
+        Maybe<{
+          readonly __typename: "Label";
+          readonly id: string;
+          readonly name: string;
+          readonly color: string;
+          readonly url: string;
+        }>
       >
     >;
   }>;
   readonly repository: {
     readonly __typename: "Repository";
-  } & RepositoryFieldsFragment;
+    readonly id: string;
+    readonly url: string;
+    readonly name: string;
+    readonly owner:
+      | { readonly __typename: "Organization"; readonly login: string }
+      | { readonly __typename: "User"; readonly login: string };
+  };
 };
 
 export type PrFieldsFragment = {
@@ -22382,13 +22392,25 @@ export type PrFieldsFragment = {
     readonly __typename: "LabelConnection";
     readonly nodes: Maybe<
       ReadonlyArray<
-        Maybe<{ readonly __typename: "Label" } & LabelFieldsFragment>
+        Maybe<{
+          readonly __typename: "Label";
+          readonly id: string;
+          readonly name: string;
+          readonly color: string;
+          readonly url: string;
+        }>
       >
     >;
   }>;
   readonly repository: {
     readonly __typename: "Repository";
-  } & RepositoryFieldsFragment;
+    readonly id: string;
+    readonly url: string;
+    readonly name: string;
+    readonly owner:
+      | { readonly __typename: "Organization"; readonly login: string }
+      | { readonly __typename: "User"; readonly login: string };
+  };
 };
 
 export type IssueLikeQueryVariables = Exact<{
@@ -22402,8 +22424,70 @@ export type IssueLikeQuery = {
   readonly repository: Maybe<{
     readonly __typename: "Repository";
     readonly issueOrPullRequest: Maybe<
-      | ({ readonly __typename: "Issue" } & IssueFieldsFragment)
-      | ({ readonly __typename: "PullRequest" } & PrFieldsFragment)
+      | {
+          readonly __typename: "Issue";
+          readonly id: string;
+          readonly number: number;
+          readonly title: string;
+          readonly url: string;
+          readonly closedAt: Maybe<string>;
+          readonly issueState: IssueState;
+          readonly labels: Maybe<{
+            readonly __typename: "LabelConnection";
+            readonly nodes: Maybe<
+              ReadonlyArray<
+                Maybe<{
+                  readonly __typename: "Label";
+                  readonly id: string;
+                  readonly name: string;
+                  readonly color: string;
+                  readonly url: string;
+                }>
+              >
+            >;
+          }>;
+          readonly repository: {
+            readonly __typename: "Repository";
+            readonly id: string;
+            readonly url: string;
+            readonly name: string;
+            readonly owner:
+              | { readonly __typename: "Organization"; readonly login: string }
+              | { readonly __typename: "User"; readonly login: string };
+          };
+        }
+      | {
+          readonly __typename: "PullRequest";
+          readonly id: string;
+          readonly number: number;
+          readonly title: string;
+          readonly url: string;
+          readonly closedAt: Maybe<string>;
+          readonly prState: PullRequestState;
+          readonly labels: Maybe<{
+            readonly __typename: "LabelConnection";
+            readonly nodes: Maybe<
+              ReadonlyArray<
+                Maybe<{
+                  readonly __typename: "Label";
+                  readonly id: string;
+                  readonly name: string;
+                  readonly color: string;
+                  readonly url: string;
+                }>
+              >
+            >;
+          }>;
+          readonly repository: {
+            readonly __typename: "Repository";
+            readonly id: string;
+            readonly url: string;
+            readonly name: string;
+            readonly owner:
+              | { readonly __typename: "Organization"; readonly login: string }
+              | { readonly __typename: "User"; readonly login: string };
+          };
+        }
     >;
   }>;
 };
@@ -22427,10 +22511,78 @@ export type SearchQuery = {
         Maybe<
           | { readonly __typename: "App" }
           | { readonly __typename: "Discussion" }
-          | ({ readonly __typename: "Issue" } & IssueFieldsFragment)
+          | {
+              readonly __typename: "Issue";
+              readonly id: string;
+              readonly number: number;
+              readonly title: string;
+              readonly url: string;
+              readonly closedAt: Maybe<string>;
+              readonly issueState: IssueState;
+              readonly labels: Maybe<{
+                readonly __typename: "LabelConnection";
+                readonly nodes: Maybe<
+                  ReadonlyArray<
+                    Maybe<{
+                      readonly __typename: "Label";
+                      readonly id: string;
+                      readonly name: string;
+                      readonly color: string;
+                      readonly url: string;
+                    }>
+                  >
+                >;
+              }>;
+              readonly repository: {
+                readonly __typename: "Repository";
+                readonly id: string;
+                readonly url: string;
+                readonly name: string;
+                readonly owner:
+                  | {
+                      readonly __typename: "Organization";
+                      readonly login: string;
+                    }
+                  | { readonly __typename: "User"; readonly login: string };
+              };
+            }
           | { readonly __typename: "MarketplaceListing" }
           | { readonly __typename: "Organization" }
-          | ({ readonly __typename: "PullRequest" } & PrFieldsFragment)
+          | {
+              readonly __typename: "PullRequest";
+              readonly id: string;
+              readonly number: number;
+              readonly title: string;
+              readonly url: string;
+              readonly closedAt: Maybe<string>;
+              readonly prState: PullRequestState;
+              readonly labels: Maybe<{
+                readonly __typename: "LabelConnection";
+                readonly nodes: Maybe<
+                  ReadonlyArray<
+                    Maybe<{
+                      readonly __typename: "Label";
+                      readonly id: string;
+                      readonly name: string;
+                      readonly color: string;
+                      readonly url: string;
+                    }>
+                  >
+                >;
+              }>;
+              readonly repository: {
+                readonly __typename: "Repository";
+                readonly id: string;
+                readonly url: string;
+                readonly name: string;
+                readonly owner:
+                  | {
+                      readonly __typename: "Organization";
+                      readonly login: string;
+                    }
+                  | { readonly __typename: "User"; readonly login: string };
+              };
+            }
           | { readonly __typename: "Repository" }
           | { readonly __typename: "User" }
         >
@@ -22504,7 +22656,38 @@ export type NodeQuery = {
     | { readonly __typename: "HeadRefForcePushedEvent" }
     | { readonly __typename: "HeadRefRestoredEvent" }
     | { readonly __typename: "IpAllowListEntry" }
-    | ({ readonly __typename: "Issue" } & IssueFieldsFragment)
+    | {
+        readonly __typename: "Issue";
+        readonly id: string;
+        readonly number: number;
+        readonly title: string;
+        readonly url: string;
+        readonly closedAt: Maybe<string>;
+        readonly issueState: IssueState;
+        readonly labels: Maybe<{
+          readonly __typename: "LabelConnection";
+          readonly nodes: Maybe<
+            ReadonlyArray<
+              Maybe<{
+                readonly __typename: "Label";
+                readonly id: string;
+                readonly name: string;
+                readonly color: string;
+                readonly url: string;
+              }>
+            >
+          >;
+        }>;
+        readonly repository: {
+          readonly __typename: "Repository";
+          readonly id: string;
+          readonly url: string;
+          readonly name: string;
+          readonly owner:
+            | { readonly __typename: "Organization"; readonly login: string }
+            | { readonly __typename: "User"; readonly login: string };
+        };
+      }
     | { readonly __typename: "IssueComment" }
     | { readonly __typename: "Label" }
     | { readonly __typename: "LabeledEvent" }
@@ -22570,7 +22753,38 @@ export type NodeQuery = {
     | { readonly __typename: "ProjectCard" }
     | { readonly __typename: "ProjectColumn" }
     | { readonly __typename: "PublicKey" }
-    | ({ readonly __typename: "PullRequest" } & PrFieldsFragment)
+    | {
+        readonly __typename: "PullRequest";
+        readonly id: string;
+        readonly number: number;
+        readonly title: string;
+        readonly url: string;
+        readonly closedAt: Maybe<string>;
+        readonly prState: PullRequestState;
+        readonly labels: Maybe<{
+          readonly __typename: "LabelConnection";
+          readonly nodes: Maybe<
+            ReadonlyArray<
+              Maybe<{
+                readonly __typename: "Label";
+                readonly id: string;
+                readonly name: string;
+                readonly color: string;
+                readonly url: string;
+              }>
+            >
+          >;
+        }>;
+        readonly repository: {
+          readonly __typename: "Repository";
+          readonly id: string;
+          readonly url: string;
+          readonly name: string;
+          readonly owner:
+            | { readonly __typename: "Organization"; readonly login: string }
+            | { readonly __typename: "User"; readonly login: string };
+        };
+      }
     | { readonly __typename: "PullRequestCommit" }
     | { readonly __typename: "PullRequestCommitCommentThread" }
     | { readonly __typename: "PullRequestReview" }

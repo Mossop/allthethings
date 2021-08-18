@@ -7,6 +7,7 @@ import type { Awaitable, MaybeCallable, Overwrite } from "#utils";
 
 import type { ServiceTransaction } from "./services";
 import type { Transaction } from "./transaction";
+import type { Resolver } from "./types";
 
 export interface Root {
   dummy: "Root";
@@ -33,20 +34,8 @@ export type AuthedGraphQLCtx<Tx extends Transaction = Transaction> = Overwrite<
   }
 >;
 
-export interface ResolverFunc<TResult, TParent, TContext, TArgs> {
-  result: TResult;
-  parent: TParent;
-  context: TContext;
-  args: TArgs;
-}
-
 export type ResolverImpl<T> = {
-  [K in keyof T]: T[K] extends ResolverFunc<
-    infer TResult,
-    any,
-    any,
-    infer TArgs
-  >
+  [K in keyof T]: T[K] extends Resolver<infer TResult, any, any, infer TArgs>
     ? MaybeCallable<Awaitable<TResult>, [args: TArgs, info: GraphQLResolveInfo]>
     : T[K];
 };
@@ -54,12 +43,7 @@ export type ResolverImpl<T> = {
 type Contexts<Tx extends Transaction> = GraphQLCtx<Tx> | AuthedGraphQLCtx<Tx>;
 
 export type TypeResolver<T, Ctx> = {
-  [K in keyof T]: T[K] extends ResolverFunc<
-    infer TResult,
-    any,
-    any,
-    infer TArgs
-  >
+  [K in keyof T]: T[K] extends Resolver<infer TResult, any, any, infer TArgs>
     ? MaybeCallable<
         Awaitable<TResult>,
         [context: Ctx, args: TArgs, info: GraphQLResolveInfo]

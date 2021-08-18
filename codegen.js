@@ -41,7 +41,6 @@ const resolverPlugins = (mappers = {}) => ({
     immutableTypes: true,
     avoidOptionals: true,
     namespacedImportName: "Schema",
-    customResolverFn: "ResolverFunc<TResult, TParent, TContext, TArgs>",
     rootValueType: "Root",
     mappers,
     noSchemaStitching: true,
@@ -50,7 +49,7 @@ const resolverPlugins = (mappers = {}) => ({
     content: [
       "/* eslint-disable */",
       "import * as Schema from '#schema';",
-      "import { ResolverFunc, Root, Problem } from '#server/utils';",
+      "import { Root, Problem } from '#server/utils';",
     ],
   },
 });

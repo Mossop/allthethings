@@ -200,7 +200,47 @@ export type CreateTaskMutation = {
   readonly __typename: "Mutation";
   readonly createTask: {
     readonly __typename: "Item";
-  } & ClientItemFieldsFragment;
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  };
 };
 
 export type CreateLinkMutationVariables = Schema.Exact<{
@@ -214,7 +254,47 @@ export type CreateLinkMutation = {
   readonly __typename: "Mutation";
   readonly createLink: {
     readonly __typename: "Item";
-  } & ClientItemFieldsFragment;
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  };
 };
 
 export type EditItemMutationVariables = Schema.Exact<{
@@ -224,9 +304,49 @@ export type EditItemMutationVariables = Schema.Exact<{
 
 export type EditItemMutation = {
   readonly __typename: "Mutation";
-  readonly editItem: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly editItem: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type EditTaskInfoMutationVariables = Schema.Exact<{
@@ -236,9 +356,49 @@ export type EditTaskInfoMutationVariables = Schema.Exact<{
 
 export type EditTaskInfoMutation = {
   readonly __typename: "Mutation";
-  readonly editTaskInfo: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly editTaskInfo: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type EditTaskControllerMutationVariables = Schema.Exact<{
@@ -248,9 +408,49 @@ export type EditTaskControllerMutationVariables = Schema.Exact<{
 
 export type EditTaskControllerMutation = {
   readonly __typename: "Mutation";
-  readonly editTaskController: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly editTaskController: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type MoveItemMutationVariables = Schema.Exact<{
@@ -261,9 +461,49 @@ export type MoveItemMutationVariables = Schema.Exact<{
 
 export type MoveItemMutation = {
   readonly __typename: "Mutation";
-  readonly moveItem: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly moveItem: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type DeleteItemMutationVariables = Schema.Exact<{
@@ -282,9 +522,49 @@ export type ArchiveItemMutationVariables = Schema.Exact<{
 
 export type ArchiveItemMutation = {
   readonly __typename: "Mutation";
-  readonly archiveItem: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly archiveItem: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type SnoozeItemMutationVariables = Schema.Exact<{
@@ -294,9 +574,49 @@ export type SnoozeItemMutationVariables = Schema.Exact<{
 
 export type SnoozeItemMutation = {
   readonly __typename: "Mutation";
-  readonly snoozeItem: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly snoozeItem: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type MarkItemDueMutationVariables = Schema.Exact<{
@@ -306,9 +626,49 @@ export type MarkItemDueMutationVariables = Schema.Exact<{
 
 export type MarkItemDueMutation = {
   readonly __typename: "Mutation";
-  readonly markItemDue: Schema.Maybe<
-    { readonly __typename: "Item" } & ClientItemFieldsFragment
-  >;
+  readonly markItemDue: Schema.Maybe<{
+    readonly __typename: "Item";
+    readonly id: string;
+    readonly summary: string;
+    readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+    readonly created: Schema.Scalars["DateTime"];
+    readonly taskInfo: Schema.Maybe<{
+      readonly __typename: "TaskInfo";
+      readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+      readonly controller: Schema.Scalars["TaskController"];
+    }>;
+    readonly detail: Schema.Maybe<
+      | {
+          readonly __typename: "ServiceDetail";
+          readonly serviceId: string;
+          readonly hasTaskState: boolean;
+          readonly wasEverListed: boolean;
+          readonly isCurrentlyListed: boolean;
+          readonly fields: string;
+          readonly lists: ReadonlyArray<{
+            readonly __typename: "ServiceList";
+            readonly id: string;
+            readonly serviceId: string;
+            readonly name: string;
+            readonly url: Schema.Maybe<string>;
+          }>;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+    >;
+  }>;
 };
 
 export type CreateUserMutationVariables = Schema.Exact<{
@@ -422,9 +782,49 @@ export type ListInboxQuery = {
     readonly __typename: "User";
     readonly inbox: {
       readonly __typename: "ItemSet";
-      readonly items: ReadonlyArray<
-        { readonly __typename: "Item" } & ClientItemFieldsFragment
-      >;
+      readonly items: ReadonlyArray<{
+        readonly __typename: "Item";
+        readonly id: string;
+        readonly summary: string;
+        readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+        readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+        readonly created: Schema.Scalars["DateTime"];
+        readonly taskInfo: Schema.Maybe<{
+          readonly __typename: "TaskInfo";
+          readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+          readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+          readonly controller: Schema.Scalars["TaskController"];
+        }>;
+        readonly detail: Schema.Maybe<
+          | {
+              readonly __typename: "ServiceDetail";
+              readonly serviceId: string;
+              readonly hasTaskState: boolean;
+              readonly wasEverListed: boolean;
+              readonly isCurrentlyListed: boolean;
+              readonly fields: string;
+              readonly lists: ReadonlyArray<{
+                readonly __typename: "ServiceList";
+                readonly id: string;
+                readonly serviceId: string;
+                readonly name: string;
+                readonly url: Schema.Maybe<string>;
+              }>;
+            }
+          | {
+              readonly __typename: "LinkDetail";
+              readonly icon: Schema.Maybe<string>;
+              readonly url: string;
+            }
+          | { readonly __typename: "NoteDetail"; readonly note: string }
+          | {
+              readonly __typename: "FileDetail";
+              readonly size: number;
+              readonly filename: string;
+              readonly mimetype: string;
+            }
+        >;
+      }>;
     };
   }>;
 };
@@ -440,9 +840,49 @@ export type ListTaskListQuery = {
         readonly __typename: "Context";
         readonly items: {
           readonly __typename: "ItemSet";
-          readonly items: ReadonlyArray<
-            { readonly __typename: "Item" } & ClientItemFieldsFragment
-          >;
+          readonly items: ReadonlyArray<{
+            readonly __typename: "Item";
+            readonly id: string;
+            readonly summary: string;
+            readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+            readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+            readonly created: Schema.Scalars["DateTime"];
+            readonly taskInfo: Schema.Maybe<{
+              readonly __typename: "TaskInfo";
+              readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly controller: Schema.Scalars["TaskController"];
+            }>;
+            readonly detail: Schema.Maybe<
+              | {
+                  readonly __typename: "ServiceDetail";
+                  readonly serviceId: string;
+                  readonly hasTaskState: boolean;
+                  readonly wasEverListed: boolean;
+                  readonly isCurrentlyListed: boolean;
+                  readonly fields: string;
+                  readonly lists: ReadonlyArray<{
+                    readonly __typename: "ServiceList";
+                    readonly id: string;
+                    readonly serviceId: string;
+                    readonly name: string;
+                    readonly url: Schema.Maybe<string>;
+                  }>;
+                }
+              | {
+                  readonly __typename: "LinkDetail";
+                  readonly icon: Schema.Maybe<string>;
+                  readonly url: string;
+                }
+              | { readonly __typename: "NoteDetail"; readonly note: string }
+              | {
+                  readonly __typename: "FileDetail";
+                  readonly size: number;
+                  readonly filename: string;
+                  readonly mimetype: string;
+                }
+            >;
+          }>;
         };
         readonly sections: ReadonlyArray<{
           readonly __typename: "Section";
@@ -450,9 +890,49 @@ export type ListTaskListQuery = {
           readonly name: string;
           readonly items: {
             readonly __typename: "ItemSet";
-            readonly items: ReadonlyArray<
-              { readonly __typename: "Item" } & ClientItemFieldsFragment
-            >;
+            readonly items: ReadonlyArray<{
+              readonly __typename: "Item";
+              readonly id: string;
+              readonly summary: string;
+              readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly created: Schema.Scalars["DateTime"];
+              readonly taskInfo: Schema.Maybe<{
+                readonly __typename: "TaskInfo";
+                readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+                readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+                readonly controller: Schema.Scalars["TaskController"];
+              }>;
+              readonly detail: Schema.Maybe<
+                | {
+                    readonly __typename: "ServiceDetail";
+                    readonly serviceId: string;
+                    readonly hasTaskState: boolean;
+                    readonly wasEverListed: boolean;
+                    readonly isCurrentlyListed: boolean;
+                    readonly fields: string;
+                    readonly lists: ReadonlyArray<{
+                      readonly __typename: "ServiceList";
+                      readonly id: string;
+                      readonly serviceId: string;
+                      readonly name: string;
+                      readonly url: Schema.Maybe<string>;
+                    }>;
+                  }
+                | {
+                    readonly __typename: "LinkDetail";
+                    readonly icon: Schema.Maybe<string>;
+                    readonly url: string;
+                  }
+                | { readonly __typename: "NoteDetail"; readonly note: string }
+                | {
+                    readonly __typename: "FileDetail";
+                    readonly size: number;
+                    readonly filename: string;
+                    readonly mimetype: string;
+                  }
+              >;
+            }>;
           };
         }>;
       }
@@ -460,9 +940,49 @@ export type ListTaskListQuery = {
         readonly __typename: "Project";
         readonly items: {
           readonly __typename: "ItemSet";
-          readonly items: ReadonlyArray<
-            { readonly __typename: "Item" } & ClientItemFieldsFragment
-          >;
+          readonly items: ReadonlyArray<{
+            readonly __typename: "Item";
+            readonly id: string;
+            readonly summary: string;
+            readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+            readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+            readonly created: Schema.Scalars["DateTime"];
+            readonly taskInfo: Schema.Maybe<{
+              readonly __typename: "TaskInfo";
+              readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly controller: Schema.Scalars["TaskController"];
+            }>;
+            readonly detail: Schema.Maybe<
+              | {
+                  readonly __typename: "ServiceDetail";
+                  readonly serviceId: string;
+                  readonly hasTaskState: boolean;
+                  readonly wasEverListed: boolean;
+                  readonly isCurrentlyListed: boolean;
+                  readonly fields: string;
+                  readonly lists: ReadonlyArray<{
+                    readonly __typename: "ServiceList";
+                    readonly id: string;
+                    readonly serviceId: string;
+                    readonly name: string;
+                    readonly url: Schema.Maybe<string>;
+                  }>;
+                }
+              | {
+                  readonly __typename: "LinkDetail";
+                  readonly icon: Schema.Maybe<string>;
+                  readonly url: string;
+                }
+              | { readonly __typename: "NoteDetail"; readonly note: string }
+              | {
+                  readonly __typename: "FileDetail";
+                  readonly size: number;
+                  readonly filename: string;
+                  readonly mimetype: string;
+                }
+            >;
+          }>;
         };
         readonly sections: ReadonlyArray<{
           readonly __typename: "Section";
@@ -470,9 +990,49 @@ export type ListTaskListQuery = {
           readonly name: string;
           readonly items: {
             readonly __typename: "ItemSet";
-            readonly items: ReadonlyArray<
-              { readonly __typename: "Item" } & ClientItemFieldsFragment
-            >;
+            readonly items: ReadonlyArray<{
+              readonly __typename: "Item";
+              readonly id: string;
+              readonly summary: string;
+              readonly archived: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly snoozed: Schema.Maybe<Schema.Scalars["DateTime"]>;
+              readonly created: Schema.Scalars["DateTime"];
+              readonly taskInfo: Schema.Maybe<{
+                readonly __typename: "TaskInfo";
+                readonly due: Schema.Maybe<Schema.Scalars["DateTime"]>;
+                readonly done: Schema.Maybe<Schema.Scalars["DateTime"]>;
+                readonly controller: Schema.Scalars["TaskController"];
+              }>;
+              readonly detail: Schema.Maybe<
+                | {
+                    readonly __typename: "ServiceDetail";
+                    readonly serviceId: string;
+                    readonly hasTaskState: boolean;
+                    readonly wasEverListed: boolean;
+                    readonly isCurrentlyListed: boolean;
+                    readonly fields: string;
+                    readonly lists: ReadonlyArray<{
+                      readonly __typename: "ServiceList";
+                      readonly id: string;
+                      readonly serviceId: string;
+                      readonly name: string;
+                      readonly url: Schema.Maybe<string>;
+                    }>;
+                  }
+                | {
+                    readonly __typename: "LinkDetail";
+                    readonly icon: Schema.Maybe<string>;
+                    readonly url: string;
+                  }
+                | { readonly __typename: "NoteDetail"; readonly note: string }
+                | {
+                    readonly __typename: "FileDetail";
+                    readonly size: number;
+                    readonly filename: string;
+                    readonly mimetype: string;
+                  }
+              >;
+            }>;
           };
         }>;
       }

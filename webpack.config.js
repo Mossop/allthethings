@@ -82,6 +82,9 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
     plugins: [new TsconfigPathsPlugin({ configFile: tsConfig })],
+    fallback: {
+      assert: "assert",
+    },
   },
   output: {
     path: path.join(__dirname, "dist", "web", "app"),
@@ -155,6 +158,8 @@ module.exports = {
     new DefinePlugin({
       // eslint-disable-next-line @typescript-eslint/naming-convention
       SCHEMA_VERSION: schemaVersion,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG),
     }),
     new ForkTsCheckerWebpackPlugin({
       typescript: {

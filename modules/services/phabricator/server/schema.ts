@@ -6,13 +6,7 @@ import type {
 } from "graphql";
 import type { Account, QueryClass } from "./implementations";
 import * as Schema from "#schema";
-import { ResolverFunc, Root, Problem } from "#server/utils";
-export type ResolverFn<TResult, TParent, TContext, TArgs> = ResolverFunc<
-  TResult,
-  TParent,
-  TContext,
-  TArgs
->;
+import { Root, Problem } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
@@ -21,12 +15,19 @@ export type RequireFields<T, K extends keyof T> = {
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
-export type Resolver<
-  TResult,
-  TParent = {},
-  TContext = {},
-  TArgs = {},
-> = ResolverFn<TResult, TParent, TContext, TArgs>;
+export type ResolverWithResolve<TResult, TParent, TContext, TArgs> = {
+  resolve: ResolverFn<TResult, TParent, TContext, TArgs>;
+};
+export type Resolver<TResult, TParent = {}, TContext = {}, TArgs = {}> =
+  | ResolverFn<TResult, TParent, TContext, TArgs>
+  | ResolverWithResolve<TResult, TParent, TContext, TArgs>;
+
+export type ResolverFn<TResult, TParent, TContext, TArgs> = (
+  parent: TParent,
+  args: TArgs,
+  context: TContext,
+  info: GraphQLResolveInfo,
+) => Promise<TResult> | TResult;
 
 export type SubscriptionSubscribeFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
@@ -243,9 +244,3 @@ export type Resolvers<ContextType = any> = {
   TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };
-
-/**
- * @deprecated
- * Use "Resolvers" root object instead. If you wish to get "IResolvers", add "typesPrefix: I" to your config.
- */
-export type IResolvers<ContextType = any> = Resolvers<ContextType>;

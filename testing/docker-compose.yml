@@ -1,46 +1,35 @@
-version: "3"
-
+version: '3'
 services:
   postgres:
     image: postgres
     restart: unless-stopped
-
     environment:
       POSTGRES_USER: allthethings
       POSTGRES_PASSWORD: allthethings
-
     healthcheck:
       test: pg_isready
       interval: 10s
       timeout: 5s
       retries: 5
-
     ports:
-      - 5432:5432
-
+      - '5432:5432'
   pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
-
     environment:
       PGADMIN_DEFAULT_EMAIL: admin@allthethings.dev
       PGADMIN_DEFAULT_PASSWORD: allthethings
       PGADMIN_LISTEN_PORT: 7000
-
     ports:
-      - 7000:7000
-
+      - '7000:7000'
     volumes:
-      - ./pgadmin.json:/pgadmin4/servers.json
-
+      - './pgadmin.json:/pgadmin4/servers.json'
   bugzilla:
     image: mossop/bugzilla
     restart: unless-stopped
-
     environment:
       ADMIN_EMAIL: admin@allthethings.dev
       ADMIN_PASSWORD: allthethings
       ADMIN_REALNAME: AllTheThings Admin
-
     ports:
-      - 8888:80
+      - '8888:80'
