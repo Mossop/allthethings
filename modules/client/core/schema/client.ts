@@ -1,10 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import {
-  ApolloClient,
-  createHttpLink,
-  InMemoryCache,
-  ApolloLink,
-} from "@apollo/client";
+import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
+import { BatchHttpLink } from "@apollo/client/link/batch-http";
 import { withScalars } from "apollo-link-scalars";
 import { buildClientSchema } from "graphql";
 import { DateTime } from "luxon";
@@ -74,9 +70,10 @@ export const client = new ApolloClient({
       schema: buildClientSchema(introspectionData),
       typesMap,
     }),
-    createHttpLink({
+    new BatchHttpLink({
       uri: "/graphql",
       credentials: "same-origin",
+      batchInterval: 1000,
     }),
   ]),
   cache: new InMemoryCache({
