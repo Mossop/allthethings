@@ -1,2 +1,4 @@
 scalar DateTime
 scalar TaskController
+scalar DateTimeOffset
+scalar RelativeDateTime

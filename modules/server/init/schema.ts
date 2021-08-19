@@ -119,9 +119,11 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
+  DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   Problem: ResolverTypeWrapper<Problem>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   Query: ResolverTypeWrapper<Root>;
+  RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
 };
@@ -129,9 +131,11 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   DateTime: Schema.Scalars["DateTime"];
+  DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   Problem: Problem;
   String: Schema.Scalars["String"];
   Query: Root;
+  RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   Boolean: Schema.Scalars["Boolean"];
 };
@@ -139,6 +143,11 @@ export type ResolversParentTypes = {
 export interface DateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["DateTime"], any> {
   name: "DateTime";
+}
+
+export interface DateTimeOffsetScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTimeOffset"], any> {
+  name: "DateTimeOffset";
 }
 
 export type ProblemResolvers<
@@ -168,6 +177,11 @@ export type QueryResolvers<
   >;
 };
 
+export interface RelativeDateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
+  name: "RelativeDateTime";
+}
+
 export interface TaskControllerScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
   name: "TaskController";
@@ -175,7 +189,9 @@ export interface TaskControllerScalarConfig
 
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
+  DateTimeOffset: GraphQLScalarType;
   Problem: ProblemResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
+  RelativeDateTime: GraphQLScalarType;
   TaskController: GraphQLScalarType;
 };

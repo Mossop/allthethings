@@ -121,6 +121,7 @@ export type DirectiveResolverFn<
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
+  DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   JiraAccount: ResolverTypeWrapper<Account>;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
@@ -129,6 +130,7 @@ export type ResolversTypes = {
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: ResolverTypeWrapper<Root>;
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
+  RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "jiraAccounts"> & {
@@ -140,6 +142,7 @@ export type ResolversTypes = {
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
   DateTime: Schema.Scalars["DateTime"];
+  DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   JiraAccount: Account;
   ID: Schema.Scalars["ID"];
   String: Schema.Scalars["String"];
@@ -148,6 +151,7 @@ export type ResolversParentTypes = {
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: Root;
   Boolean: Schema.Scalars["Boolean"];
+  RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "jiraAccounts"> & {
     jiraAccounts: ReadonlyArray<ResolversParentTypes["JiraAccount"]>;
@@ -157,6 +161,11 @@ export type ResolversParentTypes = {
 export interface DateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["DateTime"], any> {
   name: "DateTime";
+}
+
+export interface DateTimeOffsetScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTimeOffset"], any> {
+  name: "DateTimeOffset";
 }
 
 export type JiraAccountResolvers<
@@ -218,6 +227,11 @@ export type MutationResolvers<
   >;
 };
 
+export interface RelativeDateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
+  name: "RelativeDateTime";
+}
+
 export interface TaskControllerScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
   name: "TaskController";
@@ -237,9 +251,11 @@ export type UserResolvers<
 
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
+  DateTimeOffset: GraphQLScalarType;
   JiraAccount: JiraAccountResolvers<ContextType>;
   JiraSearch: JiraSearchResolvers<ContextType>;
   Mutation: MutationResolvers<ContextType>;
+  RelativeDateTime: GraphQLScalarType;
   TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };

@@ -1,4 +1,4 @@
-query ListContextState($dueBefore: DateTime!) {
+query ListContextState($dueBefore: RelativeDateTime!) {
   user {
     id
     email

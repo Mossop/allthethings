@@ -11157,6 +11157,8 @@ export type Organization = Actor &
     readonly domains: Maybe<VerifiableDomainConnection>;
     /** The organization's public email. */
     readonly email: Maybe<Scalars["String"]>;
+    /** The estimated next GitHub Sponsors payout for this user/organization in cents (USD). */
+    readonly estimatedNextSponsorsPayoutInCents: Scalars["Int"];
     /** True if this user/organization has a GitHub Sponsors listing. */
     readonly hasSponsorsListing: Scalars["Boolean"];
     readonly id: Scalars["ID"];
@@ -11187,6 +11189,8 @@ export type Organization = Actor &
     readonly memberStatuses: UserStatusConnection;
     /** A list of users who are members of this organization. */
     readonly membersWithRole: OrganizationMemberConnection;
+    /** The estimated monthly GitHub Sponsors income for this user/organization in cents (USD). */
+    readonly monthlyEstimatedSponsorsIncomeInCents: Scalars["Int"];
     /** The organization's public profile name. */
     readonly name: Maybe<Scalars["String"]>;
     /** The HTTP path creating a new team */
@@ -11763,6 +11767,8 @@ export enum OrganizationMembersCanCreateRepositoriesSettingValue {
   All = "ALL",
   /** Members will not be able to create public or private repositories. */
   Disabled = "DISABLED",
+  /** Members will be able to create only internal repositories. */
+  Internal = "INTERNAL",
   /** Members will be able to create only private repositories. */
   Private = "PRIVATE",
 }
@@ -18258,12 +18264,16 @@ export enum SponsorOrderField {
 
 /** Entities that can be sponsored through GitHub Sponsors */
 export type Sponsorable = {
+  /** The estimated next GitHub Sponsors payout for this user/organization in cents (USD). */
+  readonly estimatedNextSponsorsPayoutInCents: Scalars["Int"];
   /** True if this user/organization has a GitHub Sponsors listing. */
   readonly hasSponsorsListing: Scalars["Boolean"];
   /** Check if the given account is sponsoring this user/organization. */
   readonly isSponsoredBy: Scalars["Boolean"];
   /** True if the viewer is sponsored by this user/organization. */
   readonly isSponsoringViewer: Scalars["Boolean"];
+  /** The estimated monthly GitHub Sponsors income for this user/organization in cents (USD). */
+  readonly monthlyEstimatedSponsorsIncomeInCents: Scalars["Int"];
   /** List of users and organizations this entity is sponsoring. */
   readonly sponsoring: SponsorConnection;
   /** List of sponsors for this user or organization. */
@@ -21511,6 +21521,8 @@ export type User = Actor &
     readonly databaseId: Maybe<Scalars["Int"]>;
     /** The user's publicly visible profile email. */
     readonly email: Scalars["String"];
+    /** The estimated next GitHub Sponsors payout for this user/organization in cents (USD). */
+    readonly estimatedNextSponsorsPayoutInCents: Scalars["Int"];
     /** A list of users the given user is followed by. */
     readonly followers: FollowerConnection;
     /** A list of users the given user is following. */
@@ -21561,6 +21573,8 @@ export type User = Actor &
     readonly location: Maybe<Scalars["String"]>;
     /** The username used to login. */
     readonly login: Scalars["String"];
+    /** The estimated monthly GitHub Sponsors income for this user/organization in cents (USD). */
+    readonly monthlyEstimatedSponsorsIncomeInCents: Scalars["Int"];
     /** The user's public profile name. */
     readonly name: Maybe<Scalars["String"]>;
     /** Find an organization by its login that the user belongs to. */

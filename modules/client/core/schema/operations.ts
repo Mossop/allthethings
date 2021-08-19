@@ -705,7 +705,7 @@ export type ChangePasswordMutation = {
 };
 
 export type ListContextStateQueryVariables = Schema.Exact<{
-  dueBefore: Schema.Scalars["DateTime"];
+  dueBefore: Schema.Scalars["RelativeDateTime"];
 }>;
 
 export type ListContextStateQuery = {
@@ -2361,7 +2361,7 @@ export type ChangePasswordMutationOptions = Apollo.BaseMutationOptions<
   ChangePasswordMutationVariables
 >;
 export const ListContextStateDocument = gql`
-  query ListContextState($dueBefore: DateTime!) {
+  query ListContextState($dueBefore: RelativeDateTime!) {
     user {
       id
       email

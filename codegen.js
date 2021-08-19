@@ -6,6 +6,8 @@ const rootDir = path.join(__dirname, "modules");
 const scalars = {
   DateTime: "luxon#DateTime",
   TaskController: "./types#TaskController",
+  DateTimeOffset: "./types#DateTimeOffset",
+  RelativeDateTime: "./types#RelativeDateTime",
 };
 
 const clientOperationPlugins = {

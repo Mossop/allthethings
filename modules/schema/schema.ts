@@ -1,5 +1,7 @@
 /* eslint-disable */
 import type { DateTime } from "luxon";
+import type { DateTimeOffset } from "./types";
+import type { RelativeDateTime } from "./types";
 import type { TaskController } from "./types";
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
@@ -17,6 +19,8 @@ export type Scalars = {
   Int: number;
   Float: number;
   DateTime: DateTime;
+  DateTimeOffset: DateTimeOffset;
+  RelativeDateTime: RelativeDateTime;
   TaskController: TaskController;
 };
 
@@ -154,8 +158,8 @@ export type ItemDetail = ServiceDetail | LinkDetail | NoteDetail | FileDetail;
 export type ItemFilter = {
   readonly isSnoozed?: Maybe<Scalars["Boolean"]>;
   readonly isArchived?: Maybe<Scalars["Boolean"]>;
-  readonly dueBefore?: Maybe<Scalars["DateTime"]>;
-  readonly dueAfter?: Maybe<Scalars["DateTime"]>;
+  readonly dueBefore?: Maybe<Scalars["RelativeDateTime"]>;
+  readonly dueAfter?: Maybe<Scalars["RelativeDateTime"]>;
   readonly isTask?: Maybe<Scalars["Boolean"]>;
   readonly isPending?: Maybe<Scalars["Boolean"]>;
 };

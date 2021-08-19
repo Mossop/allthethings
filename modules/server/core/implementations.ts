@@ -26,7 +26,7 @@ import {
   max,
   BaseRecordHolder,
 } from "#server/utils";
-import { assert, call, memoized, waitFor } from "#utils";
+import { addOffset, assert, call, memoized, waitFor } from "#utils";
 
 import type {
   ContextResolvers,
@@ -91,14 +91,21 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
 
         if (filter.dueBefore || filter.dueAfter) {
           query = query.whereNotNull("TaskInfo.due");
-        }
+          let now = DateTime.now();
 
-        if (filter.dueBefore) {
-          query = query.where("TaskInfo.due", "<=", filter.dueBefore);
-        }
+          if (filter.dueBefore) {
+            let dueBefore = DateTime.isDateTime(filter.dueBefore)
+              ? filter.dueBefore
+              : addOffset(now, filter.dueBefore);
+            query = query.where("TaskInfo.due", "<=", dueBefore);
+          }
 
-        if (filter.dueAfter) {
-          query = query.where("TaskInfo.due", ">", filter.dueAfter);
+          if (filter.dueAfter) {
+            let dueAfter = DateTime.isDateTime(filter.dueAfter)
+              ? filter.dueAfter
+              : addOffset(now, filter.dueAfter);
+            query = query.where("TaskInfo.due", ">", dueAfter);
+          }
         }
 
         if (filter.isPending === false) {

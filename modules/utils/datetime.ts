@@ -1,4 +1,4 @@
-import type { DateTime } from "luxon";
+import { DateTime } from "luxon";
 import { JsonDecoder } from "ts.data.json";
 
 export interface RelativeOffset {
@@ -27,7 +27,7 @@ export interface AbsoluteOffset {
   readonly millisecond?: number;
 }
 
-enum LimitUnit {
+export enum LimitUnit {
   Second = "second",
   Minute = "minute",
   Hour = "hour",
@@ -48,11 +48,17 @@ export interface EndOfOffset {
   readonly unit: LimitUnit;
 }
 
+export interface ZonePart {
+  readonly type: "zone";
+  readonly zone: string;
+}
+
 export type DateTimeOffsetPart =
   | RelativeOffset
   | AbsoluteOffset
   | StartOfOffset
-  | EndOfOffset;
+  | EndOfOffset
+  | ZonePart;
 
 const LimitUnitDecoder = JsonDecoder.enumeration<LimitUnit>(
   LimitUnit,
@@ -73,6 +79,14 @@ const EndOfOffsetDecoder = JsonDecoder.object<EndOfOffset>(
     unit: LimitUnitDecoder,
   },
   "EndOfOffset",
+);
+
+const ZonePartDecoder = JsonDecoder.object<ZonePart>(
+  {
+    type: JsonDecoder.isExactly("zone"),
+    zone: JsonDecoder.string,
+  },
+  "ZonePart",
 );
 
 const RelativeOffsetDecoder = JsonDecoder.object<RelativeOffset>(
@@ -114,6 +128,7 @@ export const DateTimeOffsetDecoder = JsonDecoder.array<DateTimeOffsetPart>(
       AbsoluteOffsetDecoder,
       StartOfOffsetDecoder,
       EndOfOffsetDecoder,
+      ZonePartDecoder,
     ],
     "DateTimeOffsetPart",
   ),
@@ -186,6 +201,9 @@ export function addOffset(
       case "end":
         current = current.endOf(part.unit);
         break;
+      case "zone":
+        current = current.setZone(part.zone);
+        break;
     }
   }
 
@@ -199,4 +217,13 @@ export function offsetFromJson(json: unknown): DateTimeOffset {
   }
 
   throw new Error(result.error);
+}
+
+export type RelativeDateTime = DateTimeOffset | DateTime;
+
+export function relativeDateTimeFromJson(json: unknown): RelativeDateTime {
+  if (typeof json == "string") {
+    return DateTime.fromISO(json);
+  }
+  return offsetFromJson(json);
 }

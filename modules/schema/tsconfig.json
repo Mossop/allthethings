@@ -1,4 +1,5 @@
 {
   "extends": "../../tsconfig.shared.json",
-  "include": ["**/*.ts", "**/*.json"]
+  "include": ["**/*.ts", "**/*.json"],
+  "references": [{ "path": "../utils" }]
 }

@@ -1,8 +1,9 @@
 import type { ApolloQueryResult, ObservableQuery } from "@apollo/client";
 import type { Update, Location } from "history";
-import { DateTime } from "luxon";
+import { SystemZone } from "luxon";
 
 import { history } from "#client/utils";
+import { LimitUnit } from "#utils";
 
 import type {
   Problem,
@@ -20,7 +21,6 @@ import { urlToView } from "./view";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let SCHEMA_VERSION: string;
 
-const TIMEOUT_PADDING = 1000;
 const POLL_INTERVAL = 5000;
 const MAX_BACKOFF = 10000;
 
@@ -71,7 +71,18 @@ class GlobalStateManager {
       ListContextStateQueryVariables
     >({
       query: ListContextStateDocument,
-      variables: this.getVariables(),
+      variables: {
+        dueBefore: [
+          {
+            type: "zone",
+            zone: SystemZone.instance.name,
+          },
+          {
+            type: "end",
+            unit: LimitUnit.Day,
+          },
+        ],
+      },
       pollInterval: POLL_INTERVAL,
       fetchPolicy: "network-only",
     });
@@ -124,23 +135,6 @@ class GlobalStateManager {
     window.setTimeout(() => {
       this.query = this.startQuery();
     }, this.lastBackoff);
-  }
-
-  private getVariables(): ListContextStateQueryVariables {
-    let today = DateTime.now().endOf("day");
-    let now = DateTime.now();
-    window.setTimeout(
-      () => this.updateVariables(),
-      TIMEOUT_PADDING + (today.toMillis() - now.toMillis()),
-    );
-
-    return {
-      dueBefore: today,
-    };
-  }
-
-  private updateVariables(): void {
-    void this.query.refetch(this.getVariables());
   }
 
   public get user(): User | null {

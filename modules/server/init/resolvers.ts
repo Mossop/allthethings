@@ -6,10 +6,16 @@ import type { ValueNode } from "graphql";
 import { GraphQLScalarType, Kind } from "graphql";
 import { DateTime } from "luxon";
 
-import type { QueryPageContentArgs, TaskController } from "#schema";
+import type {
+  DateTimeOffset,
+  QueryPageContentArgs,
+  TaskController,
+} from "#schema";
 import { ServiceManager } from "#server/core";
 import type { GraphQLCtx, Problem } from "#server/utils";
 import { rootResolvers } from "#server/utils";
+import type { RelativeDateTime } from "#utils";
+import { offsetFromJson, relativeDateTimeFromJson } from "#utils";
 
 import type { Resolvers } from "./schema";
 
@@ -26,43 +32,53 @@ async function loadFile(name: string): Promise<string | null> {
   }
 }
 
+function scalarType<T>(
+  name: string,
+  serialize: (val: T) => string,
+  parse: (val: string) => T,
+): GraphQLScalarType {
+  return new GraphQLScalarType({
+    name,
+    description: name,
+    serialize,
+    parseValue(value: unknown): T | null {
+      return typeof value == "string" ? parse(value) : null;
+    },
+    parseLiteral(ast: ValueNode): T | null {
+      if (ast.kind === Kind.STRING) {
+        return parse(ast.value);
+      }
+      return null;
+    },
+  });
+}
+
 export default (schemaVersion: string): Resolvers =>
   rootResolvers<Resolvers>({
-    DateTime: new GraphQLScalarType({
-      name: "DateTime",
-      description: "DateTime",
-      serialize(value: DateTime): string {
-        return value.toISO();
-      },
-      parseValue(value: unknown): DateTime | null {
-        return typeof value == "string"
-          ? DateTime.fromISO(value).toUTC()
-          : null;
-      },
-      parseLiteral(ast: ValueNode): DateTime | null {
-        if (ast.kind === Kind.STRING) {
-          return DateTime.fromISO(ast.value);
-        }
-        return null;
-      },
-    }),
+    DateTime: scalarType<DateTime>(
+      "DateTime",
+      (value: DateTime): string => value.toISO(),
+      (value: string): DateTime => DateTime.fromISO(value).toUTC(),
+    ),
 
-    TaskController: new GraphQLScalarType({
-      name: "TaskController",
-      description: "TaskController",
-      serialize(value: TaskController): string {
-        return value;
-      },
-      parseValue(value: unknown): TaskController | null {
-        return typeof value == "string" ? (value as TaskController) : null;
-      },
-      parseLiteral(ast: ValueNode): TaskController | null {
-        if (ast.kind === Kind.STRING) {
-          return ast.value as TaskController;
-        }
-        return null;
-      },
-    }),
+    DateTimeOffset: scalarType<DateTimeOffset>(
+      "DateTimeOffset",
+      (value: DateTimeOffset): string => JSON.stringify(value),
+      (value: string): DateTimeOffset => offsetFromJson(JSON.parse(value)),
+    ),
+
+    RelativeDateTime: scalarType<RelativeDateTime>(
+      "RelativeDateTime",
+      (value: RelativeDateTime): string => JSON.stringify(value),
+      (value: string): RelativeDateTime =>
+        relativeDateTimeFromJson(JSON.parse(value)),
+    ),
+
+    TaskController: scalarType<TaskController>(
+      "TaskController",
+      (value: TaskController): string => value,
+      (value: string): TaskController => value as TaskController,
+    ),
 
     Query: {
       schemaVersion,

@@ -127,8 +127,10 @@ export type ResolversTypes = {
   BugzillaSearch: ResolverTypeWrapper<Search>;
   BugzillaSearchParams: Schema.BugzillaSearchParams;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
+  DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   Mutation: ResolverTypeWrapper<Root>;
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
+  RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "bugzillaAccounts"> & {
@@ -146,8 +148,10 @@ export type ResolversParentTypes = {
   BugzillaSearch: Search;
   BugzillaSearchParams: Schema.BugzillaSearchParams;
   DateTime: Schema.Scalars["DateTime"];
+  DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   Mutation: Root;
   Boolean: Schema.Scalars["Boolean"];
+  RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "bugzillaAccounts"> & {
     bugzillaAccounts: ReadonlyArray<ResolversParentTypes["BugzillaAccount"]>;
@@ -196,6 +200,11 @@ export interface DateTimeScalarConfig
   name: "DateTime";
 }
 
+export interface DateTimeOffsetScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTimeOffset"], any> {
+  name: "DateTimeOffset";
+}
+
 export type MutationResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
@@ -226,6 +235,11 @@ export type MutationResolvers<
   >;
 };
 
+export interface RelativeDateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
+  name: "RelativeDateTime";
+}
+
 export interface TaskControllerScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
   name: "TaskController";
@@ -247,7 +261,9 @@ export type Resolvers<ContextType = any> = {
   BugzillaAccount: BugzillaAccountResolvers<ContextType>;
   BugzillaSearch: BugzillaSearchResolvers<ContextType>;
   DateTime: GraphQLScalarType;
+  DateTimeOffset: GraphQLScalarType;
   Mutation: MutationResolvers<ContextType>;
+  RelativeDateTime: GraphQLScalarType;
   TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };

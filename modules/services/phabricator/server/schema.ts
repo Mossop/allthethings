@@ -124,10 +124,12 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
+  DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   Mutation: ResolverTypeWrapper<Root>;
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   PhabricatorAccount: ResolverTypeWrapper<Account>;
   PhabricatorQuery: ResolverTypeWrapper<QueryClass>;
+  RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: ResolverTypeWrapper<
@@ -144,10 +146,12 @@ export type ResolversParentTypes = {
   String: Schema.Scalars["String"];
   ID: Schema.Scalars["ID"];
   DateTime: Schema.Scalars["DateTime"];
+  DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   Mutation: Root;
   Boolean: Schema.Scalars["Boolean"];
   PhabricatorAccount: Account;
   PhabricatorQuery: QueryClass;
+  RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: Omit<Schema.User, "phabricatorAccounts" | "phabricatorQueries"> & {
@@ -161,6 +165,11 @@ export type ResolversParentTypes = {
 export interface DateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["DateTime"], any> {
   name: "DateTime";
+}
+
+export interface DateTimeOffsetScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTimeOffset"], any> {
+  name: "DateTimeOffset";
 }
 
 export type MutationResolvers<
@@ -214,6 +223,11 @@ export type PhabricatorQueryResolvers<
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
+export interface RelativeDateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
+  name: "RelativeDateTime";
+}
+
 export interface TaskControllerScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
   name: "TaskController";
@@ -238,9 +252,11 @@ export type UserResolvers<
 
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
+  DateTimeOffset: GraphQLScalarType;
   Mutation: MutationResolvers<ContextType>;
   PhabricatorAccount: PhabricatorAccountResolvers<ContextType>;
   PhabricatorQuery: PhabricatorQueryResolvers<ContextType>;
+  RelativeDateTime: GraphQLScalarType;
   TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };

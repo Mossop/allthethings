@@ -138,6 +138,7 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   ContextParams: Schema.ContextParams;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
+  DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   FileDetail: ResolverTypeWrapper<FileDetail>;
   Int: ResolverTypeWrapper<Schema.Scalars["Int"]>;
   Item: ResolverTypeWrapper<Item>;
@@ -158,6 +159,7 @@ export type ResolversTypes = {
   Project: ResolverTypeWrapper<Project>;
   ProjectParams: Schema.ProjectParams;
   Query: ResolverTypeWrapper<Root>;
+  RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   Section: ResolverTypeWrapper<Section>;
   SectionParams: Schema.SectionParams;
   ServiceDetail: ResolverTypeWrapper<ServiceDetail>;
@@ -176,6 +178,7 @@ export type ResolversParentTypes = {
   String: Schema.Scalars["String"];
   ContextParams: Schema.ContextParams;
   DateTime: Schema.Scalars["DateTime"];
+  DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   FileDetail: FileDetail;
   Int: Schema.Scalars["Int"];
   Item: Item;
@@ -196,6 +199,7 @@ export type ResolversParentTypes = {
   Project: Project;
   ProjectParams: Schema.ProjectParams;
   Query: Root;
+  RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   Section: Section;
   SectionParams: Schema.SectionParams;
   ServiceDetail: ServiceDetail;
@@ -254,6 +258,11 @@ export type ContextResolvers<
 export interface DateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["DateTime"], any> {
   name: "DateTime";
+}
+
+export interface DateTimeOffsetScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["DateTimeOffset"], any> {
+  name: "DateTimeOffset";
 }
 
 export type FileDetailResolvers<
@@ -545,6 +554,11 @@ export type QueryResolvers<
   >;
 };
 
+export interface RelativeDateTimeScalarConfig
+  extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
+  name: "RelativeDateTime";
+}
+
 export type SectionResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Section"] = ResolversParentTypes["Section"],
@@ -676,6 +690,7 @@ export type UserResolvers<
 export type Resolvers<ContextType = any> = {
   Context: ContextResolvers<ContextType>;
   DateTime: GraphQLScalarType;
+  DateTimeOffset: GraphQLScalarType;
   FileDetail: FileDetailResolvers<ContextType>;
   Item: ItemResolvers<ContextType>;
   ItemDetail: ItemDetailResolvers<ContextType>;
@@ -685,6 +700,7 @@ export type Resolvers<ContextType = any> = {
   NoteDetail: NoteDetailResolvers<ContextType>;
   Project: ProjectResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
+  RelativeDateTime: GraphQLScalarType;
   Section: SectionResolvers<ContextType>;
   ServiceDetail: ServiceDetailResolvers<ContextType>;
   ServiceList: ServiceListResolvers<ContextType>;

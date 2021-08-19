@@ -1,11 +1,15 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
 import { BatchHttpLink } from "@apollo/client/link/batch-http";
+import type { ParsingFunctionsObject } from "apollo-link-scalars";
 import { withScalars } from "apollo-link-scalars";
 import { buildClientSchema } from "graphql";
 import { DateTime } from "luxon";
 
+import type { DateTimeOffset } from "#schema";
 import { introspectionData } from "#schema";
+import type { RelativeDateTime } from "#utils";
+import { offsetFromJson, relativeDateTimeFromJson } from "#utils";
 
 import possibleTypes from "./types";
 import type { TypedTypePolicies } from "./types";
@@ -49,19 +53,36 @@ let typePolicies: TypedTypePolicies = {
   },
 };
 
-let typesMap = {
-  DateTime: {
-    serialize: (parsed: DateTime) => parsed.toString(),
-    parseValue: (raw: string | number | null): DateTime | null => {
+function scalarType<T>(
+  serialize: (value: T) => string,
+  parse: (value: string) => T,
+): ParsingFunctionsObject<T, string> {
+  return {
+    serialize,
+    parseValue: (raw: string | number | null): T | null => {
       if (typeof raw == "string") {
-        let date = DateTime.fromISO(raw);
-        if (date.isValid) {
-          return date;
-        }
+        return parse(raw);
       }
       return null;
     },
-  },
+  };
+}
+
+let typesMap = {
+  DateTime: scalarType<DateTime>(
+    (parsed: DateTime) => parsed.toString(),
+    (value: string) => DateTime.fromISO(value).toUTC(),
+  ),
+
+  DateTimeOffset: scalarType<DateTimeOffset>(
+    (value: DateTimeOffset) => JSON.stringify(value),
+    (value: string) => offsetFromJson(value),
+  ),
+
+  RelativeDateTime: scalarType<RelativeDateTime>(
+    (value: RelativeDateTime) => JSON.stringify(value),
+    (value: string) => relativeDateTimeFromJson(value),
+  ),
 };
 
 export const client = new ApolloClient({

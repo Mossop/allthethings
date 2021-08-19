@@ -54,9 +54,9 @@ input ItemFilter {
   # True includes only items that are archived. False includes only items that are not archived.
   isArchived: Boolean
   # Includes only tasks that are due before the given time (tasks with no due date are not included).
-  dueBefore: DateTime
+  dueBefore: RelativeDateTime
   # Includes only tasks that are due after the given time (tasks with no due date are not included).
-  dueAfter: DateTime
+  dueAfter: RelativeDateTime
   # Includes only items that are tasks.
   isTask: Boolean
   # True includes only items that are not tasks or are tasks that are not yet complete. False includes

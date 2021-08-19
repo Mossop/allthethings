@@ -561,6 +561,16 @@
         "possibleTypes": null
       },
       {
+        "kind": "SCALAR",
+        "name": "DateTimeOffset",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
         "kind": "OBJECT",
         "name": "FileDetail",
         "description": null,
@@ -1086,7 +1096,11 @@
           {
             "name": "dueBefore",
             "description": null,
-            "type": { "kind": "SCALAR", "name": "DateTime", "ofType": null },
+            "type": {
+              "kind": "SCALAR",
+              "name": "RelativeDateTime",
+              "ofType": null
+            },
             "defaultValue": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -1094,7 +1108,11 @@
           {
             "name": "dueAfter",
             "description": null,
-            "type": { "kind": "SCALAR", "name": "DateTime", "ofType": null },
+            "type": {
+              "kind": "SCALAR",
+              "name": "RelativeDateTime",
+              "ofType": null
+            },
             "defaultValue": null,
             "isDeprecated": false,
             "deprecationReason": null
@@ -3405,6 +3423,16 @@
         ],
         "inputFields": null,
         "interfaces": [],
+        "enumValues": null,
+        "possibleTypes": null
+      },
+      {
+        "kind": "SCALAR",
+        "name": "RelativeDateTime",
+        "description": null,
+        "fields": null,
+        "inputFields": null,
+        "interfaces": null,
         "enumValues": null,
         "possibleTypes": null
       },
