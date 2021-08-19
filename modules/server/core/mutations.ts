@@ -282,7 +282,7 @@ const mutationResolvers: TypeResolver<
         throw new Error("Unknown section.");
       }
 
-      let item = await Item.create(tx, user, null, itemParams);
+      let item = await Item.create(tx, user, null, itemParams, {});
 
       if (itemHolder) {
         await item.move(itemHolder);
