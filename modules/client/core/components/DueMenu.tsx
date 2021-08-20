@@ -14,17 +14,17 @@ import { forwardRef, useCallback, useMemo } from "react";
 import {
   useBoundCallback,
   useBoolState,
-  useMenuState,
-  bindTrigger,
   Icons,
   ReactMemo,
-  Menu,
   DateTimeDialog,
+  Menu,
 } from "#client/utils";
 import type { ReactRef, ReactResult } from "#client/utils";
 
 import { useMarkItemDueMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
+import type { PopupStateProps } from "./GlobalPopups";
+import { useGlobalMenuTrigger } from "./GlobalPopups";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -172,8 +172,29 @@ export const DueItems = ReactMemo(
   }),
 );
 
-export default ReactMemo(function DueMenu({ item }: DueMenuProps): ReactResult {
-  let dueMenuState = useMenuState("due");
+export const GlobalDueMenu = ReactMemo(function GlobalDueMenu({
+  state,
+  item,
+}: DueMenuProps & PopupStateProps): ReactResult {
+  return (
+    <Menu
+      state={state}
+      keepMounted={true}
+      anchor={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+    >
+      <DueItemItems item={item} />
+      <DueItems item={item} />
+    </Menu>
+  );
+});
+
+export const DueMenuButton = ReactMemo(function DueMenuButton({
+  item,
+}: DueMenuProps): ReactResult {
+  let buttonProps = useGlobalMenuTrigger("due", GlobalDueMenu, { item });
 
   let whenDue = useMemo(() => {
     let now = DateTime.now();
@@ -198,22 +219,10 @@ export default ReactMemo(function DueMenu({ item }: DueMenuProps): ReactResult {
   }
 
   return (
-    <>
-      <Tooltip title={`Due ${whenDue}`}>
-        <IconButton color="primary" {...bindTrigger(dueMenuState)}>
-          <Icons.Due />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        state={dueMenuState}
-        anchor={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-      >
-        <DueItemItems item={item} />
-        <DueItems item={item} />
-      </Menu>
-    </>
+    <Tooltip title={`Due ${whenDue}`}>
+      <IconButton color="primary" {...buttonProps}>
+        <Icons.Due />
+      </IconButton>
+    </Tooltip>
   );
 });

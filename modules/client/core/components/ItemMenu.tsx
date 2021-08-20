@@ -12,8 +12,6 @@ import {
   Icons,
   useBoolState,
   useBoundCallback,
-  useMenuState,
-  bindTrigger,
   ReactMemo,
   Menu,
 } from "#client/utils";
@@ -30,6 +28,8 @@ import {
   isServiceItem,
 } from "../schema";
 import { DueItemItems, DueItems } from "./DueMenu";
+import type { PopupStateProps } from "./GlobalPopups";
+import { useGlobalMenuTrigger } from "./GlobalPopups";
 import { SnoozeItems, WakeUpItems } from "./SnoozeMenu";
 
 function renderEditDialog(item: Item, onClosed: () => void): ReactResult {
@@ -50,11 +50,10 @@ interface ItemMenuProps {
   item: Item;
 }
 
-export default ReactMemo(function ItemMenu({
+const ItemMenu = ReactMemo(function ItemMenu({
   item,
-}: ItemMenuProps): ReactResult {
-  let itemMenuState = useMenuState("item");
-
+  state,
+}: ItemMenuProps & PopupStateProps): ReactResult {
   let [openInnerMenu, setOpenInnerMenu] = useState(OpenInnerMenu.None);
   let toggleMenu = useCallback(
     (menu: OpenInnerMenu, event: React.MouseEvent) => {
@@ -89,12 +88,10 @@ export default ReactMemo(function ItemMenu({
 
   return (
     <>
-      <IconButton {...bindTrigger(itemMenuState)}>
-        <MenuIcon />
-      </IconButton>
       <Menu
         onClosed={closeMenus}
-        state={itemMenuState}
+        state={state}
+        keepMounted={true}
         anchor={{
           vertical: "bottom",
           horizontal: "right",
@@ -139,5 +136,17 @@ export default ReactMemo(function ItemMenu({
       </Menu>
       {editDialogOpen && renderEditDialog(item, closeEditDialog)}
     </>
+  );
+});
+
+export default ReactMemo(function ItemMenuButton({
+  item,
+}: ItemMenuProps): ReactResult {
+  let buttonProps = useGlobalMenuTrigger("item", ItemMenu, { item });
+
+  return (
+    <IconButton {...buttonProps}>
+      <MenuIcon />
+    </IconButton>
   );
 });

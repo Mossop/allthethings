@@ -8,6 +8,7 @@ import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 import type { ReactResult } from "#client/utils";
 
 import ErrorHandler from "./components/ErrorHandler";
+import GlobalPopups from "./components/GlobalPopups";
 import Main from "./components/Main";
 import { client } from "./schema/client";
 import { DragContext } from "./utils/drag";
@@ -127,7 +128,9 @@ export default function App(): ReactResult {
             <CssBaseline />
             <ErrorHandler>
               <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <Main />
+                <GlobalPopups>
+                  <Main />
+                </GlobalPopups>
               </MuiPickersUtilsProvider>
             </ErrorHandler>
           </ApolloProvider>

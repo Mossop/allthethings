@@ -14,17 +14,17 @@ import { forwardRef, useCallback, useMemo } from "react";
 import {
   useBoundCallback,
   useBoolState,
-  useMenuState,
-  bindTrigger,
   Icons,
   ReactMemo,
-  Menu,
   DateTimeDialog,
+  Menu,
 } from "#client/utils";
 import type { ReactRef, ReactResult } from "#client/utils";
 
 import { useSnoozeItemMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
+import type { PopupStateProps } from "./GlobalPopups";
+import { useGlobalMenuTrigger } from "./GlobalPopups";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -172,10 +172,29 @@ export const SnoozeItems = ReactMemo(
   }),
 );
 
-export default ReactMemo(function SnoozeMenu({
+export const GlobalSnoozeMenu = ReactMemo(function GlobalSnoozeMenu({
+  state,
+  item,
+}: SnoozeMenuProps & PopupStateProps): ReactResult {
+  return (
+    <Menu
+      state={state}
+      keepMounted={true}
+      anchor={{
+        vertical: "bottom",
+        horizontal: "right",
+      }}
+    >
+      <WakeUpItems item={item} />
+      <SnoozeItems item={item} />
+    </Menu>
+  );
+});
+
+export const SnoozeMenuButton = ReactMemo(function SnoozeMenuButton({
   item,
 }: SnoozeMenuProps): ReactResult {
-  let snoozeMenuState = useMenuState("snooze");
+  let buttonProps = useGlobalMenuTrigger("snooze", GlobalSnoozeMenu, { item });
 
   let wakesUp = useMemo(() => {
     let now = DateTime.now();
@@ -200,22 +219,10 @@ export default ReactMemo(function SnoozeMenu({
   }
 
   return (
-    <>
-      <Tooltip title={`Snoozed until ${wakesUp}`}>
-        <IconButton color="primary" {...bindTrigger(snoozeMenuState)}>
-          <Icons.Snooze />
-        </IconButton>
-      </Tooltip>
-      <Menu
-        state={snoozeMenuState}
-        anchor={{
-          vertical: "bottom",
-          horizontal: "right",
-        }}
-      >
-        <WakeUpItems item={item} />
-        <SnoozeItems item={item} />
-      </Menu>
-    </>
+    <Tooltip title={`Snoozed until ${wakesUp}`}>
+      <IconButton color="primary" {...buttonProps}>
+        <Icons.Snooze />
+      </IconButton>
+    </Tooltip>
   );
 });

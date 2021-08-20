@@ -39,13 +39,13 @@ import {
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { isVisible } from "../utils/filter";
-import DueMenu from "./DueMenu";
+import { DueMenuButton } from "./DueMenu";
 import FileItem from "./FileItem";
-import ItemMenu from "./ItemMenu";
+import ItemMenuButton from "./ItemMenu";
 import LinkItem from "./LinkItem";
 import NoteItem from "./NoteItem";
 import ServiceItem from "./ServiceItem";
-import SnoozeMenu from "./SnoozeMenu";
+import { SnoozeMenuButton } from "./SnoozeMenu";
 import { TaskDoneToggle } from "./TaskDoneToggle";
 import TaskItem from "./TaskItem";
 
@@ -317,8 +317,8 @@ export default ReactMemo(function ItemDisplay({
             />
           )}
         </Menu>
-        <DueMenu item={item} />
-        <SnoozeMenu item={item} />
+        <DueMenuButton item={item} />
+        <SnoozeMenuButton item={item} />
         {
           // eslint-disable-next-line react/jsx-no-useless-fragment
           !isInbox(itemTaskList(item)) &&
@@ -336,7 +336,7 @@ export default ReactMemo(function ItemDisplay({
               </Tooltip>
             ))
         }
-        <ItemMenu item={item} />
+        <ItemMenuButton item={item} />
       </div>
     </ListItem>
   );
