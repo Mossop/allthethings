@@ -34,6 +34,15 @@ class PhabricatorService extends BaseService<PhabricatorTransaction> {
     }, UPDATE_DELAY);
   }
 
+  public override async update(tx: PhabricatorTransaction): Promise<void> {
+    let accounts = await tx.stores.accounts.list();
+    for (let account of accounts) {
+      await account.update();
+    }
+
+    await super.update(tx);
+  }
+
   public get resolvers(): Record<string, unknown> {
     return Resolvers;
   }

@@ -111,6 +111,17 @@ export class Account
     await this.tx.stores.accounts.deleteOne(this.id);
   }
 
+  public async update(): Promise<void> {
+    let info = await loadPageInfo(new URL(this.url));
+    let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
+
+    if (icon != this.icon) {
+      await this.tx.stores.accounts.updateOne(this.id, {
+        icon,
+      });
+    }
+  }
+
   public static async create(
     tx: PhabricatorTransaction,
     userId: string,
