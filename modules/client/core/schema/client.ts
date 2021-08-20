@@ -1,6 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { ApolloClient, InMemoryCache, ApolloLink } from "@apollo/client";
-import { BatchHttpLink } from "@apollo/client/link/batch-http";
+import {
+  ApolloClient,
+  InMemoryCache,
+  ApolloLink,
+  createHttpLink,
+} from "@apollo/client";
 import type { ParsingFunctionsObject } from "apollo-link-scalars";
 import { withScalars } from "apollo-link-scalars";
 import { buildClientSchema } from "graphql";
@@ -91,10 +95,9 @@ export const client = new ApolloClient({
       schema: buildClientSchema(introspectionData),
       typesMap,
     }),
-    new BatchHttpLink({
+    createHttpLink({
       uri: "/graphql",
       credentials: "same-origin",
-      batchInterval: 1000,
     }),
   ]),
   cache: new InMemoryCache({
