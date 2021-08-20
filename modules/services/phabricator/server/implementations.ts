@@ -5,6 +5,7 @@ import type {
   Differential$Revision$Search$Constraints,
   Differential$Revision$Search$Params,
   Differential$Revision$Search$Result,
+  Project$Search$Result,
 } from "conduit-api";
 import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
@@ -39,6 +40,8 @@ export class Account
   extends BaseAccount<PhabricatorTransaction>
   implements ResolverImpl<PhabricatorAccountResolvers>
 {
+  private _projectPHIDs: string[] | null = null;
+
   public constructor(
     tx: PhabricatorTransaction,
     private record: PhabricatorAccountRecord,
@@ -48,6 +51,22 @@ export class Account
 
   public async updateRecord(record: PhabricatorAccountRecord): Promise<void> {
     this.record = record;
+  }
+
+  public async getProjectPHIDs(): Promise<string[]> {
+    if (this._projectPHIDs === null) {
+      let projects = await requestAll(this.conduit.project.search, {
+        constraints: {
+          members: [this.phid],
+        },
+      });
+
+      this._projectPHIDs = projects.map(
+        (project: Project$Search$Result): string => project.phid,
+      );
+    }
+
+    return this._projectPHIDs;
   }
 
   public get conduit(): Conduit {
@@ -263,6 +282,7 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
 
   protected filterRevision(
     _account: Account,
+    _projectPHIDs: string[],
     _revision: Differential$Revision$Search$Result,
   ): boolean {
     return true;
@@ -287,9 +307,11 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
       api.differential.revision.search,
       await this.getParams(),
     );
+    let projectPHIDs = await account.getProjectPHIDs();
+
     revisions = revisions.filter(
       (revision: Differential$Revision$Search$Result) =>
-        this.filterRevision(account, revision),
+        this.filterRevision(account, projectPHIDs, revision),
     );
 
     let results: Revision[] = [];
@@ -321,42 +343,60 @@ enum ReviewState {
   Reviewable,
 }
 
+type ArrayType<T> = T extends (infer R)[] ? R : never;
+
 abstract class ReviewQuery extends Query {
   protected getReviewState(
     account: Account,
+    projectPHIDs: string[],
     revision: Differential$Revision$Search$Result,
   ): ReviewState {
     let reviewers = revision.attachments.reviewers?.reviewers ?? [];
-
-    let reviewer = reviewers.find(
-      // eslint-disable-next-line @typescript-eslint/typedef
-      (reviewer): boolean => reviewer.reviewerPHID == account.phid,
+    type Reviewer = ArrayType<typeof reviewers>;
+    let reviewerMap = new Map<string, Reviewer>(
+      reviewers.map((reviewer: Reviewer): [string, Reviewer] => [
+        reviewer.reviewerPHID,
+        reviewer,
+      ]),
     );
-
-    // Should never happen
-    if (!reviewer) {
-      console.warn(`Missing reviewer for revision ${revision.id}`);
-      return ReviewState.Reviewed;
-    }
 
     let extras =
       revision.attachments["reviewers-extra"]?.["reviewers-extra"] ?? [];
 
-    let reviewerExta = extras.find(
-      // eslint-disable-next-line @typescript-eslint/typedef
-      (reviewer): boolean => reviewer.reviewerPHID == account.phid,
-    );
-
-    if (reviewer.status == "accepted" && !reviewerExta?.voidedPHID) {
-      return ReviewState.Reviewed;
+    for (let extra of extras) {
+      if (extra.voidedPHID) {
+        let reviewer = reviewerMap.get(extra.reviewerPHID);
+        if (reviewer) {
+          reviewer.status = reviewer.isBlocking ? "blocking" : "added";
+        }
+      }
     }
 
-    // If you're the only reviewer then you are essentially blocking.
-    if (reviewer.isBlocking || reviewers.length == 1) {
-      return ReviewState.Blocking;
+    let reviewer = reviewerMap.get(account.phid);
+    if (reviewer) {
+      if (reviewer.status == "accepted") {
+        return ReviewState.Reviewed;
+      }
+
+      // If you're the only reviewer then you are essentially blocking.
+      if (reviewer.isBlocking || reviewerMap.size == 1) {
+        return ReviewState.Blocking;
+      }
+
+      return ReviewState.Reviewable;
     }
 
-    return ReviewState.Reviewable;
+    // Must be a project review.
+    for (let project of projectPHIDs) {
+      let reviewer = reviewerMap.get(project);
+      if (reviewer && reviewer.status != "accepted") {
+        // This review is awaiting review from a project we are a member of.
+        // We ignore blocking state for projects, many people could complete the review.
+        return ReviewState.Reviewable;
+      }
+    }
+
+    return ReviewState.Reviewed;
   }
 
   protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
@@ -376,9 +416,13 @@ class MustReview extends ReviewQuery {
 
   protected override filterRevision(
     account: Account,
+    projectPHIDs: string[],
     revision: Differential$Revision$Search$Result,
   ): boolean {
-    return this.getReviewState(account, revision) == ReviewState.Blocking;
+    return (
+      this.getReviewState(account, projectPHIDs, revision) ==
+      ReviewState.Blocking
+    );
   }
 }
 
@@ -390,9 +434,13 @@ class CanReview extends ReviewQuery {
 
   protected override filterRevision(
     account: Account,
+    projectPHIDs: string[],
     revision: Differential$Revision$Search$Result,
   ): boolean {
-    return this.getReviewState(account, revision) == ReviewState.Reviewable;
+    return (
+      this.getReviewState(account, projectPHIDs, revision) ==
+      ReviewState.Reviewable
+    );
   }
 }
 

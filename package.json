@@ -100,7 +100,7 @@
     "base-64": "^1.0.0",
     "bcrypt": "^5.0.0",
     "bugzilla": "^1.1.6",
-    "conduit-api": "^1.0.0",
+    "conduit-api": "^1.0.1",
     "googleapis": "^84.0.0",
     "googleapis-common": "^5.0.2",
     "graphql": "^15.0.0",
