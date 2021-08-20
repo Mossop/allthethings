@@ -1078,6 +1078,7 @@ export class ServiceDetail
       .from("ServiceList")
       .join("ServiceListItems", "ServiceList.id", "ServiceListItems.listId")
       .where("ServiceListItems.itemId", this.id)
+      .whereNull("ServiceListItems.done")
       .select("ServiceList.*");
 
     return this.tx.stores.serviceList.build(records);
