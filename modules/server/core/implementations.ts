@@ -933,13 +933,19 @@ export class TaskInfo
       await this.store.updateOne(this.id, {
         ...this.record,
         ...taskInfo,
-        due: taskInfo.manualDue ?? this.record.manualDue,
-        done: taskInfo.manualDone ?? this.record.manualDone,
+        due:
+          taskInfo.manualDue === undefined
+            ? this.record.manualDue
+            : taskInfo.manualDue,
+        done:
+          taskInfo.manualDone === undefined
+            ? this.record.manualDone
+            : taskInfo.manualDone,
       });
     } else if (!taskInfo.controller || taskInfo.controller == this.controller) {
       // We're not changing the controller, done doesn't need to change and due only needs to change
       // if manualDue is set.
-      let needsRecalc = !taskInfo.manualDue && this.record.manualDue;
+      let needsRecalc = taskInfo.manualDue === null && this.record.manualDue;
 
       await this.store.updateOne(this.id, {
         ...this.record,
