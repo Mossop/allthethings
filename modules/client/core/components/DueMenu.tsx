@@ -21,7 +21,7 @@ import {
 } from "#client/utils";
 import type { ReactRef, ReactResult } from "#client/utils";
 
-import { useMarkItemDueMutation, refetchQueriesForItem } from "../schema";
+import { useMarkTaskDueMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
@@ -44,20 +44,20 @@ export const DueItemItems = ReactMemo(
     { item }: DueMenuProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [markItemDueMutation] = useMarkItemDueMutation({
+    let [markTaskDueMutation] = useMarkTaskDueMutation({
       refetchQueries: refetchQueriesForItem(item),
     });
 
     let markDue = useCallback(
       (due: DateTime | null) => {
-        return markItemDueMutation({
+        return markTaskDueMutation({
           variables: {
             id: item.id,
             due,
           },
         });
       },
-      [item.id, markItemDueMutation],
+      [item.id, markTaskDueMutation],
     );
 
     let notDue = useBoundCallback(markDue, null);
@@ -105,20 +105,20 @@ export const DueItems = ReactMemo(
     let classes = useStyles();
     let [pickerOpen, openPicker, closePicker] = useBoolState();
 
-    let [markItemDueMutation] = useMarkItemDueMutation({
+    let [markTaskDueMutation] = useMarkTaskDueMutation({
       refetchQueries: refetchQueriesForItem(item),
     });
 
-    let markItemDue = useCallback(
+    let markTaskDue = useCallback(
       (due: DateTime | null) => {
-        return markItemDueMutation({
+        return markTaskDueMutation({
           variables: {
             id: item.id,
             due,
           },
         });
       },
-      [item.id, markItemDueMutation],
+      [item.id, markTaskDueMutation],
     );
 
     let dueThisAfternoon = useMemo(() => {
@@ -127,24 +127,24 @@ export const DueItems = ReactMemo(
         return null;
       }
 
-      return () => markItemDue(afternoon);
-    }, [markItemDue]);
+      return () => markTaskDue(afternoon);
+    }, [markTaskDue]);
 
     let dueTomorrow = useCallback(() => {
       let tomorrow = DateTime.now()
         .plus({ days: 1 })
         .set({ hour: 8 })
         .startOf("hour");
-      void markItemDue(tomorrow);
-    }, [markItemDue]);
+      void markTaskDue(tomorrow);
+    }, [markTaskDue]);
 
     let dueNextWeek = useCallback(() => {
       let nextWeek = DateTime.now()
         .plus({ weeks: 1 })
         .startOf("week")
         .set({ hour: 8 });
-      void markItemDue(nextWeek);
-    }, [markItemDue]);
+      void markTaskDue(nextWeek);
+    }, [markTaskDue]);
 
     let className = isInner ? classes.inner : undefined;
 
@@ -165,7 +165,7 @@ export const DueItems = ReactMemo(
           <ListItemText>Custom...</ListItemText>
         </MenuItem>
         {pickerOpen && (
-          <DateTimeDialog onSelect={markItemDue} onClosed={closePicker} />
+          <DateTimeDialog onSelect={markTaskDue} onClosed={closePicker} />
         )}
       </List>
     );

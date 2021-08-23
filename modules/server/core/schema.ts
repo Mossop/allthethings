@@ -436,17 +436,23 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationEditItemArgs, "id" | "item">
   >;
-  editTaskInfo: Resolver<
+  markTaskDone: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
     ParentType,
     ContextType,
-    RequireFields<Schema.MutationEditTaskInfoArgs, "id">
+    RequireFields<Schema.MutationMarkTaskDoneArgs, "id">
   >;
-  editTaskController: Resolver<
+  markTaskDue: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
     ParentType,
     ContextType,
-    RequireFields<Schema.MutationEditTaskControllerArgs, "id">
+    RequireFields<Schema.MutationMarkTaskDueArgs, "id">
+  >;
+  setTaskController: Resolver<
+    Schema.Maybe<ResolversTypes["Item"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationSetTaskControllerArgs, "id">
   >;
   moveItem: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
@@ -471,12 +477,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationSnoozeItemArgs, "id">
-  >;
-  markItemDue: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMarkItemDueArgs, "id">
   >;
   createUser: Resolver<
     ResolversTypes["User"],

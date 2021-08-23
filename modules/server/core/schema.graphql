@@ -186,15 +186,15 @@ type Mutation {
   ): Item!
 
   editItem(id: ID!, item: ItemParams!): Item
-  editTaskInfo(id: ID!, taskInfo: TaskInfoParams): Item
-  editTaskController(id: ID!, controller: TaskController): Item
+  markTaskDone(id: ID!, done: DateTime): Item
+  markTaskDue(id: ID!, due: DateTime): Item
+  setTaskController(id: ID!, controller: TaskController): Item
 
   moveItem(id: ID!, section: ID, before: ID): Item
   deleteItem(id: ID!): Boolean!
 
   archiveItem(id: ID!, archived: DateTime): Item
   snoozeItem(id: ID!, snoozed: DateTime): Item
-  markItemDue(id: ID!, due: DateTime): Item
 
   createUser(email: String!, password: String!, isAdmin: Boolean): User!
   deleteUser(id: ID): Boolean

@@ -28,7 +28,7 @@ import type { Item } from "../schema";
 import {
   isInbox,
   useArchiveItemMutation,
-  useEditTaskControllerMutation,
+  useSetTaskControllerMutation,
   refetchQueriesForItem,
   isNoteItem,
   isFileItem,
@@ -145,7 +145,7 @@ const TypeMenuItem = ReactMemo(
     { item, refetchQueries, controller, selectedController }: TypeMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [mutate, { error }] = useEditTaskControllerMutation({
+    let [mutate, { error }] = useSetTaskControllerMutation({
       variables: {
         id: item.id,
         controller,

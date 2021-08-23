@@ -2608,7 +2608,7 @@
             "deprecationReason": null
           },
           {
-            "name": "editTaskController",
+            "name": "markTaskDone",
             "description": null,
             "args": [
               {
@@ -2624,11 +2624,11 @@
                 "deprecationReason": null
               },
               {
-                "name": "controller",
+                "name": "done",
                 "description": null,
                 "type": {
                   "kind": "SCALAR",
-                  "name": "TaskController",
+                  "name": "DateTime",
                   "ofType": null
                 },
                 "defaultValue": null,
@@ -2641,40 +2641,7 @@
             "deprecationReason": null
           },
           {
-            "name": "editTaskInfo",
-            "description": null,
-            "args": [
-              {
-                "name": "id",
-                "description": null,
-                "type": {
-                  "kind": "NON_NULL",
-                  "name": null,
-                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              },
-              {
-                "name": "taskInfo",
-                "description": null,
-                "type": {
-                  "kind": "INPUT_OBJECT",
-                  "name": "TaskInfoParams",
-                  "ofType": null
-                },
-                "defaultValue": null,
-                "isDeprecated": false,
-                "deprecationReason": null
-              }
-            ],
-            "type": { "kind": "OBJECT", "name": "Item", "ofType": null },
-            "isDeprecated": false,
-            "deprecationReason": null
-          },
-          {
-            "name": "markItemDue",
+            "name": "markTaskDue",
             "description": null,
             "args": [
               {
@@ -2814,6 +2781,39 @@
               }
             ],
             "type": { "kind": "OBJECT", "name": "Section", "ofType": null },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "setTaskController",
+            "description": null,
+            "args": [
+              {
+                "name": "id",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "controller",
+                "description": null,
+                "type": {
+                  "kind": "SCALAR",
+                  "name": "TaskController",
+                  "ofType": null
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": { "kind": "OBJECT", "name": "Item", "ofType": null },
             "isDeprecated": false,
             "deprecationReason": null
           },

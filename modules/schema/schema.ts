@@ -248,12 +248,12 @@ export type Mutation = {
   readonly editItem?: Maybe<Item>;
   readonly editProject?: Maybe<Project>;
   readonly editSection?: Maybe<Section>;
-  readonly editTaskController?: Maybe<Item>;
-  readonly editTaskInfo?: Maybe<Item>;
-  readonly markItemDue?: Maybe<Item>;
+  readonly markTaskDone?: Maybe<Item>;
+  readonly markTaskDue?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
   readonly moveProject?: Maybe<Project>;
   readonly moveSection?: Maybe<Section>;
+  readonly setTaskController?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
 };
@@ -400,17 +400,12 @@ export type MutationEditSectionArgs = {
   params: SectionParams;
 };
 
-export type MutationEditTaskControllerArgs = {
+export type MutationMarkTaskDoneArgs = {
   id: Scalars["ID"];
-  controller?: Maybe<Scalars["TaskController"]>;
+  done?: Maybe<Scalars["DateTime"]>;
 };
 
-export type MutationEditTaskInfoArgs = {
-  id: Scalars["ID"];
-  taskInfo?: Maybe<TaskInfoParams>;
-};
-
-export type MutationMarkItemDueArgs = {
+export type MutationMarkTaskDueArgs = {
   id: Scalars["ID"];
   due?: Maybe<Scalars["DateTime"]>;
 };
@@ -430,6 +425,11 @@ export type MutationMoveSectionArgs = {
   id: Scalars["ID"];
   taskList: Scalars["ID"];
   before?: Maybe<Scalars["ID"]>;
+};
+
+export type MutationSetTaskControllerArgs = {
+  id: Scalars["ID"];
+  controller?: Maybe<Scalars["TaskController"]>;
 };
 
 export type MutationSnoozeItemArgs = {

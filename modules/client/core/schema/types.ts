@@ -225,12 +225,12 @@ export type MutationKeySpecifier = (
   | "editItem"
   | "editProject"
   | "editSection"
-  | "editTaskController"
-  | "editTaskInfo"
-  | "markItemDue"
+  | "markTaskDone"
+  | "markTaskDue"
   | "moveItem"
   | "moveProject"
   | "moveSection"
+  | "setTaskController"
   | "snoozeItem"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
@@ -266,12 +266,12 @@ export type MutationFieldPolicy = {
   editItem?: FieldPolicy<any> | FieldReadFunction<any>;
   editProject?: FieldPolicy<any> | FieldReadFunction<any>;
   editSection?: FieldPolicy<any> | FieldReadFunction<any>;
-  editTaskController?: FieldPolicy<any> | FieldReadFunction<any>;
-  editTaskInfo?: FieldPolicy<any> | FieldReadFunction<any>;
-  markItemDue?: FieldPolicy<any> | FieldReadFunction<any>;
+  markTaskDone?: FieldPolicy<any> | FieldReadFunction<any>;
+  markTaskDue?: FieldPolicy<any> | FieldReadFunction<any>;
   moveItem?: FieldPolicy<any> | FieldReadFunction<any>;
   moveProject?: FieldPolicy<any> | FieldReadFunction<any>;
   moveSection?: FieldPolicy<any> | FieldReadFunction<any>;
+  setTaskController?: FieldPolicy<any> | FieldReadFunction<any>;
   snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };

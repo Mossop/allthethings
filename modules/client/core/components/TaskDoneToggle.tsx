@@ -8,7 +8,7 @@ import { Icons, ReactMemo } from "#client/utils";
 import type { ReactResult } from "#client/utils";
 import { TaskController } from "#schema";
 
-import { useEditTaskInfoMutation, refetchQueriesForItem } from "../schema";
+import { refetchQueriesForItem, useMarkTaskDoneMutation } from "../schema";
 import type { Item } from "../schema";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -31,7 +31,7 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
 }: TaskDoneToggleProps): ReactResult {
   let classes = useStyles();
 
-  let [toggleDone] = useEditTaskInfoMutation({
+  let [toggleDone] = useMarkTaskDoneMutation({
     refetchQueries: refetchQueriesForItem(item),
   });
 
@@ -43,10 +43,7 @@ export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
     void toggleDone({
       variables: {
         id: item.id,
-        taskInfo: {
-          due: item.taskInfo.due,
-          done: item.taskInfo.done ? null : DateTime.utc(),
-        },
+        done: item.taskInfo.done ? null : DateTime.utc(),
       },
     });
   }, [item, toggleDone]);

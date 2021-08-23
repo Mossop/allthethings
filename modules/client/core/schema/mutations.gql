@@ -94,14 +94,14 @@ mutation EditItem($id: ID!, $item: ItemParams!) {
   }
 }
 
-mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
-  editTaskInfo(id: $id, taskInfo: $taskInfo) {
+mutation MarkTaskDone($id: ID!, $done: DateTime) {
+  markTaskDone(id: $id, done: $done) {
     ...clientItemFields
   }
 }
 
-mutation EditTaskController($id: ID!, $controller: TaskController) {
-  editTaskController(id: $id, controller: $controller) {
+mutation SetTaskController($id: ID!, $controller: TaskController) {
+  setTaskController(id: $id, controller: $controller) {
     ...clientItemFields
   }
 }
@@ -128,8 +128,8 @@ mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
   }
 }
 
-mutation MarkItemDue($id: ID!, $due: DateTime) {
-  markItemDue(id: $id, due: $due) {
+mutation MarkTaskDue($id: ID!, $due: DateTime) {
+  markTaskDue(id: $id, due: $due) {
     ...clientItemFields
   }
 }

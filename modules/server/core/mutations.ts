@@ -18,12 +18,12 @@ import type {
   MutationEditItemArgs,
   MutationEditProjectArgs,
   MutationEditSectionArgs,
-  MutationEditTaskControllerArgs,
-  MutationEditTaskInfoArgs,
-  MutationMarkItemDueArgs,
+  MutationMarkTaskDoneArgs,
+  MutationMarkTaskDueArgs,
   MutationMoveItemArgs,
   MutationMoveProjectArgs,
   MutationMoveSectionArgs,
+  MutationSetTaskControllerArgs,
   MutationSnoozeItemArgs,
 } from "#schema";
 import { TaskController } from "#schema";
@@ -395,11 +395,11 @@ const mutationResolvers: TypeResolver<
     },
   ),
 
-  editTaskInfo: ensureAuthed(
+  markTaskDone: ensureAuthed(
     async (
       tx: CoreTransaction,
       user: User,
-      { id, taskInfo: taskInfoParams }: MutationEditTaskInfoArgs,
+      { id, done }: MutationMarkTaskDoneArgs,
     ): Promise<Item | null> => {
       let { stores } = tx;
       let item = await stores.items.get(id);
@@ -410,27 +410,18 @@ const mutationResolvers: TypeResolver<
 
       let existing = await item.taskInfo();
       if (existing && existing.controller != TaskController.Manual) {
-        return item;
-      }
-
-      if (!taskInfoParams) {
-        if (existing) {
-          await existing.delete();
-        }
-        return item;
+        throw new Error("Cannot set a non-manual task's done state.");
       }
 
       if (!existing) {
         await TaskInfo.create(tx, item, {
-          manualDue: taskInfoParams.due ?? null,
-          manualDone: taskInfoParams.done ?? null,
+          manualDue: null,
+          manualDone: done ?? null,
           controller: TaskController.Manual,
         });
       } else {
         await existing.edit({
-          manualDue: taskInfoParams.due ?? null,
-          manualDone: taskInfoParams.done ?? null,
-          controller: TaskController.Manual,
+          manualDone: done ?? null,
         });
       }
 
@@ -438,11 +429,11 @@ const mutationResolvers: TypeResolver<
     },
   ),
 
-  editTaskController: ensureAuthed(
+  setTaskController: ensureAuthed(
     async (
       tx: CoreTransaction,
       user: User,
-      { id, controller }: MutationEditTaskControllerArgs,
+      { id, controller }: MutationSetTaskControllerArgs,
     ): Promise<Item | null> => {
       let { stores } = tx;
       let item = await stores.items.get(id);
@@ -601,11 +592,11 @@ const mutationResolvers: TypeResolver<
     },
   ),
 
-  markItemDue: ensureAuthed(
+  markTaskDue: ensureAuthed(
     async (
       tx: CoreTransaction,
       user: User,
-      { id, due }: MutationMarkItemDueArgs,
+      { id, due }: MutationMarkTaskDueArgs,
     ): Promise<Item | null> => {
       let { stores } = tx;
       let item = await stores.items.get(id);

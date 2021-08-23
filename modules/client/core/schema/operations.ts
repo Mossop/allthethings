@@ -349,14 +349,14 @@ export type EditItemMutation = {
   }>;
 };
 
-export type EditTaskInfoMutationVariables = Schema.Exact<{
+export type MarkTaskDoneMutationVariables = Schema.Exact<{
   id: Schema.Scalars["ID"];
-  taskInfo: Schema.Maybe<Schema.TaskInfoParams>;
+  done: Schema.Maybe<Schema.Scalars["DateTime"]>;
 }>;
 
-export type EditTaskInfoMutation = {
+export type MarkTaskDoneMutation = {
   readonly __typename: "Mutation";
-  readonly editTaskInfo: Schema.Maybe<{
+  readonly markTaskDone: Schema.Maybe<{
     readonly __typename: "Item";
     readonly id: string;
     readonly summary: string;
@@ -401,14 +401,14 @@ export type EditTaskInfoMutation = {
   }>;
 };
 
-export type EditTaskControllerMutationVariables = Schema.Exact<{
+export type SetTaskControllerMutationVariables = Schema.Exact<{
   id: Schema.Scalars["ID"];
   controller: Schema.Maybe<Schema.Scalars["TaskController"]>;
 }>;
 
-export type EditTaskControllerMutation = {
+export type SetTaskControllerMutation = {
   readonly __typename: "Mutation";
-  readonly editTaskController: Schema.Maybe<{
+  readonly setTaskController: Schema.Maybe<{
     readonly __typename: "Item";
     readonly id: string;
     readonly summary: string;
@@ -619,14 +619,14 @@ export type SnoozeItemMutation = {
   }>;
 };
 
-export type MarkItemDueMutationVariables = Schema.Exact<{
+export type MarkTaskDueMutationVariables = Schema.Exact<{
   id: Schema.Scalars["ID"];
   due: Schema.Maybe<Schema.Scalars["DateTime"]>;
 }>;
 
-export type MarkItemDueMutation = {
+export type MarkTaskDueMutation = {
   readonly __typename: "Mutation";
-  readonly markItemDue: Schema.Maybe<{
+  readonly markTaskDue: Schema.Maybe<{
     readonly __typename: "Item";
     readonly id: string;
     readonly summary: string;
@@ -1062,13 +1062,13 @@ export const OperationNames = {
     CreateTask: "CreateTask",
     CreateLink: "CreateLink",
     EditItem: "EditItem",
-    EditTaskInfo: "EditTaskInfo",
-    EditTaskController: "EditTaskController",
+    MarkTaskDone: "MarkTaskDone",
+    SetTaskController: "SetTaskController",
     MoveItem: "MoveItem",
     DeleteItem: "DeleteItem",
     ArchiveItem: "ArchiveItem",
     SnoozeItem: "SnoozeItem",
-    MarkItemDue: "MarkItemDue",
+    MarkTaskDue: "MarkTaskDue",
     CreateUser: "CreateUser",
     DeleteUser: "DeleteUser",
     ChangePassword: "ChangePassword",
@@ -1848,109 +1848,109 @@ export type EditItemMutationOptions = Apollo.BaseMutationOptions<
   EditItemMutation,
   EditItemMutationVariables
 >;
-export const EditTaskInfoDocument = gql`
-  mutation EditTaskInfo($id: ID!, $taskInfo: TaskInfoParams) {
-    editTaskInfo(id: $id, taskInfo: $taskInfo) {
+export const MarkTaskDoneDocument = gql`
+  mutation MarkTaskDone($id: ID!, $done: DateTime) {
+    markTaskDone(id: $id, done: $done) {
       ...clientItemFields
     }
   }
   ${ClientItemFieldsFragmentDoc}
 `;
-export type EditTaskInfoMutationFn = Apollo.MutationFunction<
-  EditTaskInfoMutation,
-  EditTaskInfoMutationVariables
+export type MarkTaskDoneMutationFn = Apollo.MutationFunction<
+  MarkTaskDoneMutation,
+  MarkTaskDoneMutationVariables
 >;
 
 /**
- * __useEditTaskInfoMutation__
+ * __useMarkTaskDoneMutation__
  *
- * To run a mutation, you first call `useEditTaskInfoMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useEditTaskInfoMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useMarkTaskDoneMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMarkTaskDoneMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [editTaskInfoMutation, { data, loading, error }] = useEditTaskInfoMutation({
+ * const [markTaskDoneMutation, { data, loading, error }] = useMarkTaskDoneMutation({
  *   variables: {
  *      id: // value for 'id'
- *      taskInfo: // value for 'taskInfo'
+ *      done: // value for 'done'
  *   },
  * });
  */
-export function useEditTaskInfoMutation(
+export function useMarkTaskDoneMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    EditTaskInfoMutation,
-    EditTaskInfoMutationVariables
+    MarkTaskDoneMutation,
+    MarkTaskDoneMutationVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useMutation<
-    EditTaskInfoMutation,
-    EditTaskInfoMutationVariables
-  >(EditTaskInfoDocument, options);
+    MarkTaskDoneMutation,
+    MarkTaskDoneMutationVariables
+  >(MarkTaskDoneDocument, options);
 }
-export type EditTaskInfoMutationHookResult = ReturnType<
-  typeof useEditTaskInfoMutation
+export type MarkTaskDoneMutationHookResult = ReturnType<
+  typeof useMarkTaskDoneMutation
 >;
-export type EditTaskInfoMutationResult =
-  Apollo.MutationResult<EditTaskInfoMutation>;
-export type EditTaskInfoMutationOptions = Apollo.BaseMutationOptions<
-  EditTaskInfoMutation,
-  EditTaskInfoMutationVariables
+export type MarkTaskDoneMutationResult =
+  Apollo.MutationResult<MarkTaskDoneMutation>;
+export type MarkTaskDoneMutationOptions = Apollo.BaseMutationOptions<
+  MarkTaskDoneMutation,
+  MarkTaskDoneMutationVariables
 >;
-export const EditTaskControllerDocument = gql`
-  mutation EditTaskController($id: ID!, $controller: TaskController) {
-    editTaskController(id: $id, controller: $controller) {
+export const SetTaskControllerDocument = gql`
+  mutation SetTaskController($id: ID!, $controller: TaskController) {
+    setTaskController(id: $id, controller: $controller) {
       ...clientItemFields
     }
   }
   ${ClientItemFieldsFragmentDoc}
 `;
-export type EditTaskControllerMutationFn = Apollo.MutationFunction<
-  EditTaskControllerMutation,
-  EditTaskControllerMutationVariables
+export type SetTaskControllerMutationFn = Apollo.MutationFunction<
+  SetTaskControllerMutation,
+  SetTaskControllerMutationVariables
 >;
 
 /**
- * __useEditTaskControllerMutation__
+ * __useSetTaskControllerMutation__
  *
- * To run a mutation, you first call `useEditTaskControllerMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useEditTaskControllerMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useSetTaskControllerMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useSetTaskControllerMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [editTaskControllerMutation, { data, loading, error }] = useEditTaskControllerMutation({
+ * const [setTaskControllerMutation, { data, loading, error }] = useSetTaskControllerMutation({
  *   variables: {
  *      id: // value for 'id'
  *      controller: // value for 'controller'
  *   },
  * });
  */
-export function useEditTaskControllerMutation(
+export function useSetTaskControllerMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    EditTaskControllerMutation,
-    EditTaskControllerMutationVariables
+    SetTaskControllerMutation,
+    SetTaskControllerMutationVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
   return Apollo.useMutation<
-    EditTaskControllerMutation,
-    EditTaskControllerMutationVariables
-  >(EditTaskControllerDocument, options);
+    SetTaskControllerMutation,
+    SetTaskControllerMutationVariables
+  >(SetTaskControllerDocument, options);
 }
-export type EditTaskControllerMutationHookResult = ReturnType<
-  typeof useEditTaskControllerMutation
+export type SetTaskControllerMutationHookResult = ReturnType<
+  typeof useSetTaskControllerMutation
 >;
-export type EditTaskControllerMutationResult =
-  Apollo.MutationResult<EditTaskControllerMutation>;
-export type EditTaskControllerMutationOptions = Apollo.BaseMutationOptions<
-  EditTaskControllerMutation,
-  EditTaskControllerMutationVariables
+export type SetTaskControllerMutationResult =
+  Apollo.MutationResult<SetTaskControllerMutation>;
+export type SetTaskControllerMutationOptions = Apollo.BaseMutationOptions<
+  SetTaskControllerMutation,
+  SetTaskControllerMutationVariables
 >;
 export const MoveItemDocument = gql`
   mutation MoveItem($id: ID!, $section: ID, $before: ID) {
@@ -2154,57 +2154,57 @@ export type SnoozeItemMutationOptions = Apollo.BaseMutationOptions<
   SnoozeItemMutation,
   SnoozeItemMutationVariables
 >;
-export const MarkItemDueDocument = gql`
-  mutation MarkItemDue($id: ID!, $due: DateTime) {
-    markItemDue(id: $id, due: $due) {
+export const MarkTaskDueDocument = gql`
+  mutation MarkTaskDue($id: ID!, $due: DateTime) {
+    markTaskDue(id: $id, due: $due) {
       ...clientItemFields
     }
   }
   ${ClientItemFieldsFragmentDoc}
 `;
-export type MarkItemDueMutationFn = Apollo.MutationFunction<
-  MarkItemDueMutation,
-  MarkItemDueMutationVariables
+export type MarkTaskDueMutationFn = Apollo.MutationFunction<
+  MarkTaskDueMutation,
+  MarkTaskDueMutationVariables
 >;
 
 /**
- * __useMarkItemDueMutation__
+ * __useMarkTaskDueMutation__
  *
- * To run a mutation, you first call `useMarkItemDueMutation` within a React component and pass it any options that fit your needs.
- * When your component renders, `useMarkItemDueMutation` returns a tuple that includes:
+ * To run a mutation, you first call `useMarkTaskDueMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useMarkTaskDueMutation` returns a tuple that includes:
  * - A mutate function that you can call at any time to execute the mutation
  * - An object with fields that represent the current status of the mutation's execution
  *
  * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
  *
  * @example
- * const [markItemDueMutation, { data, loading, error }] = useMarkItemDueMutation({
+ * const [markTaskDueMutation, { data, loading, error }] = useMarkTaskDueMutation({
  *   variables: {
  *      id: // value for 'id'
  *      due: // value for 'due'
  *   },
  * });
  */
-export function useMarkItemDueMutation(
+export function useMarkTaskDueMutation(
   baseOptions?: Apollo.MutationHookOptions<
-    MarkItemDueMutation,
-    MarkItemDueMutationVariables
+    MarkTaskDueMutation,
+    MarkTaskDueMutationVariables
   >,
 ) {
   const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useMutation<MarkItemDueMutation, MarkItemDueMutationVariables>(
-    MarkItemDueDocument,
+  return Apollo.useMutation<MarkTaskDueMutation, MarkTaskDueMutationVariables>(
+    MarkTaskDueDocument,
     options,
   );
 }
-export type MarkItemDueMutationHookResult = ReturnType<
-  typeof useMarkItemDueMutation
+export type MarkTaskDueMutationHookResult = ReturnType<
+  typeof useMarkTaskDueMutation
 >;
-export type MarkItemDueMutationResult =
-  Apollo.MutationResult<MarkItemDueMutation>;
-export type MarkItemDueMutationOptions = Apollo.BaseMutationOptions<
-  MarkItemDueMutation,
-  MarkItemDueMutationVariables
+export type MarkTaskDueMutationResult =
+  Apollo.MutationResult<MarkTaskDueMutation>;
+export type MarkTaskDueMutationOptions = Apollo.BaseMutationOptions<
+  MarkTaskDueMutation,
+  MarkTaskDueMutationVariables
 >;
 export const CreateUserDocument = gql`
   mutation CreateUser($email: String!, $password: String!, $isAdmin: Boolean) {
