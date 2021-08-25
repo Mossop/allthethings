@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { MutationCreateGithubSearchArgs } from "#schema";
+import type {
+  MutationCreateGithubSearchArgs,
+  MutationDeleteGithubSearchArgs,
+  MutationEditGithubSearchArgs,
+} from "#schema";
 import type { AuthedGraphQLCtx } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
@@ -36,7 +40,40 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GithubTransaction>>({
         throw new Error("Unknown account.");
       }
 
-      return Search.create(ctx.transaction, account, params);
+      return Search.create(ctx.transaction, account, {
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
+      });
+    },
+
+    async editGithubSearch(
+      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      { search: searchId, params }: MutationEditGithubSearchArgs,
+    ): Promise<Search | null> {
+      let search = await ctx.transaction.stores.searches.get(searchId);
+      if (!search) {
+        return null;
+      }
+
+      await ctx.transaction.stores.searches.updateOne(searchId, {
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
+      });
+      await search.update();
+      return search;
+    },
+
+    async deleteGithubSearch(
+      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      { search: searchId }: MutationDeleteGithubSearchArgs,
+    ): Promise<boolean> {
+      let search = await ctx.transaction.stores.searches.get(searchId);
+      if (!search) {
+        return false;
+      }
+
+      await search.delete();
+      return true;
     },
   },
 });

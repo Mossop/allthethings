@@ -12,10 +12,11 @@ export type BugzillaAccountRecord = Required<
 };
 
 export type BugzillaSearchRecord = Required<
-  Omit<GraphQLType<BugzillaSearch>, "url" | "type">
+  Omit<GraphQLType<BugzillaSearch>, "url" | "type" | "dueOffset">
 > & {
   accountId: string;
   type: SearchType;
+  dueOffset: string | null;
 };
 
 export type BugzillaBugRecord = Pick<BugzillaAPIBug, "summary"> & {

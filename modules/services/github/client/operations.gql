@@ -10,6 +10,7 @@ query ListGithubAccounts {
         id
         name
         query
+        dueOffset
         url
       }
     }
@@ -25,6 +26,21 @@ mutation CreateGithubSearch($account: ID!, $params: GithubSearchParams!) {
     id
     name
     query
+    dueOffset
     url
   }
+}
+
+mutation EditGithubSearch($id: ID!, $params: GithubSearchParams!) {
+  editGithubSearch(search: $id, params: $params) {
+    id
+    name
+    query
+    dueOffset
+    url
+  }
+}
+
+mutation DeleteGithubSearch($id: ID!) {
+  deleteGithubSearch(search: $id)
 }

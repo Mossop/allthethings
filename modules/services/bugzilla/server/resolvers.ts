@@ -6,6 +6,7 @@ import type {
   MutationCreateBugzillaSearchArgs,
   MutationDeleteBugzillaAccountArgs,
   MutationDeleteBugzillaSearchArgs,
+  MutationEditBugzillaSearchArgs,
 } from "#schema";
 import type { AuthedGraphQLCtx, GraphQLCtx } from "#server/utils";
 import { rootResolvers, bestIcon, loadPageInfo } from "#server/utils";
@@ -71,7 +72,7 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
       ctx: GraphQLCtx<BugzillaTransaction>,
       {
         account: accountId,
-        params: { name, query },
+        params: { name, query, dueOffset },
       }: MutationCreateBugzillaSearchArgs,
     ): Promise<Search> {
       let account = await ctx.transaction.stores.accounts.get(accountId);
@@ -83,7 +84,28 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
         name,
         accountId: account.id,
         ...account.normalizeQuery(query),
+        dueOffset: dueOffset ? JSON.stringify(dueOffset) : null,
       });
+    },
+
+    async editBugzillaSearch(
+      ctx: GraphQLCtx<BugzillaTransaction>,
+      {
+        search: searchId,
+        params: { name, query, dueOffset },
+      }: MutationEditBugzillaSearchArgs,
+    ): Promise<Search | null> {
+      let search = await ctx.transaction.stores.searches.get(searchId);
+      if (!search) {
+        return null;
+      }
+
+      await ctx.transaction.stores.searches.updateOne(searchId, {
+        name,
+        query,
+        dueOffset: dueOffset ? JSON.stringify(dueOffset) : null,
+      });
+      return search;
     },
 
     async deleteBugzillaSearch(

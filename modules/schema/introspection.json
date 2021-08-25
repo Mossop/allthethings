@@ -226,6 +226,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -258,6 +270,18 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": { "kind": "SCALAR", "name": "String", "ofType": null }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -727,6 +751,18 @@
             "deprecationReason": null
           },
           {
+            "name": "dueOffset",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "url",
             "description": null,
             "args": [],
@@ -769,6 +805,18 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": { "kind": "SCALAR", "name": "String", "ofType": null }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -910,6 +958,18 @@
             },
             "isDeprecated": false,
             "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
           }
         ],
         "inputFields": null,
@@ -942,6 +1002,18 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": { "kind": "SCALAR", "name": "String", "ofType": null }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -1401,6 +1473,18 @@
             "deprecationReason": null
           },
           {
+            "name": "dueOffset",
+            "description": null,
+            "args": [],
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "url",
             "description": null,
             "args": [],
@@ -1443,6 +1527,18 @@
               "kind": "NON_NULL",
               "name": null,
               "ofType": { "kind": "SCALAR", "name": "String", "ofType": null }
+            },
+            "defaultValue": null,
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "dueOffset",
+            "description": null,
+            "type": {
+              "kind": "SCALAR",
+              "name": "DateTimeOffset",
+              "ofType": null
             },
             "defaultValue": null,
             "isDeprecated": false,
@@ -2280,6 +2376,56 @@
             "deprecationReason": null
           },
           {
+            "name": "deleteGithubSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "search",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": { "kind": "SCALAR", "name": "Boolean", "ofType": null }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "deleteGoogleMailSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "id",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "NON_NULL",
+              "name": null,
+              "ofType": { "kind": "SCALAR", "name": "Boolean", "ofType": null }
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "deleteItem",
             "description": null,
             "args": [
@@ -2435,6 +2581,47 @@
             "deprecationReason": null
           },
           {
+            "name": "editBugzillaSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "search",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "params",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "BugzillaSearchParams",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "BugzillaSearch",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "editContext",
             "description": null,
             "args": [
@@ -2472,6 +2659,88 @@
             "deprecationReason": null
           },
           {
+            "name": "editGithubSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "search",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "params",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "GithubSearchParams",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "GithubSearch",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "editGoogleMailSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "id",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "params",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "GoogleMailSearchParams",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": {
+              "kind": "OBJECT",
+              "name": "GoogleMailSearch",
+              "ofType": null
+            },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
             "name": "editItem",
             "description": null,
             "args": [
@@ -2505,6 +2774,43 @@
               }
             ],
             "type": { "kind": "OBJECT", "name": "Item", "ofType": null },
+            "isDeprecated": false,
+            "deprecationReason": null
+          },
+          {
+            "name": "editJiraSearch",
+            "description": null,
+            "args": [
+              {
+                "name": "search",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": { "kind": "SCALAR", "name": "ID", "ofType": null }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              },
+              {
+                "name": "params",
+                "description": null,
+                "type": {
+                  "kind": "NON_NULL",
+                  "name": null,
+                  "ofType": {
+                    "kind": "INPUT_OBJECT",
+                    "name": "JiraSearchParams",
+                    "ofType": null
+                  }
+                },
+                "defaultValue": null,
+                "isDeprecated": false,
+                "deprecationReason": null
+              }
+            ],
+            "type": { "kind": "OBJECT", "name": "JiraSearch", "ofType": null },
             "isDeprecated": false,
             "deprecationReason": null
           },

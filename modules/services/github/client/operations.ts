@@ -23,6 +23,7 @@ export type ListGithubAccountsQuery = {
         readonly id: string;
         readonly name: string;
         readonly query: string;
+        readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
         readonly url: string;
       }>;
     }>;
@@ -50,8 +51,35 @@ export type CreateGithubSearchMutation = {
     readonly id: string;
     readonly name: string;
     readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
     readonly url: string;
   };
+};
+
+export type EditGithubSearchMutationVariables = Schema.Exact<{
+  id: Schema.Scalars["ID"];
+  params: Schema.GithubSearchParams;
+}>;
+
+export type EditGithubSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly editGithubSearch: Schema.Maybe<{
+    readonly __typename: "GithubSearch";
+    readonly id: string;
+    readonly name: string;
+    readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
+    readonly url: string;
+  }>;
+};
+
+export type DeleteGithubSearchMutationVariables = Schema.Exact<{
+  id: Schema.Scalars["ID"];
+}>;
+
+export type DeleteGithubSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly deleteGithubSearch: boolean;
 };
 
 export const OperationNames = {
@@ -61,6 +89,8 @@ export const OperationNames = {
   },
   Mutation: {
     CreateGithubSearch: "CreateGithubSearch",
+    EditGithubSearch: "EditGithubSearch",
+    DeleteGithubSearch: "DeleteGithubSearch",
   },
 };
 
@@ -77,6 +107,7 @@ export const ListGithubAccountsDocument = gql`
           id
           name
           query
+          dueOffset
           url
         }
       }
@@ -204,6 +235,7 @@ export const CreateGithubSearchDocument = gql`
       id
       name
       query
+      dueOffset
       url
     }
   }
@@ -251,4 +283,107 @@ export type CreateGithubSearchMutationResult =
 export type CreateGithubSearchMutationOptions = Apollo.BaseMutationOptions<
   CreateGithubSearchMutation,
   CreateGithubSearchMutationVariables
+>;
+export const EditGithubSearchDocument = gql`
+  mutation EditGithubSearch($id: ID!, $params: GithubSearchParams!) {
+    editGithubSearch(search: $id, params: $params) {
+      id
+      name
+      query
+      dueOffset
+      url
+    }
+  }
+`;
+export type EditGithubSearchMutationFn = Apollo.MutationFunction<
+  EditGithubSearchMutation,
+  EditGithubSearchMutationVariables
+>;
+
+/**
+ * __useEditGithubSearchMutation__
+ *
+ * To run a mutation, you first call `useEditGithubSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditGithubSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editGithubSearchMutation, { data, loading, error }] = useEditGithubSearchMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditGithubSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    EditGithubSearchMutation,
+    EditGithubSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    EditGithubSearchMutation,
+    EditGithubSearchMutationVariables
+  >(EditGithubSearchDocument, options);
+}
+export type EditGithubSearchMutationHookResult = ReturnType<
+  typeof useEditGithubSearchMutation
+>;
+export type EditGithubSearchMutationResult =
+  Apollo.MutationResult<EditGithubSearchMutation>;
+export type EditGithubSearchMutationOptions = Apollo.BaseMutationOptions<
+  EditGithubSearchMutation,
+  EditGithubSearchMutationVariables
+>;
+export const DeleteGithubSearchDocument = gql`
+  mutation DeleteGithubSearch($id: ID!) {
+    deleteGithubSearch(search: $id)
+  }
+`;
+export type DeleteGithubSearchMutationFn = Apollo.MutationFunction<
+  DeleteGithubSearchMutation,
+  DeleteGithubSearchMutationVariables
+>;
+
+/**
+ * __useDeleteGithubSearchMutation__
+ *
+ * To run a mutation, you first call `useDeleteGithubSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useDeleteGithubSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [deleteGithubSearchMutation, { data, loading, error }] = useDeleteGithubSearchMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *   },
+ * });
+ */
+export function useDeleteGithubSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    DeleteGithubSearchMutation,
+    DeleteGithubSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    DeleteGithubSearchMutation,
+    DeleteGithubSearchMutationVariables
+  >(DeleteGithubSearchDocument, options);
+}
+export type DeleteGithubSearchMutationHookResult = ReturnType<
+  typeof useDeleteGithubSearchMutation
+>;
+export type DeleteGithubSearchMutationResult =
+  Apollo.MutationResult<DeleteGithubSearchMutation>;
+export type DeleteGithubSearchMutationOptions = Apollo.BaseMutationOptions<
+  DeleteGithubSearchMutation,
+  DeleteGithubSearchMutationVariables
 >;

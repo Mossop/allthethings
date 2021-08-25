@@ -1,51 +1,44 @@
 import { DateTime } from "luxon";
 import { JsonDecoder } from "ts.data.json";
 
-export interface RelativeOffset {
-  readonly type: "relative";
-  readonly years?: number;
-  readonly quarters?: number;
-  readonly months?: number;
-  readonly weeks?: number;
-  readonly weekdays?: number;
-  readonly days?: number;
-  readonly hours?: number;
-  readonly minutes?: number;
-  readonly seconds?: number;
-  readonly milliseconds?: number;
-}
-
-export interface AbsoluteOffset {
-  readonly type: "absolute";
-  readonly year?: number;
-  readonly month?: number;
-  readonly weekday?: number;
-  readonly day?: number;
-  readonly hour?: number;
-  readonly minute?: number;
-  readonly second?: number;
-  readonly millisecond?: number;
-}
-
-export enum LimitUnit {
+export enum DateTimeUnit {
+  Millisecond = "millisecond",
   Second = "second",
   Minute = "minute",
   Hour = "hour",
   Day = "day",
+  Weekday = "weekday",
   Week = "week",
   Month = "month",
-  Quarter = "quarter",
   Year = "year",
+}
+
+export interface RelativeOffset {
+  readonly type: "relative";
+  readonly unit: DateTimeUnit;
+  readonly value: number;
+}
+
+export interface AbsoluteOffset {
+  readonly type: "absolute";
+  readonly unit: Exclude<DateTimeUnit, DateTimeUnit.Week>;
+  readonly value: number;
 }
 
 export interface StartOfOffset {
   readonly type: "start";
-  readonly unit: LimitUnit;
+  readonly unit: Exclude<
+    DateTimeUnit,
+    DateTimeUnit.Weekday | DateTimeUnit.Millisecond
+  >;
 }
 
 export interface EndOfOffset {
   readonly type: "end";
-  readonly unit: LimitUnit;
+  readonly unit: Exclude<
+    DateTimeUnit,
+    DateTimeUnit.Weekday | DateTimeUnit.Millisecond
+  >;
 }
 
 export interface ZonePart {
@@ -60,15 +53,16 @@ export type DateTimeOffsetPart =
   | EndOfOffset
   | ZonePart;
 
-const LimitUnitDecoder = JsonDecoder.enumeration<LimitUnit>(
-  LimitUnit,
-  "LimitUnit",
+const DateTimeUnitDecoder = JsonDecoder.enumeration<DateTimeUnit>(
+  DateTimeUnit,
+  "DateTimeUnit",
 );
 
 const StartOfOffsetDecoder = JsonDecoder.object<StartOfOffset>(
   {
     type: JsonDecoder.isExactly("start"),
-    unit: LimitUnitDecoder,
+    // @ts-ignore
+    unit: DateTimeUnitDecoder,
   },
   "StartOfOffset",
 );
@@ -76,7 +70,8 @@ const StartOfOffsetDecoder = JsonDecoder.object<StartOfOffset>(
 const EndOfOffsetDecoder = JsonDecoder.object<EndOfOffset>(
   {
     type: JsonDecoder.isExactly("end"),
-    unit: LimitUnitDecoder,
+    // @ts-ignore
+    unit: DateTimeUnitDecoder,
   },
   "EndOfOffset",
 );
@@ -92,16 +87,8 @@ const ZonePartDecoder = JsonDecoder.object<ZonePart>(
 const RelativeOffsetDecoder = JsonDecoder.object<RelativeOffset>(
   {
     type: JsonDecoder.isExactly("relative"),
-    years: JsonDecoder.optional(JsonDecoder.number),
-    quarters: JsonDecoder.optional(JsonDecoder.number),
-    months: JsonDecoder.optional(JsonDecoder.number),
-    weeks: JsonDecoder.optional(JsonDecoder.number),
-    weekdays: JsonDecoder.optional(JsonDecoder.number),
-    days: JsonDecoder.optional(JsonDecoder.number),
-    hours: JsonDecoder.optional(JsonDecoder.number),
-    minutes: JsonDecoder.optional(JsonDecoder.number),
-    seconds: JsonDecoder.optional(JsonDecoder.number),
-    milliseconds: JsonDecoder.optional(JsonDecoder.number),
+    value: JsonDecoder.number,
+    unit: DateTimeUnitDecoder,
   },
   "RelativeOffset",
 );
@@ -109,14 +96,9 @@ const RelativeOffsetDecoder = JsonDecoder.object<RelativeOffset>(
 const AbsoluteOffsetDecoder = JsonDecoder.object<AbsoluteOffset>(
   {
     type: JsonDecoder.isExactly("absolute"),
-    year: JsonDecoder.optional(JsonDecoder.number),
-    month: JsonDecoder.optional(JsonDecoder.number),
-    weekday: JsonDecoder.optional(JsonDecoder.number),
-    day: JsonDecoder.optional(JsonDecoder.number),
-    hour: JsonDecoder.optional(JsonDecoder.number),
-    minute: JsonDecoder.optional(JsonDecoder.number),
-    second: JsonDecoder.optional(JsonDecoder.number),
-    millisecond: JsonDecoder.optional(JsonDecoder.number),
+    value: JsonDecoder.number,
+    // @ts-ignore
+    unit: DateTimeUnitDecoder,
   },
   "AbsoluteOffset",
 );
@@ -191,12 +173,19 @@ export function addOffset(
   for (let part of offset) {
     switch (part.type) {
       case "relative": {
-        let { type, weekdays, ...duration } = part;
-        current = addWeekdays(current.plus(duration), weekdays);
+        if (part.unit == DateTimeUnit.Weekday) {
+          current = addWeekdays(current, part.value);
+        } else {
+          current = current.plus({
+            [part.unit]: part.value,
+          });
+        }
         break;
       }
       case "absolute":
-        current = current.set(part);
+        current = current.set({
+          [part.unit]: part.value,
+        });
         break;
       case "start":
         current = current.startOf(part.unit);

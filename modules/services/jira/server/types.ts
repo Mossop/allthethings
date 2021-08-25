@@ -20,4 +20,5 @@ export interface JiraSearchRecord {
   id: string;
   name: string;
   query: string;
+  dueOffset: string | null;
 }

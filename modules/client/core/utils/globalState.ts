@@ -3,7 +3,7 @@ import type { Update, Location } from "history";
 import { SystemZone } from "luxon";
 
 import { history } from "#client/utils";
-import { LimitUnit } from "#utils";
+import { DateTimeUnit } from "#utils";
 
 import type {
   Problem,
@@ -79,7 +79,7 @@ class GlobalStateManager {
           },
           {
             type: "end",
-            unit: LimitUnit.Day,
+            unit: DateTimeUnit.Day,
           },
         ],
       },

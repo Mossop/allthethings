@@ -4,6 +4,7 @@ import type {
   MutationCreateJiraSearchArgs,
   MutationDeleteJiraAccountArgs,
   MutationDeleteJiraSearchArgs,
+  MutationEditJiraSearchArgs,
 } from "#schema";
 import type { AuthedGraphQLCtx } from "#server/utils";
 import { rootResolvers } from "#server/utils";
@@ -42,10 +43,7 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<JiraTransaction>>({
 
     async createJiraSearch(
       ctx: AuthedGraphQLCtx<JiraTransaction>,
-      {
-        account: accountId,
-        params: { name, query },
-      }: MutationCreateJiraSearchArgs,
+      { account: accountId, params }: MutationCreateJiraSearchArgs,
     ): Promise<Search> {
       let account = await ctx.transaction.stores.accounts.get(accountId);
       if (!account) {
@@ -53,10 +51,28 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<JiraTransaction>>({
       }
 
       return Search.create(account, {
-        name,
         accountId: account.id,
-        query,
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
       });
+    },
+
+    async editJiraSearch(
+      ctx: AuthedGraphQLCtx<JiraTransaction>,
+      { search: searchId, params }: MutationEditJiraSearchArgs,
+    ): Promise<Search | null> {
+      let search = await ctx.transaction.stores.searches.get(searchId);
+      if (!search) {
+        return null;
+      }
+
+      await ctx.transaction.stores.searches.updateOne(searchId, {
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
+      });
+
+      await search.update();
+      return search;
     },
 
     async deleteJiraSearch(

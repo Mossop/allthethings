@@ -4,6 +4,8 @@ import type {
   Theme,
 } from "@material-ui/core";
 import {
+  FormHelperText,
+  MenuItem,
   CircularProgress,
   createStyles,
   makeStyles,
@@ -15,10 +17,16 @@ import {
   RadioGroup,
   OutlinedInput,
   Checkbox as MuiCheckbox,
+  Select as MuiSelect,
   Button as MuiButton,
 } from "@material-ui/core";
 import clsx from "clsx";
-import type { Dispatch, SetStateAction, ReactElement } from "react";
+import type {
+  Dispatch,
+  SetStateAction,
+  ReactElement,
+  ChangeEvent,
+} from "react";
 import { useMemo, useCallback, createContext, useContext } from "react";
 
 import type { Overwrite } from "#utils";
@@ -31,6 +39,11 @@ export enum FormState {
   Default,
   Disabled,
   Loading,
+  Error,
+}
+
+function isFormDisabled(formState: FormState): boolean {
+  return formState == FormState.Disabled || formState == FormState.Loading;
 }
 
 const FormStateContext = createContext<FormState>(FormState.Default);
@@ -103,13 +116,22 @@ export interface FieldProps<T, K extends keyof T> {
   fieldState?: FormState;
 }
 
-type TextFieldInputProps<T, K extends keyof T> = Overwrite<
-  Omit<OutlinedInputProps, "onChange" | "value" | "multiline">,
+type TextFieldProps = Overwrite<
+  Omit<OutlinedInputProps, "value" | "multiline" | "helperText">,
   {
     id: string;
-    label: string;
+    label?: string;
     type?: "email" | "password" | "text" | "url";
+    value: string;
+    error?: string | null;
+    onChange: (value: string) => void;
+    fieldState?: FormState;
   }
+>;
+
+type TextFieldInputProps<T, K extends keyof T> = Omit<
+  TextFieldProps,
+  "value" | "onChange"
 > &
   FieldProps<T, K>;
 
@@ -117,24 +139,22 @@ export type TypedProps<S, T> = {
   [K in keyof S]: S[K] extends T ? K : never;
 }[keyof S];
 
-export const TextFieldInput = ReactMemo(function TextFieldInput<
-  T,
-  K extends TypedProps<T, string>,
->({
+export const TextField = ReactMemo(function TextField({
   id,
   label,
-  state,
-  setState,
-  stateKey,
   type = "text",
+  error,
+  value,
+  onChange,
   fieldState,
   ...props
-}: TextFieldInputProps<T, K>): ReactElement {
-  let value = useMemo(() => state[stateKey], [state, stateKey]);
-
-  let change = useFieldState(
-    useScopedState(stateKey, setState),
-  ) as unknown as Dispatch<FieldEvent<string>>;
+}: TextFieldProps): ReactElement {
+  let change = useCallback(
+    (event: ChangeEvent<HTMLInputElement>): void => {
+      onChange(event.target.value);
+    },
+    [onChange],
+  );
 
   let globalState = useFormState();
   fieldState = fieldState ?? globalState;
@@ -143,9 +163,10 @@ export const TextFieldInput = ReactMemo(function TextFieldInput<
     <FormControl
       margin="normal"
       variant="outlined"
-      disabled={fieldState != FormState.Default}
+      disabled={isFormDisabled(fieldState)}
+      error={!!error}
     >
-      <InputLabel htmlFor={id}>{label}</InputLabel>
+      {label && <InputLabel htmlFor={id}>{label}</InputLabel>}
       <OutlinedInput
         {...props}
         id={id}
@@ -154,8 +175,73 @@ export const TextFieldInput = ReactMemo(function TextFieldInput<
         value={value}
         onChange={change}
       />
+      {error && <FormHelperText error={true}>{error}</FormHelperText>}
     </FormControl>
   );
+});
+
+export type NumberFieldProps = Overwrite<
+  Omit<TextFieldProps, "type">,
+  {
+    value: number;
+    onChange: (value: number) => void;
+  }
+>;
+
+export const NumberField = ReactMemo(function NumberField({
+  id,
+  label,
+  error,
+  value,
+  onChange,
+  fieldState,
+  ...props
+}: NumberFieldProps): ReactElement {
+  let change = useCallback(
+    (event: ChangeEvent<HTMLInputElement>): void => {
+      onChange(event.target.valueAsNumber);
+    },
+    [onChange],
+  );
+
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
+
+  return (
+    <FormControl
+      margin="normal"
+      variant="outlined"
+      disabled={isFormDisabled(fieldState)}
+      error={!!error}
+    >
+      {label && <InputLabel htmlFor={id}>{label}</InputLabel>}
+      <OutlinedInput
+        {...props}
+        id={id}
+        label={label}
+        type="number"
+        value={value}
+        onChange={change}
+      />
+      {error && <FormHelperText error={true}>{error}</FormHelperText>}
+    </FormControl>
+  );
+});
+
+export const TextFieldInput = ReactMemo(function TextFieldInput<
+  T,
+  K extends TypedProps<T, string>,
+>({
+  state,
+  setState,
+  stateKey,
+  ...props
+}: TextFieldInputProps<T, K>): ReactElement {
+  let value = useMemo(() => state[stateKey], [state, stateKey]) as string;
+
+  let change = useScopedState(stateKey, setState) as Dispatch<string>;
+
+  return <TextField value={value} onChange={change} {...props} />;
 });
 
 export interface RadioValue<T> {
@@ -201,7 +287,7 @@ export const RadioGroupInput = ReactMemo(function RadioGroupInput<
       component="fieldset"
       margin="normal"
       variant="outlined"
-      disabled={fieldState != FormState.Default}
+      disabled={isFormDisabled(fieldState)}
     >
       <FormLabel component="legend">{label}</FormLabel>
       <RadioGroup value={value} onChange={onChange}>
@@ -243,7 +329,7 @@ export const Checkbox = ReactMemo(function Checkbox({
 
   return (
     <FormControlLabel
-      disabled={fieldState != FormState.Default}
+      disabled={isFormDisabled(fieldState)}
       control={
         <MuiCheckbox color="primary" checked={checked} onChange={change} />
       }
@@ -348,7 +434,10 @@ export const Button = ReactMemo(function Button({
 
   let globalState = useFormState();
   fieldState = fieldState ?? globalState;
-  disabled = disabled ?? fieldState != FormState.Default;
+  disabled =
+    disabled ||
+    isFormDisabled(fieldState) ||
+    (fieldState == FormState.Error && type == "submit");
 
   let isLoading = fieldState == FormState.Loading && type == "submit";
 
@@ -363,5 +452,57 @@ export const Button = ReactMemo(function Button({
         )}
       </div>
     </MuiButton>
+  );
+});
+
+export interface SelectProps<T> {
+  id: string;
+  label?: string | null;
+  value: keyof T;
+  onChange: (value: keyof T) => void;
+  items: T;
+  fieldState?: FormState;
+}
+
+export const Select = ReactMemo(function Select<T>({
+  id,
+  label,
+  value,
+  onChange,
+  fieldState,
+  items,
+}: SelectProps<T> & ReactChildren): ReactResult {
+  let globalState = useFormState();
+  fieldState = fieldState ?? globalState;
+
+  let change = useCallback(
+    (event: ChangeEvent<{ name?: string; value: keyof T }>) =>
+      onChange(event.target.value),
+    [onChange],
+  );
+
+  return (
+    <FormControl
+      margin="normal"
+      variant="outlined"
+      disabled={isFormDisabled(fieldState)}
+    >
+      {label && <InputLabel id={`${id}-label`}>{label}</InputLabel>}
+      <MuiSelect
+        labelId={`${id}-label`}
+        id={id}
+        value={value}
+        // @ts-ignore
+        onChange={change}
+      >
+        {/* @ts-ignore */}
+        {Object.entries(items).map(([value, label]: [keyof T, string]) => (
+          // @ts-ignore
+          <MenuItem key={value} value={value}>
+            {label}
+          </MenuItem>
+        ))}
+      </MuiSelect>
+    </FormControl>
   );
 });

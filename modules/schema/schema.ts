@@ -48,11 +48,13 @@ export type BugzillaSearch = {
   readonly type: Scalars["String"];
   readonly query: Scalars["String"];
   readonly url: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type BugzillaSearchParams = {
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type Context = TaskList & {
@@ -107,12 +109,14 @@ export type GithubSearch = {
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly url: Scalars["String"];
 };
 
 export type GithubSearchParams = {
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type GoogleAccount = {
@@ -130,11 +134,13 @@ export type GoogleMailSearch = {
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
   readonly url: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type GoogleMailSearchParams = {
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type Item = {
@@ -193,12 +199,14 @@ export type JiraSearch = {
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly url: Scalars["String"];
 };
 
 export type JiraSearchParams = {
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type LinkDetail = {
@@ -232,6 +240,8 @@ export type Mutation = {
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
   readonly deleteContext: Scalars["Boolean"];
+  readonly deleteGithubSearch: Scalars["Boolean"];
+  readonly deleteGoogleMailSearch: Scalars["Boolean"];
   readonly deleteItem: Scalars["Boolean"];
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
@@ -239,8 +249,12 @@ export type Mutation = {
   readonly deleteProject: Scalars["Boolean"];
   readonly deleteSection: Scalars["Boolean"];
   readonly deleteUser?: Maybe<Scalars["Boolean"]>;
+  readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editContext?: Maybe<Context>;
+  readonly editGithubSearch?: Maybe<GithubSearch>;
+  readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editItem?: Maybe<Item>;
+  readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly editProject?: Maybe<Project>;
   readonly editSection?: Maybe<Section>;
   readonly markTaskDone?: Maybe<Item>;
@@ -347,6 +361,14 @@ export type MutationDeleteContextArgs = {
   id: Scalars["ID"];
 };
 
+export type MutationDeleteGithubSearchArgs = {
+  search: Scalars["ID"];
+};
+
+export type MutationDeleteGoogleMailSearchArgs = {
+  id: Scalars["ID"];
+};
+
 export type MutationDeleteItemArgs = {
   id: Scalars["ID"];
 };
@@ -375,14 +397,34 @@ export type MutationDeleteUserArgs = {
   id?: Maybe<Scalars["ID"]>;
 };
 
+export type MutationEditBugzillaSearchArgs = {
+  search: Scalars["ID"];
+  params: BugzillaSearchParams;
+};
+
 export type MutationEditContextArgs = {
   id: Scalars["ID"];
   params: ContextParams;
 };
 
+export type MutationEditGithubSearchArgs = {
+  search: Scalars["ID"];
+  params: GithubSearchParams;
+};
+
+export type MutationEditGoogleMailSearchArgs = {
+  id: Scalars["ID"];
+  params: GoogleMailSearchParams;
+};
+
 export type MutationEditItemArgs = {
   id: Scalars["ID"];
   item: ItemParams;
+};
+
+export type MutationEditJiraSearchArgs = {
+  search: Scalars["ID"];
+  params: JiraSearchParams;
 };
 
 export type MutationEditProjectArgs = {

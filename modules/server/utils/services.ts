@@ -2,11 +2,11 @@ import type { URL } from "url";
 
 import type { Knex } from "knex";
 import type Koa from "koa";
-import type { DateTime, Duration } from "luxon";
+import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
 import type { TaskController } from "#schema";
-import type { Awaitable, MaybeCallable } from "#utils";
+import type { Awaitable, MaybeCallable, RelativeDateTime } from "#utils";
 
 import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";
@@ -35,7 +35,7 @@ export interface ItemList {
   name: string;
   url: string | null;
   items?: string[];
-  due?: Duration | null;
+  due?: RelativeDateTime | null;
 }
 
 export interface CreateItemParams {

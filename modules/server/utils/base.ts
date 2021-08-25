@@ -1,8 +1,6 @@
 import type { URL } from "url";
 
-import type { Duration } from "luxon";
-
-import type { Awaitable } from "#utils";
+import type { Awaitable, RelativeDateTime } from "#utils";
 
 import type { Service, ServiceTransaction, ServiceItem } from "./services";
 
@@ -164,7 +162,7 @@ export abstract class BaseList<
 
   public abstract get name(): string;
 
-  public get due(): Duration | null | undefined {
+  public get dueOffset(): RelativeDateTime | null | undefined {
     return undefined;
   }
 
@@ -178,7 +176,7 @@ export abstract class BaseList<
       name: this.name,
       url: await this.url(),
       items: items.map((item: ServiceItem): string => item.id),
-      due: this.due,
+      due: this.dueOffset,
     });
     return items;
   }

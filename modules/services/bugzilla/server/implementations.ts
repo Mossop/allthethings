@@ -15,7 +15,8 @@ import type {
 import { BaseItem, BaseAccount, BaseList } from "#server/utils";
 import { SearchType } from "#services/bugzilla/schema";
 import type { BugFields } from "#services/bugzilla/schema";
-import { assert } from "#utils";
+import type { DateTimeOffset } from "#utils";
+import { assert, offsetFromJson } from "#utils";
 
 import type {
   BugzillaAccountResolvers,
@@ -285,6 +286,12 @@ export class Search
 
   public get query(): string {
     return this.record.query;
+  }
+
+  public override get dueOffset(): DateTimeOffset | null {
+    return this.record.dueOffset
+      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+      : null;
   }
 
   public override async url(): Promise<string> {

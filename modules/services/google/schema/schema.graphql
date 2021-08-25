@@ -11,11 +11,13 @@ type GoogleMailSearch {
   name: String!
   query: String!
   url: String!
+  dueOffset: DateTimeOffset
 }
 
 input GoogleMailSearchParams {
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
 }
 
 type User {
@@ -31,4 +33,11 @@ type Mutation {
     account: ID!
     params: GoogleMailSearchParams!
   ): GoogleMailSearch!
+
+  editGoogleMailSearch(
+    id: ID!
+    params: GoogleMailSearchParams!
+  ): GoogleMailSearch
+
+  deleteGoogleMailSearch(id: ID!): Boolean!
 }

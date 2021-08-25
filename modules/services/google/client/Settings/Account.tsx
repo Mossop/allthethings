@@ -3,10 +3,13 @@ import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import AddCircleIcon from "@material-ui/icons/AddCircle";
 import LoopIcon from "@material-ui/icons/Loop";
 import SearchIcon from "@material-ui/icons/Search";
-import { useCallback } from "react";
+import { DateTime } from "luxon";
+import { useCallback, useMemo } from "react";
 
 import type { ReactResult } from "#client/utils";
 import {
+  useResetStore,
+  Icons,
   Heading,
   ImageIcon,
   SettingsListItem,
@@ -17,8 +20,10 @@ import {
   useBoolState,
 } from "#client/utils";
 import type { GoogleAccount, GoogleMailSearch } from "#schema";
+import { addOffset } from "#utils";
 
 import Google from "../logos/Google";
+import { useDeleteGoogleMailSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -26,6 +31,9 @@ const useStyles = makeStyles((theme: Theme) =>
     headingText: {
       padding: theme.spacing(1) + 2,
       flex: 1,
+    },
+    dueOffset: {
+      marginRight: theme.spacing(1),
     },
     actions: {
       flex: 1,
@@ -46,26 +54,39 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
+  account: GoogleAccount;
   search: GoogleMailSearch;
 }
 
-function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({
+  account,
+  search,
+}: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
-  // let resetStore = useResetStore();
+  let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
+    useBoolState();
 
-  // let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
-  //   variables: {
-  //     search: search.id,
-  //   },
-  //   refetchQueries: [
-  //     refetchListBugzillaAccountsQuery(),
-  //   ],
-  // });
+  let resetStore = useResetStore();
 
-  // let deleteSearch = useCallback(async () => {
-  //   await resetStore();
-  //   await deleteSearchMutation();
-  // }, [deleteSearchMutation]);
+  let [deleteSearchMutation] = useDeleteGoogleMailSearchMutation({
+    variables: {
+      id: search.id,
+    },
+  });
+
+  let deleteSearch = useCallback(async () => {
+    await deleteSearchMutation();
+    await resetStore();
+  }, [resetStore, deleteSearchMutation]);
+
+  let dueOffset = useMemo(() => {
+    if (search.dueOffset) {
+      let result = addOffset(DateTime.now(), search.dueOffset);
+      return `Due ${result.toRelative()}`;
+    }
+
+    return null;
+  }, [search]);
 
   return (
     <SettingsListItem>
@@ -83,10 +104,21 @@ function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
         </a>
       </div>
       <div className={classes.actions}>
-        {/* <IconButton onClick={deleteSearch}>
-        <Icons.Delete/>
-      </IconButton> */}
+        {dueOffset && <div className={classes.dueOffset}>{dueOffset}</div>}
+        <IconButton onClick={editSearch}>
+          <Icons.Edit />
+        </IconButton>
+        <IconButton onClick={deleteSearch}>
+          <Icons.Delete />
+        </IconButton>
       </div>
+      {editSearchDialogOpen && (
+        <SearchDialog
+          account={account}
+          search={search}
+          onClosed={closeEditSearchDialog}
+        />
+      )}
     </SettingsListItem>
   );
 }
@@ -132,15 +164,15 @@ export default function AccountSettings({
         }
       >
         {account.mailSearches.map((search: GoogleMailSearch) => (
-          <SearchSettingsItem key={search.id} search={search} />
+          <SearchSettingsItem
+            key={search.id}
+            account={account}
+            search={search}
+          />
         ))}
       </SettingsListSection>
       {showSearchDialog && (
-        <SearchDialog
-          account={account}
-          onClosed={closeSearchDialog}
-          onSearchCreated={closeSearchDialog}
-        />
+        <SearchDialog account={account} onClosed={closeSearchDialog} />
       )}
     </SettingsPage>
   );

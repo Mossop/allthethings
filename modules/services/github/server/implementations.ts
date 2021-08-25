@@ -15,7 +15,8 @@ import type {
   LabelFields,
   RepositoryFields,
 } from "#services/github/schema";
-import { assert } from "#utils";
+import type { DateTimeOffset } from "#utils";
+import { assert, offsetFromJson } from "#utils";
 
 import { GitHubApi, UserInfo } from "./api";
 import type { GithubAccountResolvers, GithubSearchResolvers } from "./schema";
@@ -317,6 +318,12 @@ export class Search
 
   public get query(): string {
     return this.record.query;
+  }
+
+  public override get dueOffset(): DateTimeOffset | null {
+    return this.record.dueOffset
+      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+      : null;
   }
 
   public override async url(): Promise<string> {

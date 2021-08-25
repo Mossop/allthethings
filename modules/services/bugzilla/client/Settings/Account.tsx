@@ -21,7 +21,6 @@ import type { BugzillaAccount, BugzillaSearch } from "#schema";
 
 import Icon from "../Icon";
 import {
-  refetchListBugzillaAccountsQuery,
   useDeleteBugzillaSearchMutation,
   useDeleteBugzillaAccountMutation,
 } from "../operations";
@@ -52,23 +51,29 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
+  account: BugzillaAccount;
   search: BugzillaSearch;
 }
 
-function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({
+  account,
+  search,
+}: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
+  let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
+    useBoolState();
+
   let resetStore = useResetStore();
 
   let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
     variables: {
       search: search.id,
     },
-    refetchQueries: [refetchListBugzillaAccountsQuery()],
   });
 
   let deleteSearch = useCallback(async () => {
-    await resetStore();
     await deleteSearchMutation();
+    await resetStore();
   }, [deleteSearchMutation, resetStore]);
 
   return (
@@ -87,10 +92,20 @@ function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
         </a>
       </div>
       <div className={classes.actions}>
+        <IconButton onClick={editSearch}>
+          <Icons.Edit />
+        </IconButton>
         <IconButton onClick={deleteSearch}>
           <Icons.Delete />
         </IconButton>
       </div>
+      {editSearchDialogOpen && (
+        <SearchDialog
+          account={account}
+          search={search}
+          onClosed={closeEditSearchDialog}
+        />
+      )}
     </SettingsListItem>
   );
 }
@@ -110,12 +125,11 @@ export default function AccountSettings({
     variables: {
       account: account.id,
     },
-    refetchQueries: [refetchListBugzillaAccountsQuery()],
   });
 
   let deleteAccount = useCallback(async () => {
-    await resetStore();
     await deleteAccountMutation();
+    await resetStore();
   }, [deleteAccountMutation, resetStore]);
 
   return (
@@ -147,15 +161,15 @@ export default function AccountSettings({
         }
       >
         {account.searches.map((search: BugzillaSearch) => (
-          <SearchSettingsItem key={search.id} search={search} />
+          <SearchSettingsItem
+            key={search.id}
+            account={account}
+            search={search}
+          />
         ))}
       </SettingsListSection>
       {showSearchDialog && (
-        <SearchDialog
-          account={account}
-          onClosed={closeSearchDialog}
-          onSearchCreated={closeSearchDialog}
-        />
+        <SearchDialog account={account} onClosed={closeSearchDialog} />
       )}
     </SettingsPage>
   );

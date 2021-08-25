@@ -15,9 +15,10 @@ export type GoogleAccountRecord = Omit<
 
 export type GoogleMailSearchRecord = Omit<
   GraphQLType<GoogleMailSearch>,
-  "url"
+  "url" | "dueOffset"
 > & {
   accountId: string;
+  dueOffset: string | null;
 };
 
 export type GoogleFileRecord = Omit<FileFields, "type">;

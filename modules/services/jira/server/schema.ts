@@ -193,6 +193,11 @@ export type JiraSearchResolvers<
   id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  dueOffset: Resolver<
+    Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
+    ParentType,
+    ContextType
+  >;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -218,6 +223,12 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateJiraSearchArgs, "account" | "params">
+  >;
+  editJiraSearch: Resolver<
+    Schema.Maybe<ResolversTypes["JiraSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditJiraSearchArgs, "search" | "params">
   >;
   deleteJiraSearch: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,

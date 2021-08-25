@@ -202,6 +202,23 @@ class OwnerIdMigration implements ServiceDbMigration {
   }
 }
 
+class DueOffsetMigration implements ServiceDbMigration {
+  public readonly name = "dueOffset";
+
+  public async up(knex: Knex): Promise<void> {
+    await knex.schema.alterTable(
+      "Search",
+      (table: Knex.CreateTableBuilder): void => {
+        table.text("dueOffset").nullable();
+      },
+    );
+  }
+}
+
 export default function BuildMigrations(): ServiceDbMigration[] {
-  return [new BaseMigration(), new OwnerIdMigration()];
+  return [
+    new BaseMigration(),
+    new OwnerIdMigration(),
+    new DueOffsetMigration(),
+  ];
 }

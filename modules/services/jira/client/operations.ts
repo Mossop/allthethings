@@ -25,6 +25,7 @@ export type ListJiraAccountsQuery = {
         readonly id: string;
         readonly name: string;
         readonly query: string;
+        readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
         readonly url: string;
       }>;
     }>;
@@ -50,6 +51,7 @@ export type CreateJiraAccountMutation = {
       readonly id: string;
       readonly name: string;
       readonly query: string;
+      readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
       readonly url: string;
     }>;
   };
@@ -76,8 +78,26 @@ export type CreateJiraSearchMutation = {
     readonly id: string;
     readonly name: string;
     readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
     readonly url: string;
   };
+};
+
+export type EditJiraSearchMutationVariables = Schema.Exact<{
+  id: Schema.Scalars["ID"];
+  params: Schema.JiraSearchParams;
+}>;
+
+export type EditJiraSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly editJiraSearch: Schema.Maybe<{
+    readonly __typename: "JiraSearch";
+    readonly id: string;
+    readonly name: string;
+    readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
+    readonly url: string;
+  }>;
 };
 
 export type DeleteJiraSearchMutationVariables = Schema.Exact<{
@@ -97,6 +117,7 @@ export const OperationNames = {
     CreateJiraAccount: "CreateJiraAccount",
     DeleteJiraAccount: "DeleteJiraAccount",
     CreateJiraSearch: "CreateJiraSearch",
+    EditJiraSearch: "EditJiraSearch",
     DeleteJiraSearch: "DeleteJiraSearch",
   },
 };
@@ -116,6 +137,7 @@ export const ListJiraAccountsDocument = gql`
           id
           name
           query
+          dueOffset
           url
         }
       }
@@ -190,6 +212,7 @@ export const CreateJiraAccountDocument = gql`
         id
         name
         query
+        dueOffset
         url
       }
     }
@@ -292,6 +315,7 @@ export const CreateJiraSearchDocument = gql`
       id
       name
       query
+      dueOffset
       url
     }
   }
@@ -339,6 +363,61 @@ export type CreateJiraSearchMutationResult =
 export type CreateJiraSearchMutationOptions = Apollo.BaseMutationOptions<
   CreateJiraSearchMutation,
   CreateJiraSearchMutationVariables
+>;
+export const EditJiraSearchDocument = gql`
+  mutation EditJiraSearch($id: ID!, $params: JiraSearchParams!) {
+    editJiraSearch(search: $id, params: $params) {
+      id
+      name
+      query
+      dueOffset
+      url
+    }
+  }
+`;
+export type EditJiraSearchMutationFn = Apollo.MutationFunction<
+  EditJiraSearchMutation,
+  EditJiraSearchMutationVariables
+>;
+
+/**
+ * __useEditJiraSearchMutation__
+ *
+ * To run a mutation, you first call `useEditJiraSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditJiraSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editJiraSearchMutation, { data, loading, error }] = useEditJiraSearchMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditJiraSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    EditJiraSearchMutation,
+    EditJiraSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    EditJiraSearchMutation,
+    EditJiraSearchMutationVariables
+  >(EditJiraSearchDocument, options);
+}
+export type EditJiraSearchMutationHookResult = ReturnType<
+  typeof useEditJiraSearchMutation
+>;
+export type EditJiraSearchMutationResult =
+  Apollo.MutationResult<EditJiraSearchMutation>;
+export type EditJiraSearchMutationOptions = Apollo.BaseMutationOptions<
+  EditJiraSearchMutation,
+  EditJiraSearchMutationVariables
 >;
 export const DeleteJiraSearchDocument = gql`
   mutation DeleteJiraSearch($id: ID!) {

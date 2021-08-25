@@ -11,6 +11,7 @@ query ListBugzillaAccounts {
         name
         type
         query
+        dueOffset
         url
       }
     }
@@ -28,6 +29,7 @@ mutation CreateBugzillaAccount($params: BugzillaAccountParams!) {
       name
       type
       query
+      dueOffset
       url
     }
   }
@@ -43,6 +45,18 @@ mutation CreateBugzillaSearch($account: ID!, $params: BugzillaSearchParams!) {
     name
     type
     query
+    dueOffset
+    url
+  }
+}
+
+mutation EditBugzillaSearch($id: ID!, $params: BugzillaSearchParams!) {
+  editBugzillaSearch(search: $id, params: $params) {
+    id
+    name
+    type
+    query
+    dueOffset
     url
   }
 }

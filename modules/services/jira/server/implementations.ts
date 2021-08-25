@@ -14,7 +14,8 @@ import type {
 } from "#server/utils";
 import { BaseList, BaseItem, BaseAccount } from "#server/utils";
 import type { IssueFields } from "#services/jira/schema";
-import { assert } from "#utils";
+import type { DateTimeOffset } from "#utils";
+import { assert, offsetFromJson } from "#utils";
 
 import type { JiraAccountResolvers, JiraSearchResolvers } from "./schema";
 import type { JiraTransaction } from "./stores";
@@ -166,6 +167,12 @@ export class Search
 
   public get query(): string {
     return this.record.query;
+  }
+
+  public override get dueOffset(): DateTimeOffset | null {
+    return this.record.dueOffset
+      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+      : null;
   }
 
   public override async url(): Promise<string> {

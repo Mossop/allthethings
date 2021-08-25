@@ -1,5 +1,8 @@
+import type { Theme } from "@material-ui/core";
+import { createStyles, IconButton, makeStyles } from "@material-ui/core";
+import { DateTime } from "luxon";
 import type { ReactElement } from "react";
-import { useState, useCallback } from "react";
+import { useMemo, useState, useCallback } from "react";
 
 import {
   TextFieldInput,
@@ -7,60 +10,131 @@ import {
   useBoolState,
   useResetStore,
   FormState,
+  DateTimeOffsetDialog,
+  Icons,
+  Styles,
 } from "#client/utils";
-import type { JiraAccount, JiraSearch } from "#schema";
+import type { DateTimeOffset, JiraAccount, JiraSearch } from "#schema";
+import { addOffset } from "#utils";
 
 import {
-  refetchListJiraAccountsQuery,
   useCreateJiraSearchMutation,
+  useEditJiraSearchMutation,
 } from "../operations";
+
+const useStyles = makeStyles((theme: Theme) =>
+  createStyles({
+    dueRow: {
+      ...Styles.flexCenteredRow,
+      justifyContent: "end",
+    },
+    dueLabel: {
+      marginRight: theme.spacing(1),
+    },
+  }),
+);
 
 interface SearchDialogProps {
   account: JiraAccount;
-  onSearchCreated: (search: JiraSearch) => void;
+  search?: JiraSearch;
   onClosed: () => void;
+}
+
+interface DialogState {
+  name: string;
+  query: string;
+  dueOffset: DateTimeOffset | null;
 }
 
 export default function SearchDialog({
   account,
-  onSearchCreated,
+  search,
   onClosed,
 }: SearchDialogProps): ReactElement {
-  let [state, setState] = useState({
-    name: "",
-    query: "",
-  });
-  let [isOpen, , close] = useBoolState(true);
-  let resetStore = useResetStore();
+  let classes = useStyles();
 
-  let [createSearch, { loading, error }] = useCreateJiraSearchMutation({
-    variables: {
-      account: account.id,
-      params: state,
-    },
-    refetchQueries: [refetchListJiraAccountsQuery()],
-  });
-
-  let submit = useCallback(async (): Promise<void> => {
-    let { data } = await createSearch();
-    if (!data) {
-      return;
+  let [state, setState] = useState<DialogState>(() => {
+    if (search) {
+      return {
+        name: search.name,
+        query: search.query,
+        dueOffset: search.dueOffset ?? null,
+      };
     }
 
-    onSearchCreated(data.createJiraSearch);
+    return {
+      name: "",
+      query: "",
+      dueOffset: null,
+    };
+  });
+  let [isOpen, , close] = useBoolState(true);
+  let [isDueDialogOpen, openDueDialog, closeDueDialog] = useBoolState();
+  let resetStore = useResetStore();
+
+  let [createSearch, { loading: pendingCreate, error: createError }] =
+    useCreateJiraSearchMutation({
+      variables: {
+        account: account.id,
+        params: state,
+      },
+    });
+
+  let [editSearch, { loading: pendingEdit, error: editError }] =
+    useEditJiraSearchMutation();
+
+  let submit = useCallback(async (): Promise<void> => {
+    if (search) {
+      await editSearch({
+        variables: {
+          id: search.id,
+          params: state,
+        },
+      });
+    } else {
+      await createSearch();
+    }
+
     await resetStore();
-  }, [createSearch, onSearchCreated, resetStore]);
+    close();
+  }, [close, createSearch, editSearch, resetStore, search, state]);
+
+  let due = useMemo(() => {
+    if (state.dueOffset) {
+      return `Due in ${addOffset(
+        DateTime.now(),
+        state.dueOffset,
+      ).toRelative()}`;
+    }
+    return "Never due";
+  }, [state]);
+
+  let setDue = useCallback((dueOffset: DateTimeOffset) => {
+    setState((state: DialogState) => ({
+      ...state,
+      dueOffset,
+    }));
+  }, []);
+
+  let clearDue = useCallback(() => {
+    setState((state: DialogState) => ({
+      ...state,
+      dueOffset: null,
+    }));
+  }, []);
 
   return (
     <Dialog
-      title="Add Jira Issue Search"
-      submitLabel="Add"
-      error={error}
+      title={search ? "Edit Jira Issue Search" : "Add Jira Issue Search"}
+      submitLabel={search ? "Edit" : "Add"}
+      error={search ? editError : createError}
       isOpen={isOpen}
       onClose={close}
       onClosed={onClosed}
       onSubmit={submit}
-      formState={loading ? FormState.Loading : FormState.Default}
+      formState={
+        pendingCreate || pendingEdit ? FormState.Loading : FormState.Default
+      }
     >
       <TextFieldInput
         id="name"
@@ -80,6 +154,25 @@ export default function SearchDialog({
         stateKey="query"
         required={true}
       />
+
+      <div className={classes.dueRow}>
+        <div className={classes.dueLabel}>{due}</div>
+        <IconButton onClick={openDueDialog}>
+          <Icons.Edit />
+        </IconButton>
+        <IconButton disabled={state.dueOffset === null} onClick={clearDue}>
+          <Icons.Cancel />
+        </IconButton>
+      </div>
+
+      {isDueDialogOpen && (
+        <DateTimeOffsetDialog
+          title="Choose when tasks are due"
+          initialValue={state.dueOffset}
+          onSelect={setDue}
+          onClosed={closeDueDialog}
+        />
+      )}
     </Dialog>
   );
 }

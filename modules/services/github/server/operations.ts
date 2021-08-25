@@ -16603,6 +16603,8 @@ export type Repository = Node &
     >;
     /** Identifies if the viewer is watching, not watching, or ignoring the subscribable entity. */
     readonly viewerSubscription: Maybe<SubscriptionState>;
+    /** Indicates the repository's visibility level. */
+    readonly visibility: RepositoryVisibility;
     /** A list of vulnerability alerts that are on this repository. */
     readonly vulnerabilityAlerts: Maybe<RepositoryVulnerabilityAlertConnection>;
     /** A list of users watching the repository. */
@@ -17129,6 +17131,8 @@ export type RepositoryInfo = {
   readonly url: Scalars["URI"];
   /** Whether this repository has a custom image to use with Open Graph as opposed to being represented by the owner's avatar. */
   readonly usesCustomOpenGraphImage: Scalars["Boolean"];
+  /** Indicates the repository's visibility level. */
+  readonly visibility: RepositoryVisibility;
 };
 
 /** A subset of repository info. */

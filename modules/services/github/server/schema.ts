@@ -128,6 +128,7 @@ export type ResolversTypes = {
   GithubSearch: ResolverTypeWrapper<Search>;
   GithubSearchParams: Schema.GithubSearchParams;
   Mutation: ResolverTypeWrapper<Root>;
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
@@ -136,7 +137,6 @@ export type ResolversTypes = {
       githubAccounts: ReadonlyArray<ResolversTypes["GithubAccount"]>;
     }
   >;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -149,13 +149,13 @@ export type ResolversParentTypes = {
   GithubSearch: Search;
   GithubSearchParams: Schema.GithubSearchParams;
   Mutation: Root;
+  Boolean: Schema.Scalars["Boolean"];
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "githubAccounts"> & {
     githubAccounts: ReadonlyArray<ResolversParentTypes["GithubAccount"]>;
   };
-  Boolean: Schema.Scalars["Boolean"];
 };
 
 export interface DateTimeScalarConfig
@@ -191,6 +191,11 @@ export type GithubSearchResolvers<
   id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  dueOffset: Resolver<
+    Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
+    ParentType,
+    ContextType
+  >;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -204,6 +209,18 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateGithubSearchArgs, "account" | "params">
+  >;
+  editGithubSearch: Resolver<
+    Schema.Maybe<ResolversTypes["GithubSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditGithubSearchArgs, "search" | "params">
+  >;
+  deleteGithubSearch: Resolver<
+    ResolversTypes["Boolean"],
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationDeleteGithubSearchArgs, "search">
   >;
 };
 

@@ -192,6 +192,11 @@ export type BugzillaSearchResolvers<
   type: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  dueOffset: Resolver<
+    Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
+    ParentType,
+    ContextType
+  >;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -226,6 +231,12 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateBugzillaSearchArgs, "account" | "params">
+  >;
+  editBugzillaSearch: Resolver<
+    Schema.Maybe<ResolversTypes["BugzillaSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditBugzillaSearchArgs, "search" | "params">
   >;
   deleteBugzillaSearch: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,

@@ -159,7 +159,7 @@ class BaseMigration implements ServiceDbMigration {
   }
 }
 
-class OptionalRefresh implements ServiceDbMigration {
+class OptionalRefreshMigration implements ServiceDbMigration {
   public readonly name = "optional-refresh";
 
   public async up(knex: Knex): Promise<void> {
@@ -213,7 +213,7 @@ class OwnerIdMigration implements ServiceDbMigration {
   }
 }
 
-class ThreadLabelUnique implements ServiceDbMigration {
+class ThreadLabelUniqueMigration implements ServiceDbMigration {
   public readonly name = "threadLabelUnique";
 
   public async up(knex: Knex): Promise<void> {
@@ -226,11 +226,25 @@ class ThreadLabelUnique implements ServiceDbMigration {
   }
 }
 
+class DueOffsetMigration implements ServiceDbMigration {
+  public readonly name = "dueOffset";
+
+  public async up(knex: Knex): Promise<void> {
+    await knex.schema.alterTable(
+      "MailSearch",
+      (table: Knex.CreateTableBuilder): void => {
+        table.text("dueOffset").nullable();
+      },
+    );
+  }
+}
+
 export default function BuildMigrations(): ServiceDbMigration[] {
   return [
     new BaseMigration(),
-    new OptionalRefresh(),
+    new OptionalRefreshMigration(),
     new OwnerIdMigration(),
-    new ThreadLabelUnique(),
+    new ThreadLabelUniqueMigration(),
+    new DueOffsetMigration(),
   ];
 }

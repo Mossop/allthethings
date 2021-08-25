@@ -128,6 +128,7 @@ export type ResolversTypes = {
   GoogleMailSearch: ResolverTypeWrapper<MailSearch>;
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   Mutation: ResolverTypeWrapper<Root>;
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
@@ -136,7 +137,6 @@ export type ResolversTypes = {
       googleAccounts: ReadonlyArray<ResolversTypes["GoogleAccount"]>;
     }
   >;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -149,13 +149,13 @@ export type ResolversParentTypes = {
   GoogleMailSearch: MailSearch;
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   Mutation: Root;
+  Boolean: Schema.Scalars["Boolean"];
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "googleAccounts"> & {
     googleAccounts: ReadonlyArray<ResolversParentTypes["GoogleAccount"]>;
   };
-  Boolean: Schema.Scalars["Boolean"];
 };
 
 export interface DateTimeScalarConfig
@@ -196,6 +196,11 @@ export type GoogleMailSearchResolvers<
   name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  dueOffset: Resolver<
+    Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
+    ParentType,
+    ContextType
+  >;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -211,6 +216,18 @@ export type MutationResolvers<
       Schema.MutationCreateGoogleMailSearchArgs,
       "account" | "params"
     >
+  >;
+  editGoogleMailSearch: Resolver<
+    Schema.Maybe<ResolversTypes["GoogleMailSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditGoogleMailSearchArgs, "id" | "params">
+  >;
+  deleteGoogleMailSearch: Resolver<
+    ResolversTypes["Boolean"],
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationDeleteGoogleMailSearchArgs, "id">
   >;
 };
 

@@ -2,12 +2,14 @@ type JiraSearch {
   id: ID!
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
   url: String!
 }
 
 input JiraSearchParams {
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
 }
 
 type JiraAccount {
@@ -35,5 +37,6 @@ type Mutation {
   deleteJiraAccount(account: ID!): Boolean
 
   createJiraSearch(account: ID!, params: JiraSearchParams!): JiraSearch!
+  editJiraSearch(search: ID!, params: JiraSearchParams!): JiraSearch
   deleteJiraSearch(search: ID!): Boolean
 }

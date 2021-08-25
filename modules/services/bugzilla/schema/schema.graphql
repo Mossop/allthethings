@@ -4,11 +4,13 @@ type BugzillaSearch {
   type: String!
   query: String!
   url: String!
+  dueOffset: DateTimeOffset
 }
 
 input BugzillaSearchParams {
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
 }
 
 type BugzillaAccount {
@@ -39,5 +41,6 @@ type Mutation {
     account: ID!
     params: BugzillaSearchParams!
   ): BugzillaSearch!
+  editBugzillaSearch(search: ID!, params: BugzillaSearchParams!): BugzillaSearch
   deleteBugzillaSearch(search: ID!): Boolean
 }

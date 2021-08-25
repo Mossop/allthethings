@@ -1,5 +1,9 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { MutationCreateGoogleMailSearchArgs } from "#schema";
+import type {
+  MutationCreateGoogleMailSearchArgs,
+  MutationDeleteGoogleMailSearchArgs,
+  MutationEditGoogleMailSearchArgs,
+} from "#schema";
 import type { AuthedGraphQLCtx } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
@@ -36,7 +40,42 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GoogleTransaction>>({
         throw new Error("Unknown account.");
       }
 
-      return MailSearch.create(account, params);
+      return MailSearch.create(account, {
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
+      });
+    },
+
+    async editGoogleMailSearch(
+      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      { id, params }: MutationEditGoogleMailSearchArgs,
+    ): Promise<MailSearch | null> {
+      let search = await ctx.transaction.stores.mailSearches.get(id);
+      if (!search) {
+        return null;
+      }
+
+      await ctx.transaction.stores.mailSearches.updateOne(id, {
+        ...params,
+        dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
+      });
+
+      await search.update();
+
+      return search;
+    },
+
+    async deleteGoogleMailSearch(
+      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      { id }: MutationDeleteGoogleMailSearchArgs,
+    ): Promise<boolean> {
+      let search = await ctx.transaction.stores.mailSearches.get(id);
+      if (!search) {
+        return false;
+      }
+
+      await search.delete();
+      return true;
     },
   },
 });

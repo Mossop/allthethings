@@ -1,5 +1,5 @@
 import type { GithubAccount, GithubSearch } from "#schema";
-import type { GraphQLType } from "#utils";
+import type { GraphQLType, Overwrite } from "#utils";
 
 import type {
   IssueState,
@@ -20,9 +20,13 @@ export type GithubAccountRecord = Omit<
   avatar: string;
 };
 
-export type GithubSearchRecord = Omit<GraphQLType<GithubSearch>, "url"> & {
-  accountId: string;
-};
+export type GithubSearchRecord = Overwrite<
+  Omit<GraphQLType<GithubSearch>, "url">,
+  {
+    accountId: string;
+    dueOffset: string | null;
+  }
+>;
 
 export interface GithubRepositoryRecord {
   id: string;

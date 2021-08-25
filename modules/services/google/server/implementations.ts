@@ -12,7 +12,8 @@ import type {
 } from "#server/utils";
 import { BaseAccount, BaseItem, BaseList } from "#server/utils";
 import type { FileFields, ThreadFields } from "#services/google/schema";
-import { assert } from "#utils";
+import type { DateTimeOffset } from "#utils";
+import { assert, offsetFromJson } from "#utils";
 
 import { GoogleService } from ".";
 import type { GoogleAPIFile } from "./api";
@@ -275,6 +276,12 @@ export class MailSearch
 
   public get query(): string {
     return this.record.query;
+  }
+
+  public override get dueOffset(): DateTimeOffset | null {
+    return this.record.dueOffset
+      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+      : null;
   }
 
   public account(): Promise<Account> {

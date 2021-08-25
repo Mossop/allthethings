@@ -28,6 +28,7 @@ export type BugzillaSearchKeySpecifier = (
   | "type"
   | "query"
   | "url"
+  | "dueOffset"
   | BugzillaSearchKeySpecifier
 )[];
 export type BugzillaSearchFieldPolicy = {
@@ -36,6 +37,7 @@ export type BugzillaSearchFieldPolicy = {
   type?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ContextKeySpecifier = (
   | "subprojects"
@@ -90,6 +92,7 @@ export type GithubSearchKeySpecifier = (
   | "id"
   | "name"
   | "query"
+  | "dueOffset"
   | "url"
   | GithubSearchKeySpecifier
 )[];
@@ -97,6 +100,7 @@ export type GithubSearchFieldPolicy = {
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type GoogleAccountKeySpecifier = (
@@ -119,6 +123,7 @@ export type GoogleMailSearchKeySpecifier = (
   | "name"
   | "query"
   | "url"
+  | "dueOffset"
   | GoogleMailSearchKeySpecifier
 )[];
 export type GoogleMailSearchFieldPolicy = {
@@ -126,6 +131,7 @@ export type GoogleMailSearchFieldPolicy = {
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ItemKeySpecifier = (
   | "id"
@@ -174,6 +180,7 @@ export type JiraSearchKeySpecifier = (
   | "id"
   | "name"
   | "query"
+  | "dueOffset"
   | "url"
   | JiraSearchKeySpecifier
 )[];
@@ -181,6 +188,7 @@ export type JiraSearchFieldPolicy = {
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type LinkDetailKeySpecifier = (
@@ -212,6 +220,8 @@ export type MutationKeySpecifier = (
   | "deleteBugzillaAccount"
   | "deleteBugzillaSearch"
   | "deleteContext"
+  | "deleteGithubSearch"
+  | "deleteGoogleMailSearch"
   | "deleteItem"
   | "deleteJiraAccount"
   | "deleteJiraSearch"
@@ -219,8 +229,12 @@ export type MutationKeySpecifier = (
   | "deleteProject"
   | "deleteSection"
   | "deleteUser"
+  | "editBugzillaSearch"
   | "editContext"
+  | "editGithubSearch"
+  | "editGoogleMailSearch"
   | "editItem"
+  | "editJiraSearch"
   | "editProject"
   | "editSection"
   | "markTaskDone"
@@ -253,6 +267,8 @@ export type MutationFieldPolicy = {
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteContext?: FieldPolicy<any> | FieldReadFunction<any>;
+  deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
+  deleteGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteItem?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -260,8 +276,12 @@ export type MutationFieldPolicy = {
   deleteProject?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteSection?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteUser?: FieldPolicy<any> | FieldReadFunction<any>;
+  editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editContext?: FieldPolicy<any> | FieldReadFunction<any>;
+  editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
+  editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editItem?: FieldPolicy<any> | FieldReadFunction<any>;
+  editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editProject?: FieldPolicy<any> | FieldReadFunction<any>;
   editSection?: FieldPolicy<any> | FieldReadFunction<any>;
   markTaskDone?: FieldPolicy<any> | FieldReadFunction<any>;

@@ -24,6 +24,7 @@ export type ListBugzillaAccountsQuery = {
         readonly name: string;
         readonly type: string;
         readonly query: string;
+        readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
         readonly url: string;
       }>;
     }>;
@@ -48,6 +49,7 @@ export type CreateBugzillaAccountMutation = {
       readonly name: string;
       readonly type: string;
       readonly query: string;
+      readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
       readonly url: string;
     }>;
   };
@@ -75,8 +77,27 @@ export type CreateBugzillaSearchMutation = {
     readonly name: string;
     readonly type: string;
     readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
     readonly url: string;
   };
+};
+
+export type EditBugzillaSearchMutationVariables = Schema.Exact<{
+  id: Schema.Scalars["ID"];
+  params: Schema.BugzillaSearchParams;
+}>;
+
+export type EditBugzillaSearchMutation = {
+  readonly __typename: "Mutation";
+  readonly editBugzillaSearch: Schema.Maybe<{
+    readonly __typename: "BugzillaSearch";
+    readonly id: string;
+    readonly name: string;
+    readonly type: string;
+    readonly query: string;
+    readonly dueOffset: Schema.Maybe<Schema.Scalars["DateTimeOffset"]>;
+    readonly url: string;
+  }>;
 };
 
 export type DeleteBugzillaSearchMutationVariables = Schema.Exact<{
@@ -96,6 +117,7 @@ export const OperationNames = {
     CreateBugzillaAccount: "CreateBugzillaAccount",
     DeleteBugzillaAccount: "DeleteBugzillaAccount",
     CreateBugzillaSearch: "CreateBugzillaSearch",
+    EditBugzillaSearch: "EditBugzillaSearch",
     DeleteBugzillaSearch: "DeleteBugzillaSearch",
   },
 };
@@ -114,6 +136,7 @@ export const ListBugzillaAccountsDocument = gql`
           name
           type
           query
+          dueOffset
           url
         }
       }
@@ -187,6 +210,7 @@ export const CreateBugzillaAccountDocument = gql`
         name
         type
         query
+        dueOffset
         url
       }
     }
@@ -290,6 +314,7 @@ export const CreateBugzillaSearchDocument = gql`
       name
       type
       query
+      dueOffset
       url
     }
   }
@@ -337,6 +362,62 @@ export type CreateBugzillaSearchMutationResult =
 export type CreateBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<
   CreateBugzillaSearchMutation,
   CreateBugzillaSearchMutationVariables
+>;
+export const EditBugzillaSearchDocument = gql`
+  mutation EditBugzillaSearch($id: ID!, $params: BugzillaSearchParams!) {
+    editBugzillaSearch(search: $id, params: $params) {
+      id
+      name
+      type
+      query
+      dueOffset
+      url
+    }
+  }
+`;
+export type EditBugzillaSearchMutationFn = Apollo.MutationFunction<
+  EditBugzillaSearchMutation,
+  EditBugzillaSearchMutationVariables
+>;
+
+/**
+ * __useEditBugzillaSearchMutation__
+ *
+ * To run a mutation, you first call `useEditBugzillaSearchMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useEditBugzillaSearchMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [editBugzillaSearchMutation, { data, loading, error }] = useEditBugzillaSearchMutation({
+ *   variables: {
+ *      id: // value for 'id'
+ *      params: // value for 'params'
+ *   },
+ * });
+ */
+export function useEditBugzillaSearchMutation(
+  baseOptions?: Apollo.MutationHookOptions<
+    EditBugzillaSearchMutation,
+    EditBugzillaSearchMutationVariables
+  >,
+) {
+  const options = { ...defaultOptions, ...baseOptions };
+  return Apollo.useMutation<
+    EditBugzillaSearchMutation,
+    EditBugzillaSearchMutationVariables
+  >(EditBugzillaSearchDocument, options);
+}
+export type EditBugzillaSearchMutationHookResult = ReturnType<
+  typeof useEditBugzillaSearchMutation
+>;
+export type EditBugzillaSearchMutationResult =
+  Apollo.MutationResult<EditBugzillaSearchMutation>;
+export type EditBugzillaSearchMutationOptions = Apollo.BaseMutationOptions<
+  EditBugzillaSearchMutation,
+  EditBugzillaSearchMutationVariables
 >;
 export const DeleteBugzillaSearchDocument = gql`
   mutation DeleteBugzillaSearch($search: ID!) {

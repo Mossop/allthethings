@@ -94,8 +94,8 @@ export default ReactMemo(function AccountSettings({
   });
 
   let deleteAccount = useCallback(async () => {
-    await resetStore();
     await deleteAccountMutation();
+    await resetStore();
   }, [deleteAccountMutation, resetStore]);
 
   let onChangeQuery = useMemo(() => {

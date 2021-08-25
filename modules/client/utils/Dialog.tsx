@@ -41,6 +41,7 @@ export const Dialog = ReactMemo(function Dialog({
   let submit = useCallback(
     (event: FormEvent<HTMLFormElement>): void => {
       event.preventDefault();
+      event.stopPropagation();
       onSubmit();
     },
     [onSubmit],

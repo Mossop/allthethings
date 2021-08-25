@@ -10,12 +10,14 @@ type GithubSearch {
   id: ID!
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
   url: String!
 }
 
 input GithubSearchParams {
   name: String!
   query: String!
+  dueOffset: DateTimeOffset
 }
 
 type User {
@@ -28,4 +30,6 @@ type Query {
 
 type Mutation {
   createGithubSearch(account: ID!, params: GithubSearchParams!): GithubSearch!
+  editGithubSearch(search: ID!, params: GithubSearchParams!): GithubSearch
+  deleteGithubSearch(search: ID!): Boolean!
 }

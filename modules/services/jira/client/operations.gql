@@ -12,6 +12,7 @@ query ListJiraAccounts {
         id
         name
         query
+        dueOffset
         url
       }
     }
@@ -30,6 +31,7 @@ mutation CreateJiraAccount($params: JiraAccountParams!) {
       id
       name
       query
+      dueOffset
       url
     }
   }
@@ -44,6 +46,17 @@ mutation CreateJiraSearch($account: ID!, $params: JiraSearchParams!) {
     id
     name
     query
+    dueOffset
+    url
+  }
+}
+
+mutation EditJiraSearch($id: ID!, $params: JiraSearchParams!) {
+  editJiraSearch(search: $id, params: $params) {
+    id
+    name
+    query
+    dueOffset
     url
   }
 }

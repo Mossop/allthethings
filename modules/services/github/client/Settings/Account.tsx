@@ -7,6 +7,8 @@ import { useCallback } from "react";
 
 import type { ReactResult } from "#client/utils";
 import {
+  Icons,
+  useResetStore,
   SettingsListItem,
   Heading,
   ImageIcon,
@@ -19,6 +21,7 @@ import {
 import type { GithubAccount, GithubSearch } from "#schema";
 
 import GitHub from "../logos/GitHub";
+import { useDeleteGithubSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -46,26 +49,29 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
+  account: GithubAccount;
   search: GithubSearch;
 }
 
-function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
+function SearchSettingsItem({
+  account,
+  search,
+}: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
-  // let resetStore = useResetStore();
+  let resetStore = useResetStore();
+  let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
+    useBoolState();
 
-  // let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
-  //   variables: {
-  //     search: search.id,
-  //   },
-  //   refetchQueries: [
-  //     refetchListBugzillaAccountsQuery(),
-  //   ],
-  // });
+  let [deleteSearchMutation] = useDeleteGithubSearchMutation({
+    variables: {
+      id: search.id,
+    },
+  });
 
-  // let deleteSearch = useCallback(async () => {
-  //   await resetStore();
-  //   await deleteSearchMutation();
-  // }, [deleteSearchMutation]);
+  let deleteSearch = useCallback(async () => {
+    await deleteSearchMutation();
+    await resetStore();
+  }, [deleteSearchMutation, resetStore]);
 
   return (
     <SettingsListItem>
@@ -83,10 +89,20 @@ function SearchSettingsItem({ search }: SearchSettingsItemProps): ReactResult {
         </a>
       </div>
       <div className={classes.actions}>
-        {/* <IconButton onClick={deleteSearch}>
-        <Icons.Delete/>
-      </IconButton> */}
+        <IconButton onClick={editSearch}>
+          <Icons.Edit />
+        </IconButton>
+        <IconButton onClick={deleteSearch}>
+          <Icons.Delete />
+        </IconButton>
       </div>
+      {editSearchDialogOpen && (
+        <SearchDialog
+          account={account}
+          search={search}
+          onClosed={closeEditSearchDialog}
+        />
+      )}
     </SettingsListItem>
   );
 }
@@ -132,15 +148,15 @@ export default function AccountSettings({
         }
       >
         {account.searches.map((search: GithubSearch) => (
-          <SearchSettingsItem key={search.id} search={search} />
+          <SearchSettingsItem
+            key={search.id}
+            account={account}
+            search={search}
+          />
         ))}
       </SettingsListSection>
       {showSearchDialog && (
-        <SearchDialog
-          account={account}
-          onClosed={closeSearchDialog}
-          onSearchCreated={closeSearchDialog}
-        />
+        <SearchDialog account={account} onClosed={closeSearchDialog} />
       )}
     </SettingsPage>
   );

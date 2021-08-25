@@ -24,6 +24,7 @@ import {
   max,
   BaseRecordHolder,
 } from "#server/utils";
+import type { RelativeDateTime } from "#utils";
 import { addOffset, assert, call, memoized, waitFor } from "#utils";
 
 import type {
@@ -1096,6 +1097,21 @@ export class ServiceDetail
   }
 }
 
+function calcDue(
+  now: DateTime,
+  offset: RelativeDateTime | null | undefined,
+): DateTime | null {
+  if (!offset) {
+    return null;
+  }
+
+  if (DateTime.isDateTime(offset)) {
+    return offset;
+  }
+
+  return addOffset(now, offset);
+}
+
 export class ServiceList
   extends IdentifiedBase<ServiceListRecord>
   implements ResolverImpl<ServiceListResolvers>
@@ -1112,7 +1128,7 @@ export class ServiceList
 
     if (items) {
       let now = DateTime.now();
-      let itemDue = due ? now.plus(due) : null;
+      let itemDue = calcDue(now, due);
 
       await tx.stores.serviceListItems.setItems(
         list.id,
@@ -1184,11 +1200,11 @@ export class ServiceList
 
         record.done = null;
         if (due !== undefined) {
-          record.due = due ? record.present.plus(due) : null;
+          record.due = calcDue(record.present, due);
         }
       }
 
-      let itemDue = due ? now.plus(due) : null;
+      let itemDue = calcDue(now, due);
 
       for (let itemId of itemSet) {
         records.push({
