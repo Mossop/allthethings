@@ -135,13 +135,16 @@ export const DateTimeOffsetDecoder = JsonDecoder.array<DateTimeOffsetPart>(
   "DateTimeOffset",
 );
 
-export function addWeekdays(dateTime: DateTime, weekdays: number): DateTime {
-  if (weekdays == 0) {
+export function addWeekdays(
+  dateTime: DateTime,
+  weekdays: number | null | undefined,
+): DateTime {
+  if (!weekdays) {
     return dateTime;
   }
 
   if (dateTime.weekday >= 6) {
-    // Already on a weekend.
+    // If we're already on a weekend then we do some additional work to move past it.
     if (weekdays < 0) {
       dateTime = dateTime.set({ weekday: 5 });
       weekdays++;
@@ -158,11 +161,11 @@ export function addWeekdays(dateTime: DateTime, weekdays: number): DateTime {
   let days = weekdays % 5;
   let weeks = (weekdays - days) / 5;
 
-  let target = dateTime.weekday + days;
-  if (target < 1) {
+  let newWeekday = dateTime.weekday + days;
+  if (newWeekday < 1) {
     // Transitioned to the previous week, move past the weekend.
     days -= 2;
-  } else if (target >= 6) {
+  } else if (newWeekday >= 6) {
     // Transitioned to the next week, move past the weekend.
     days += 2;
   }
@@ -189,7 +192,7 @@ export function addOffset(
     switch (part.type) {
       case "relative": {
         let { type, weekdays, ...duration } = part;
-        current = addWeekdays(current.plus(duration), weekdays ?? 0);
+        current = addWeekdays(current.plus(duration), weekdays);
         break;
       }
       case "absolute":
