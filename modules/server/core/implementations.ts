@@ -7,12 +7,10 @@ import type {
   ContextItemsArgs,
   ContextParams,
   ContextProjectByIdArgs,
-  ContextRootItemsArgs,
   ProjectParams,
   SectionParams,
   TaskInfoParams,
   TaskListItemsArgs,
-  UserAllItemsArgs,
   UserInboxArgs,
   ItemParams,
   ItemFilter,
@@ -366,14 +364,6 @@ export class User
       filter,
     );
   }
-
-  public async allItems({ filter }: UserAllItemsArgs): Promise<ItemSet> {
-    return new ItemSet(
-      this.tx,
-      this.stores.items.records().where("Item.userId", this.id),
-      filter,
-    );
-  }
 }
 
 export abstract class ItemHolderBase<
@@ -507,20 +497,6 @@ export class Context
       contextId: this.id,
       id,
     });
-  }
-
-  public async rootItems({ filter }: ContextRootItemsArgs): Promise<ItemSet> {
-    return new ItemSet(
-      this.tx,
-      this.stores.items
-        .records()
-        .join("SectionItems", "Item.id", "SectionItems.id")
-        .join("Section", "Section.id", "SectionItems.ownerId")
-        .join("Project", "Project.id", "Section.ownerId")
-        .join("Context", "Context.id", "Project.contextId")
-        .where("Context.id", this.id),
-      filter,
-    );
   }
 }
 

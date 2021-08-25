@@ -60,7 +60,6 @@ export type Context = TaskList & {
   readonly subprojects: ReadonlyArray<Project>;
   readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
-  readonly rootItems: ItemSet;
   readonly id: Scalars["ID"];
   readonly user: User;
   readonly stub: Scalars["String"];
@@ -70,10 +69,6 @@ export type Context = TaskList & {
 };
 
 export type ContextItemsArgs = {
-  filter?: Maybe<ItemFilter>;
-};
-
-export type ContextRootItemsArgs = {
   filter?: Maybe<ItemFilter>;
 };
 
@@ -576,7 +571,6 @@ export type UpdatePhabricatorAccountParams = {
 
 export type User = {
   readonly __typename: "User";
-  readonly allItems: ItemSet;
   readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
   readonly contexts: ReadonlyArray<Context>;
   readonly email: Scalars["String"];
@@ -588,10 +582,6 @@ export type User = {
   readonly jiraAccounts: ReadonlyArray<JiraAccount>;
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
   readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
-};
-
-export type UserAllItemsArgs = {
-  filter?: Maybe<ItemFilter>;
 };
 
 export type UserInboxArgs = {

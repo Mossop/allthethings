@@ -41,7 +41,6 @@ export type ContextKeySpecifier = (
   | "subprojects"
   | "sections"
   | "items"
-  | "rootItems"
   | "id"
   | "user"
   | "stub"
@@ -54,7 +53,6 @@ export type ContextFieldPolicy = {
   subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
   sections?: FieldPolicy<any> | FieldReadFunction<any>;
   items?: FieldPolicy<any> | FieldReadFunction<any>;
-  rootItems?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   user?: FieldPolicy<any> | FieldReadFunction<any>;
   stub?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -420,7 +418,6 @@ export type TaskListFieldPolicy = {
   items?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type UserKeySpecifier = (
-  | "allItems"
   | "bugzillaAccounts"
   | "contexts"
   | "email"
@@ -435,7 +432,6 @@ export type UserKeySpecifier = (
   | UserKeySpecifier
 )[];
 export type UserFieldPolicy = {
-  allItems?: FieldPolicy<any> | FieldReadFunction<any>;
   bugzillaAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   contexts?: FieldPolicy<any> | FieldReadFunction<any>;
   email?: FieldPolicy<any> | FieldReadFunction<any>;

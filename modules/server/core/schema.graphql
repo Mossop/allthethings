@@ -81,7 +81,6 @@ type User {
   contexts: [Context!]!
   inbox(filter: ItemFilter): ItemSet!
   isAdmin: Boolean!
-  allItems(filter: ItemFilter): ItemSet!
 }
 
 type Context implements TaskList {
@@ -89,7 +88,6 @@ type Context implements TaskList {
   subprojects: [Project!]!
   sections: [Section!]!
   items(filter: ItemFilter): ItemSet!
-  rootItems(filter: ItemFilter): ItemSet!
 
   id: ID!
   user: User!

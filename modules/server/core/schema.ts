@@ -231,12 +231,6 @@ export type ContextResolvers<
     ContextType,
     RequireFields<Schema.ContextItemsArgs, never>
   >;
-  rootItems: Resolver<
-    ResolversTypes["ItemSet"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.ContextRootItemsArgs, never>
-  >;
   id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   user: Resolver<ResolversTypes["User"], ParentType, ContextType>;
   stub: Resolver<ResolversTypes["String"], ParentType, ContextType>;
@@ -678,12 +672,6 @@ export type UserResolvers<
     RequireFields<Schema.UserInboxArgs, never>
   >;
   isAdmin: Resolver<ResolversTypes["Boolean"], ParentType, ContextType>;
-  allItems: Resolver<
-    ResolversTypes["ItemSet"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.UserAllItemsArgs, never>
-  >;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
