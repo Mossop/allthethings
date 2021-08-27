@@ -31,6 +31,12 @@ const useStyles = makeStyles((theme: Theme) =>
     inner: {
       paddingLeft: theme.spacing(4),
     },
+    primary: {
+      color: theme.palette.primary.main,
+    },
+    error: {
+      color: theme.palette.error.main,
+    },
   }),
 );
 
@@ -194,15 +200,24 @@ export const GlobalDueMenu = ReactMemo(function GlobalDueMenu({
 export const DueMenuButton = ReactMemo(function DueMenuButton({
   item,
 }: DueMenuProps): ReactResult {
+  let classes = useStyles();
   let buttonProps = useGlobalMenuTrigger("due", GlobalDueMenu, { item });
 
-  let whenDue = useMemo(() => {
-    let now = DateTime.now();
+  let isOverdue = useMemo(() => {
+    if (!item.taskInfo?.due) {
+      return false;
+    }
 
+    let now = DateTime.now();
+    return now.toMillis() > item.taskInfo.due.toMillis();
+  }, [item]);
+
+  let whenDue = useMemo(() => {
     if (!item.taskInfo?.due) {
       return null;
     }
 
+    let now = DateTime.now();
     let time = item.taskInfo.due.toLocaleString(DateTime.TIME_SIMPLE);
 
     if (item.taskInfo.due.hasSame(now, "day")) {
@@ -220,7 +235,10 @@ export const DueMenuButton = ReactMemo(function DueMenuButton({
 
   return (
     <Tooltip title={`Due ${whenDue}`}>
-      <IconButton color="primary" {...buttonProps}>
+      <IconButton
+        className={isOverdue ? classes.error : classes.primary}
+        {...buttonProps}
+      >
         <Icons.Due />
       </IconButton>
     </Tooltip>

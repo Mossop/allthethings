@@ -75,7 +75,7 @@ function scalarType<T>(
 let typesMap = {
   DateTime: scalarType<DateTime>(
     (parsed: DateTime) => parsed.toString(),
-    (value: string) => DateTime.fromISO(value).toUTC(),
+    (value: string) => DateTime.fromISO(value).toLocal(),
   ),
 
   DateTimeOffset: scalarType<DateTimeOffset>(
