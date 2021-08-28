@@ -4050,11 +4050,10 @@ export enum DeploymentOrderField {
 }
 
 /** A protection rule. */
-export type DeploymentProtectionRule = Node & {
+export type DeploymentProtectionRule = {
   readonly __typename: "DeploymentProtectionRule";
   /** Identifies the primary key from the database. */
   readonly databaseId: Maybe<Scalars["Int"]>;
-  readonly id: Scalars["ID"];
   /** The teams or users that can review the deployment */
   readonly reviewers: DeploymentReviewerConnection;
   /** The timeout in minutes for this protection rule. */
@@ -21601,6 +21600,8 @@ export type User = Actor &
     readonly isDeveloperProgramMember: Scalars["Boolean"];
     /** Whether or not this user is a GitHub employee. */
     readonly isEmployee: Scalars["Boolean"];
+    /** Whether or not this user is following the viewer. Inverse of viewer_is_following */
+    readonly isFollowingViewer: Scalars["Boolean"];
     /** Whether or not this user is a member of the GitHub Stars Program. */
     readonly isGitHubStar: Scalars["Boolean"];
     /** Whether or not the user has marked themselves as for hire. */
@@ -21706,7 +21707,7 @@ export type User = Actor &
     readonly viewerCanFollow: Scalars["Boolean"];
     /** Whether or not the viewer is able to sponsor this user/organization. */
     readonly viewerCanSponsor: Scalars["Boolean"];
-    /** Whether or not this user is followed by the viewer. */
+    /** Whether or not this user is followed by the viewer. Inverse of is_following_viewer. */
     readonly viewerIsFollowing: Scalars["Boolean"];
     /** True if the viewer is sponsoring this user/organization. */
     readonly viewerIsSponsoring: Scalars["Boolean"];
@@ -22699,7 +22700,6 @@ export type NodeQuery = {
     | { readonly __typename: "DeployedEvent" }
     | { readonly __typename: "Deployment" }
     | { readonly __typename: "DeploymentEnvironmentChangedEvent" }
-    | { readonly __typename: "DeploymentProtectionRule" }
     | { readonly __typename: "DeploymentReview" }
     | { readonly __typename: "DeploymentStatus" }
     | { readonly __typename: "DisconnectedEvent" }
