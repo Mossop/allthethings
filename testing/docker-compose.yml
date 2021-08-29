@@ -1,4 +1,4 @@
-version: '3'
+version: "3"
 services:
   postgres:
     image: postgres
@@ -12,7 +12,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - '5432:5432'
+      - "5432:5432"
   pgadmin:
     image: dpage/pgadmin4
     restart: unless-stopped
@@ -21,9 +21,9 @@ services:
       PGADMIN_DEFAULT_PASSWORD: allthethings
       PGADMIN_LISTEN_PORT: 7000
     ports:
-      - '7000:7000'
+      - "7000:7000"
     volumes:
-      - './pgadmin.json:/pgadmin4/servers.json'
+      - "./pgadmin.json:/pgadmin4/servers.json"
   bugzilla:
     image: mossop/bugzilla
     restart: unless-stopped
@@ -32,4 +32,4 @@ services:
       ADMIN_PASSWORD: allthethings
       ADMIN_REALNAME: AllTheThings Admin
     ports:
-      - '8888:80'
+      - "8888:80"
