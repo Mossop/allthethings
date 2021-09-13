@@ -79,31 +79,23 @@ export class GithubService extends BaseService<GithubTransaction> {
       let userId = first(ctx.query.state);
 
       if (!code || userId != ctx.userId) {
-        console.error("Bad oauth", code, userId);
+        ctx.transaction.segment.error("Bad oauth", { code, userId });
         return next();
       }
 
       ctx.set("Cache-Control", "no-cache");
 
       let account = await Account.create(ctx.transaction, ctx.userId, code);
-      try {
-        ctx.transaction.settingsPageUrl(account.id);
-      } catch (e) {
-        console.error(e);
-      }
       ctx.redirect(ctx.transaction.settingsPageUrl(account.id).toString());
     };
 
     this.webMiddleware = koaMount("/oauth", oauthMiddleware);
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      try {
-        await this.server.withTransaction((tx: GithubTransaction) =>
-          this.update(tx),
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      await this.server.withTransaction("update", (tx: GithubTransaction) =>
+        this.update(tx),
+      );
+
       return UPDATE_DELAY;
     }, INITIAL_DELAY);
   }

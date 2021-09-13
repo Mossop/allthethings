@@ -131,7 +131,7 @@ export class Account
   }
 
   public async update(): Promise<void> {
-    let info = await loadPageInfo(new URL(this.url));
+    let info = await loadPageInfo(this.tx.segment, new URL(this.url));
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
     if (icon != this.icon) {
@@ -149,7 +149,7 @@ export class Account
     let api = conduit(url, apiKey);
     let user = await api.user.whoami();
 
-    let info = await loadPageInfo(new URL(url));
+    let info = await loadPageInfo(tx.segment, new URL(url));
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
     let record: Omit<PhabricatorAccountRecord, "id"> = {

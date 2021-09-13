@@ -79,7 +79,7 @@ export class GoogleService extends BaseService<GoogleTransaction> {
       let userId = first(ctx.query.state);
 
       if (!code || userId != ctx.userId) {
-        console.error("Bad oauth", code, userId);
+        ctx.transaction.segment.error("Bad oauth", { code, userId });
         return next();
       }
 
@@ -92,13 +92,10 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     this.webMiddleware = koaMount("/oauth", oauthMiddleware);
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      try {
-        await this.server.withTransaction((tx: GoogleTransaction) =>
-          this.update(tx),
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      await this.server.withTransaction("update", (tx: GoogleTransaction) =>
+        this.update(tx),
+      );
+
       return UPDATE_DELAY;
     }, INITIAL_DELAY);
   }

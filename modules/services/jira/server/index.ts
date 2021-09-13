@@ -23,13 +23,10 @@ export class JiraService extends BaseService<JiraTransaction> {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      try {
-        await this.server.withTransaction((tx: JiraTransaction) =>
-          this.update(tx),
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      await this.server.withTransaction("update", (tx: JiraTransaction) =>
+        this.update(tx),
+      );
+
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
   }

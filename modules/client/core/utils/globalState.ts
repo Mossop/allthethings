@@ -2,7 +2,7 @@ import type { ApolloQueryResult, ObservableQuery } from "@apollo/client";
 import type { Update, Location } from "history";
 import { SystemZone } from "luxon";
 
-import { history } from "#client/utils";
+import { history, log } from "#client/utils";
 import { DateTimeUnit } from "#utils";
 
 import type {
@@ -119,8 +119,6 @@ class GlobalStateManager {
   }
 
   private onError(error: Error): void {
-    console.error(error);
-
     if (!this.lastBackoff) {
       this.problems.set([
         {
@@ -131,7 +129,7 @@ class GlobalStateManager {
     }
 
     this.lastBackoff = nextBackoff(this.lastBackoff);
-    console.log("Backing off", this.lastBackoff);
+    log.error("Saw server error", { error, backoff: this.lastBackoff });
     window.setTimeout(() => {
       this.query = this.startQuery();
     }, this.lastBackoff);

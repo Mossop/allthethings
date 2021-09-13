@@ -25,6 +25,7 @@ module.exports = {
     "import/default": "off",
     "import/no-named-as-default-member": "off",
     "import/no-unresolved": "off",
+    "no-console": "warn",
   },
 
   overrides: [

@@ -145,17 +145,13 @@ const TypeMenuItem = ReactMemo(
     { item, refetchQueries, controller, selectedController }: TypeMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [mutate, { error }] = useSetTaskControllerMutation({
+    let [mutate] = useSetTaskControllerMutation({
       variables: {
         id: item.id,
         controller,
       },
       refetchQueries,
     });
-
-    if (error) {
-      console.log(error);
-    }
 
     let click = useCallback(() => {
       if (controller == selectedController) {

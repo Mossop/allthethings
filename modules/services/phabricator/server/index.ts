@@ -23,13 +23,11 @@ class PhabricatorService extends BaseService<PhabricatorTransaction> {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      try {
-        await this.server.withTransaction((tx: PhabricatorTransaction) =>
-          this.update(tx),
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      await this.server.withTransaction(
+        "update",
+        (tx: PhabricatorTransaction) => this.update(tx),
+      );
+
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
   }

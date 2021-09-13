@@ -642,9 +642,9 @@ export class Item
       }
 
       return item;
-    } catch (e) {
-      console.error(e);
-      throw e;
+    } catch (error) {
+      tx.segment.error("Error creating item", { error });
+      throw error;
     }
   }
 

@@ -57,7 +57,10 @@ export interface Server<Tx extends ServiceTransaction = ServiceTransaction> {
   readonly serviceUrl: URL;
   readonly taskManager: TaskManager;
 
-  withTransaction<R>(task: (tx: Tx) => Promise<R>): Promise<R>;
+  withTransaction<R>(
+    operation: string,
+    task: (tx: Tx) => Promise<R>,
+  ): Promise<R>;
 }
 
 export type ServiceTransaction = Transaction & {

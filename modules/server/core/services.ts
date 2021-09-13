@@ -6,6 +6,7 @@ import type {
   DbMigration,
   DbMigrationHelper,
   Problem,
+  Segment,
   Server,
   Service,
   ServiceDbMigration,
@@ -13,7 +14,7 @@ import type {
   ServiceTransaction,
   Transaction,
 } from "#server/utils";
-import { DbMigrationSource } from "#server/utils";
+import { inSegment, DbMigrationSource } from "#server/utils";
 import { assert, memoized } from "#utils";
 
 import type { ServerConfig } from "./config";
@@ -178,21 +179,27 @@ export class ServiceOwner<
     return new URL(`service/${this.id}/`, this.rootUrl);
   }
 
-  public async initService(): Promise<Service<Tx>> {
-    let config: C = undefined as unknown as C;
-    if (this.serviceExport.configDecoder) {
-      try {
-        config = await this.serviceExport.configDecoder.decodeToPromise(
-          this.serverConfig.services[this.id],
-        );
-      } catch (e) {
-        console.error(`Service ${this.id} configuration is invalid`);
-        throw e;
-      }
-    }
+  public initService(): Promise<Service<Tx>> {
+    return inSegment(
+      "init",
+      { service: this.serviceExport.id },
+      async (segment: Segment) => {
+        let config: C = undefined as unknown as C;
+        if (this.serviceExport.configDecoder) {
+          try {
+            config = await this.serviceExport.configDecoder.decodeToPromise(
+              this.serverConfig.services[this.id],
+            );
+          } catch (error) {
+            segment.error(`Service configuration is invalid`, { error });
+            throw error;
+          }
+        }
 
-    let service = await this.serviceExport.init(this, config);
-    return service;
+        let service = await this.serviceExport.init(this, config);
+        return service;
+      },
+    );
   }
 
   public get service(): Promise<Service<Tx>> {
@@ -203,11 +210,37 @@ export class ServiceOwner<
     return this.servicePromise;
   }
 
-  public async withTransaction<R>(task: (tx: Tx) => Promise<R>): Promise<R> {
+  public async withTransaction<R>(
+    operation: string,
+    task: (tx: Tx) => Promise<R>,
+  ): Promise<R> {
     let service = await this.service;
-    return withTransaction(this.knex, async (tx: Transaction): Promise<R> => {
-      return task(await buildServiceTransaction(service, tx));
-    });
+
+    return inSegment(
+      "service",
+      {
+        service: this.serviceExport.id,
+        operation,
+      },
+      async (segment: Segment): Promise<R> => {
+        try {
+          let result = await withTransaction(
+            this.knex,
+            segment,
+            async (tx: Transaction): Promise<R> => {
+              return task(await buildServiceTransaction(service, tx));
+            },
+          );
+
+          segment.debug("Completed service transation");
+
+          return result;
+        } catch (error) {
+          segment.error("Service threw exception", { error });
+          throw error;
+        }
+      },
+    );
   }
 
   public readonly resolvers = memoized(async function resolvers(
@@ -316,8 +349,8 @@ class ServiceManagerImpl {
           if (id) {
             return id;
           }
-        } catch (e) {
-          console.error(e);
+        } catch (error) {
+          tx.segment.error("Service reported error creating item", { error });
         }
       }
     }

@@ -23,11 +23,13 @@ import type {
   ServiceWebContextExtras,
   Transaction,
 } from "#server/utils";
+import { log, Segment } from "#server/utils";
 import type { DescriptorsFor } from "#utils";
 import { defer } from "#utils";
 
 interface ExtraContext {
   readonly userId: string | null;
+  readonly segment: Segment;
   login(userId: string): void;
   logout(): void;
   startTransaction(): Promise<Transaction>;
@@ -51,12 +53,28 @@ export async function buildWebServerContext(
   knex: Knex,
 ): Promise<DescriptorsFor<ExtraContext>> {
   let transactions = new WeakMap<WebServerContext, TransactionHolder>();
+  let segments = new WeakMap<WebServerContext, Segment>();
 
   return {
     userId: {
       enumerable: true,
       get(this: WebServerContext): string | null {
         return (this.session?.userId as string | undefined) ?? null;
+      },
+    },
+
+    segment: {
+      enumerable: true,
+      get(this: WebServerContext): Segment {
+        let segment = segments.get(this);
+        if (!segment) {
+          segment = new Segment(null, "webrequest", log, {
+            path: this.path,
+          });
+          segments.set(this, segment);
+        }
+
+        return segment.current;
       },
     },
 
@@ -105,6 +123,7 @@ export async function buildWebServerContext(
 
           holder.complete = withTransaction(
             knex,
+            this.segment,
             (tx: Transaction): Promise<void> => {
               deferredTransaction.resolve(tx);
               return deferred.promise;
@@ -121,8 +140,13 @@ export async function buildWebServerContext(
       value: async function commitTransaction(
         this: WebServerContext,
       ): Promise<void> {
+        let segment = segments.get(this);
         let holder = transactions.get(this);
         if (!holder) {
+          if (segment) {
+            segment.finish();
+          }
+
           return;
         }
 
@@ -130,6 +154,10 @@ export async function buildWebServerContext(
 
         holder.resolve();
         await holder.complete;
+
+        if (segment) {
+          segment.finish();
+        }
       },
     },
 
@@ -138,8 +166,12 @@ export async function buildWebServerContext(
       value: async function rollbackTransaction(
         this: WebServerContext,
       ): Promise<void> {
+        let segment = segments.get(this);
         let holder = transactions.get(this);
         if (!holder) {
+          if (segment) {
+            segment.finish();
+          }
           return;
         }
 
@@ -150,6 +182,10 @@ export async function buildWebServerContext(
           await holder.complete;
         } catch (e) {
           // expected.
+        }
+
+        if (segment) {
+          segment.finish();
         }
       },
     },
@@ -164,10 +200,12 @@ async function transactionMiddleware(
 ): Promise<void> {
   try {
     await next();
+    ctx.segment.debug("Request complete");
     await ctx.commitTransaction();
-  } catch (e) {
+  } catch (error) {
+    ctx.segment.error("Error during request", { error });
     await ctx.rollbackTransaction();
-    throw e;
+    throw error;
   }
 }
 
@@ -200,8 +238,8 @@ async function authMiddleware(ctx: WebServerContext): Promise<unknown> {
 
     ctx.status = 404;
     ctx.body = "fail";
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    ctx.segment.error("Failed in authentication middleware", { error });
     ctx.status = 500;
     ctx.body = "fail";
   }

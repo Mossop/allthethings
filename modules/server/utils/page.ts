@@ -6,6 +6,8 @@ import fetch from "node-fetch";
 import type { HTMLElement } from "node-html-parser";
 import { parse } from "node-html-parser";
 
+import type { Segment } from "./segment";
+
 const TYPE_SVG = "image/svg+xml";
 
 export interface PageInfo {
@@ -42,15 +44,15 @@ export function bestIcon(icons: Icon[], size: number): Icon | null {
   return icon;
 }
 
-async function loadIcon(url: URL): Promise<Icon[]> {
+async function loadIcon(segment: Segment, url: URL): Promise<Icon[]> {
   let response: Response;
   try {
     response = await fetch(url);
     if (!response.ok) {
       return [];
     }
-  } catch (e) {
-    console.error(e);
+  } catch (error) {
+    segment.error("Error fetching page", { url: url.toString(), error });
     return [];
   }
 
@@ -90,37 +92,45 @@ async function loadIcon(url: URL): Promise<Icon[]> {
   return icons;
 }
 
-export async function loadPageInfo(pageUrl: URL): Promise<PageInfo> {
-  let response = await fetch(pageUrl);
-  if (!response.ok) {
-    throw new Error(response.statusText);
-  }
+export function loadPageInfo(
+  segment: Segment,
+  pageUrl: URL,
+): Promise<PageInfo> {
+  return segment.inSegment(
+    "loadPageInfo",
+    async (segment: Segment): Promise<PageInfo> => {
+      let response = await fetch(pageUrl);
+      if (!response.ok) {
+        throw new Error(response.statusText);
+      }
 
-  let html = await response.text();
-  let root = parse(html);
+      let html = await response.text();
+      let root = parse(html);
 
-  let icons: Icon[] = [];
+      let icons: Icon[] = [];
 
-  let elements = root.querySelectorAll('link[rel~="icon"]');
-  for (let link of elements) {
-    let href = link.getAttribute("href");
-    if (!href) {
-      continue;
-    }
+      let elements = root.querySelectorAll('link[rel~="icon"]');
+      for (let link of elements) {
+        let href = link.getAttribute("href");
+        if (!href) {
+          continue;
+        }
 
-    let url = new URL(href, pageUrl);
-    icons = icons.concat(await loadIcon(url));
-  }
+        let url = new URL(href, pageUrl);
+        icons = icons.concat(await loadIcon(segment, url));
+      }
 
-  if (icons.length == 0) {
-    let favicon = new URL("/favicon.ico", pageUrl);
-    icons = icons.concat(await loadIcon(favicon));
-  }
+      if (icons.length == 0) {
+        let favicon = new URL("/favicon.ico", pageUrl);
+        icons = icons.concat(await loadIcon(segment, favicon));
+      }
 
-  let title = root.querySelector("title") as HTMLElement | null;
+      let title = root.querySelector("title") as HTMLElement | null;
 
-  return {
-    title: title?.textContent,
-    icons,
-  };
+      return {
+        title: title?.textContent,
+        icons,
+      };
+    },
+  );
 }

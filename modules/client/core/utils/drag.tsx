@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import type { ReactResult, ReactChildren } from "#client/utils";
-import { ReactMemo } from "#client/utils";
+import { log, ReactMemo } from "#client/utils";
 
 import type {
   GraphQLType,
@@ -301,9 +301,7 @@ class DragManager {
     previewElement: HTMLElement | null,
   ): void {
     if (this.state.value) {
-      console.warn(
-        "Starting a new drag while a drop operation is still running.",
-      );
+      log.warn("Starting a new drag while a drop operation is still running.");
       this.state.set(null);
     }
 
@@ -351,10 +349,9 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation || drag.dragSource !== dragSource) {
-      console.warn(
-        "Saw drag event which no drag operation is being tracked.",
-        event.type,
-      );
+      log.warn("Saw drag event which no drag operation is being tracked.", {
+        type: event.type,
+      });
       this.state.set(null);
       return;
     }
@@ -365,13 +362,12 @@ class DragManager {
 
       this.operation
         .completeDrag()
-        .catch((e: unknown) =>
-          console.error(
-            "Failed to complete drag operation",
-            this.state.value,
-            e,
-          ),
-        )
+        .catch((error: unknown) => {
+          log.error("Failed to complete drag operation", {
+            value: this.state.value,
+            error,
+          });
+        })
         .finally(() => this.state.set(null));
     } else {
       this.state.set(null);
@@ -382,10 +378,9 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn(
-        "Saw drag event which no drag operation is being tracked.",
-        event.type,
-      );
+      log.warn("Saw drag event which no drag operation is being tracked.", {
+        type: event.type,
+      });
       return;
     }
 
@@ -406,10 +401,9 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn(
-        "Saw drag event which no drag operation is being tracked.",
-        event.type,
-      );
+      log.warn("Saw drag event which no drag operation is being tracked.", {
+        type: event.type,
+      });
       return;
     }
 
@@ -426,10 +420,9 @@ class DragManager {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
-      console.warn(
-        "Saw drag event which no drag operation is being tracked.",
-        event.type,
-      );
+      log.warn("Saw drag event which no drag operation is being tracked.", {
+        type: event.type,
+      });
       return;
     }
 

@@ -10,6 +10,7 @@ export * from "./ImageIcon";
 export * from "./ItemPill";
 export * from "./Link";
 export * from "./Loading";
+export * from "./logging";
 export * from "./Menu";
 export * from "./services";
 export * from "./SelectableListItem";

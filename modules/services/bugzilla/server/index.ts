@@ -23,13 +23,10 @@ class BugzillaService extends BaseService<BugzillaTransaction> {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      try {
-        await this.server.withTransaction((tx: BugzillaTransaction) =>
-          this.update(tx),
-        );
-      } catch (e) {
-        console.error(e);
-      }
+      await this.server.withTransaction("update", (tx: BugzillaTransaction) =>
+        this.update(tx),
+      );
+
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
   }

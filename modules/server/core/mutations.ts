@@ -338,7 +338,7 @@ const mutationResolvers: TypeResolver<
         return item;
       }
 
-      let pageInfo = await loadPageInfo(targetUrl);
+      let pageInfo = await loadPageInfo(tx.segment, targetUrl);
 
       let summary = itemParams.summary;
       if (!summary) {

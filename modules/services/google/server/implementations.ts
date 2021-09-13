@@ -178,14 +178,14 @@ export class Account
     } = credentials;
 
     if (!accessToken) {
-      console.error("Bad credentials", credentials);
+      tx.segment.error("Bad credentials", { credentials });
       throw new Error(
         "Failed to authenticate correctly, missing access token.",
       );
     }
 
     if (!expiry) {
-      console.error("Bad credentials", credentials);
+      tx.segment.error("Bad credentials", { credentials });
       throw new Error("Failed to authenticate correctly, missing expiry.");
     }
 
@@ -193,7 +193,7 @@ export class Account
 
     let tokenInfo = await client.getTokenInfo(accessToken);
     if (!tokenInfo.email) {
-      console.error("Bad token info", tokenInfo);
+      tx.segment.error("Bad token info", { tokenInfo });
       throw new Error("Failed to authenticate correctly, bad token info.");
     }
 

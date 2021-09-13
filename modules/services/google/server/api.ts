@@ -103,12 +103,11 @@ export class GoogleApi {
       } = credentials;
 
       if (!accessToken || !expiry) {
-        console.error(
-          "Got bad access tokens",
+        this.account.tx.segment.error("Got bad access tokens", {
           accessToken,
           refreshToken,
           expiry,
-        );
+        });
         GoogleService.service.setProblem(
           this.account,
           "Google API returned invalid access tokens.",
@@ -165,10 +164,10 @@ export class GoogleApi {
       let result = await fn();
       GoogleService.service.clearProblem(this.account);
       return result;
-    } catch (e) {
-      GoogleService.service.setProblem(this.account, e.message);
-      console.log(`Google service error: ${e.message}`);
-      throw e;
+    } catch (error) {
+      GoogleService.service.setProblem(this.account, error.message);
+      this.account.tx.segment.error("Google service error", { error });
+      throw error;
     }
   }
 

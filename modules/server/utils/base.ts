@@ -62,8 +62,8 @@ export abstract class BaseService<
           for (let item of seen) {
             seenIds.add(item.id);
           }
-        } catch (e) {
-          console.error(e);
+        } catch (error) {
+          tx.segment.error("Error updating lists", { error });
         }
       }
     }
@@ -74,8 +74,8 @@ export abstract class BaseService<
         if (!seenIds.has(item.id)) {
           try {
             await item.update();
-          } catch (e) {
-            console.error(e);
+          } catch (error) {
+            tx.segment.error("Error updating items", { error });
           }
         }
       }

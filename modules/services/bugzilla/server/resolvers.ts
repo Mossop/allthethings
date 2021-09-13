@@ -46,7 +46,7 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
         await api.version();
       }
 
-      let info = await loadPageInfo(new URL(url));
+      let info = await loadPageInfo(ctx.transaction.segment, new URL(url));
       let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
       return Account.create(ctx.transaction, ctx.userId, {

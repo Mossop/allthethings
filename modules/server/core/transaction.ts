@@ -11,8 +11,9 @@ import type {
   Transaction,
   CreateItemParams,
   ItemList,
+  Segment,
 } from "#server/utils";
-import type { DescriptorsFor } from "#utils";
+import type { DescriptorsFor, Logger } from "#utils";
 import { memoized, waitFor } from "#utils";
 
 import {
@@ -27,18 +28,37 @@ import { buildStores } from "./stores";
 import type { Stores } from "./stores";
 import { ItemType } from "./types";
 
+interface QueryResponse {
+  rowCount: number;
+}
+
 type Query = Knex.QueryBuilder & {
   // eslint-disable-next-line @typescript-eslint/naming-convention
   __knexUid: string;
   // eslint-disable-next-line @typescript-eslint/naming-convention
   __knexTxId: string;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  __knexQueryUid: string;
   sql: string;
   bindings?: unknown[];
+  response?: QueryResponse;
 };
 
-async function buildTransaction(knex: Knex): Promise<Transaction> {
+async function buildTransaction(
+  knex: Knex,
+  segment: Segment,
+): Promise<Transaction> {
   return {
     knex,
+
+    get segment(): Segment {
+      return segment.current;
+    },
+
+    get log(): Logger {
+      return segment.current;
+    },
+
     tableRef(tableName: string, alias: string = tableName) {
       return knex.ref(tableName).as(alias);
     },
@@ -306,44 +326,92 @@ export const buildServiceTransaction = memoized(
 
 export async function withTransaction<R>(
   knex: Knex,
+  segment: Segment,
   action: (transaction: Transaction) => Promise<R>,
 ): Promise<R> {
-  return knex.transaction<R>(async (trx: Knex): Promise<R> => {
-    trx.on("query", function (this: Knex, _query: Query): void {
-      // TODO
-    });
+  return knex.transaction<R>(
+    async (trx: Knex): Promise<R> =>
+      segment.inSegment<R>(
+        "transaction",
+        async (segment: Segment): Promise<R> => {
+          let queries = new Map<string, Segment>();
 
-    trx.on(
-      "query-response",
-      function (this: Knex, _results: unknown, _query: Query): void {
-        // TODO
-      },
-    );
+          trx.on("query", function (this: Knex, query: Query): void {
+            if (query.sql == "ROLLBACK" || query.sql == "COMMIT;") {
+              return;
+            }
 
-    trx.on(
-      "query-error",
-      function (this: Knex, error: Error, query: Query): void {
-        console.error("Query error:", error.message, {
-          // @ts-ignore
-          detail: error.detail,
-          sql: query.sql,
-          bindings: query.bindings,
-        });
-      },
-    );
+            let querySegment = segment.current.enterSegment("query", {
+              sql: query.sql,
+              bindings: query.bindings,
+            });
 
-    try {
-      let transaction = await buildTransaction(trx);
+            queries.set(query.__knexQueryUid, querySegment);
+          });
 
-      let result: R = await action(transaction);
+          trx.on(
+            "query-response",
+            function (this: Knex, _results: unknown, query: Query): void {
+              let querySegment = queries.get(query.__knexQueryUid);
+              if (!querySegment) {
+                segment.current.error(
+                  "Received query response from an unknown query.",
+                  {
+                    sql: query.sql,
+                    bindings: query.bindings,
+                    rowCount: query.response?.rowCount ?? 0,
+                  },
+                );
+              } else {
+                querySegment.trace("Query response", {
+                  rowCount: query.response?.rowCount ?? 0,
+                });
+                querySegment.finish();
+                queries.delete(query.__knexQueryUid);
+              }
+            },
+          );
 
-      let coreTransaction = buildCoreTransaction(transaction);
-      await Item.deleteCompleteInboxTasks(coreTransaction);
+          trx.on(
+            "query-error",
+            function (this: Knex, error: Error, query: Query): void {
+              let querySegment = queries.get(query.__knexQueryUid);
+              if (!querySegment) {
+                segment.current.error(
+                  `Received query error from an unknown query: ${error.message}`,
+                  {
+                    error,
+                    sql: query.sql,
+                    bindings: query.bindings,
+                  },
+                );
+              } else {
+                querySegment.error(`Query error: ${error.message}`, {
+                  error,
+                  sql: query.sql,
+                  bindings: query.bindings,
+                });
 
-      return result;
-    } catch (e) {
-      console.warn("Rolling back transaction.");
-      throw e;
-    }
-  });
+                querySegment.finish();
+                queries.delete(query.__knexQueryUid);
+              }
+            },
+          );
+
+          try {
+            let transaction = await buildTransaction(trx, segment);
+
+            let result: R = await action(transaction);
+
+            let coreTransaction = buildCoreTransaction(transaction);
+            await Item.deleteCompleteInboxTasks(coreTransaction);
+
+            return result;
+          } catch (e) {
+            segment.warn("Rolling back transaction.");
+            throw e;
+          }
+        },
+      ),
+  );
 }

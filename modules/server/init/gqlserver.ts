@@ -9,7 +9,7 @@ import type {
   GraphQLRequestContextWillSendResponse,
   GraphQLRequestContextDidEncounterErrors,
 } from "apollo-server-plugin-base";
-import type { GraphQLError, GraphQLResolveInfo } from "graphql";
+import type { GraphQLResolveInfo } from "graphql";
 
 import {
   buildCoreTransaction,
@@ -31,14 +31,14 @@ const requestListener: GraphQLRequestListener<ResolverContext> = {
   async didEncounterErrors(
     ctx: GraphQLRequestContextDidEncounterErrors<ResolverContext>,
   ): Promise<void> {
-    console.log(`Error performing ${ctx.request.operationName}`);
-    if (ctx.request.variables) {
-      console.log(ctx.request.variables);
-    }
-
-    ctx.errors.forEach((error: GraphQLError) => {
-      console.error(error);
-    });
+    ctx.context.webserverContext.segment.error(
+      "Error performing GraphQL operation",
+      {
+        operation: ctx.request.operationName,
+        variables: ctx.request.variables,
+        errors: ctx.errors,
+      },
+    );
 
     await ctx.context.webserverContext.rollbackTransaction();
   },

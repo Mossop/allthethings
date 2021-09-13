@@ -2,11 +2,16 @@ import type { Knex } from "knex";
 
 import type { DescriptorsFor } from "#utils";
 
+import type { Logger } from "./logging";
+import type { Segment } from "./segment";
+
 export type TableRef = Pick<Knex.Ref<string, { [K in string]: string }>, "as"> &
   Knex.Raw<string>;
 
 export interface Transaction {
   readonly knex: Knex;
+  readonly segment: Segment;
+  readonly log: Logger;
   tableRef(tableName: string, alias?: string): TableRef;
 }
 
