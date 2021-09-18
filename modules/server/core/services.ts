@@ -1,140 +1,21 @@
 import { URL } from "url";
 
-import type { Knex } from "knex";
-
+import type { Database } from "#db";
 import type {
-  DbMigration,
-  DbMigrationHelper,
   Problem,
   Segment,
   Server,
   Service,
-  ServiceDbMigration,
   ServiceExport,
   ServiceTransaction,
   Transaction,
 } from "#server/utils";
-import { inSegment, DbMigrationSource } from "#server/utils";
+import { inSegment } from "#server/utils";
 import { assert, memoized } from "#utils";
 
 import type { ServerConfig } from "./config";
 import TaskManager from "./tasks";
 import { buildServiceTransaction, withTransaction } from "./transaction";
-
-function wrapKnex(knex: Knex, dbSchema: string): Knex {
-  // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-  return Object.create(knex, {
-    schema: {
-      enumerable: true,
-      configurable: false,
-      get(): Knex.SchemaBuilder {
-        return knex.schema.withSchema(dbSchema);
-      },
-    },
-  });
-}
-
-class MigrationHelper implements DbMigrationHelper {
-  public constructor(private readonly schema: string) {}
-
-  public idColumn(
-    table: Knex.CreateTableBuilder,
-    column: string,
-  ): Knex.ColumnBuilder {
-    return table.text(column);
-  }
-
-  public userRef(
-    table: Knex.CreateTableBuilder,
-    column: string,
-  ): Knex.ColumnBuilder {
-    return table
-      .text(column)
-      .references("id")
-      .inTable("public.User")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-  }
-
-  public itemRef(
-    table: Knex.CreateTableBuilder,
-    column: string,
-  ): Knex.ColumnBuilder {
-    return table
-      .text(column)
-      .references("id")
-      .inTable("public.ServiceDetail")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-  }
-
-  public listRef(
-    table: Knex.CreateTableBuilder,
-    column: string,
-  ): Knex.ColumnBuilder {
-    return table
-      .text(column)
-      .references("id")
-      .inTable("public.ServiceList")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
-  }
-
-  public tableName(name: string): string {
-    return `${this.schema}.${name}`;
-  }
-}
-
-class ServiceMigration implements DbMigration {
-  public constructor(
-    private readonly schema: string,
-    private readonly migration: ServiceDbMigration,
-  ) {}
-
-  public get name(): string {
-    return this.migration.name;
-  }
-
-  public up(knex: Knex): Promise<void> {
-    return this.migration.up(
-      wrapKnex(knex, this.schema),
-      new MigrationHelper(this.schema),
-    );
-  }
-
-  public async down(): Promise<void> {
-    // NO-OP
-  }
-}
-
-class SchemaMigration implements DbMigration {
-  public readonly name = "Schema";
-
-  public constructor(private readonly schema: string) {}
-
-  public async up(knex: Knex): Promise<void> {
-    await knex.raw("CREATE SCHEMA ??", [this.schema]);
-  }
-
-  public async down(knex: Knex): Promise<void> {
-    await knex.raw("DROP SCHEMA IF EXISTS ?? CASCADE", [this.schema]);
-  }
-}
-
-export function getMigrationSource(
-  serviceExport: ServiceExport<unknown, any>,
-): Knex.MigratorConfig {
-  return {
-    tableName: `${serviceExport.id}_migrations`,
-    migrationSource: new DbMigrationSource([
-      new SchemaMigration(serviceExport.id),
-      ...serviceExport.dbMigrations.map(
-        (migration: ServiceDbMigration): DbMigration =>
-          new ServiceMigration(serviceExport.id, migration),
-      ),
-    ]),
-  };
-}
 
 export class ServiceOwner<
   C = unknown,
@@ -164,7 +45,7 @@ export class ServiceOwner<
   }
 
   public constructor(
-    private readonly knex: Knex,
+    private readonly db: Database,
     private readonly serverConfig: ServerConfig,
     public readonly serviceExport: ServiceExport<C, Tx>,
   ) {
@@ -225,14 +106,14 @@ export class ServiceOwner<
       async (segment: Segment): Promise<R> => {
         try {
           let result = await withTransaction(
-            this.knex,
+            this.db,
             segment,
             async (tx: Transaction): Promise<R> => {
               return task(await buildServiceTransaction(service, tx));
             },
           );
 
-          segment.debug("Completed service transation");
+          segment.debug("Completed service transaction");
 
           return result;
         } catch (error) {
@@ -277,14 +158,12 @@ class ServiceManagerImpl {
   }
 
   public async initServices(
-    knex: Knex,
+    db: Database,
     serverConfig: ServerConfig,
   ): Promise<void> {
     for (let serviceExport of this.serviceExports.values()) {
-      let owner = new ServiceOwner(knex, serverConfig, serviceExport);
+      let owner = new ServiceOwner(db, serverConfig, serviceExport);
       this.serviceOwners.set(serviceExport, owner);
-      await knex.migrate.latest(getMigrationSource(serviceExport));
-
       this.serviceCache.set(serviceExport.id, await owner.init());
     }
   }
@@ -356,12 +235,6 @@ class ServiceManagerImpl {
     }
 
     return null;
-  }
-
-  public async rollbackDatabase(knex: Knex): Promise<void> {
-    for (let serviceExport of this.serviceExports.values()) {
-      await knex.raw("DROP SCHEMA IF EXISTS ?? CASCADE", [serviceExport.id]);
-    }
   }
 }
 

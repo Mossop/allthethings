@@ -1,10 +1,9 @@
 import { URL } from "url";
 
-import type { Knex } from "knex";
 import { DateTime } from "luxon";
 
+import type { Database } from "#db";
 import { TaskController } from "#schema";
-import { extendTransaction } from "#server/utils";
 import type {
   Service,
   ServiceTransaction,
@@ -16,40 +15,23 @@ import type {
 import type { DescriptorsFor, Logger } from "#utils";
 import { memoized, waitFor } from "#utils";
 
+import { ItemType } from "./entities";
 import {
   Item,
   LinkDetail,
   ServiceDetail,
   ServiceList,
   TaskInfo,
+  User,
 } from "./implementations";
 import { ServiceOwner } from "./services";
-import { buildStores } from "./stores";
-import type { Stores } from "./stores";
-import { ItemType } from "./types";
-
-interface QueryResponse {
-  rowCount: number;
-}
-
-type Query = Knex.QueryBuilder & {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __knexUid: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __knexTxId: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  __knexQueryUid: string;
-  sql: string;
-  bindings?: unknown[];
-  response?: QueryResponse;
-};
 
 async function buildTransaction(
-  knex: Knex,
+  database: Database,
   segment: Segment,
 ): Promise<Transaction> {
   return {
-    knex,
+    db: database,
 
     get segment(): Segment {
       return segment.current;
@@ -58,35 +40,8 @@ async function buildTransaction(
     get log(): Logger {
       return segment.current;
     },
-
-    tableRef(tableName: string, alias: string = tableName) {
-      return knex.ref(tableName).as(alias);
-    },
   };
 }
-
-export interface CoreTransaction extends Transaction {
-  readonly stores: Stores;
-  readonly transaction: Transaction;
-}
-
-export const buildCoreTransaction = memoized(
-  (transaction: Transaction): CoreTransaction => {
-    return extendTransaction(transaction, {
-      stores: {
-        enumerable: true,
-        get(this: CoreTransaction): Stores {
-          return buildStores(this);
-        },
-      },
-
-      transaction: {
-        enumerable: true,
-        value: transaction,
-      },
-    });
-  },
-);
 
 type ServiceTransactionProps = Omit<
   ServiceTransaction,
@@ -96,10 +51,8 @@ type ServiceTransactionProps = Omit<
 export const buildServiceTransaction = memoized(
   <Tx extends ServiceTransaction>(
     service: Service<Tx>,
-    transaction: Transaction,
+    tx: Transaction,
   ): Promise<Tx> => {
-    let coreTransaction = buildCoreTransaction(transaction);
-
     let serviceOwner = ServiceOwner.getOwner(service);
 
     let descriptors: DescriptorsFor<ServiceTransactionProps> = {
@@ -111,16 +64,6 @@ export const buildServiceTransaction = memoized(
       serviceUrl: {
         enumerable: true,
         value: serviceOwner.serviceUrl,
-      },
-
-      tableRef: {
-        enumerable: true,
-        value(tableName: string, alias: string = tableName) {
-          return transaction.knex
-            .ref(tableName)
-            .withSchema(serviceOwner.id)
-            .as(alias);
-        },
       },
 
       settingsPageUrl: {
@@ -138,10 +81,7 @@ export const buildServiceTransaction = memoized(
           userId: string,
           { due, done, controller, ...item }: CreateItemParams,
         ): Promise<string> {
-          let user = await coreTransaction.stores.users.get(userId);
-          if (!user) {
-            throw new Error("Unknown user.");
-          }
+          let user = await User.store(tx).get(userId);
 
           if (done === true) {
             done = DateTime.now();
@@ -149,14 +89,9 @@ export const buildServiceTransaction = memoized(
             done = null;
           }
 
-          let itemImpl = await Item.create(
-            coreTransaction,
-            user,
-            ItemType.Service,
-            item,
-          );
+          let itemImpl = await Item.create(tx, user, ItemType.Service, item);
 
-          await ServiceDetail.create(coreTransaction, itemImpl, {
+          await ServiceDetail.create(tx, itemImpl, {
             serviceId: serviceOwner.id,
             hasTaskState: done !== undefined,
             taskDone: done ?? null,
@@ -164,7 +99,7 @@ export const buildServiceTransaction = memoized(
           });
 
           if (done !== undefined && controller) {
-            await TaskInfo.create(coreTransaction, itemImpl, {
+            await TaskInfo.create(tx, itemImpl, {
               manualDue: null,
               manualDone: null,
               controller,
@@ -182,12 +117,9 @@ export const buildServiceTransaction = memoized(
           done: DateTime | boolean | null,
           due?: DateTime | null,
         ): Promise<void> {
-          let item = await coreTransaction.stores.items.get(id);
-          if (!item) {
-            throw new Error("Unknown item.");
-          }
+          let item = await Item.store(tx).get(id);
 
-          let detail = await item.detail();
+          let detail = await item.detail;
           if (!(detail instanceof ServiceDetail)) {
             throw new Error("Item is not from a service.");
           }
@@ -207,21 +139,20 @@ export const buildServiceTransaction = memoized(
             due = detail.taskDue;
           }
 
-          await detail.edit({
+          await detail.update({
             taskDone: done,
             taskDue: due,
           });
 
-          await TaskInfo.updateTaskDetails(coreTransaction, [id]);
+          await TaskInfo.updateTaskDetails(tx, [id]);
         },
       },
 
       setItemSummary: {
         enumerable: true,
         async value(id: string, summary: string): Promise<void> {
-          await coreTransaction.stores.items.updateOne(id, {
-            summary,
-          });
+          let item = await Item.store(tx).get(id);
+          await item.update({ summary });
         },
       },
 
@@ -232,34 +163,38 @@ export const buildServiceTransaction = memoized(
           url?: string | null,
           icon?: string | null,
         ): Promise<void> {
-          let item = await coreTransaction.stores.items.get(id);
-          if (!item) {
-            throw new Error("Unknown item.");
+          let item = await Item.store(tx).get(id);
+          let detail = item.detail;
+          if (
+            !(detail instanceof ServiceDetail) ||
+            detail.serviceId != serviceOwner.id
+          ) {
+            throw new Error("Item is not from this service.");
           }
+          await detail.delete();
 
-          await coreTransaction.stores.serviceDetail.deleteOne(item.id);
           if (url) {
-            await item.edit({
+            await item.update({
               type: ItemType.Link,
             });
 
-            await LinkDetail.create(coreTransaction, item, {
+            await LinkDetail.create(tx, item, {
               url,
               icon: icon ?? null,
             });
           } else {
-            await item.edit({
+            await item.update({
               type: null,
             });
           }
 
-          let taskInfo = await item.taskInfo();
+          let taskInfo = await item.taskInfo;
           if (!taskInfo) {
             return;
           }
 
           if (taskInfo.controller != TaskController.Manual) {
-            await taskInfo.edit({
+            await taskInfo.update({
               due: taskInfo.manualDue,
               controller: TaskController.Manual,
             });
@@ -270,11 +205,7 @@ export const buildServiceTransaction = memoized(
       deleteItem: {
         enumerable: true,
         async value(id: string): Promise<void> {
-          let item = await coreTransaction.stores.items.get(id);
-          if (!item) {
-            throw new Error("Unknown item.");
-          }
-
+          let item = await Item.store(tx).get(id);
           await item.delete();
         },
       },
@@ -282,11 +213,7 @@ export const buildServiceTransaction = memoized(
       addList: {
         enumerable: true,
         async value(list: ItemList): Promise<string> {
-          let listImpl = await ServiceList.create(
-            coreTransaction,
-            serviceOwner.id,
-            list,
-          );
+          let listImpl = await ServiceList.create(tx, serviceOwner.id, list);
           return listImpl.id;
         },
       },
@@ -294,20 +221,20 @@ export const buildServiceTransaction = memoized(
       updateList: {
         enumerable: true,
         async value(id: string, list: Partial<ItemList>): Promise<void> {
-          let listImpl = await coreTransaction.stores.serviceList.get(id);
-          if (!listImpl || listImpl.serviceId != serviceOwner.id) {
+          let listImpl = await ServiceList.store(tx).get(id);
+          if (listImpl.serviceId != serviceOwner.id) {
             throw new Error("Unknown list.");
           }
 
-          await listImpl.update(list);
+          await listImpl.updateList(list);
         },
       },
 
       deleteList: {
         enumerable: true,
         async value(id: string): Promise<void> {
-          let listImpl = await coreTransaction.stores.serviceList.get(id);
-          if (!listImpl || listImpl.serviceId != serviceOwner.id) {
+          let listImpl = await ServiceList.store(tx).get(id);
+          if (listImpl.serviceId != serviceOwner.id) {
             throw new Error("Unknown list.");
           }
 
@@ -317,7 +244,7 @@ export const buildServiceTransaction = memoized(
     };
 
     let serviceTransaction = Object.create(
-      transaction,
+      tx,
       descriptors,
     ) as ServiceTransaction;
     return waitFor(service.buildTransaction(serviceTransaction));
@@ -325,86 +252,19 @@ export const buildServiceTransaction = memoized(
 );
 
 export async function withTransaction<R>(
-  knex: Knex,
+  db: Database,
   segment: Segment,
   action: (transaction: Transaction) => Promise<R>,
 ): Promise<R> {
-  return knex.transaction<R>(
-    async (trx: Knex): Promise<R> =>
+  return db.inTransaction<R>(
+    async (db: Database): Promise<R> =>
       segment.inSegment<R>(
         "transaction",
         async (segment: Segment): Promise<R> => {
-          let queries = new Map<string, Segment>();
-
-          trx.on("query", function (this: Knex, query: Query): void {
-            if (query.sql == "ROLLBACK" || query.sql == "COMMIT;") {
-              return;
-            }
-
-            let querySegment = segment.current.enterSegment("query", {
-              sql: query.sql,
-              bindings: query.bindings,
-            });
-
-            queries.set(query.__knexQueryUid, querySegment);
-          });
-
-          trx.on(
-            "query-response",
-            function (this: Knex, _results: unknown, query: Query): void {
-              let querySegment = queries.get(query.__knexQueryUid);
-              if (!querySegment) {
-                segment.current.error(
-                  "Received query response from an unknown query.",
-                  {
-                    sql: query.sql,
-                    bindings: query.bindings,
-                    rowCount: query.response?.rowCount ?? 0,
-                  },
-                );
-              } else {
-                querySegment.trace("Query response", {
-                  rowCount: query.response?.rowCount ?? 0,
-                });
-                querySegment.finish();
-                queries.delete(query.__knexQueryUid);
-              }
-            },
-          );
-
-          trx.on(
-            "query-error",
-            function (this: Knex, error: Error, query: Query): void {
-              let querySegment = queries.get(query.__knexQueryUid);
-              if (!querySegment) {
-                segment.current.error(
-                  `Received query error from an unknown query: ${error.message}`,
-                  {
-                    error,
-                    sql: query.sql,
-                    bindings: query.bindings,
-                  },
-                );
-              } else {
-                querySegment.error(`Query error: ${error.message}`, {
-                  error,
-                  sql: query.sql,
-                  bindings: query.bindings,
-                });
-
-                querySegment.finish();
-                queries.delete(query.__knexQueryUid);
-              }
-            },
-          );
-
           try {
-            let transaction = await buildTransaction(trx, segment);
-
-            let result: R = await action(transaction);
-
-            let coreTransaction = buildCoreTransaction(transaction);
-            await Item.deleteCompleteInboxTasks(coreTransaction);
+            let tx = await buildTransaction(db, segment);
+            let result: R = await action(tx);
+            await Item.deleteCompleteInboxTasks(tx);
 
             return result;
           } catch (e) {

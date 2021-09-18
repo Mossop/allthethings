@@ -4,27 +4,25 @@ import type {
   MutationDeleteGithubSearchArgs,
   MutationEditGithubSearchArgs,
 } from "#schema";
-import type { AuthedGraphQLCtx } from "#server/utils";
+import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
 import { GitHubApi } from "./api";
-import type { Account } from "./implementations";
-import { Search } from "./implementations";
+import { Account , Search } from "./implementations";
 import type { Resolvers } from "./schema";
-import type { GithubTransaction } from "./stores";
 
-export default rootResolvers<Resolvers, AuthedGraphQLCtx<GithubTransaction>>({
+export default rootResolvers<Resolvers>({
   User: {
     async githubAccounts(
-      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<Account[]> {
-      return ctx.transaction.stores.accounts.list({ userId: ctx.userId });
+      return Account.store(ctx.transaction).find({ userId: ctx.userId });
     },
   },
 
   Query: {
     async githubLoginUrl(
-      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<string> {
       return GitHubApi.generateLoginUrl(ctx.transaction, ctx.userId);
     },
@@ -32,13 +30,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GithubTransaction>>({
 
   Mutation: {
     async createGithubSearch(
-      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { account: accountId, params }: MutationCreateGithubSearchArgs,
     ): Promise<Search> {
-      let account = await ctx.transaction.stores.accounts.get(accountId);
-      if (!account) {
-        throw new Error("Unknown account.");
-      }
+      let account = await Account.store(ctx.transaction).get(accountId);
 
       return Search.create(ctx.transaction, account, {
         ...params,
@@ -47,31 +42,24 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GithubTransaction>>({
     },
 
     async editGithubSearch(
-      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { search: searchId, params }: MutationEditGithubSearchArgs,
     ): Promise<Search | null> {
-      let search = await ctx.transaction.stores.searches.get(searchId);
-      if (!search) {
-        return null;
-      }
+      let search = await Search.store(ctx.transaction).get(searchId);
 
-      await ctx.transaction.stores.searches.updateOne(searchId, {
+      await search.update({
         ...params,
         dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
       });
-      await search.update();
+      await search.updateList();
       return search;
     },
 
     async deleteGithubSearch(
-      ctx: AuthedGraphQLCtx<GithubTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { search: searchId }: MutationDeleteGithubSearchArgs,
     ): Promise<boolean> {
-      let search = await ctx.transaction.stores.searches.get(searchId);
-      if (!search) {
-        return false;
-      }
-
+      let search = await Search.store(ctx.transaction).get(searchId);
       await search.delete();
       return true;
     },

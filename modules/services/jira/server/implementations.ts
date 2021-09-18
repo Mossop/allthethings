@@ -7,79 +7,68 @@ import { DateTime } from "luxon";
 import { TaskController } from "#schema";
 import type { JiraAccountParams } from "#schema";
 import type {
-  ItemStore,
-  Listable,
   ResolverImpl,
   ServiceItem,
+  ServiceTransaction,
 } from "#server/utils";
-import { BaseList, BaseItem, BaseAccount } from "#server/utils";
+import {
+  id,
+  storeBuilder,
+  BaseList,
+  BaseItem,
+  BaseAccount,
+} from "#server/utils";
 import type { IssueFields } from "#services/jira/schema";
 import type { DateTimeOffset } from "#utils";
-import { assert, offsetFromJson } from "#utils";
+import { offsetFromJson } from "#utils";
 
-import type { JiraAccountResolvers, JiraSearchResolvers } from "./schema";
-import type { JiraTransaction } from "./stores";
 import type {
-  JiraAccountRecord,
-  JiraIssueRecord,
-  JiraSearchRecord,
-} from "./types";
+  JiraAccountEntity,
+  JiraIssueEntity,
+  JiraSearchEntity,
+} from "./entities";
+import type { JiraAccountResolvers, JiraSearchResolvers } from "./schema";
 
 type JiraIssue = Version3Models.IssueBean;
 
 export class Account
-  extends BaseAccount<JiraTransaction>
+  extends BaseAccount<JiraAccountEntity>
   implements ResolverImpl<JiraAccountResolvers>
 {
-  public constructor(tx: JiraTransaction, private record: JiraAccountRecord) {
-    super(tx);
-  }
-
-  public async updateRecord(record: JiraAccountRecord): Promise<void> {
-    this.record = record;
-  }
-
-  public get id(): string {
-    return this.record.id;
-  }
+  public static readonly store = storeBuilder(Account, "jira.Account");
 
   public get userId(): string {
-    return this.record.userId;
+    return this.entity.userId;
   }
 
   public get serverName(): string {
-    return this.record.serverName;
+    return this.entity.serverName;
   }
 
   public get userName(): string {
-    return this.record.userName;
+    return this.entity.userName;
   }
 
   public get url(): string {
-    return this.record.url;
+    return this.entity.url;
   }
 
   public get email(): string {
-    return this.record.email;
+    return this.entity.email;
   }
 
   public get apiToken(): string {
-    return this.record.apiToken;
+    return this.entity.apiToken;
   }
 
   public get searches(): Promise<Search[]> {
-    return this.tx.stores.searches.list({
+    return Search.store(this.tx).find({
       accountId: this.id,
     });
   }
 
   public async items(): Promise<[]> {
     return [];
-  }
-
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.accounts.deleteOne(this.id);
   }
 
   public get apiClient(): Version3Client {
@@ -95,20 +84,20 @@ export class Account
     });
   }
 
-  public async update(): Promise<void> {
+  public async updateAccount(): Promise<void> {
     let client = this.apiClient;
 
     let serverInfo = await client.serverInfo.getServerInfo();
     let userInfo = await client.myself.getCurrentUser();
 
-    await this.tx.stores.accounts.updateOne(this.id, {
+    await this.update({
       serverName: serverInfo.serverTitle ?? this.url,
       userName: userInfo.displayName ?? userInfo.name ?? this.email,
     });
   }
 
   public static async create(
-    tx: JiraTransaction,
+    tx: ServiceTransaction,
     userId: string,
     args: JiraAccountParams,
   ): Promise<Account> {
@@ -126,52 +115,39 @@ export class Account
     let serverInfo = await client.serverInfo.getServerInfo();
     let userInfo = await client.myself.getCurrentUser();
 
-    let record: Omit<JiraAccountRecord, "id"> = {
+    let record: JiraAccountEntity = {
       ...args,
+      id: await id(),
       userId,
       serverName: serverInfo.serverTitle ?? args.url,
       userName: userInfo.displayName ?? userInfo.name ?? args.email,
     };
 
-    return tx.stores.accounts.insertOne(record);
+    return Account.store(tx).create(record);
   }
 }
 
 export class Search
-  extends BaseList<JiraIssue[], JiraTransaction>
+  extends BaseList<JiraSearchEntity, JiraIssue[]>
   implements ResolverImpl<JiraSearchResolvers>
 {
-  public static getStore(tx: JiraTransaction): Listable<Search> {
-    return tx.stores.searches;
-  }
-
-  public constructor(tx: JiraTransaction, private record: JiraSearchRecord) {
-    super(tx);
-  }
-
-  public async updateRecord(record: JiraSearchRecord): Promise<void> {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Search, "jira.Search");
 
   public account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get query(): string {
-    return this.record.query;
+    return this.entity.query;
   }
 
   public override get dueOffset(): DateTimeOffset | null {
-    return this.record.dueOffset
-      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+    return this.entity.dueOffset
+      ? offsetFromJson(JSON.parse(this.entity.dueOffset))
       : null;
   }
 
@@ -181,11 +157,6 @@ export class Search
     url.searchParams.set("jql", this.query);
 
     return url.toString();
-  }
-
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.searches.deleteOne(this.id);
   }
 
   public async listItems(issues?: JiraIssue[]): Promise<Issue[]> {
@@ -202,7 +173,9 @@ export class Search
         continue;
       }
 
-      let instance = await this.tx.stores.issues.first({ issueKey: issue.key });
+      let instance = await Issue.store(this.tx).findOne({
+        issueKey: issue.key,
+      });
 
       if (!instance) {
         instance = await Issue.create(
@@ -211,7 +184,7 @@ export class Search
           TaskController.ServiceList,
         );
       } else {
-        await instance.update(issue);
+        await instance.updateItem(issue);
       }
 
       instances.push(instance);
@@ -234,7 +207,7 @@ export class Search
 
   public static async create(
     account: Account,
-    record: Omit<JiraSearchRecord, "id">,
+    record: Omit<JiraSearchEntity, "id">,
   ): Promise<Search> {
     let issues = await Search.getIssues(account, record.query);
 
@@ -243,8 +216,12 @@ export class Search
       url: null,
     });
 
-    let search = await account.tx.stores.searches.insertOne(record, id);
-    await search.update(issues);
+    let search = await Search.store(account.tx).create({
+      id,
+      ...record,
+    });
+
+    await search.updateList(issues);
 
     return search;
   }
@@ -252,7 +229,7 @@ export class Search
 
 function recordFromIssue(
   issue: JiraIssue,
-): Omit<JiraIssueRecord, "id" | "accountId"> {
+): Omit<JiraIssueEntity, "id" | "accountId"> {
   if (!issue.key) {
     throw new Error("Invalid issue: no key.");
   }
@@ -267,32 +244,22 @@ function recordFromIssue(
 }
 
 export class Issue
-  extends BaseItem<JiraTransaction>
+  extends BaseItem<JiraIssueEntity>
   implements ServiceItem<IssueFields>
 {
-  public static getStore(tx: JiraTransaction): ItemStore<Issue> {
-    return tx.stores.issues;
-  }
-
-  public constructor(tx: JiraTransaction, private record: JiraIssueRecord) {
-    super(tx);
-  }
-
-  public async updateRecord(record: JiraIssueRecord): Promise<void> {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Issue, "jira.Issue");
 
   public account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public static async createItemFromURL(
-    tx: JiraTransaction,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
   ): Promise<Issue | null> {
-    for (let account of await tx.stores.accounts.list({ userId })) {
+    for (let account of await Account.store(tx).find({ userId })) {
       let base = new URL("/browse/", account.url);
       if (base.origin != url.origin) {
         continue;
@@ -322,12 +289,8 @@ export class Issue
     return null;
   }
 
-  public get id(): string {
-    return this.record.id;
-  }
-
   public get issueKey(): string {
-    return this.record.issueKey;
+    return this.entity.issueKey;
   }
 
   public override async url(): Promise<string> {
@@ -338,10 +301,10 @@ export class Issue
   }
 
   public override async icon(): Promise<string | null> {
-    return this.record.icon;
+    return this.entity.icon;
   }
 
-  public override async update(issue?: JiraIssue): Promise<void> {
+  public override async updateItem(issue?: JiraIssue): Promise<void> {
     let account = await this.account();
 
     if (!issue) {
@@ -354,7 +317,7 @@ export class Issue
       }
     }
 
-    await this.tx.stores.issues.updateOne(this.id, {
+    await this.update({
       ...recordFromIssue(issue),
       accountId: account.id,
     });
@@ -370,12 +333,12 @@ export class Issue
     let account = await this.account();
     return {
       accountId: account.id,
-      issueKey: this.record.issueKey,
-      summary: this.record.summary,
+      issueKey: this.entity.issueKey,
+      summary: this.entity.summary,
       url: await this.url(),
-      icon: this.record.icon,
-      status: this.record.status,
-      type: this.record.type,
+      icon: this.entity.icon,
+      status: this.entity.status,
+      type: this.entity.type,
     };
   }
 
@@ -396,9 +359,10 @@ export class Issue
 
     let record = {
       ...recordFromIssue(issue),
+      id,
       accountId: account.id,
     };
 
-    return account.tx.stores.issues.insertOne(record, id);
+    return Issue.store(account.tx).create(record);
   }
 }

@@ -1,7 +1,7 @@
 import type { Logger, LogLevel, LogMethod, Meta } from "#utils";
 
 function logMethod(level: LogLevel): LogMethod {
-  return (message: string, meta: Meta = {}): void => {
+  return (message: string | Error, meta: Meta = {}): void => {
     // eslint-disable-next-line no-console
     console[level](level, message, {
       ...meta,

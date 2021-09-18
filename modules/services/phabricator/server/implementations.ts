@@ -13,12 +13,14 @@ import { DateTime } from "luxon";
 import { TaskController } from "#schema";
 import type { CreatePhabricatorAccountParams } from "#schema";
 import type {
-  ItemStore,
-  Listable,
   ResolverImpl,
   ServiceItem,
+  ServiceTransaction,
 } from "#server/utils";
 import {
+  id,
+  storeBuilder,
+  storeImplBuilder,
   bestIcon,
   loadPageInfo,
   BaseItem,
@@ -26,32 +28,21 @@ import {
   BaseAccount,
 } from "#server/utils";
 import type { RevisionFields } from "#services/phabricator/schema";
-import { assert } from "#utils";
 
-import type { PhabricatorAccountResolvers } from "./schema";
-import type { PhabricatorTransaction } from "./stores";
 import type {
-  PhabricatorAccountRecord,
-  PhabricatorQueryRecord,
-  PhabricatorRevisionRecord,
-} from "./types";
+  PhabricatorAccountEntity,
+  PhabricatorQueryEntity,
+  PhabricatorRevisionEntity,
+} from "./entities";
+import type { PhabricatorAccountResolvers } from "./schema";
 
 export class Account
-  extends BaseAccount<PhabricatorTransaction>
+  extends BaseAccount<PhabricatorAccountEntity>
   implements ResolverImpl<PhabricatorAccountResolvers>
 {
+  public static readonly store = storeBuilder(Account, "phabricator.Account");
+
   private _projectPHIDs: string[] | null = null;
-
-  public constructor(
-    tx: PhabricatorTransaction,
-    private record: PhabricatorAccountRecord,
-  ) {
-    super(tx);
-  }
-
-  public async updateRecord(record: PhabricatorAccountRecord): Promise<void> {
-    this.record = record;
-  }
 
   public async getProjectPHIDs(): Promise<string[]> {
     if (this._projectPHIDs === null) {
@@ -73,40 +64,36 @@ export class Account
     return conduit(this.url, this.apiKey);
   }
 
-  public get id(): string {
-    return this.record.id;
-  }
-
   public get phid(): string {
-    return this.record.phid;
+    return this.entity.phid;
   }
 
   public get icon(): string {
-    return this.record.icon ?? this.record.userIcon;
+    return this.entity.icon ?? this.entity.userIcon;
   }
 
   public get revisionIcon(): string | null {
-    return this.record.icon;
+    return this.entity.icon;
   }
 
   public get url(): string {
-    return this.record.url;
+    return this.entity.url;
   }
 
   public get userId(): string {
-    return this.record.userId;
+    return this.entity.userId;
   }
 
   public get email(): string {
-    return this.record.email;
+    return this.entity.email;
   }
 
   public get apiKey(): string {
-    return this.record.apiKey;
+    return this.entity.apiKey;
   }
 
   public async enabledQueries(): Promise<string[]> {
-    let queries = await this.tx.stores.queries.list({
+    let queries = await Query.store(this.tx).find({
       accountId: this.id,
     });
 
@@ -114,35 +101,30 @@ export class Account
   }
 
   public async items(): Promise<Revision[]> {
-    return this.tx.stores.revisions.list({
+    return Revision.store(this.tx).find({
       accountId: this.id,
     });
   }
 
   public override async lists(): Promise<Query[]> {
-    return this.tx.stores.queries.list({
+    return Query.store(this.tx).find({
       accountId: this.id,
     });
   }
 
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.accounts.deleteOne(this.id);
-  }
-
-  public async update(): Promise<void> {
+  public async updateAccount(): Promise<void> {
     let info = await loadPageInfo(this.tx.segment, new URL(this.url));
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
     if (icon != this.icon) {
-      await this.tx.stores.accounts.updateOne(this.id, {
+      await this.update({
         icon,
       });
     }
   }
 
   public static async create(
-    tx: PhabricatorTransaction,
+    tx: ServiceTransaction,
     userId: string,
     { url, apiKey, queries }: CreatePhabricatorAccountParams,
   ): Promise<Account> {
@@ -152,7 +134,8 @@ export class Account
     let info = await loadPageInfo(tx.segment, new URL(url));
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
-    let record: Omit<PhabricatorAccountRecord, "id"> = {
+    let record: PhabricatorAccountEntity = {
+      id: await id(),
       userId,
       url,
       apiKey,
@@ -162,23 +145,24 @@ export class Account
       phid: user.phid,
     };
 
-    let account = await tx.stores.accounts.insertOne(record);
+    let account = await Account.store(tx).create(record);
     await Query.ensureQueries(account, queries);
     return account;
   }
 }
 
 export interface QueryClass {
-  new (tx: PhabricatorTransaction, record: PhabricatorQueryRecord): Query;
+  new (tx: ServiceTransaction, record: PhabricatorQueryEntity): Query;
 
   readonly queryId: string;
   readonly description: string;
 }
 
-export abstract class Query extends BaseList<never, PhabricatorTransaction> {
-  public static getStore(tx: PhabricatorTransaction): Listable<Query> {
-    return tx.stores.queries;
-  }
+export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
+  public static readonly store = storeImplBuilder(
+    Query.buildQuery,
+    "phabricator.Query",
+  );
 
   public static queries: Record<string, QueryClass> = {};
 
@@ -187,8 +171,8 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
   }
 
   public static buildQuery(
-    tx: PhabricatorTransaction,
-    record: PhabricatorQueryRecord,
+    tx: ServiceTransaction,
+    record: PhabricatorQueryEntity,
   ): Query {
     let queryClass = Query.queries[record.queryId];
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -205,7 +189,7 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
   ): Promise<void> {
     let queriesToCreate = new Set(queryIds);
 
-    let existingQueries = await account.tx.stores.queries.list({
+    let existingQueries = await Query.store(account.tx).find({
       accountId: account.id,
     });
 
@@ -227,48 +211,26 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
         url: null,
       });
 
-      let query = await account.tx.stores.queries.insertOne(
-        {
-          queryId,
-          accountId: account.id,
-        },
+      let query = await Query.store(account.tx).create({
         id,
-      );
+        queryId,
+        accountId: account.id,
+      });
 
-      await query.update();
+      await query.updateList();
     }
   }
 
-  public constructor(
-    tx: PhabricatorTransaction,
-    protected record: PhabricatorQueryRecord,
-  ) {
-    super(tx);
-  }
-
-  public async updateRecord(record: PhabricatorQueryRecord): Promise<void> {
-    this.record = record;
-  }
-
   public async account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public get queryId(): string {
-    return this.record.queryId;
+    return this.entity.queryId;
   }
 
   public get description(): string {
     return this.class.description;
-  }
-
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.queries.deleteOne(this.id);
   }
 
   protected get class(): QueryClass {
@@ -316,12 +278,12 @@ export abstract class Query extends BaseList<never, PhabricatorTransaction> {
 
     let results: Revision[] = [];
     for (let revision of revisions) {
-      let item = await this.tx.stores.revisions.first({
+      let item = await Revision.store(this.tx).findOne({
         revisionId: revision.id,
       });
 
       if (item) {
-        await item.update(revision);
+        await item.updateItem(revision);
       } else {
         item = await Revision.create(
           account,
@@ -512,53 +474,36 @@ Query.addQuery(Waiting);
 Query.addQuery(Accepted);
 
 export class Revision
-  extends BaseItem<PhabricatorTransaction>
+  extends BaseItem<PhabricatorRevisionEntity>
   implements ServiceItem<RevisionFields>
 {
-  public static getStore(tx: PhabricatorTransaction): ItemStore<Revision> {
-    return tx.stores.revisions;
-  }
-
-  public constructor(
-    tx: PhabricatorTransaction,
-    private record: PhabricatorRevisionRecord,
-  ) {
-    super(tx);
-  }
-
-  public async updateRecord(record: PhabricatorRevisionRecord): Promise<void> {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Revision, "phabricator.Revision");
 
   public async account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public get title(): string {
-    return this.record.title;
+    return this.entity.title;
   }
 
   public override async url(): Promise<string> {
-    return this.record.uri;
+    return this.entity.uri;
   }
 
   public async fields(): Promise<RevisionFields> {
     let account = await this.account();
     return {
-      accountId: this.record.accountId,
-      revisionId: this.record.revisionId,
+      accountId: this.entity.accountId,
+      revisionId: this.entity.revisionId,
       title: this.title,
       uri: await this.url(),
-      status: this.record.status,
+      status: this.entity.status,
       icon: account.revisionIcon,
     };
   }
 
-  public override async update(
+  public override async updateItem(
     revision?: Differential$Revision$Search$Result,
   ): Promise<void> {
     let account = await this.account();
@@ -566,7 +511,7 @@ export class Revision
     if (!revision) {
       let revisions = await account.conduit.differential.revision.search({
         constraints: {
-          ids: [this.record.revisionId],
+          ids: [this.entity.revisionId],
         },
       });
 
@@ -579,7 +524,7 @@ export class Revision
 
     await this.tx.setItemTaskDone(this.id, revision.fields.status.closed);
 
-    await this.tx.stores.revisions.updateOne(this.id, {
+    await this.update({
       title: revision.fields.title,
       uri: revision.fields.uri,
       status: revision.fields.status.value,
@@ -587,7 +532,7 @@ export class Revision
   }
 
   public static async createItemFromURL(
-    tx: PhabricatorTransaction,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
@@ -599,7 +544,7 @@ export class Revision
 
     let id = parseInt(matches[1]);
 
-    for (let account of await tx.stores.accounts.list({ userId })) {
+    for (let account of await Account.store(tx).find({ userId })) {
       let accountUrl = new URL(account.url);
       if (accountUrl.origin != url.origin) {
         continue;
@@ -638,6 +583,7 @@ export class Revision
     });
 
     let record = {
+      id,
       accountId: account.id,
       revisionId: revision.id,
       title: revision.fields.title,
@@ -645,6 +591,6 @@ export class Revision
       status: revision.fields.status.value,
     };
 
-    return account.tx.stores.revisions.insertOne(record, id);
+    return Revision.store(account.tx).create(record);
   }
 }

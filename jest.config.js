@@ -15,6 +15,7 @@ module.exports = {
         `<rootDir>/modules/schema/**/*.test.{js,jsx,ts,tsx}`,
         `<rootDir>/modules/services/*/server/**/*.test.{js,jsx,ts,tsx}`,
         `<rootDir>/modules/services/*/utils/**/*.test.{js,jsx,ts,tsx}`,
+        `<rootDir>/modules/db/**/*.test.{js,jsx,ts,tsx}`,
         `<rootDir>/modules/utils/**/*.test.{js,jsx,ts,tsx}`,
       ],
       testPathIgnorePatterns: [

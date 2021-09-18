@@ -24,6 +24,7 @@
     "paths": {
       "#schema": ["./modules/schema/index.ts"],
       "#utils": ["./modules/utils/index.ts"],
+      "#db": ["./modules/db/index.ts"],
 
       "#client/core": ["./modules/client/core/index.ts"],
       "#client/utils": ["./modules/client/utils/index.ts"],

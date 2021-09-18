@@ -12,12 +12,8 @@ import {
 import MutationResolvers from "./mutations";
 import QueryResolvers from "./queries";
 import type { Resolvers } from "./schema";
-import type { CoreTransaction } from "./transaction";
 
-export const coreResolvers = rootResolvers<
-  Resolvers,
-  GraphQLCtx<CoreTransaction>
->({
+export const coreResolvers = rootResolvers<Resolvers, GraphQLCtx>({
   Query: QueryResolvers,
   Mutation: MutationResolvers,
 

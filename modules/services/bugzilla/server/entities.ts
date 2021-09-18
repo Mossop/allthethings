@@ -4,14 +4,14 @@ import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import type { SearchType } from "#services/bugzilla/schema";
 import type { GraphQLType } from "#utils";
 
-export type BugzillaAccountRecord = Required<
+export type BugzillaAccountEntity = Required<
   Omit<GraphQLType<BugzillaAccount>, "searches">
 > & {
   userId: string;
   password: string | null;
 };
 
-export type BugzillaSearchRecord = Required<
+export type BugzillaSearchEntity = Required<
   Omit<GraphQLType<BugzillaSearch>, "url" | "type" | "dueOffset">
 > & {
   accountId: string;
@@ -19,7 +19,7 @@ export type BugzillaSearchRecord = Required<
   dueOffset: string | null;
 };
 
-export type BugzillaBugRecord = Pick<BugzillaAPIBug, "summary"> & {
+export type BugzillaBugEntity = Pick<BugzillaAPIBug, "summary"> & {
   accountId: string;
   bugId: number;
   id: string;

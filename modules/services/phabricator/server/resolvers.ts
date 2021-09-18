@@ -4,23 +4,19 @@ import type {
   MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
 } from "#schema";
-import type { AuthedGraphQLCtx } from "#server/utils";
+import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
 import type { QueryClass } from "./implementations";
 import { Account, Query } from "./implementations";
 import type { Resolvers } from "./schema";
-import type { PhabricatorTransaction } from "./stores";
 
-export default rootResolvers<
-  Resolvers,
-  AuthedGraphQLCtx<PhabricatorTransaction>
->({
+export default rootResolvers<Resolvers>({
   User: {
     phabricatorAccounts(
-      ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<Account[]> {
-      return ctx.transaction.stores.accounts.list({ userId: ctx.userId });
+      return Account.store(ctx.transaction).find({ userId: ctx.userId });
     },
 
     phabricatorQueries(): QueryClass[] {
@@ -30,7 +26,7 @@ export default rootResolvers<
 
   Mutation: {
     async createPhabricatorAccount(
-      ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       {
         params: { url, apiKey, queries },
       }: MutationCreatePhabricatorAccountArgs,
@@ -47,20 +43,17 @@ export default rootResolvers<
     },
 
     async updatePhabricatorAccount(
-      ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       {
         id,
         params: { url, apiKey, queries },
       }: MutationUpdatePhabricatorAccountArgs,
     ): Promise<Account | null> {
-      let account = await ctx.transaction.stores.accounts.updateOne(id, {
+      let account = await Account.store(ctx.transaction).get(id);
+      await account.update({
         url: url ?? undefined,
         apiKey: apiKey ?? undefined,
       });
-
-      if (!account) {
-        return null;
-      }
 
       if (Array.isArray(queries)) {
         await Query.ensureQueries(account, queries);
@@ -70,13 +63,10 @@ export default rootResolvers<
     },
 
     async deletePhabricatorAccount(
-      ctx: AuthedGraphQLCtx<PhabricatorTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { account: accountId }: MutationDeletePhabricatorAccountArgs,
     ): Promise<boolean> {
-      let account = await ctx.transaction.stores.accounts.get(accountId);
-      if (!account) {
-        return false;
-      }
+      let account = await Account.store(ctx.transaction).get(accountId);
 
       await account.delete();
       return true;

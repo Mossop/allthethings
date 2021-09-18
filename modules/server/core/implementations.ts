@@ -1,7 +1,17 @@
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
-import type { Knex } from "knex";
 import { DateTime } from "luxon";
 
+import type { Sql, WhereConditions } from "#db";
+import {
+  In,
+  IsNull,
+  LessThanOrEqual,
+  MoreThan,
+  MoreThanOrEqual,
+  Not,
+  sql,
+  where,
+} from "#db";
 import { TaskController } from "#schema";
 import type {
   ContextItemsArgs,
@@ -15,18 +25,35 @@ import type {
   ItemParams,
   ItemFilter,
 } from "#schema";
-import type { Identified, ItemList, ResolverImpl, Store } from "#server/utils";
+import type { ItemList, ResolverImpl, Transaction, Store } from "#server/utils";
 import {
-  updateFromTable,
   id,
-  min,
-  count,
-  max,
-  BaseRecordHolder,
+  IdentifiedEntityImpl,
+  ref,
+  storeBuilder,
+  EntityImpl,
 } from "#server/utils";
 import type { RelativeDateTime } from "#utils";
-import { addOffset, assert, call, memoized, waitFor } from "#utils";
+import { addOffset, call, memoized, waitFor } from "#utils";
 
+import type {
+  ContextEntity,
+  FileDetailEntity,
+  ItemEntity,
+  ItemHolderEntity,
+  ItemPropertyEntity,
+  LinkDetailEntity,
+  NoteDetailEntity,
+  ProjectEntity,
+  SectionEntity,
+  ServiceDetailEntity,
+  ServiceListEntity,
+  ServiceListItemEntity,
+  TaskInfoEntity,
+  TaskListEntity,
+  UserEntity,
+} from "./entities";
+import { ItemType } from "./entities";
 import type {
   ContextResolvers,
   FileDetailResolvers,
@@ -42,26 +69,7 @@ import type {
   UserResolvers,
 } from "./schema";
 import { ServiceManager } from "./services";
-import type { Stores } from "./stores";
-import type { CoreTransaction } from "./transaction";
 import { buildServiceTransaction } from "./transaction";
-import type {
-  ContextRecord,
-  FileDetailRecord,
-  IndexedEntity,
-  ItemRecord,
-  LinkDetailRecord,
-  NoteDetailRecord,
-  ServiceDetailRecord,
-  ServiceListRecord,
-  ProjectRecord,
-  SectionItemsRecord,
-  SectionRecord,
-  TaskInfoRecord,
-  UserRecord,
-  ServiceListItemsRecord,
-} from "./types";
-import { ItemType } from "./types";
 
 export type TaskList = Project | Context;
 export type ItemHolder = TaskList | Section;
@@ -71,14 +79,31 @@ function isSet(val: unknown): boolean {
   return val !== undefined && val !== null;
 }
 
+function todo(): never {
+  throw new Error("Not yet implemented");
+}
+
+type ItemSetParams = {
+  [K in keyof ItemEntity as `Item.${K}`]: ItemEntity[K];
+} &
+  {
+    [K in keyof TaskInfoEntity as `TaskInfo.${K}`]: TaskInfoEntity[K];
+  };
+
 export class ItemSet implements ResolverImpl<ItemSetResolvers> {
-  protected readonly query: Knex.QueryBuilder;
+  private readonly query: Sql;
 
   public constructor(
-    protected readonly transaction: CoreTransaction,
-    query: Knex.QueryBuilder,
+    protected readonly tx: Transaction,
+    conditions: WhereConditions<ItemSetParams>,
+    private readonly order: Sql,
     filter: ItemFilter | null = null,
   ) {
+    let tables = sql`
+      ${ref(Item)} AS "Item"
+      LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
+    `;
+
     if (filter) {
       if (
         isSet(filter.isTask) ||
@@ -86,227 +111,70 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
         filter.dueBefore ||
         filter.isPending === false
       ) {
-        query = query.join("TaskInfo", "TaskInfo.id", "Item.id");
-
         if (filter.dueBefore || filter.dueAfter) {
-          query = query.whereNotNull("TaskInfo.due");
-          let now = DateTime.now();
+          conditions["TaskInfo.due"] = Not(IsNull());
 
+          let now = DateTime.now();
           if (filter.dueBefore) {
             let dueBefore = DateTime.isDateTime(filter.dueBefore)
               ? filter.dueBefore
               : addOffset(now, filter.dueBefore);
-            query = query.where("TaskInfo.due", "<=", dueBefore);
+            conditions["TaskInfo.due"] = LessThanOrEqual(dueBefore);
           }
-
           if (filter.dueAfter) {
             let dueAfter = DateTime.isDateTime(filter.dueAfter)
               ? filter.dueAfter
               : addOffset(now, filter.dueAfter);
-            query = query.where("TaskInfo.due", ">", dueAfter);
+            conditions["TaskInfo.due"] = MoreThan(dueAfter);
           }
         }
-
         if (filter.isPending === false) {
-          query = query.whereNotNull("TaskInfo.done");
+          conditions["TaskInfo.done"] = Not(IsNull());
         }
       } else if (filter.isPending) {
-        query = query
-          .leftJoin("TaskInfo", "TaskInfo.id", "Item.id")
-          .whereNull("TaskInfo.done");
+        conditions["TaskInfo.done"] = IsNull();
       }
-
       if (filter.isSnoozed === true) {
-        query = query.whereNotNull("Item.snoozed");
+        conditions["Item.snoozed"] = Not(IsNull());
       } else if (filter.isSnoozed === false) {
-        query = query.whereNull("Item.snoozed");
+        conditions["Item.snoozed"] = IsNull();
       }
-
       if (filter.isArchived === true) {
-        query = query.whereNotNull("Item.archived");
+        conditions["Item.archived"] = Not(IsNull());
       } else if (filter.isArchived === false) {
-        query = query.whereNull("Item.archived");
+        conditions["Item.archived"] = IsNull();
       }
     }
 
-    this.query = query;
+    this.query = sql`${tables} WHERE ${where(conditions)}`;
   }
 
   public async count(): Promise<number> {
-    return (await this.records()).length;
-  }
-
-  public async records(): Promise<ItemRecord[]> {
-    return this.query.select("Item.*");
+    return this.tx.db.value<number>(
+      sql`SELECT COUNT(*)::integer FROM ${this.query}`,
+    );
   }
 
   public async items(): Promise<Item[]> {
-    let records = (await this.query.select("Item.*")) as ItemRecord[];
-    return records.map(
-      (record: ItemRecord): Item => new Item(this.transaction, record),
+    return Item.store(this.tx).list(
+      sql`SELECT "Item".* FROM ${this.query} ORDER BY ${this.order}`,
     );
-  }
-}
-
-abstract class Base<Record> extends BaseRecordHolder<Record, CoreTransaction> {
-  public constructor(tx: CoreTransaction, record: Record) {
-    super(tx, record);
-  }
-
-  protected get stores(): Stores {
-    return this.tx.stores;
-  }
-}
-
-abstract class IdentifiedBase<Record extends Identified> extends Base<Record> {
-  protected abstract readonly store: Store<any, any, any, any>;
-
-  public get id(): string {
-    return this.record.id;
-  }
-
-  public async edit(params: Partial<Omit<Record, "id">>): Promise<void> {
-    await this.store.updateOne(this.id, params);
-  }
-
-  public async delete(): Promise<void> {
-    await this.store.deleteOne(this.id);
-  }
-}
-
-abstract class OrderedBase<
-  Record extends Identified & IndexedEntity,
-  OwnerImpl extends Identified,
-> extends Base<Record> {
-  protected static async insert<
-    Record extends Identified & IndexedEntity,
-    Impl extends OrderedBase<Record, Identified>,
-    Insert extends Identified & IndexedEntity,
-  >(
-    store: Store<Record, Impl, Insert, CoreTransaction>,
-    { id, ...record }: Omit<Insert, "ownerId" | "index">,
-    ownerId: string,
-    before: Impl | null,
-  ): Promise<Impl> {
-    let index: number;
-
-    if (before) {
-      if (before.record.ownerId != ownerId) {
-        throw new Error("Invalid request.");
-      }
-
-      index = before.index;
-      await store
-        .table()
-        .where("ownerId", ownerId)
-        .andWhere("index", ">=", index)
-        // @ts-ignore
-        .update({
-          index: before.tx.knex.raw("?? + 1", ["index"]),
-        });
-    } else {
-      let i = await max<IndexedEntity, "index">(
-        store.table().where("ownerId", ownerId),
-        "index",
-      );
-      index = i !== null ? i + 1 : 0;
-    }
-
-    return store.insertOne(
-      // @ts-ignore
-      {
-        ...record,
-        ownerId,
-        index,
-      },
-      id,
-    );
-  }
-
-  protected abstract readonly store: Store<any, any, any, any>;
-
-  public get id(): string {
-    return this.record.id;
-  }
-
-  public get index(): number {
-    return this.record.index;
-  }
-
-  public async move(owner: OwnerImpl, before: this | null): Promise<void> {
-    let currentOwner = this.record.ownerId;
-    let currentIndex = this.record.index;
-
-    let targetIndex: number;
-
-    if (before) {
-      if (before.record.ownerId != owner.id) {
-        throw new Error("Invalid request.");
-      }
-
-      targetIndex = before.index;
-
-      await this.store
-        .table()
-        .where("ownerId", owner.id)
-        .andWhere("index", ">=", targetIndex)
-        // @ts-ignore
-        .update({
-          index: before.tx.knex.raw("?? + 1", ["index"]),
-        });
-    } else {
-      let i = await max<IndexedEntity, "index">(
-        this.store.table().where("ownerId", owner.id),
-        "index",
-      );
-
-      targetIndex = i !== null ? i + 1 : 0;
-    }
-
-    // @ts-ignore
-    await this.store.updateOne(this.id, {
-      ownerId: owner.id,
-      index: targetIndex,
-    });
-
-    await this.store
-      .table()
-      .where("ownerId", currentOwner)
-      .andWhere("index", ">", currentIndex)
-      .update({
-        index: this.tx.knex.raw("?? - 1", ["index"]),
-      });
-  }
-
-  public async edit(
-    params: Partial<Omit<Record, "id" | "ownerId" | "index">>,
-  ): Promise<void> {
-    // @ts-ignore
-    await this.store.updateOne(this.id, params);
-  }
-
-  public async delete(): Promise<void> {
-    await this.store.deleteOne(this.id);
-    await this.store
-      .table()
-      .where("ownerId", this.record.ownerId)
-      .andWhere("index", ">=", this.record.index)
-      .update({
-        index: this.tx.knex.raw("?? - 1", ["index"]),
-      });
   }
 }
 
 export class User
-  extends Base<UserRecord>
+  extends IdentifiedEntityImpl<UserEntity>
   implements ResolverImpl<UserResolvers>
 {
+  public static readonly store = storeBuilder(User, "core.User");
+
   public static async create(
-    tx: CoreTransaction,
-    userRecord: Omit<UserRecord, "id">,
+    tx: Transaction,
+    userRecord: Omit<UserEntity, "id">,
   ): Promise<User> {
-    let user = await tx.stores.users.insertOne({
+    let user = await User.store(tx).create({
       ...userRecord,
+      id: await id(),
       password: await bcryptHash(userRecord.password, 12),
     });
 
@@ -317,324 +185,331 @@ export class User
     return user;
   }
 
-  protected get store(): Stores["users"] {
-    return this.stores.users;
-  }
-
-  public get id(): string {
-    return this.record.id;
-  }
-
   public get email(): string {
-    return this.record.email;
+    return this.entity.email;
   }
 
   public get isAdmin(): boolean {
-    return this.record.isAdmin;
+    return this.entity.isAdmin;
   }
 
   public async setPassword(password: string): Promise<void> {
-    await this.store.updateOne(this.id, {
+    await this.update({
       password: await bcryptHash(password, 12),
     });
   }
 
   public verifyUser(password: string): Promise<boolean> {
-    return bcryptCompare(password, this.record.password);
+    return bcryptCompare(password, this.entity.password);
   }
 
-  public async delete(): Promise<void> {
-    await this.store.deleteOne(this.id);
-  }
-
-  public contexts(): Promise<Context[]> {
-    return this.stores.contexts.list({ userId: this.id });
+  public async contexts(): Promise<Context[]> {
+    return Context.store(this.tx).find({ userId: this.id });
   }
 
   public async inbox({ filter }: UserInboxArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items
-        .records()
-        .leftJoin("SectionItems", "Item.id", "SectionItems.id")
-        .whereNull("SectionItems.ownerId")
-        .orderBy([
-          { column: "Item.created", order: "desc" },
-          { column: "Item.summary", order: "asc" },
-        ]),
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "Item.sectionId": IsNull(),
+      },
+      sql`"Item"."created" DESC`,
       filter,
     );
   }
 }
 
 export abstract class ItemHolderBase<
-  Record extends Identified,
-> extends IdentifiedBase<Record> {
+  Entity extends ItemHolderEntity,
+> extends IdentifiedEntityImpl<Entity> {
   public static async getItemHolder(
-    tx: CoreTransaction,
+    tx: Transaction,
     id: string,
   ): Promise<ItemHolder | null> {
-    let context = await tx.stores.contexts.get(id);
+    let context = await Context.store(tx).findOne({ id });
     if (context) {
       return context;
     }
 
-    let project = await tx.stores.projects.get(id);
+    let project = await Project.store(tx).findOne({ id });
     if (project) {
       return project;
     }
 
-    return tx.stores.sections.get(id);
+    return Section.store(tx).findOne({ id });
+  }
+
+  public async section(): Promise<Section> {
+    return Section.store(this.tx).get(this.id);
   }
 
   public async items({ filter }: TaskListItemsArgs): Promise<ItemSet> {
-    return new ItemSet(
-      this.tx,
-      this.stores.items
-        .records()
-        .leftJoin("SectionItems", "Item.id", "SectionItems.id")
-        .where("SectionItems.ownerId", this.id)
-        .orderBy([{ column: "SectionItems.index", order: "asc" }]),
-      filter,
-    );
+    let section = await this.section();
+    return section.items({ filter });
   }
 }
 
 export abstract class TaskListBase<
-  Record extends Identified,
-> extends ItemHolderBase<Record> {
+  Entity extends TaskListEntity,
+> extends ItemHolderBase<Entity> {
   public static async getTaskList(
-    tx: CoreTransaction,
+    tx: Transaction,
     id: string,
   ): Promise<TaskList | null> {
-    let context = await tx.stores.contexts.get(id);
+    let context = await Context.store(tx).findOne({ id });
     if (context) {
       return context;
     }
 
-    return tx.stores.projects.get(id);
+    return Project.store(tx).findOne({ id });
   }
+
+  public readonly user = memoized(async function (
+    this: TaskListBase<TaskListEntity>,
+  ): Promise<User> {
+    return User.store(this.tx).get(this.entity.userId);
+  });
 
   public abstract context(): Promise<Context>;
 
   public subprojects(): Promise<Project[]> {
-    return this.stores.projects.list({
+    return Project.store(this.tx).find({
       parentId: this.id,
     });
   }
 
-  public sections(): Promise<Section[]> {
-    return this.stores.sections.list({
-      ownerId: this.id,
+  public async sections(): Promise<Section[]> {
+    return Section.store(this.tx).find({
+      projectId: this.id,
+      index: MoreThanOrEqual(0),
     });
   }
 }
 
 export class Context
-  extends TaskListBase<ContextRecord>
+  extends TaskListBase<ContextEntity>
   implements ResolverImpl<ContextResolvers>
 {
-  protected get store(): Stores["contexts"] {
-    return this.stores.contexts;
-  }
+  public static readonly store = storeBuilder(Context, "core.Context");
 
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     user: User,
     params: ContextParams,
   ): Promise<Context> {
-    let context = await tx.stores.contexts.insertOne({
+    let context = await Context.store(tx).create({
       ...params,
+      id: await id(),
       userId: user.id,
     });
 
-    await tx.stores.projects.insertOne(
-      {
-        userId: user.id,
-        contextId: context.id,
-        parentId: null,
-        name: "",
-      },
-      context.id,
-    );
+    await Project.store(tx).create({
+      id: context.id,
+      userId: user.id,
+      contextId: context.id,
+      parentId: null,
+      name: "",
+    });
 
-    await tx.stores.sections.insertOne(
-      {
-        userId: user.id,
-        ownerId: context.id,
-        index: -1,
-        name: "",
-      },
-      context.id,
-    );
+    await Section.store(tx).create({
+      id: context.id,
+      userId: user.id,
+      projectId: context.id,
+      index: -1,
+      name: "",
+    });
 
     return context;
   }
 
-  public readonly user = memoized(function (this: Context): Promise<User> {
-    return assert(this.stores.users.get(this.record.userId));
-  });
-
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get stub(): string {
-    return this.record.stub;
+    return this.entity.stub;
   }
 
-  public async context(): Promise<Context> {
-    return this;
+  public context(): Promise<Context> {
+    return Promise.resolve(this);
   }
 
   public projects(): Promise<Project[]> {
-    return this.stores.projects.list({
+    return Project.store(this.tx).find({
       contextId: this.id,
+      parentId: Not(IsNull()),
     });
   }
 
   public projectById({ id }: ContextProjectByIdArgs): Promise<Project | null> {
-    return this.stores.projects.first({
+    return Project.store(this.tx).findOne({
       contextId: this.id,
+      parentId: Not(IsNull()),
       id,
     });
   }
 }
 
 export class Project
-  extends TaskListBase<ProjectRecord>
+  extends TaskListBase<ProjectEntity>
   implements ResolverImpl<ProjectResolvers>
 {
+  public static readonly store = storeBuilder(Project, "core.Project");
+
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     taskList: TaskList,
     params: ProjectParams,
   ): Promise<Project> {
     let user = await taskList.user();
     let context = await taskList.context();
-    let project = await tx.stores.projects.insertOne({
+
+    let project = await Project.store(tx).create({
       ...params,
+      id: await id(),
       userId: user.id,
       contextId: context.id,
       parentId: taskList.id,
     });
 
-    await tx.stores.sections.insertOne(
-      {
-        userId: user.id,
-        ownerId: project.id,
-        index: -1,
-        name: "",
-      },
-      project.id,
-    );
+    await Section.store(tx).create({
+      id: project.id,
+      userId: user.id,
+      projectId: project.id,
+      index: -1,
+      name: "",
+    });
 
     return project;
   }
 
-  protected get store(): Stores["projects"] {
-    return this.stores.projects;
-  }
-
-  public readonly user = memoized(function (this: Project): Promise<User> {
-    return assert(this.stores.users.get(this.record.userId));
-  });
-
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get stub(): string {
-    return this.record.stub;
+    return this.entity.stub;
   }
 
-  public async context(): Promise<Context> {
-    return assert(this.stores.contexts.get(this.record.contextId));
+  public context(): Promise<Context> {
+    return Context.store(this.tx).get(this.entity.contextId);
   }
 
-  public taskList(): Promise<TaskList> {
-    if (this.record.parentId) {
-      return assert(this.stores.projects.get(this.record.parentId));
+  public readonly taskList = memoized(async function (
+    this: Project,
+  ): Promise<TaskList> {
+    if (this.entity.parentId) {
+      return this.store.get(this.entity.parentId);
     }
 
-    return assert(this.stores.contexts.get(this.record.contextId));
-  }
+    return this.context();
+  });
 
   public async move(taskList: TaskList): Promise<void> {
-    let context = await taskList.context();
-    await this.stores.projects.updateOne(this.id, {
-      contextId: context.id,
+    await this.update({
       parentId: taskList.id,
     });
   }
 }
 
 export class Section
-  extends OrderedBase<SectionRecord, TaskList>
+  extends ItemHolderBase<SectionEntity>
   implements ResolverImpl<SectionResolvers>
 {
+  public static readonly store = storeBuilder(Section, "core.Section");
+
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     taskList: TaskList,
     before: Section | null,
     params: SectionParams,
   ): Promise<Section> {
-    let user = await taskList.user();
-    return OrderedBase.insert(
-      tx.stores.sections,
-      {
-        ...params,
-        id: await id(),
-        userId: user.id,
-      },
-      taskList.id,
-      before,
-    );
-  }
-  protected get store(): Stores["sections"] {
-    return this.stores.sections;
+    let index: number;
+
+    if (before) {
+      index = before.entity.index;
+      await Section.store(tx).update(
+        { index: sql`"index" + 1` },
+        {
+          projectId: taskList.id,
+          index: MoreThanOrEqual(index),
+        },
+      );
+    } else {
+      index =
+        (await tx.db.value<number | null>(sql`
+          SELECT MAX("index") + 1
+          FROM ${ref(Section)}
+          WHERE ${where({
+            projectId: taskList.id,
+            index: MoreThanOrEqual(0),
+          })}
+        `)) ?? 0;
+    }
+
+    return Section.store(tx).create({
+      ...params,
+      id: await id(),
+      projectId: taskList.id,
+      index,
+    });
   }
 
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
-  public async items({ filter }: ContextItemsArgs): Promise<ItemSet> {
+  public override section(): Promise<Section> {
+    return Promise.resolve(this);
+  }
+
+  public async move(
+    _taskList: TaskList,
+    _before: Section | null,
+  ): Promise<void> {
+    todo();
+  }
+
+  public override async items({ filter }: ContextItemsArgs): Promise<ItemSet> {
     return new ItemSet(
       this.tx,
-      this.stores.items
-        .records()
-        .leftJoin("SectionItems", "Item.id", "SectionItems.id")
-        .where("SectionItems.ownerId", this.id)
-        .orderBy([{ column: "SectionItems.index", order: "asc" }]),
+      {
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        "Item.sectionId": this.id,
+      },
+      sql`"Item"."sectionIndex" ASC`,
       filter,
     );
   }
 }
 
 export class Item
-  extends IdentifiedBase<ItemRecord>
+  extends IdentifiedEntityImpl<ItemEntity>
   implements ResolverImpl<ItemResolvers>
 {
+  public static readonly store = storeBuilder(Item, "core.Item");
+
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     user: User,
     type: ItemType | null,
     itemParams: ItemParams,
     taskInfo?: TaskInfoParams | null,
   ): Promise<Item> {
     try {
-      let item = await tx.stores.items.insertOne({
+      let item = await Item.store(tx).create({
         ...itemParams,
+        id: await id(),
         archived: itemParams.archived ?? null,
         snoozed: itemParams.snoozed ?? null,
         userId: user.id,
-        created: DateTime.now(),
         type,
       });
 
       if (taskInfo) {
-        await TaskInfo.create(tx, item, {
+        await TaskInfo.store(tx).create({
+          id: item.id,
           manualDue: taskInfo.due ?? null,
           manualDone: taskInfo.done ?? null,
           controller: TaskController.Manual,
@@ -648,72 +523,66 @@ export class Item
     }
   }
 
-  public static async deleteCompleteInboxTasks(
-    tx: CoreTransaction,
-  ): Promise<void> {
-    let itemsInLists = tx.knex
-      .from<ServiceListItemsRecord>("ServiceListItems")
-      .whereNotNull("present")
-      .distinct("itemId");
+  public static async deleteCompleteInboxTasks(tx: Transaction): Promise<void> {
+    let itemsInLists = sql`
+      SELECT DISTINCT "itemId"
+      FROM ${ref(ServiceListItem)}
+      WHERE "done" IS NULL
+    `;
 
-    let items: ItemRecord[] = await tx.stores.items
-      .records()
-      .join("TaskInfo", "TaskInfo.id", "Item.id")
-      .leftJoin("SectionItems", "Item.id", "SectionItems.id")
-      .whereNotNull("TaskInfo.done")
-      .whereNotIn("Item.id", itemsInLists)
-      .whereNull("SectionItems.id")
-      .select("Item.*");
+    let items = sql`
+      SELECT "Item"."id"
+      FROM ${ref(Item)} AS "Item"
+        JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
+      WHERE
+        "TaskInfo"."done" IS NOT NULL AND
+        "Item"."id" NOT IN (${itemsInLists}) AND
+        "Item"."sectionId" IS NULL
+    `;
 
-    for (let item of items) {
-      await tx.stores.items.deleteOne(item.id);
-    }
-  }
-
-  protected get store(): Stores["items"] {
-    return this.stores.items;
+    await tx.db.update(sql`DELETE FROM ${ref(Item)} WHERE "id" IN (${items})`);
   }
 
   public get type(): ItemType | null {
-    return this.record.type;
+    return this.entity.type;
   }
 
   public get summary(): string {
-    return this.record.summary;
+    return this.entity.summary;
   }
 
   public get created(): DateTime {
-    return this.record.created;
+    return this.entity.created;
   }
 
   public get snoozed(): DateTime | null {
-    return this.record.snoozed;
+    return this.entity.snoozed;
   }
 
   public get archived(): DateTime | null {
-    return this.record.archived;
+    return this.entity.archived;
   }
 
-  public user(): Promise<User> {
-    return assert(this.stores.users.get(this.record.userId));
+  public readonly user = memoized(async function (this: Item): Promise<User> {
+    return User.store(this.tx).get(this.entity.userId);
+  });
+
+  public get taskInfo(): Promise<TaskInfo | null> {
+    return TaskInfo.store(this.tx).findOne({ id: this.id });
   }
 
-  public taskInfo(): Promise<TaskInfo | null> {
-    return this.stores.taskInfo.get(this.id);
-  }
-
-  public detail(): Promise<ItemDetail | null> {
-    switch (this.record.type) {
+  public get detail(): Promise<ItemDetail | null> {
+    switch (this.entity.type) {
       case null:
         return Promise.resolve(null);
       case ItemType.File:
-        return this.stores.fileDetail.get(this.id);
+        return FileDetail.store(this.tx).findOne({ id: this.id });
       case ItemType.Note:
-        return this.stores.noteDetail.get(this.id);
+        return NoteDetail.store(this.tx).findOne({ id: this.id });
       case ItemType.Service:
-        return this.stores.serviceDetail.get(this.id);
+        return ServiceDetail.store(this.tx).findOne({ id: this.id });
       case ItemType.Link:
-        return this.stores.linkDetail.get(this.id);
+        return LinkDetail.store(this.tx).findOne({ id: this.id });
     }
   }
 
@@ -723,72 +592,82 @@ export class Item
     itemHolder: ItemHolder | null,
     before?: Item | null,
   ): Promise<void> {
-    let currentSection = await this.stores.sectionItems.get(this.id);
-    if (currentSection) {
-      await currentSection.delete();
-    }
-
     if (itemHolder) {
-      await SectionItem.create(this.tx, this, itemHolder, before);
+      let section = await itemHolder.section();
+      let index: number;
+
+      if (before) {
+        if (section.id != before.entity.sectionId) {
+          throw new Error("Reference item is not in the same section");
+        }
+
+        index = before.entity.sectionIndex;
+        await this.store.update(
+          { sectionIndex: sql`"index" + 1` },
+          {
+            sectionId: section.id,
+            sectionIndex: MoreThanOrEqual(index),
+          },
+        );
+      } else {
+        index =
+          (await this.db.value<number | null>(sql`
+            SELECT MAX("sectionIndex") + 1
+            FROM ${ref(this)}
+            WHERE "sectionId" = ${section.id}
+          `)) ?? 0;
+      }
+
+      await this.update({
+        sectionId: section.id,
+        sectionIndex: index,
+      });
+    } else {
+      await this.update({
+        sectionId: null,
+        sectionIndex: 0,
+      });
     }
   }
 }
 
-export class SectionItem extends OrderedBase<SectionItemsRecord, ItemHolder> {
-  public static async create(
-    tx: CoreTransaction,
-    item: Item,
-    itemHolder: ItemHolder,
-    before?: Item | null,
-  ): Promise<SectionItem> {
-    let user = await item.user();
-    let beforeSection: SectionItem | null = null;
-    if (before) {
-      beforeSection = await tx.stores.sectionItems.get(before.id);
-      if (!beforeSection || beforeSection.record.ownerId != itemHolder.id) {
-        throw new Error("Unknown before item.");
-      }
-    }
-
-    return OrderedBase.insert(
-      tx.stores.sectionItems,
-      {
-        id: item.id,
-        userId: user.id,
-      },
-      itemHolder.id,
-      beforeSection,
-    );
+abstract class ItemProperty<
+  Entity extends ItemPropertyEntity,
+> extends IdentifiedEntityImpl<Entity> {
+  public get itemId(): string {
+    return this.id;
   }
 
-  protected get store(): Stores["sectionItems"] {
-    return this.stores.sectionItems;
-  }
+  public readonly item = memoized(async function (
+    this: ItemProperty<Entity>,
+  ): Promise<Item> {
+    return Item.store(this.tx).get(this.itemId);
+  });
 }
 
 export class TaskInfo
-  extends IdentifiedBase<TaskInfoRecord>
+  extends ItemProperty<TaskInfoEntity>
   implements ResolverImpl<TaskInfoResolvers>
 {
+  public static readonly store = storeBuilder(TaskInfo, "core.TaskInfo");
+
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     item: Item,
-    taskInfo: Omit<TaskInfoRecord, "id" | "due" | "done">,
+    taskInfo: Omit<TaskInfoEntity, "id" | "due" | "done">,
   ): Promise<TaskInfo> {
-    let task = await tx.stores.taskInfo.insertOne(
-      {
-        ...taskInfo,
-        due:
-          taskInfo.controller == TaskController.Manual
-            ? taskInfo.manualDue
-            : null,
-        done:
-          taskInfo.controller == TaskController.Manual
-            ? taskInfo.manualDone
-            : null,
-      },
-      item.id,
-    );
+    let task = await TaskInfo.store(tx).create({
+      ...taskInfo,
+      due:
+        taskInfo.controller == TaskController.Manual
+          ? taskInfo.manualDue
+          : null,
+      done:
+        taskInfo.controller == TaskController.Manual
+          ? taskInfo.manualDone
+          : null,
+      id: item.id,
+    });
 
     if (taskInfo.controller != TaskController.Manual) {
       await TaskInfo.updateTaskDetails(tx, [item.id]);
@@ -798,302 +677,304 @@ export class TaskInfo
   }
 
   public static async updateTaskDetails(
-    tx: CoreTransaction,
+    tx: Transaction,
     items?: string[],
-  ): Promise<TaskInfo[]> {
+  ): Promise<void> {
     if (items?.length == 0) {
-      return [];
+      return;
     }
 
-    let listStates = tx
-      .knex<ServiceListItemsRecord>("ServiceListItems")
-      .groupBy("itemId")
-      .select({
-        id: "itemId",
-        due: tx.knex.raw("MIN(??)", ["due"]),
-        done: tx.knex.raw(
-          "CASE COUNT(*) - COUNT(:done:) WHEN 0 THEN MAX(:done:) ELSE NULL END",
-          { done: "done" },
-        ),
-      })
-      .as("ListStates");
-    let serviceStates = tx
-      .knex<ServiceDetail>("ServiceDetail")
-      .where("hasTaskState", true)
-      .select({
-        id: "id",
-        due: "taskDue",
-        done: "taskDone",
-      })
-      .as("ServiceStates");
+    let listStates = sql`
+      SELECT
+        "itemId" AS "id",
+        MIN("due") AS "due",
+        CASE COUNT(*) - COUNT("done") WHEN 0 THEN MAX("done") ELSE NULL END AS "done"
+      FROM ${ref(ServiceListItem)}
+      GROUP BY "itemId"
+    `;
 
-    let states = tx
-      .knex("TaskInfo")
-      .leftJoin(serviceStates, "TaskInfo.id", "ServiceStates.id")
-      .leftJoin(listStates, "TaskInfo.id", "ListStates.id")
-      .select({
-        id: "TaskInfo.id",
-        due: tx.knex.raw(
-          `COALESCE(:manualDue:, CASE :controller:
-             WHEN :service THEN :serviceDue:
-             WHEN :list THEN :listDue:
-           END)`,
-          {
-            controller: "TaskInfo.controller",
-            serviceDue: "ServiceStates.due",
-            listDue: "ListStates.due",
-            manualDue: "TaskInfo.manualDue",
-            service: TaskController.Service,
-            list: TaskController.ServiceList,
-          },
-        ),
-        done: tx.knex.raw(
-          `CASE :controller:
-             WHEN :service THEN :serviceDone:
-             WHEN :list THEN :listDone:
-             ELSE :manualDone:
-           END`,
-          {
-            controller: "TaskInfo.controller",
-            serviceDone: "ServiceStates.done",
-            listDone: "ListStates.done",
-            manualDone: "TaskInfo.manualDone",
-            service: TaskController.Service,
-            list: TaskController.ServiceList,
-          },
-        ),
-      });
+    let serviceStates = sql`
+      SELECT "id", "taskDue" AS "due", "taskDone" AS "done"
+      FROM ${ref(ServiceDetail)}
+      WHERE "hasTaskState" = ${true}
+    `;
+
+    let states = sql`
+      SELECT
+        "TaskInfo"."id" AS "id",
+        COALESCE("TaskInfo"."manualDue", CASE "TaskInfo"."controller"
+          WHEN ${TaskController.Service} THEN "ServiceStates"."due"
+          WHEN ${TaskController.ServiceList} THEN "ListStates"."due"
+        END) AS "due",
+        CASE "TaskInfo"."controller"
+          WHEN ${TaskController.Service} THEN "ServiceStates"."done"
+          WHEN ${TaskController.ServiceList} THEN "ListStates"."done"
+          ELSE "TaskInfo"."manualDone"
+        END AS "done"
+      FROM ${ref(TaskInfo)} AS "TaskInfo"
+      LEFT JOIN (${listStates}) AS "ListStates" USING ("id")
+      LEFT JOIN (${serviceStates}) AS "ServiceStates" USING ("id")
+    `;
 
     if (items) {
-      states = states.whereIn("TaskInfo.id", items);
+      states = sql`${states} WHERE ${where({ id: In(items) })}`;
     }
 
-    return tx.stores.taskInfo.build(
-      updateFromTable<TaskInfoRecord>(tx.knex, "TaskInfo", states, [
-        "due",
-        "done",
-      ]),
-    );
-  }
-
-  protected get store(): Stores["taskInfo"] {
-    return this.stores.taskInfo;
+    await tx.db.update(sql`
+      UPDATE ${ref(TaskInfo)} AS "t"
+      SET
+        "id" = "s"."id",
+        "due" = "s"."due",
+        "done" = "s"."done"
+      FROM (${states}) AS "s"
+      WHERE "t"."id" = "s"."id"
+    `);
   }
 
   public get due(): DateTime | null {
-    return this.record.due;
+    return this.entity.due;
   }
 
   public get done(): DateTime | null {
-    return this.record.done;
+    return this.entity.done;
   }
 
   public get manualDue(): DateTime | null {
-    return this.record.manualDue;
+    return this.entity.manualDue;
   }
 
   public get manualDone(): DateTime | null {
-    return this.record.manualDone;
+    return this.entity.manualDone;
   }
 
   public get controller(): TaskController {
-    return this.record.controller;
+    return this.entity.controller;
   }
 
-  public override async edit({
+  public override async update({
     due,
     done,
     ...taskInfo
-  }: Partial<Omit<TaskInfoRecord, "id">>): Promise<void> {
+  }: Partial<Omit<TaskInfoEntity, "id">>): Promise<void> {
     if ((taskInfo.controller ?? this.controller) == TaskController.Manual) {
       // A manual task, simple to calculate.
-      await this.store.updateOne(this.id, {
-        ...this.record,
+      await super.update({
         ...taskInfo,
         due:
           taskInfo.manualDue === undefined
-            ? this.record.manualDue
+            ? this.entity.manualDue
             : taskInfo.manualDue,
         done:
           taskInfo.manualDone === undefined
-            ? this.record.manualDone
+            ? this.entity.manualDone
             : taskInfo.manualDone,
       });
     } else if (!taskInfo.controller || taskInfo.controller == this.controller) {
       // We're not changing the controller, done doesn't need to change and due only needs to change
       // if manualDue is set.
-      let needsRecalc = taskInfo.manualDue === null && this.record.manualDue;
+      let needsRecalc = taskInfo.manualDue === null && this.entity.manualDue;
 
-      await this.store.updateOne(this.id, {
-        ...this.record,
+      await super.update({
         ...taskInfo,
-        due: taskInfo.manualDue ?? this.record.due,
+        due: taskInfo.manualDue ?? this.entity.due,
       });
 
       if (needsRecalc) {
-        await TaskInfo.updateTaskDetails(this.tx, [this.id]);
+        await TaskInfo.updateTaskDetails(this.tx, [this.itemId]);
       }
     } else {
       // Do a full recalculation.
 
-      await this.store.updateOne(this.id, {
-        ...this.record,
+      await super.update({
         ...taskInfo,
       });
 
-      await TaskInfo.updateTaskDetails(this.tx, [this.id]);
+      await TaskInfo.updateTaskDetails(this.tx, [this.itemId]);
     }
   }
 }
 
-abstract class DetailBase<
-  Record extends Identified,
-> extends IdentifiedBase<Record> {}
-
-export class LinkDetail
-  extends DetailBase<LinkDetailRecord>
-  implements ResolverImpl<LinkDetailResolvers>
-{
-  public static create(
-    tx: CoreTransaction,
+abstract class ItemDetailImpl<
+  Entity extends ItemPropertyEntity,
+> extends ItemProperty<Entity> {
+  protected static createImpl<
+    E extends ItemPropertyEntity,
+    I extends ItemDetailImpl<E>,
+  >(
+    store: Store<Transaction, E, I>,
     item: Item,
-    record: Omit<LinkDetailRecord, "id">,
-  ): Promise<LinkDetail> {
-    if (item.type != ItemType.Link) {
-      throw new Error(`Cannot add LinkDetail to at ${item.type}`);
+    type: ItemType,
+    record: Omit<E, "id">,
+  ): Promise<I> {
+    if (item.type != type) {
+      throw new Error(
+        `Cannot add ${type} detail to an item of type ${item.type}`,
+      );
     }
 
-    return tx.stores.linkDetail.insertOne(record, item.id);
+    // @ts-ignore
+    return store.create({
+      ...record,
+      id: item.id,
+    });
   }
+}
 
-  protected get store(): Stores["linkDetail"] {
-    return this.stores.linkDetail;
+export class LinkDetail
+  extends ItemDetailImpl<LinkDetailEntity>
+  implements ResolverImpl<LinkDetailResolvers>
+{
+  public static readonly store = storeBuilder(LinkDetail, "core.LinkDetail");
+
+  public static create(
+    tx: Transaction,
+    item: Item,
+    record: Omit<LinkDetailEntity, "id">,
+  ): Promise<LinkDetail> {
+    return ItemDetailImpl.createImpl(
+      LinkDetail.store(tx),
+      item,
+      ItemType.Link,
+      record,
+    );
   }
 
   public get url(): string {
-    return this.record.url;
+    return this.entity.url;
   }
 
   public get icon(): string | null {
-    return this.record.icon;
+    return this.entity.icon;
   }
 }
 
 export class FileDetail
-  extends DetailBase<FileDetailRecord>
+  extends ItemDetailImpl<FileDetailEntity>
   implements ResolverImpl<FileDetailResolvers>
 {
-  protected get store(): Stores["fileDetail"] {
-    return this.stores.fileDetail;
+  public static readonly store = storeBuilder(FileDetail, "core.FileDetail");
+
+  public static create(
+    tx: Transaction,
+    item: Item,
+    record: Omit<FileDetailEntity, "id">,
+  ): Promise<FileDetail> {
+    return ItemDetailImpl.createImpl(
+      FileDetail.store(tx),
+      item,
+      ItemType.File,
+      record,
+    );
   }
 
   public get filename(): string {
-    return this.record.filename;
+    return this.entity.filename;
   }
 
   public get mimetype(): string {
-    return this.record.mimetype;
+    return this.entity.mimetype;
   }
 
   public get size(): number {
-    return this.record.size;
+    return this.entity.size;
   }
 }
 
 export class NoteDetail
-  extends DetailBase<NoteDetailRecord>
+  extends ItemDetailImpl<NoteDetailEntity>
   implements ResolverImpl<NoteDetailResolvers>
 {
-  protected get store(): Stores["noteDetail"] {
-    return this.stores.noteDetail;
+  public static readonly store = storeBuilder(NoteDetail, "core.NoteDetail");
+
+  public static create(
+    tx: Transaction,
+    item: Item,
+    record: Omit<NoteDetailEntity, "id">,
+  ): Promise<NoteDetail> {
+    return ItemDetailImpl.createImpl(
+      NoteDetail.store(tx),
+      item,
+      ItemType.Note,
+      record,
+    );
   }
 
   public get note(): string {
-    return this.record.note;
+    return this.entity.note;
   }
 }
 
 export class ServiceDetail
-  extends DetailBase<ServiceDetailRecord>
+  extends ItemDetailImpl<ServiceDetailEntity>
   implements ResolverImpl<ServiceDetailResolvers>
 {
+  public static readonly store = storeBuilder(
+    ServiceDetail,
+    "core.ServiceDetail",
+  );
+
   public static create(
-    tx: CoreTransaction,
+    tx: Transaction,
     item: Item,
-    record: Omit<ServiceDetailRecord, "id">,
+    record: Omit<ServiceDetailEntity, "id">,
   ): Promise<ServiceDetail> {
-    if (item.type != ItemType.Service) {
-      throw new Error(`Cannot add ServiceDetail to at ${item.type}`);
-    }
-
-    return tx.stores.serviceDetail.insertOne(record, item.id);
-  }
-
-  protected get store(): Stores["serviceDetail"] {
-    return this.stores.serviceDetail;
+    return ItemDetailImpl.createImpl(
+      ServiceDetail.store(tx),
+      item,
+      ItemType.Service,
+      record,
+    );
   }
 
   public get serviceId(): string {
-    return this.record.serviceId;
+    return this.entity.serviceId;
   }
 
   public get hasTaskState(): boolean {
-    return this.record.hasTaskState;
+    return this.entity.hasTaskState;
   }
 
   public get taskDue(): DateTime | null {
-    return this.record.taskDue;
+    return this.entity.taskDue;
   }
 
   public get taskDone(): DateTime | null {
-    return this.record.taskDone;
+    return this.entity.taskDone;
   }
 
   public async fields(): Promise<string> {
     let service = ServiceManager.getService(this.serviceId);
-    let serviceTx = await buildServiceTransaction(service, this.tx.transaction);
-    let item = await service.getServiceItem(serviceTx, this.id);
+    let serviceTx = await buildServiceTransaction(service, this.tx);
+    let item = await service.getServiceItem(serviceTx, this.itemId);
     return JSON.stringify(await waitFor(call(item, item.fields)));
   }
 
   public async lists(): Promise<ServiceList[]> {
-    let records: ServiceListRecord[] = await this.tx.knex
-      .from("ServiceList")
-      .join("ServiceListItems", "ServiceList.id", "ServiceListItems.listId")
-      .where("ServiceListItems.itemId", this.id)
-      .whereNull("ServiceListItems.done")
-      .select("ServiceList.*");
-
-    return this.tx.stores.serviceList.build(records);
+    return ServiceList.store(this.tx).list(sql`
+      SELECT "ServiceList".* FROM ${ref(ServiceListItem)} AS "ServiceListItem"
+        LEFT JOIN ${ref(
+          ServiceList,
+        )} AS "ServiceList" ON "ServiceListItem"."listId"="ServiceList"."id"
+      WHERE ${where({
+        itemId: this.itemId,
+        done: IsNull(),
+      })}
+    `);
   }
 
   public async wasEverListed(): Promise<boolean> {
-    return (await count(
-      this.tx.knex.from("ServiceListItems").where("itemId", this.id).limit(1),
-    ))
-      ? true
-      : false;
+    let count = await ServiceListItem.store(this.tx).count({
+      itemId: this.itemId,
+    });
+    return count > 0;
   }
 
   public async isCurrentlyListed(): Promise<boolean> {
-    return (await count(
-      this.tx.knex
-        .from("ServiceListItems")
-        .where("itemId", this.id)
-        .whereNull("done")
-        .limit(1),
-    ))
-      ? true
-      : false;
-  }
-
-  public async getItemDueForLists(): Promise<DateTime | null> {
-    return min<ServiceListItemsRecord, "due">(
-      this.tx.knex
-        .from<ServiceListItemsRecord>("ServiceListItems")
-        .where("itemId", this.id),
-      "due",
-    );
+    let count = await ServiceListItem.store(this.tx).count({
+      itemId: this.itemId,
+      done: IsNull(),
+    });
+    return count > 0;
   }
 }
 
@@ -1113,135 +994,139 @@ function calcDue(
 }
 
 export class ServiceList
-  extends IdentifiedBase<ServiceListRecord>
+  extends IdentifiedEntityImpl<ServiceListEntity>
   implements ResolverImpl<ServiceListResolvers>
 {
+  public static readonly store = storeBuilder(ServiceList, "core.ServiceList");
+
   public static async create(
-    tx: CoreTransaction,
+    tx: Transaction,
     serviceId: string,
-    { items, due, ...record }: ItemList,
+    { items, due, ...entity }: ItemList,
   ): Promise<ServiceList> {
-    let list = await tx.stores.serviceList.insertOne({
+    let list = await ServiceList.store(tx).create({
+      ...entity,
+      id: await id(),
       serviceId,
-      ...record,
     });
 
     if (items) {
-      let now = DateTime.now();
-      let itemDue = calcDue(now, due);
-
-      await tx.stores.serviceListItems.setItems(
-        list.id,
-        items.map((itemId: string) => ({
-          itemId,
-          serviceId,
-          present: now,
-          done: null,
-          due: itemDue,
-        })),
-      );
+      await list.setItems(items, due);
     }
 
     return list;
   }
 
-  protected get store(): Stores["serviceList"] {
-    return this.stores.serviceList;
-  }
-
   public get serviceId(): string {
-    return this.record.serviceId;
+    return this.entity.serviceId;
   }
 
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get url(): string | null {
-    return this.record.url;
+    return this.entity.url;
   }
 
-  public async update({
+  protected async setItems(
+    itemIds: string[],
+    due?: RelativeDateTime | null,
+  ): Promise<void> {
+    let now = DateTime.now();
+    let itemDue = calcDue(now, due);
+
+    let itemIdsToUpdate = new Set<string>(itemIds);
+    let itemsToCreate = new Set(itemIds);
+
+    let existingPlacements = await ServiceListItem.store(this.tx).find({
+      listId: this.id,
+    });
+    let placements: ServiceListItemEntity[] = [];
+
+    for (let placement of existingPlacements) {
+      itemIdsToUpdate.add(placement.entity.itemId);
+
+      if (itemsToCreate.has(placement.entity.itemId)) {
+        itemsToCreate.delete(placement.entity.itemId);
+
+        placements.push(placement.entity);
+        placement.entity.done = null;
+
+        if (due !== undefined) {
+          placement.entity.due = calcDue(placement.entity.present, due);
+        }
+      } else if (placement.entity.done === null) {
+        placements.push(placement.entity);
+        placement.entity.done = DateTime.now();
+      }
+    }
+
+    for (let itemId of itemsToCreate) {
+      placements.push({
+        itemId,
+        serviceId: this.serviceId,
+        listId: this.id,
+        present: now,
+        done: null,
+        due: itemDue,
+      });
+    }
+
+    await ServiceListItem.store(this.tx).upsert(placements);
+    await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
+  }
+
+  public async updateList({
     items,
     due,
     ...record
   }: Partial<ItemList>): Promise<void> {
     if (record.name || record.url !== undefined) {
-      await this.edit(record);
+      await this.update(record);
     }
 
     if (items) {
-      let itemIdsToUpdate = new Set(items);
-
-      let now = DateTime.now();
-
-      // Mark no longer present items as done.
-      let noLongerPresent = await this.tx.knex
-        .into<ServiceListItemsRecord>("ServiceListItems")
-        .where("listId", this.id)
-        .whereNull("done")
-        .whereNotIn("itemId", items)
-        .update({ done: now })
-        .returning("*");
-
-      for (let record of noLongerPresent) {
-        itemIdsToUpdate.add(record.itemId);
-      }
-
-      let itemSet = new Set(items);
-      let records = await this.tx.knex
-        .from<ServiceListItemsRecord>("ServiceListItems")
-        .where("listId", this.id)
-        .whereIn("itemId", items)
-        .select("*");
-
-      for (let record of records) {
-        itemSet.delete(record.itemId);
-
-        record.done = null;
-        if (due !== undefined) {
-          record.due = calcDue(record.present, due);
-        }
-      }
-
-      let itemDue = calcDue(now, due);
-
-      for (let itemId of itemSet) {
-        records.push({
-          serviceId: this.serviceId,
-          listId: this.id,
-          itemId,
-          present: now,
-          done: null,
-          due: itemDue,
-        });
-      }
-
-      await this.tx.stores.serviceListItems.addItems(this.id, records);
-      await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
+      await this.setItems(items, due);
     }
   }
 
   public override async delete(): Promise<void> {
-    let currentIds = await this.tx.stores.serviceListItems.getItemIds(this.id);
+    let currentIds = await this.db.pluck<string>(
+      sql`SELECT "itemId" FROM ${ref(ServiceListItem)} WHERE "listId" = ${
+        this.id
+      }`,
+    );
 
     await super.delete();
 
-    let presentIds = this.tx.knex
-      .from<ServiceListItemsRecord>("ServiceListItems")
-      .whereIn("itemId", currentIds)
-      .whereNotNull("present")
-      .distinct("itemId");
+    let presentIds = await this.db.pluck<string>(
+      sql`SELECT DISTINCT "itemId" FROM ${ref(ServiceListItem)} WHERE ${where({
+        itemId: In(currentIds),
+        present: Not(IsNull()),
+      })}`,
+    );
+
+    let idsToUpdate = currentIds.filter(
+      (id: string): boolean => !presentIds.includes(id),
+    );
 
     let done = DateTime.now();
-    await this.tx.knex
-      .into("TaskInfo")
-      .whereIn("id", currentIds)
-      .whereNotIn("id", presentIds)
-      .where("controller", TaskController.ServiceList)
-      .whereNull("done")
-      .update({
-        done,
-      });
+    await TaskInfo.store(this.tx).update(
+      { done },
+      {
+        id: In(idsToUpdate),
+        controller: TaskController.ServiceList,
+        done: IsNull(),
+      },
+    );
   }
+}
+
+class ServiceListItem extends EntityImpl<ServiceListItemEntity> {
+  public static readonly store = storeBuilder(
+    ServiceListItem,
+    "core.ServiceListItem",
+    ["listId", "itemId"],
+  );
 }

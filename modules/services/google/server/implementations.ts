@@ -3,78 +3,73 @@ import { URL } from "url";
 import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
+import { In, Not, sql } from "#db";
 import { TaskController } from "#schema";
 import type {
-  ItemStore,
-  Listable,
   ResolverImpl,
   ServiceItem,
+  ServiceTransaction,
 } from "#server/utils";
-import { BaseAccount, BaseItem, BaseList } from "#server/utils";
+import {
+  EntityImpl,
+  id,
+  IdentifiedEntityImpl,
+  ref,
+  storeBuilder,
+  BaseAccount,
+  BaseItem,
+  BaseList,
+} from "#server/utils";
 import type { FileFields, ThreadFields } from "#services/google/schema";
 import type { DateTimeOffset } from "#utils";
-import { assert, offsetFromJson } from "#utils";
+import { offsetFromJson } from "#utils";
 
 import { GoogleService } from ".";
-import type { GoogleAPIFile } from "./api";
+import type { GoogleAPIFile, GoogleAPILabel } from "./api";
 import { encodeWebId, getAccountInfo, decodeWebId, GoogleApi } from "./api";
+import type {
+  GoogleAccountEntity,
+  GoogleFileEntity,
+  GoogleLabelEntity,
+  GoogleMailSearchEntity,
+  GoogleThreadEntity,
+  GoogleThreadLabelEntity,
+} from "./entities";
 import type {
   GoogleAccountResolvers,
   GoogleMailSearchResolvers,
 } from "./schema";
-import type { GoogleTransaction } from "./stores";
-import type {
-  GoogleAccountRecord,
-  GoogleFileRecord,
-  GoogleLabelRecord,
-  GoogleMailSearchRecord,
-  GoogleThreadRecord,
-} from "./types";
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
 export class Account
-  extends BaseAccount<GoogleTransaction>
+  extends BaseAccount<GoogleAccountEntity>
   implements ResolverImpl<GoogleAccountResolvers>
 {
-  private client: GoogleApi | null;
+  public static readonly store = storeBuilder(Account, "google.Account");
 
-  public constructor(
-    tx: GoogleTransaction,
-    private record: GoogleAccountRecord,
-  ) {
-    super(tx);
-    this.client = null;
-  }
-
-  public async updateRecord(record: GoogleAccountRecord): Promise<void> {
-    this.record = record;
-  }
-
-  public get id(): string {
-    return this.record.id;
-  }
+  private client: GoogleApi | null = null;
 
   public get userId(): string {
-    return this.record.userId;
+    return this.entity.userId;
   }
 
   public get email(): string {
-    return this.record.email;
+    return this.entity.email;
   }
 
   public get avatar(): string | null {
-    return this.record.avatar;
+    return this.entity.avatar;
   }
 
   public get loginUrl(): string {
     return this.authClient.generateAuthUrl();
   }
 
-  public async items(): Promise<BaseItem[]> {
+  public async items(): Promise<(Thread | File)[]> {
     return [
-      ...(await this.tx.stores.threads.list({ accountId: this.id })),
-      ...(await this.tx.stores.files.list({ accountId: this.id })),
+      ...(await Thread.store(this.tx).find({ accountId: this.id })),
+      ...(await File.store(this.tx).find({ accountId: this.id })),
     ];
   }
 
@@ -83,7 +78,7 @@ export class Account
   }
 
   public async mailSearches(): Promise<MailSearch[]> {
-    return this.tx.stores.mailSearches.list({ accountId: this.id });
+    return MailSearch.store(this.tx).find({ accountId: this.id });
   }
 
   public buildURL(target: URL): URL {
@@ -93,7 +88,7 @@ export class Account
     return url;
   }
 
-  public async update(): Promise<void> {
+  public async updateAccount(): Promise<void> {
     await this.updateLabels();
 
     let userInfo = await this.authClient.getAccountInfo();
@@ -106,7 +101,7 @@ export class Account
       }
     }
 
-    await this.tx.stores.accounts.updateOne(this.id, {
+    await this.update({
       avatar,
     });
   }
@@ -114,44 +109,18 @@ export class Account
   public async updateLabels(): Promise<void> {
     let labels = await this.authClient.getLabels();
 
-    let labelIds = await this.tx
-      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
-      .where("accountId", this.id)
-      .pluck("id");
+    await Label.store(this.tx).upsert(
+      labels.map((label: GoogleAPILabel) => ({
+        accountId: this.id,
+        id: label.id,
+        name: label.name,
+      })),
+    );
 
-    let newRecords: GoogleLabelRecord[] = [];
-    let foundIds: string[] = [];
-
-    for (let label of labels) {
-      foundIds.push(label.id);
-
-      if (!labelIds.includes(label.id)) {
-        newRecords.push({
-          accountId: this.id,
-          id: label.id,
-          name: label.name,
-        });
-      } else {
-        await this.tx
-          .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
-          .where("id", label.id)
-          .update({
-            name: label.name,
-          });
-      }
-    }
-
-    await this.tx
-      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
-      .where("accountId", this.id)
-      .whereNotIn("id", foundIds)
-      .delete();
-
-    if (newRecords.length) {
-      await this.tx
-        .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
-        .insert(newRecords);
-    }
+    await Label.store(this.tx).delete({
+      accountId: this.id,
+      id: Not(In(labels.map((label: GoogleAPILabel): string => label.id))),
+    });
   }
 
   public get authClient(): GoogleApi {
@@ -159,12 +128,12 @@ export class Account
       return this.client;
     }
 
-    this.client = new GoogleApi(this, this.record);
+    this.client = new GoogleApi(this, this.entity);
     return this.client;
   }
 
   public static async create(
-    tx: GoogleTransaction,
+    tx: ServiceTransaction,
     userId: string,
     code: string,
   ): Promise<Account> {
@@ -207,13 +176,14 @@ export class Account
       }
     }
 
-    let existing = await tx.stores.accounts.first({
+    let existing = await Account.store(tx).findOne({
       userId: userId,
       email: tokenInfo.email,
     });
 
     if (!existing) {
-      let record: Omit<GoogleAccountRecord, "id"> = {
+      let record: GoogleAccountEntity = {
+        id: await id(),
         userId: userId,
         email: tokenInfo.email,
         avatar,
@@ -222,19 +192,19 @@ export class Account
         expiry: Math.floor(expiry / 1000),
       };
 
-      let account = await tx.stores.accounts.insertOne(record);
+      let account = await Account.store(tx).create(record);
       await account.updateLabels();
 
       return account;
     } else {
       if (refreshToken) {
-        await tx.stores.accounts.updateOne(existing.id, {
+        await existing.update({
           accessToken,
           refreshToken,
           expiry: Math.floor(expiry / 1000),
         });
       } else {
-        await tx.stores.accounts.updateOne(existing.id, {
+        await existing.update({
           accessToken,
           expiry: Math.floor(expiry / 1000),
         });
@@ -248,44 +218,27 @@ export class Account
 }
 
 export class MailSearch
-  extends BaseList<gmail_v1.Schema$Thread[], GoogleTransaction>
+  extends BaseList<GoogleMailSearchEntity, gmail_v1.Schema$Thread[]>
   implements ResolverImpl<GoogleMailSearchResolvers>
 {
-  public static getStore(tx: GoogleTransaction): Listable<MailSearch> {
-    return tx.stores.mailSearches;
-  }
-
-  public constructor(
-    tx: GoogleTransaction,
-    private record: GoogleMailSearchRecord,
-  ) {
-    super(tx);
-  }
-
-  public async updateRecord(record: GoogleMailSearchRecord): Promise<void> {
-    this.record = record;
-  }
-
-  public get id(): string {
-    return this.record.id;
-  }
+  public static readonly store = storeBuilder(MailSearch, "google.MailSearch");
 
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get query(): string {
-    return this.record.query;
+    return this.entity.query;
   }
 
   public override get dueOffset(): DateTimeOffset | null {
-    return this.record.dueOffset
-      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+    return this.entity.dueOffset
+      ? offsetFromJson(JSON.parse(this.entity.dueOffset))
       : null;
   }
 
   public account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public override async url(): Promise<string> {
@@ -294,11 +247,6 @@ export class MailSearch
     let url = new URL("https://mail.google.com/mail/");
     url.hash = `search/${this.query}`;
     return account.buildURL(url).toString();
-  }
-
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.mailSearches.deleteOne(this.id);
   }
 
   public async listItems(
@@ -317,13 +265,13 @@ export class MailSearch
         continue;
       }
 
-      let instance = await this.tx.stores.threads.first({
-        accountId: this.record.accountId,
+      let instance = await Thread.store(this.tx).findOne({
+        accountId: this.entity.accountId,
         threadId: thread.id,
       });
 
       if (instance) {
-        await instance.update(thread);
+        await instance.updateItem(thread);
       } else {
         instance = await Thread.create(
           account,
@@ -340,7 +288,7 @@ export class MailSearch
 
   public static async create(
     account: Account,
-    record: Omit<GoogleMailSearchRecord, "id" | "accountId">,
+    record: Omit<GoogleMailSearchEntity, "id" | "accountId">,
   ): Promise<MailSearch> {
     let threads = await account.authClient.listThreads(record.query);
 
@@ -351,44 +299,28 @@ export class MailSearch
 
     let dbRecord = {
       ...record,
+      id,
       accountId: account.id,
     };
 
-    let search = await account.tx.stores.mailSearches.insertOne(dbRecord, id);
-    await search.update(threads);
+    let search = await MailSearch.store(account.tx).create(dbRecord);
+    await search.updateList(threads);
     return search;
   }
 }
 
 export class Thread
-  extends BaseItem<GoogleTransaction>
+  extends BaseItem<GoogleThreadEntity>
   implements ServiceItem<ThreadFields>
 {
-  public static getStore(tx: GoogleTransaction): ItemStore<Thread> {
-    return tx.stores.threads;
-  }
-
-  public constructor(
-    tx: GoogleTransaction,
-    private record: GoogleThreadRecord,
-  ) {
-    super(tx);
-  }
-
-  public async updateRecord(record: GoogleThreadRecord): Promise<void> {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Thread, "google.Thread");
 
   public account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public get threadId(): string {
-    return this.record.threadId;
+    return this.entity.threadId;
   }
 
   public override async url(): Promise<string> {
@@ -400,7 +332,9 @@ export class Thread
     return account.buildURL(url).toString();
   }
 
-  public override async update(thread?: gmail_v1.Schema$Thread): Promise<void> {
+  public override async updateItem(
+    thread?: gmail_v1.Schema$Thread,
+  ): Promise<void> {
     let account = await this.account();
 
     if (!thread) {
@@ -410,25 +344,22 @@ export class Thread
       }
     }
 
-    let { record, labels } = Thread.recordFromThread(thread);
+    let { record, labels } = await Thread.recordFromThread(this.tx, thread);
 
-    await this.tx.stores.threads.updateOne(this.id, record);
+    await this.update(record);
 
     await this.tx.setItemTaskDone(this.id, !record.unread);
 
-    await this.tx.stores.threadLabels.setItems(
-      this.threadId,
-      labels.map((labelId: string) => ({
-        labelId,
-        accountId: account.id,
-      })),
-    );
+    await ThreadLabel.setThreadLabels(this, labels);
   }
 
-  public static recordFromThread(data: gmail_v1.Schema$Thread): {
-    record: Omit<GoogleThreadRecord, "id" | "accountId">;
-    labels: string[];
-  } {
+  public static async recordFromThread(
+    tx: ServiceTransaction,
+    data: gmail_v1.Schema$Thread,
+  ): Promise<{
+    record: Omit<GoogleThreadEntity, "id" | "accountId">;
+    labels: Label[];
+  }> {
     if (!data.id) {
       throw new Error("No ID.");
     }
@@ -470,7 +401,9 @@ export class Thread
         unread,
         starred,
       },
-      labels: [...labels],
+      labels: await Label.store(tx).find({
+        id: In([...labels]),
+      }),
     };
   }
 
@@ -479,7 +412,7 @@ export class Thread
     data: gmail_v1.Schema$Thread,
     controller: TaskController | null,
   ): Promise<Thread> {
-    let { record, labels } = Thread.recordFromThread(data);
+    let { record, labels } = await Thread.recordFromThread(account.tx, data);
 
     // Probably didn't want to create an already complete task.
     if (!record.unread && controller == TaskController.Service) {
@@ -494,27 +427,19 @@ export class Thread
       controller,
     });
 
-    let thread = await account.tx.stores.threads.insertOne(
-      {
-        ...record,
-        accountId: account.id,
-      },
+    let thread = await Thread.store(account.tx).create({
+      ...record,
       id,
-    );
+      accountId: account.id,
+    });
 
-    await account.tx.stores.threadLabels.setItems(
-      thread.threadId,
-      labels.map((labelId: string) => ({
-        labelId,
-        accountId: account.id,
-      })),
-    );
+    await ThreadLabel.setThreadLabels(thread, labels);
 
     return thread;
   }
 
   public static async createItemFromURL(
-    tx: GoogleTransaction,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
@@ -537,8 +462,8 @@ export class Thread
 
     let threadId = BigInt(decoded).toString(16);
 
-    for (let account of await tx.stores.accounts.list({ userId: userId })) {
-      let existing = await tx.stores.threads.first({
+    for (let account of await Account.store(tx).find({ userId: userId })) {
+      let existing = await Thread.store(tx).findOne({
         accountId: account.id,
         threadId,
       });
@@ -563,15 +488,11 @@ export class Thread
   }
 
   public async fields(): Promise<ThreadFields> {
-    let labels: string[] = await this.tx
-      .knex<GoogleLabelRecord>(this.tx.tableRef("Label"))
-      .join(this.tx.tableRef("ThreadLabel"), "Label.id", "ThreadLabel.labelId")
-      .where("ThreadLabel.threadId", this.threadId)
-      .pluck("Label.name");
+    let labels = await ThreadLabel.threadLabels(this);
 
     return {
-      ...this.record,
-      labels,
+      ...this.entity,
+      labels: labels.map((label: Label): string => label.name),
       url: await this.url(),
       type: "thread",
     };
@@ -579,40 +500,26 @@ export class Thread
 }
 
 export class File
-  extends BaseItem<GoogleTransaction>
+  extends BaseItem<GoogleFileEntity>
   implements ServiceItem<FileFields>
 {
-  public static getStore(tx: GoogleTransaction): ItemStore<File> {
-    return tx.stores.files;
-  }
-
-  public constructor(tx: GoogleTransaction, private record: GoogleFileRecord) {
-    super(tx);
-  }
-
-  public async updateRecord(record: GoogleFileRecord): Promise<void> {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(File, "google.File");
 
   public account(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public override async url(): Promise<string | null> {
-    return this.record.url;
+    return this.entity.url;
   }
 
   public get fileId(): string {
-    return this.record.fileId;
+    return this.entity.fileId;
   }
 
   private static recordFromFile(
     file: GoogleAPIFile,
-  ): Omit<GoogleFileRecord, "accountId" | "id" | "fileId"> {
+  ): Omit<GoogleFileEntity, "accountId" | "id" | "fileId"> {
     return {
       name: file.name,
       description: file.description ?? null,
@@ -621,7 +528,7 @@ export class File
     };
   }
 
-  public override async update(file?: GoogleAPIFile): Promise<void> {
+  public override async updateItem(file?: GoogleAPIFile): Promise<void> {
     let account = await this.account();
 
     if (!file) {
@@ -633,7 +540,7 @@ export class File
     }
 
     let record = File.recordFromFile(file);
-    await this.tx.stores.files.updateOne(this.id, record);
+    await this.update(record);
   }
 
   public static async create(
@@ -652,21 +559,22 @@ export class File
     let record = {
       fileId: file.id,
       ...File.recordFromFile(file),
+      id,
       accountId: account.id,
     };
 
-    return account.tx.stores.files.insertOne(record, id);
+    return File.store(account.tx).create(record);
   }
 
   public async fields(): Promise<FileFields> {
     return {
-      ...this.record,
+      ...this.entity,
       type: "file",
     };
   }
 
   public static async createItemFromURL(
-    tx: GoogleTransaction,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
@@ -678,8 +586,8 @@ export class File
 
     let fileId = matches[1];
 
-    for (let account of await tx.stores.accounts.list({ userId: userId })) {
-      let existing = await tx.stores.files.first({
+    for (let account of await Account.store(tx).find({ userId: userId })) {
+      let existing = await File.store(tx).findOne({
         accountId: account.id,
         fileId,
       });
@@ -701,5 +609,54 @@ export class File
     }
 
     return null;
+  }
+}
+
+class Label extends IdentifiedEntityImpl<GoogleLabelEntity> {
+  public static readonly store = storeBuilder(Label, "google.Label", [
+    "accountId",
+    "id",
+  ]);
+
+  public get name(): string {
+    return this.entity.name;
+  }
+}
+
+class ThreadLabel extends EntityImpl<GoogleThreadLabelEntity> {
+  public static readonly store = storeBuilder(
+    ThreadLabel,
+    "google.ThreadLabel",
+    ["threadId", "labelId"],
+  );
+
+  public static async threadLabels(thread: Thread): Promise<Label[]> {
+    return Label.store(thread.tx).list(sql`
+      SELECT "Label".*
+      FROM ${ref(Label)} AS "Label"
+        JOIN ${ref(
+          ThreadLabel,
+        )} AS "ThreadLabel" ON "ThreadLabel"."labelId" = "Label"."id"
+        WHERE "ThreadLabel"."threadId" = ${thread.id}
+    `);
+  }
+
+  public static async setThreadLabels(
+    thread: Thread,
+    labels: Label[],
+  ): Promise<void> {
+    let store = ThreadLabel.store(thread.tx);
+    await store.delete({
+      threadId: thread.id,
+      labelId: Not(In(labels.map((label: Label): string => label.id))),
+    });
+
+    await store.upsert(
+      labels.map((label: Label) => ({
+        accountId: thread.entity.accountId,
+        threadId: thread.id,
+        labelId: label.id,
+      })),
+    );
   }
 }

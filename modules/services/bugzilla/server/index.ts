@@ -1,29 +1,21 @@
-import type {
-  ServiceExport,
-  ServiceDbMigration,
-  Server,
-  ServiceTransaction,
-} from "#server/utils";
+import type { ServiceExport, Server, ServiceTransaction } from "#server/utils";
 import { BaseService } from "#server/utils";
 
 import { Bug, Search } from "./implementations";
-import buildMigrations from "./migrations";
 import Resolvers from "./resolvers";
-import type { BugzillaTransaction } from "./stores";
-import { buildTransaction } from "./stores";
 
 const UPDATE_DELAY = 60000;
 
-class BugzillaService extends BaseService<BugzillaTransaction> {
+class BugzillaService extends BaseService {
   public readonly itemProviders = [Bug];
 
   public readonly listProviders = [Search];
 
-  public constructor(private readonly server: Server<BugzillaTransaction>) {
+  public constructor(private readonly server: Server) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("update", (tx: BugzillaTransaction) =>
+      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
         this.update(tx),
       );
 
@@ -35,19 +27,15 @@ class BugzillaService extends BaseService<BugzillaTransaction> {
     return Resolvers;
   }
 
-  public buildTransaction(tx: ServiceTransaction): BugzillaTransaction {
-    return buildTransaction(tx);
+  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
+    return tx;
   }
 }
 
-const serviceExport: ServiceExport<unknown, BugzillaTransaction> = {
+const serviceExport: ServiceExport = {
   id: "bugzilla",
 
-  get dbMigrations(): ServiceDbMigration[] {
-    return buildMigrations();
-  },
-
-  init: (server: Server<BugzillaTransaction>) => new BugzillaService(server),
+  init: (server: Server) => new BugzillaService(server),
 };
 
 export default serviceExport;

@@ -27,9 +27,10 @@ import type {
   MutationSnoozeItemArgs,
 } from "#schema";
 import { TaskController } from "#schema";
-import type { GraphQLCtx, TypeResolver } from "#server/utils";
+import type { GraphQLCtx, Transaction, TypeResolver } from "#server/utils";
 import { bestIcon, loadPageInfo } from "#server/utils";
 
+import { ItemType } from "./entities";
 import type { ItemHolder } from "./implementations";
 import {
   ServiceDetail,
@@ -45,17 +46,12 @@ import {
 } from "./implementations";
 import type { MutationResolvers } from "./schema";
 import { ServiceManager } from "./services";
-import type { CoreTransaction } from "./transaction";
-import { ItemType } from "./types";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
-const mutationResolvers: TypeResolver<
-  MutationResolvers,
-  GraphQLCtx<CoreTransaction>
-> = {
+const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
   createContext: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { params }: MutationCreateContextArgs,
     ): Promise<Context> => {
@@ -65,17 +61,12 @@ const mutationResolvers: TypeResolver<
 
   editContext: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, params }: MutationEditContextArgs,
     ): Promise<Context | null> => {
-      let { stores } = tx;
-      let context = await stores.contexts.get(id);
-      if (!context) {
-        return null;
-      }
-
-      await context.edit(params);
+      let context = await Context.store(tx).get(id);
+      await context.update(params);
 
       return context;
     },
@@ -83,26 +74,28 @@ const mutationResolvers: TypeResolver<
 
   deleteContext: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: MutationDeleteContextArgs,
     ): Promise<boolean> => {
-      let { stores } = tx;
-      let contexts = await stores.contexts.list({
+      let context = await Context.store(tx).get(id);
+
+      let contexts = await Context.store(tx).count({
         userId: user.id,
       });
 
-      if (contexts.length == 1 && contexts[0].id == id) {
+      if (contexts == 1) {
         throw new Error("Cannot delete the last context.");
       }
 
-      return stores.contexts.deleteOne(id);
+      await context.delete();
+      return true;
     },
   ),
 
   createProject: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { taskList: taskListId, params }: MutationCreateProjectArgs,
     ): Promise<Project> => {
@@ -117,18 +110,12 @@ const mutationResolvers: TypeResolver<
 
   editProject: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, params }: MutationEditProjectArgs,
     ): Promise<Project | null> => {
-      let { stores } = tx;
-      let project = await stores.projects.get(id);
-
-      if (!project) {
-        return null;
-      }
-
-      await project.edit(params);
+      let project = await Project.store(tx).get(id);
+      await project.update(params);
 
       return project;
     },
@@ -136,16 +123,11 @@ const mutationResolvers: TypeResolver<
 
   moveProject: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, taskList: taskListId }: MutationMoveProjectArgs,
     ): Promise<Project | null> => {
-      let { stores } = tx;
-      let project = await stores.projects.get(id);
-
-      if (!project) {
-        return null;
-      }
+      let project = await Project.store(tx).get(id);
 
       let taskList = await TaskListBase.getTaskList(tx, taskListId);
       if (!taskList) {
@@ -159,16 +141,11 @@ const mutationResolvers: TypeResolver<
 
   deleteProject: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: MutationDeleteProjectArgs,
     ): Promise<boolean> => {
-      let { stores } = tx;
-      let project = await stores.projects.get(id);
-      if (!project) {
-        return false;
-      }
-
+      let project = await Project.store(tx).get(id);
       await project.delete();
       return true;
     },
@@ -176,7 +153,7 @@ const mutationResolvers: TypeResolver<
 
   createSection: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       {
         taskList: taskListId,
@@ -184,7 +161,6 @@ const mutationResolvers: TypeResolver<
         params,
       }: MutationCreateSectionArgs,
     ): Promise<Section> => {
-      let { stores } = tx;
       let taskList = await TaskListBase.getTaskList(tx, taskListId);
       if (!taskList) {
         throw new Error("Unknown task list.");
@@ -192,10 +168,7 @@ const mutationResolvers: TypeResolver<
 
       let before: Section | null = null;
       if (beforeId) {
-        before = await stores.sections.get(beforeId);
-        if (!before) {
-          throw new Error("Unknown section.");
-        }
+        before = await Section.store(tx).get(beforeId);
       }
 
       return Section.create(tx, taskList, before ?? null, params);
@@ -204,18 +177,12 @@ const mutationResolvers: TypeResolver<
 
   editSection: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, params }: MutationEditSectionArgs,
     ): Promise<Section | null> => {
-      let { stores } = tx;
-      let section = await stores.sections.get(id);
-
-      if (!section) {
-        return null;
-      }
-
-      await section.edit(params);
+      let section = await Section.store(tx).get(id);
+      await section.update(params);
 
       return section;
     },
@@ -223,15 +190,11 @@ const mutationResolvers: TypeResolver<
 
   moveSection: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, before: beforeId, taskList }: MutationMoveSectionArgs,
     ): Promise<Section | null> => {
-      let { stores } = tx;
-      let section = await stores.sections.get(id);
-      if (!section) {
-        return null;
-      }
+      let section = await Section.store(tx).get(id);
 
       let list = await TaskListBase.getTaskList(tx, taskList);
       if (list === null) {
@@ -240,10 +203,7 @@ const mutationResolvers: TypeResolver<
 
       let before: Section | null = null;
       if (beforeId) {
-        before = await stores.sections.get(beforeId);
-        if (!before) {
-          throw new Error("Unknown section.");
-        }
+        before = await Section.store(tx).get(beforeId);
       }
 
       await section.move(list, before ?? null);
@@ -253,16 +213,11 @@ const mutationResolvers: TypeResolver<
 
   deleteSection: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: MutationDeleteSectionArgs,
     ): Promise<boolean> => {
-      let { stores } = tx;
-      let section = await stores.sections.get(id);
-      if (!section) {
-        return false;
-      }
-
+      let section = await Section.store(tx).get(id);
       await section.delete();
       return true;
     },
@@ -270,7 +225,7 @@ const mutationResolvers: TypeResolver<
 
   createTask: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { section: sectionId, item: itemParams }: MutationCreateTaskArgs,
     ): Promise<Item> => {
@@ -294,7 +249,7 @@ const mutationResolvers: TypeResolver<
 
   createLink: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       {
         detail: { url },
@@ -320,17 +275,13 @@ const mutationResolvers: TypeResolver<
       }
 
       let id = await ServiceManager.createItemFromURL(
-        tx.transaction,
+        tx,
         user.id,
         targetUrl,
         isTask,
       );
       if (id) {
-        let item = await tx.stores.items.get(id);
-        if (!item) {
-          throw new Error("Service returned an unknown item.");
-        }
-
+        let item = await Item.store(tx).get(id);
         if (itemHolder) {
           await item.move(itemHolder, null);
         }
@@ -374,18 +325,13 @@ const mutationResolvers: TypeResolver<
 
   editItem: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, item: params }: MutationEditItemArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
+      let item = await Item.store(tx).get(id);
 
-      if (!item) {
-        return null;
-      }
-
-      await item.edit({
+      await item.update({
         ...params,
         archived: params.archived ?? null,
         snoozed: params.snoozed ?? null,
@@ -397,18 +343,13 @@ const mutationResolvers: TypeResolver<
 
   markTaskDone: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, done }: MutationMarkTaskDoneArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
+      let item = await Item.store(tx).get(id);
 
-      if (!item) {
-        return null;
-      }
-
-      let existing = await item.taskInfo();
+      let existing = await item.taskInfo;
       if (existing && existing.controller != TaskController.Manual) {
         throw new Error("Cannot set a non-manual task's done state.");
       }
@@ -420,7 +361,7 @@ const mutationResolvers: TypeResolver<
           controller: TaskController.Manual,
         });
       } else {
-        await existing.edit({
+        await existing.update({
           manualDone: done ?? null,
         });
       }
@@ -431,18 +372,13 @@ const mutationResolvers: TypeResolver<
 
   setTaskController: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, controller }: MutationSetTaskControllerArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
+      let item = await Item.store(tx).get(id);
 
-      if (!item) {
-        return null;
-      }
-
-      let existing = await item.taskInfo();
+      let existing = await item.taskInfo;
       let existingController = existing?.controller ?? null;
       if (existingController == controller) {
         return item;
@@ -455,7 +391,7 @@ const mutationResolvers: TypeResolver<
         return item;
       }
 
-      let detail = await item.detail();
+      let detail = await item.detail;
 
       if (controller != TaskController.Manual) {
         if (!(detail instanceof ServiceDetail)) {
@@ -480,7 +416,7 @@ const mutationResolvers: TypeResolver<
       }
 
       if (existing) {
-        await existing.edit({
+        await existing.update({
           controller,
         });
       } else {
@@ -497,16 +433,11 @@ const mutationResolvers: TypeResolver<
 
   moveItem: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, section: sectionId, before: beforeId }: MutationMoveItemArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
-
-      if (!item) {
-        return null;
-      }
+      let item = await Item.store(tx).get(id);
 
       let itemHolder: ItemHolder | null = null;
       if (sectionId) {
@@ -520,10 +451,7 @@ const mutationResolvers: TypeResolver<
       if (itemHolder) {
         let before: Item | null = null;
         if (beforeId) {
-          before = await stores.items.get(beforeId);
-          if (!before) {
-            throw new Error("Unknown before item.");
-          }
+          before = await Item.store(tx).get(beforeId);
         }
 
         await item.move(itemHolder, before);
@@ -537,16 +465,11 @@ const mutationResolvers: TypeResolver<
 
   deleteItem: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: MutationDeleteItemArgs,
     ): Promise<boolean> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
-      if (!item) {
-        return false;
-      }
-
+      let item = await Item.store(tx).get(id);
       await item.delete();
       return true;
     },
@@ -554,17 +477,12 @@ const mutationResolvers: TypeResolver<
 
   archiveItem: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, archived }: MutationArchiveItemArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
-      if (!item) {
-        return null;
-      }
-
-      await item.edit({
+      let item = await Item.store(tx).get(id);
+      await item.update({
         archived: archived ?? null,
       });
 
@@ -574,17 +492,12 @@ const mutationResolvers: TypeResolver<
 
   snoozeItem: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, snoozed }: MutationSnoozeItemArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
-      if (!item) {
-        return null;
-      }
-
-      await item.edit({
+      let item = await Item.store(tx).get(id);
+      await item.update({
         snoozed: snoozed ?? null,
       });
 
@@ -594,22 +507,17 @@ const mutationResolvers: TypeResolver<
 
   markTaskDue: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id, due }: MutationMarkTaskDueArgs,
     ): Promise<Item | null> => {
-      let { stores } = tx;
-      let item = await stores.items.get(id);
-      if (!item) {
-        return null;
-      }
-
-      let existing = await item.taskInfo();
+      let item = await Item.store(tx).get(id);
+      let existing = await item.taskInfo;
       if (!existing) {
         return null;
       }
 
-      await existing.edit({
+      await existing.update({
         manualDue: due,
       });
 
@@ -619,7 +527,7 @@ const mutationResolvers: TypeResolver<
 
   createUser: ensureAdmin(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { email, password, isAdmin }: MutationCreateUserArgs,
     ): Promise<User> => {
@@ -633,25 +541,20 @@ const mutationResolvers: TypeResolver<
 
   deleteUser: ensureAdmin(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: MutationDeleteUserArgs,
     ): Promise<boolean> => {
       // TODO allow users to delete themselves.
-      let { stores } = tx;
-      let targetUser = await stores.users.get(id ?? user.id);
-      if (!targetUser) {
-        return false;
-      }
-
-      await user.delete();
+      let targetUser = await User.store(tx).get(id ?? user.id);
+      await targetUser.delete();
       return true;
     },
   ),
 
   changePassword: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { currentPassword, newPassword }: MutationChangePasswordArgs,
     ): Promise<User | null> => {

@@ -12,7 +12,6 @@ import type {
 import type { GraphQLResolveInfo } from "graphql";
 
 import {
-  buildCoreTransaction,
   buildServiceTransaction,
   coreResolvers,
   ServiceManager,
@@ -31,12 +30,15 @@ const requestListener: GraphQLRequestListener<ResolverContext> = {
   async didEncounterErrors(
     ctx: GraphQLRequestContextDidEncounterErrors<ResolverContext>,
   ): Promise<void> {
+    for (let error of ctx.errors) {
+      ctx.context.webserverContext.segment.error(error.originalError ?? error);
+    }
+
     ctx.context.webserverContext.segment.error(
       "Error performing GraphQL operation",
       {
         operation: ctx.request.operationName,
         variables: ctx.request.variables,
-        errors: ctx.errors,
       },
     );
 
@@ -79,8 +81,6 @@ export async function buildResolverContext({
       let transaction = await ctx.startTransaction();
       if (service) {
         transaction = await buildServiceTransaction(service, transaction);
-      } else {
-        transaction = buildCoreTransaction(transaction);
       }
 
       return {

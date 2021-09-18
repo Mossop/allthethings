@@ -4,27 +4,25 @@ import type {
   MutationDeleteGoogleMailSearchArgs,
   MutationEditGoogleMailSearchArgs,
 } from "#schema";
-import type { AuthedGraphQLCtx } from "#server/utils";
+import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
 import { GoogleApi } from "./api";
-import type { Account } from "./implementations";
-import { MailSearch } from "./implementations";
+import { Account , MailSearch } from "./implementations";
 import type { Resolvers } from "./schema";
-import type { GoogleTransaction } from "./stores";
 
-export default rootResolvers<Resolvers, AuthedGraphQLCtx<GoogleTransaction>>({
+export default rootResolvers<Resolvers>({
   User: {
     async googleAccounts(
-      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<Account[]> {
-      return ctx.transaction.stores.accounts.list({ userId: ctx.userId });
+      return Account.store(ctx.transaction).find({ userId: ctx.userId });
     },
   },
 
   Query: {
     async googleLoginUrl(
-      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<string> {
       return GoogleApi.generateAuthUrl(ctx.transaction, ctx.userId);
     },
@@ -32,13 +30,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GoogleTransaction>>({
 
   Mutation: {
     async createGoogleMailSearch(
-      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { account: accountId, params }: MutationCreateGoogleMailSearchArgs,
     ): Promise<MailSearch> {
-      let account = await ctx.transaction.stores.accounts.get(accountId);
-      if (!account) {
-        throw new Error("Unknown account.");
-      }
+      let account = await Account.store(ctx.transaction).get(accountId);
 
       return MailSearch.create(account, {
         ...params,
@@ -47,33 +42,26 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<GoogleTransaction>>({
     },
 
     async editGoogleMailSearch(
-      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { id, params }: MutationEditGoogleMailSearchArgs,
     ): Promise<MailSearch | null> {
-      let search = await ctx.transaction.stores.mailSearches.get(id);
-      if (!search) {
-        return null;
-      }
+      let search = await MailSearch.store(ctx.transaction).get(id);
 
-      await ctx.transaction.stores.mailSearches.updateOne(id, {
+      await search.update({
         ...params,
         dueOffset: params.dueOffset ? JSON.stringify(params.dueOffset) : null,
       });
 
-      await search.update();
+      await search.updateList();
 
       return search;
     },
 
     async deleteGoogleMailSearch(
-      ctx: AuthedGraphQLCtx<GoogleTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       { id }: MutationDeleteGoogleMailSearchArgs,
     ): Promise<boolean> {
-      let search = await ctx.transaction.stores.mailSearches.get(id);
-      if (!search) {
-        return false;
-      }
-
+      let search = await MailSearch.store(ctx.transaction).get(id);
       await search.delete();
       return true;
     },

@@ -3,7 +3,7 @@ import type { RevisionStatus } from "conduit-api";
 import type { PhabricatorAccount } from "#schema";
 import type { GraphQLType } from "#utils";
 
-export type PhabricatorAccountRecord = Omit<
+export type PhabricatorAccountEntity = Omit<
   GraphQLType<PhabricatorAccount>,
   "icon" | "enabledQueries"
 > & {
@@ -13,13 +13,13 @@ export type PhabricatorAccountRecord = Omit<
   userIcon: string;
 };
 
-export interface PhabricatorQueryRecord {
+export interface PhabricatorQueryEntity {
   id: string;
   accountId: string;
   queryId: string;
 }
 
-export interface PhabricatorRevisionRecord {
+export interface PhabricatorRevisionEntity {
   id: string;
   accountId: string;
   revisionId: number;

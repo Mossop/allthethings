@@ -1,11 +1,11 @@
 import type { JiraAccount } from "#schema";
 import type { GraphQLType } from "#utils";
 
-export type JiraAccountRecord = Omit<GraphQLType<JiraAccount>, "searches"> & {
+export type JiraAccountEntity = Omit<GraphQLType<JiraAccount>, "searches"> & {
   userId: string;
 };
 
-export interface JiraIssueRecord {
+export interface JiraIssueEntity {
   accountId: string;
   issueKey: string;
   id: string;
@@ -15,7 +15,7 @@ export interface JiraIssueRecord {
   status: string;
 }
 
-export interface JiraSearchRecord {
+export interface JiraSearchEntity {
   accountId: string;
   id: string;
   name: string;

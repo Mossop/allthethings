@@ -4,7 +4,6 @@ import { JsonDecoder } from "ts.data.json";
 
 import { BaseService } from "#server/utils";
 import type {
-  ServiceDbMigration,
   ServiceExport,
   Server,
   Problem,
@@ -14,10 +13,7 @@ import type {
 } from "#server/utils";
 
 import { Account, IssueLike, Search } from "./implementations";
-import buildMigrations from "./migrations";
 import Resolvers from "./resolvers";
-import type { GithubTransaction } from "./stores";
-import { buildTransaction } from "./stores";
 import type { GithubServiceConfig } from "./types";
 
 function first(param: string | string[] | undefined): string | undefined {
@@ -31,8 +27,8 @@ function first(param: string | string[] | undefined): string | undefined {
 const INITIAL_DELAY = 1000;
 const UPDATE_DELAY = 60000;
 
-export class GithubService extends BaseService<GithubTransaction> {
-  public readonly webMiddleware: ServiceWebMiddleware<GithubTransaction>;
+export class GithubService extends BaseService {
+  public readonly webMiddleware: ServiceWebMiddleware<ServiceTransaction>;
 
   private static _service: GithubService | null = null;
 
@@ -63,7 +59,7 @@ export class GithubService extends BaseService<GithubTransaction> {
   }
 
   public constructor(
-    private readonly server: Server<GithubTransaction>,
+    private readonly server: Server,
     private readonly config: GithubServiceConfig,
   ) {
     super();
@@ -71,8 +67,8 @@ export class GithubService extends BaseService<GithubTransaction> {
     GithubService._service = this;
     this.problems = new Map();
 
-    let oauthMiddleware: ServiceWebMiddleware<GithubTransaction> = async (
-      ctx: ServiceWebContext<GithubTransaction>,
+    let oauthMiddleware: ServiceWebMiddleware<ServiceTransaction> = async (
+      ctx: ServiceWebContext,
       next: Koa.Next,
     ): Promise<any> => {
       let code = first(ctx.query.code);
@@ -92,7 +88,7 @@ export class GithubService extends BaseService<GithubTransaction> {
     this.webMiddleware = koaMount("/oauth", oauthMiddleware);
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("update", (tx: GithubTransaction) =>
+      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
         this.update(tx),
       );
 
@@ -100,11 +96,11 @@ export class GithubService extends BaseService<GithubTransaction> {
     }, INITIAL_DELAY);
   }
 
-  public override async update(tx: GithubTransaction): Promise<void> {
-    let accounts = await tx.stores.accounts.list();
+  public override async update(tx: ServiceTransaction): Promise<void> {
+    let accounts = await Account.store(tx).find();
     for (let account of accounts) {
       try {
-        await account.update();
+        await account.updateAccount();
       } catch (e) {
         // Ignore account failure.
       }
@@ -116,19 +112,19 @@ export class GithubService extends BaseService<GithubTransaction> {
     return Resolvers;
   }
 
-  public buildTransaction(tx: ServiceTransaction): GithubTransaction {
-    return buildTransaction(tx);
+  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
+    return tx;
   }
 
   public async listProblems(
-    tx: GithubTransaction,
+    tx: ServiceTransaction,
     userId: string | null,
   ): Promise<Problem[]> {
     if (!userId) {
       return [];
     }
 
-    let accounts = await tx.stores.accounts.list({
+    let accounts = await Account.store(tx).find({
       userId,
     });
 
@@ -147,12 +143,8 @@ export class GithubService extends BaseService<GithubTransaction> {
   }
 }
 
-const serviceExport: ServiceExport<GithubServiceConfig, GithubTransaction> = {
+const serviceExport: ServiceExport<GithubServiceConfig> = {
   id: "github",
-
-  get dbMigrations(): ServiceDbMigration[] {
-    return buildMigrations();
-  },
 
   configDecoder: JsonDecoder.object<GithubServiceConfig>(
     {
@@ -162,7 +154,7 @@ const serviceExport: ServiceExport<GithubServiceConfig, GithubTransaction> = {
     "Github Service Config",
   ),
 
-  init: (server: Server<GithubTransaction>, config: GithubServiceConfig) =>
+  init: (server: Server, config: GithubServiceConfig) =>
     new GithubService(server, config),
 };
 

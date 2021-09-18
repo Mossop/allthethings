@@ -18,13 +18,11 @@ export class TaskManager {
     if (this.runningTask) {
       return;
     }
-
     if (this.timer) {
       clearTimeout(this.timer);
       this.timer = null;
       this.nextTask = null;
     }
-
     let nextTime = Number.MAX_SAFE_INTEGER;
     for (let [task, time] of this.tasks.entries()) {
       if (time < nextTime) {
@@ -32,7 +30,6 @@ export class TaskManager {
         this.nextTask = task;
       }
     }
-
     if (this.nextTask) {
       let delay = Math.max(nextTime - Date.now(), MIN_DELAY);
       this.timer = setTimeout(() => {
@@ -41,7 +38,6 @@ export class TaskManager {
           let task = this.nextTask;
           this.nextTask = null;
           this.tasks.delete(task);
-
           this.runningTask = true;
           waitFor(task()).finally(() => {
             this.runningTask = false;

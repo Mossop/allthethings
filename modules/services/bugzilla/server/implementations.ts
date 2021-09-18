@@ -7,27 +7,31 @@ import type { DateTime } from "luxon";
 import { TaskController } from "#schema";
 import type { BugzillaAccount, BugzillaAccountParams } from "#schema";
 import type {
-  ItemStore,
-  Listable,
   ResolverImpl,
   ServiceItem,
+  ServiceTransaction,
 } from "#server/utils";
-import { BaseItem, BaseAccount, BaseList } from "#server/utils";
+import {
+  id,
+  storeBuilder,
+  BaseItem,
+  BaseAccount,
+  BaseList,
+} from "#server/utils";
 import { SearchType } from "#services/bugzilla/schema";
 import type { BugFields } from "#services/bugzilla/schema";
 import type { DateTimeOffset } from "#utils";
-import { assert, offsetFromJson } from "#utils";
+import { offsetFromJson } from "#utils";
 
+import type {
+  BugzillaAccountEntity,
+  BugzillaBugEntity,
+  BugzillaSearchEntity,
+} from "./entities";
 import type {
   BugzillaAccountResolvers,
   BugzillaSearchResolvers,
 } from "./schema";
-import type { BugzillaTransaction } from "./stores";
-import type {
-  BugzillaAccountRecord,
-  BugzillaBugRecord,
-  BugzillaSearchRecord,
-} from "./types";
 
 function isDone(status: string): boolean {
   switch (status) {
@@ -41,24 +45,15 @@ function isDone(status: string): boolean {
 }
 
 export class Account
-  extends BaseAccount<BugzillaTransaction>
+  extends BaseAccount<BugzillaAccountEntity>
   implements ResolverImpl<BugzillaAccountResolvers>
 {
+  public static readonly store = storeBuilder(Account, "bugzilla.Account");
+
   private api: BugzillaAPI | null = null;
 
-  public constructor(
-    tx: BugzillaTransaction,
-    private record: BugzillaAccountRecord,
-  ) {
-    super(tx);
-  }
-
-  public updateRecord(record: BugzillaAccountRecord): void {
-    this.record = record;
-  }
-
   public async items(): Promise<Bug[]> {
-    return this.tx.stores.bugs.list({ accountId: this.id });
+    return Bug.store(this.tx).find({ accountId: this.id });
   }
 
   public override lists(): Promise<Search[]> {
@@ -66,12 +61,12 @@ export class Account
   }
 
   public async searches(): Promise<Search[]> {
-    return this.tx.stores.searches.list({ accountId: this.id });
+    return Search.store(this.tx).find({ accountId: this.id });
   }
 
   public normalizeQuery(
     query: string,
-  ): Pick<BugzillaSearchRecord, "query" | "type"> {
+  ): Pick<BugzillaSearchEntity, "query" | "type"> {
     if (!query.startsWith("https://") && !query.startsWith("http://")) {
       return {
         query,
@@ -111,7 +106,7 @@ export class Account
   }
 
   public static buildAPI(
-    record: Pick<BugzillaAccountRecord, "url" | "username" | "password">,
+    record: Pick<BugzillaAccountEntity, "url" | "username" | "password">,
   ): BugzillaAPI {
     if (!record.username) {
       return new BugzillaAPI(record.url);
@@ -124,34 +119,30 @@ export class Account
 
   public getAPI(): BugzillaAPI {
     if (!this.api) {
-      this.api = Account.buildAPI(this.record);
+      this.api = Account.buildAPI(this.entity);
     }
 
     return this.api;
   }
 
-  public get id(): string {
-    return this.record.id;
-  }
-
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get icon(): string | null {
-    return this.record.icon;
+    return this.entity.icon;
   }
 
   public get url(): string {
-    return this.record.url;
+    return this.entity.url;
   }
 
   public get userId(): string {
-    return this.record.userId;
+    return this.entity.userId;
   }
 
   public get username(): string | null {
-    return this.record.username;
+    return this.entity.username;
   }
 
   public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
@@ -165,7 +156,7 @@ export class Account
       return null;
     }
 
-    let existing = await this.tx.stores.bugs.first({ bugId: parseInt(id) });
+    let existing = await Bug.store(this.tx).findOne({ bugId: parseInt(id) });
     if (existing) {
       return existing;
     }
@@ -227,70 +218,49 @@ export class Account
     return null;
   }
 
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.accounts.deleteOne(this.id);
-  }
-
   public static async create(
-    tx: BugzillaTransaction,
+    tx: ServiceTransaction,
     userId: string,
     args: BugzillaAccountParams & Pick<BugzillaAccount, "icon">,
   ): Promise<Account> {
-    let record: Omit<BugzillaAccountRecord, "id"> = {
+    let record: BugzillaAccountEntity = {
       ...args,
+      id: await id(),
       username: args.username ?? null,
       password: args.password ?? null,
       userId,
       icon: args.icon ?? null,
     };
 
-    return tx.stores.accounts.insertOne(record);
+    return Account.store(tx).create(record);
   }
 }
 
 export class Search
-  extends BaseList<BugzillaAPIBug[], BugzillaTransaction>
+  extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]>
   implements ResolverImpl<BugzillaSearchResolvers>
 {
-  public static getStore(tx: BugzillaTransaction): Listable<Search> {
-    return tx.stores.searches;
-  }
-
-  public constructor(
-    tx: BugzillaTransaction,
-    private record: BugzillaSearchRecord,
-  ) {
-    super(tx);
-  }
-
-  public updateRecord(record: BugzillaSearchRecord): void {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Search, "bugzilla.Search");
 
   public owner(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
-  }
-
-  public get id(): string {
-    return this.record.id;
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public get name(): string {
-    return this.record.name;
+    return this.entity.name;
   }
 
   public get type(): SearchType {
-    return this.record.type;
+    return this.entity.type;
   }
 
   public get query(): string {
-    return this.record.query;
+    return this.entity.query;
   }
 
   public override get dueOffset(): DateTimeOffset | null {
-    return this.record.dueOffset
-      ? offsetFromJson(JSON.parse(this.record.dueOffset))
+    return this.entity.dueOffset
+      ? offsetFromJson(JSON.parse(this.entity.dueOffset))
       : null;
   }
 
@@ -309,11 +279,6 @@ export class Search
     return url.toString();
   }
 
-  public override async delete(): Promise<void> {
-    await super.delete();
-    await this.tx.stores.searches.deleteOne(this.id);
-  }
-
   public async listItems(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
     if (!bugs) {
       bugs = await this.getBugRecords();
@@ -322,13 +287,13 @@ export class Search
     let instances: Bug[] = [];
 
     for (let bug of bugs) {
-      let instance = await this.tx.stores.bugs.first({ bugId: bug.id });
+      let instance = await Bug.store(this.tx).findOne({ bugId: bug.id });
 
       if (!instance) {
         let account = await this.owner();
         instance = await Bug.create(account, bug, TaskController.ServiceList);
       } else {
-        await instance.update(bug);
+        await instance.updateItem(bug);
       }
 
       instances.push(instance);
@@ -339,12 +304,12 @@ export class Search
 
   public async getBugRecords(): Promise<BugzillaAPIBug[]> {
     let account = await this.owner();
-    return Search.getBugRecords(account.getAPI(), this.record);
+    return Search.getBugRecords(account.getAPI(), this.entity);
   }
 
   public static async getBugRecords(
     api: BugzillaAPI,
-    record: Pick<BugzillaSearchRecord, "type" | "query">,
+    record: Pick<BugzillaSearchEntity, "type" | "query">,
   ): Promise<BugzillaAPIBug[]> {
     if (record.type == SearchType.Quicksearch) {
       return api.quicksearch(record.query);
@@ -355,7 +320,7 @@ export class Search
 
   public static async create(
     account: Account,
-    record: Omit<BugzillaSearchRecord, "id">,
+    record: Omit<BugzillaSearchEntity, "id">,
   ): Promise<Search> {
     let bugs = await Search.getBugRecords(account.getAPI(), {
       type: record.type,
@@ -367,8 +332,11 @@ export class Search
       url: null,
     });
 
-    let search = await account.tx.stores.searches.insertOne(record, id);
-    await search.update(bugs);
+    let search = await Search.store(account.tx).create({
+      id,
+      ...record,
+    });
+    await search.updateList(bugs);
 
     return search;
   }
@@ -378,7 +346,7 @@ type FixedFields = "accountId" | "id";
 
 function recordFromBug(
   bug: BugzillaAPIBug,
-): Omit<BugzillaBugRecord, FixedFields> {
+): Omit<BugzillaBugEntity, FixedFields> {
   return {
     bugId: bug.id,
     summary: bug.summary,
@@ -388,35 +356,22 @@ function recordFromBug(
 }
 
 export class Bug
-  extends BaseItem<BugzillaTransaction>
+  extends BaseItem<BugzillaBugEntity>
   implements ServiceItem<BugFields>
 {
-  public static getStore(tx: BugzillaTransaction): ItemStore<Bug> {
-    return tx.stores.bugs;
-  }
-
-  public constructor(
-    tx: BugzillaTransaction,
-    private record: BugzillaBugRecord,
-  ) {
-    super(tx);
-  }
-
-  public updateRecord(record: BugzillaBugRecord): void {
-    this.record = record;
-  }
+  public static readonly store = storeBuilder(Bug, "bugzilla.Bug");
 
   public owner(): Promise<Account> {
-    return assert(this.tx.stores.accounts.get(this.record.accountId));
+    return Account.store(this.tx).get(this.entity.accountId);
   }
 
   public static async createItemFromURL(
-    tx: BugzillaTransaction,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
   ): Promise<Bug | null> {
-    for (let account of await tx.stores.accounts.list({ userId })) {
+    for (let account of await Account.store(tx).find({ userId })) {
       let bug = await account.getBugFromURL(url, isTask);
       if (bug) {
         return bug;
@@ -438,19 +393,15 @@ export class Bug
     return bugs[0];
   }
 
-  public get id(): string {
-    return this.record.id;
-  }
-
   public get bugId(): number {
-    return this.record.bugId;
+    return this.entity.bugId;
   }
 
   public override async url(): Promise<string> {
     let account = await this.owner();
     let baseUrl = new URL(account.url);
 
-    return new URL(`show_bug.cgi?id=${this.record.bugId}`, baseUrl).toString();
+    return new URL(`show_bug.cgi?id=${this.entity.bugId}`, baseUrl).toString();
   }
 
   public override async icon(): Promise<string | null> {
@@ -458,7 +409,7 @@ export class Bug
     return account.icon;
   }
 
-  public override async update(record?: BugzillaAPIBug): Promise<void> {
+  public override async updateItem(record?: BugzillaAPIBug): Promise<void> {
     let account = await this.owner();
 
     if (!record) {
@@ -470,7 +421,7 @@ export class Bug
       record = bugs[0];
     }
 
-    await this.tx.stores.bugs.updateOne(this.id, {
+    await this.update({
       ...recordFromBug(record),
       accountId: account.id,
     });
@@ -483,12 +434,12 @@ export class Bug
 
     return {
       accountId: account.id,
-      bugId: this.record.bugId,
-      summary: this.record.summary,
+      bugId: this.entity.bugId,
+      summary: this.entity.summary,
       url: await this.url(),
       icon: account.icon,
-      status: this.record.status,
-      resolution: this.record.resolution,
+      status: this.entity.status,
+      resolution: this.entity.resolution,
     };
   }
 
@@ -506,10 +457,11 @@ export class Bug
     });
 
     let record = {
+      id,
       ...recordFromBug(bug),
       accountId: account.id,
     };
 
-    return account.tx.stores.bugs.insertOne(record, id);
+    return Bug.store(account.tx).create(record);
   }
 }

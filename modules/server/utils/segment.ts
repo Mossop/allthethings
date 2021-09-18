@@ -5,7 +5,11 @@ import type { Logger, LogMethod, Meta } from "#utils";
 const MAX_SEGMENT_LENGTH = 1000;
 
 function logMethod(level: string): LogMethod {
-  return function (this: Segment, message: string, meta: Meta = {}): void {
+  return function (
+    this: Segment,
+    message: string | Error,
+    meta: Meta = {},
+  ): void {
     this.logger[level](message, {
       ...this.meta,
       ...meta,
@@ -18,7 +22,12 @@ function logMethod(level: string): LogMethod {
   };
 }
 
-type Operation<T> = (segment: Segment) => Promise<T>;
+type Operation<T, A extends unknown[] = []> = (
+  segment: Segment,
+  ...args: A
+) => Promise<T>;
+
+let loggedSegmentErrors = new WeakSet();
 
 async function runSegmentOperation<T>(
   segment: Segment,
@@ -29,7 +38,11 @@ async function runSegmentOperation<T>(
     segment.finish();
     return result;
   } catch (error) {
-    segment.error(error.message, { error });
+    if (!loggedSegmentErrors.has(error)) {
+      segment.error(error);
+      loggedSegmentErrors.add(error);
+    }
+
     segment.finish();
     throw error;
   }

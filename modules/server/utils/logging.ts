@@ -44,21 +44,48 @@ function filtered(
 
 const formatter = format((info: TransformableInfo): TransformableInfo => {
   let { timestamp, level, message, error, ...meta } = info;
-  let additional = filtered(meta);
+  let lines: string[] = [];
 
   level = logLevels.colors[level](level.toLocaleUpperCase()).padEnd(5);
 
-  let output = `${timestamp}: ${level} - ${colors.bold["white"](message)}`;
-  if (additional) {
-    output += `\n${util.inspect(additional, { colors: true })}`;
+  if (error && error instanceof Error) {
+    let { stack } = error;
+    if (stack && typeof stack == "string") {
+      let stackLines = stack.split("\n");
+
+      let errorSummary = stackLines.shift();
+
+      lines = stackLines.map(
+        (line: string): string => `    ${colors.grey(line.trim())}`,
+      );
+
+      if (errorSummary && message != error.message) {
+        lines.unshift(`  ${colors.red(errorSummary)}`);
+      }
+
+      if ("errorMeta" in error) {
+        meta = {
+          ...meta,
+          // @ts-ignore
+          ...error.errorMeta,
+        };
+      }
+    } else {
+      meta.error = error;
+    }
+  } else if (error) {
+    meta.error = error;
   }
 
-  if (error) {
-    output += `\n${colors.red(error.message)}\n${colors.grey(error.stack)}`;
+  let additional = filtered(meta);
+  if (additional) {
+    lines.unshift(`${util.inspect(additional, { colors: true })}`);
   }
+
+  lines.unshift(`${timestamp}: ${level} - ${colors.bold["white"](message)}`);
 
   // @ts-ignore
-  info[MESSAGE] = output;
+  info[MESSAGE] = lines.join("\n");
   return info;
 });
 
@@ -79,11 +106,19 @@ function buildLogger(meta: Record<string, unknown> = {}): Logger {
   });
 
   let logMethod = (level: string): LogMethod => {
-    return (message: string, extraMeta: Meta = {}): void => {
-      winstonLogger.log(level, message, {
-        ...meta,
-        ...extraMeta,
-      });
+    return (message: string | Error, extraMeta: Meta = {}): void => {
+      if (message instanceof Error) {
+        winstonLogger.log(level, message.message, {
+          ...meta,
+          error: message,
+          ...extraMeta,
+        });
+      } else {
+        winstonLogger.log(level, message, {
+          ...meta,
+          ...extraMeta,
+        });
+      }
     };
   };
 

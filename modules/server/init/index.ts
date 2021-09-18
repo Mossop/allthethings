@@ -1,21 +1,22 @@
 import { install } from "source-map-support";
 
-import {
-  buildCoreTransaction,
-  parseConfig,
-  User,
-  withTransaction,
-  connect,
-  migrate,
-  rollback,
-  TaskInfo,
-} from "#server/core";
+import type { Database } from "#db";
+import { connect, migrate, rollback } from "#db";
+import { parseConfig, User, withTransaction, TaskInfo } from "#server/core";
 import type { Transaction, Segment } from "#server/utils";
 import { inSegment } from "#server/utils";
 
 import { ServiceManager } from "../core/services";
 import { createGqlServer } from "./gqlserver";
+import { Migration0002Core } from "./migrations/0002-Core";
+import { Migration0003Bugzilla } from "./migrations/0003-Bugzilla";
+import { Migration0004Github } from "./migrations/0004-Github";
+import { Migration0005Google } from "./migrations/0005-Google";
+import { Migration0006Jira } from "./migrations/0006-Jira";
+import { Migration0007Phabricator } from "./migrations/0007-Phabricator";
 import { createWebServer } from "./webserver";
+import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
+import { Migration0008Knex } from "./migrations/0008-Knex";
 
 install();
 
@@ -26,58 +27,80 @@ async function init(): Promise<void> {
     }
 
     let config = await parseConfig(process.argv[2]);
-    let knex = connect(config.database);
 
-    ServiceManager.addService(
-      (await import("#services/bugzilla/server")).default,
-    );
-    ServiceManager.addService(
-      (await import("#services/github/server")).default,
-    );
-    ServiceManager.addService(
-      (await import("#services/google/server")).default,
-    );
-    ServiceManager.addService((await import("#services/jira/server")).default);
-    ServiceManager.addService(
-      (await import("#services/phabricator/server")).default,
-    );
+    let connection = await connect(config.database);
+    try {
+      ServiceManager.addService(
+        (await import("#services/bugzilla/server")).default,
+      );
+      ServiceManager.addService(
+        (await import("#services/github/server")).default,
+      );
+      ServiceManager.addService(
+        (await import("#services/google/server")).default,
+      );
+      ServiceManager.addService(
+        (await import("#services/jira/server")).default,
+      );
+      ServiceManager.addService(
+        (await import("#services/phabricator/server")).default,
+      );
 
-    if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
-      await rollback(knex);
-    }
+      await segment.inSegment("DB migrations", async () => {
+        await connection.inTransaction(async (db: Database) => {
+          let migrations = [
+            new Migration0001KnexPrep(),
+            new Migration0002Core(),
+            new Migration0003Bugzilla(),
+            new Migration0004Github(),
+            new Migration0005Google(),
+            new Migration0006Jira(),
+            new Migration0007Phabricator(),
+            new Migration0008Knex(),
+          ];
 
-    await migrate(knex);
-
-    await ServiceManager.initServices(knex, config);
-
-    await withTransaction(
-      knex,
-      segment,
-      async (transaction: Transaction): Promise<void> => {
-        let tx = buildCoreTransaction(transaction);
-        if (config.admin) {
-          let existing = await tx.stores.users.first({
-            email: config.admin.email,
-          });
-
-          if (!existing) {
-            segment.info(`Creating admin user ${config.admin.email}`);
-            await User.create(tx, {
-              ...config.admin,
-              isAdmin: true,
-            });
+          if (process.argv.length >= 4 && process.argv[3] == "rebuild") {
+            await rollback(db, { migrations });
           }
-        }
 
-        await TaskInfo.updateTaskDetails(tx);
-      },
-    );
+          await migrate(db, { migrations });
+        });
+      });
 
-    let gqlServer = await createGqlServer();
-    await createWebServer(config, knex, gqlServer);
-    segment.info("Startup complete");
+      await ServiceManager.initServices(connection, config);
+
+      await withTransaction(
+        connection,
+        segment,
+        async (tx: Transaction): Promise<void> => {
+          if (config.admin) {
+            let existing = await User.store(tx).findOne({
+              email: config.admin.email,
+            });
+
+            if (!existing) {
+              segment.info(`Creating admin user ${config.admin.email}`);
+              await User.create(tx, {
+                ...config.admin,
+                isAdmin: true,
+              });
+            }
+          }
+
+          await TaskInfo.updateTaskDetails(tx);
+        },
+      );
+
+      let gqlServer = await createGqlServer();
+      await createWebServer(config, connection, gqlServer);
+      segment.info("Startup complete");
+    } catch (e) {
+      await connection.disconnect();
+      throw e;
+    }
   });
 }
 
-// eslint-disable-next-line no-console
-init().catch((e: Error) => console.error(e));
+init().catch(() => {
+  // Will have been logged on exit from the segment.
+});

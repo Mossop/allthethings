@@ -6,11 +6,12 @@ import type { RequestParameters } from "@octokit/types";
 import type { DocumentNode } from "graphql";
 import { print } from "graphql";
 
+import type { ServiceTransaction } from "#server/utils";
+
 import { GithubService } from ".";
 import type { Account } from "./implementations";
 import type { SearchQuery, UserInfoQuery } from "./operations";
 import { getSdk } from "./operations";
-import type { GithubTransaction } from "./stores";
 import type { IssueLikeApiResult } from "./types";
 
 const SCOPES = ["repo"];
@@ -136,7 +137,7 @@ export class GitHubApi {
   }
 
   public static generateLoginUrl(
-    tx: GithubTransaction,
+    tx: ServiceTransaction,
     userId: string,
   ): string {
     return generateLoginUrl(tx.serviceUrl, userId);

@@ -8,16 +8,12 @@ import type {
   ServiceWebMiddleware,
   Server,
   ServiceWebContext,
-  ServiceDbMigration,
   ServiceExport,
   ServiceTransaction,
 } from "#server/utils";
 
 import { Account, File, MailSearch, Thread } from "./implementations";
-import buildMigrations from "./migrations";
 import Resolvers from "./resolvers";
-import type { GoogleTransaction } from "./stores";
-import { buildTransaction } from "./stores";
 import type { GoogleServiceConfig } from "./types";
 
 function first(param: string | string[] | undefined): string | undefined {
@@ -31,8 +27,8 @@ function first(param: string | string[] | undefined): string | undefined {
 const INITIAL_DELAY = 1000;
 const UPDATE_DELAY = 60000;
 
-export class GoogleService extends BaseService<GoogleTransaction> {
-  public readonly webMiddleware: ServiceWebMiddleware<GoogleTransaction>;
+export class GoogleService extends BaseService {
+  public readonly webMiddleware: ServiceWebMiddleware<ServiceTransaction>;
 
   private static _service: GoogleService | null = null;
 
@@ -63,7 +59,7 @@ export class GoogleService extends BaseService<GoogleTransaction> {
   }
 
   public constructor(
-    private readonly server: Server<GoogleTransaction>,
+    private readonly server: Server,
     private readonly config: GoogleServiceConfig,
   ) {
     super();
@@ -71,8 +67,8 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     GoogleService._service = this;
     this.problems = new Map();
 
-    let oauthMiddleware: ServiceWebMiddleware<GoogleTransaction> = async (
-      ctx: ServiceWebContext<GoogleTransaction>,
+    let oauthMiddleware: ServiceWebMiddleware<ServiceTransaction> = async (
+      ctx: ServiceWebContext,
       next: Koa.Next,
     ): Promise<any> => {
       let code = first(ctx.query.code);
@@ -92,7 +88,7 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     this.webMiddleware = koaMount("/oauth", oauthMiddleware);
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("update", (tx: GoogleTransaction) =>
+      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
         this.update(tx),
       );
 
@@ -100,11 +96,11 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     }, INITIAL_DELAY);
   }
 
-  public override async update(tx: GoogleTransaction): Promise<void> {
-    let accounts = await tx.stores.accounts.list();
+  public override async update(tx: ServiceTransaction): Promise<void> {
+    let accounts = await Account.store(tx).find();
     for (let account of accounts) {
       try {
-        await account.update();
+        await account.updateAccount();
       } catch (e) {
         // Ignore account failure.
       }
@@ -116,19 +112,19 @@ export class GoogleService extends BaseService<GoogleTransaction> {
     return Resolvers;
   }
 
-  public buildTransaction(tx: ServiceTransaction): GoogleTransaction {
-    return buildTransaction(tx);
+  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
+    return tx;
   }
 
   public async listProblems(
-    tx: GoogleTransaction,
+    tx: ServiceTransaction,
     userId: string | null,
   ): Promise<Problem[]> {
     if (!userId) {
       return [];
     }
 
-    let accounts = await tx.stores.accounts.list({
+    let accounts = await Account.store(tx).find({
       userId,
     });
 
@@ -147,12 +143,8 @@ export class GoogleService extends BaseService<GoogleTransaction> {
   }
 }
 
-const serviceExport: ServiceExport<GoogleServiceConfig, GoogleTransaction> = {
+const serviceExport: ServiceExport<GoogleServiceConfig> = {
   id: "google",
-
-  get dbMigrations(): ServiceDbMigration[] {
-    return buildMigrations();
-  },
 
   configDecoder: JsonDecoder.object<GoogleServiceConfig>(
     {
@@ -162,7 +154,7 @@ const serviceExport: ServiceExport<GoogleServiceConfig, GoogleTransaction> = {
     "Google Service Config",
   ),
 
-  init: (server: Server<GoogleTransaction>, config: GoogleServiceConfig) =>
+  init: (server: Server, config: GoogleServiceConfig) =>
     new GoogleService(server, config),
 };
 

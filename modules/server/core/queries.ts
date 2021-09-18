@@ -1,44 +1,31 @@
 import type { QueryTaskListArgs } from "#schema";
-import type { GraphQLCtx, TypeResolver } from "#server/utils";
+import type { GraphQLCtx, Transaction, TypeResolver } from "#server/utils";
 
-import type { TaskList, User } from "./implementations";
+import type { TaskList } from "./implementations";
+import { User, TaskListBase } from "./implementations";
 import type { QueryResolvers } from "./schema";
-import type { CoreTransaction } from "./transaction";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
-const queryResolvers: TypeResolver<
-  QueryResolvers,
-  GraphQLCtx<CoreTransaction>
-> = {
-  async user(ctx: GraphQLCtx<CoreTransaction>): Promise<User | null> {
+const queryResolvers: TypeResolver<QueryResolvers, GraphQLCtx> = {
+  async user(ctx: GraphQLCtx): Promise<User | null> {
     if (!ctx.userId) {
       return null;
     }
 
-    return ctx.transaction.stores.users.get(ctx.userId);
+    return User.store(ctx.transaction).findOne({ id: ctx.userId });
   },
 
-  users: ensureAdmin(async (tx: CoreTransaction): Promise<User[]> => {
-    return tx.stores.users.list();
+  users: ensureAdmin(async (tx: Transaction): Promise<User[]> => {
+    return User.store(tx).find();
   }),
 
   taskList: ensureAuthed(
     async (
-      tx: CoreTransaction,
+      tx: Transaction,
       user: User,
       { id }: QueryTaskListArgs,
     ): Promise<TaskList | null> => {
-      let project = await tx.stores.projects.get(id);
-      if (project) {
-        return project;
-      }
-
-      let context = await tx.stores.contexts.get(id);
-      if (context) {
-        return context;
-      }
-
-      return null;
+      return TaskListBase.getTaskList(tx, id);
     },
   ),
 };

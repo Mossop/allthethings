@@ -65,5 +65,13 @@ module.exports = {
         },
       },
     },
+
+    {
+      files: ["modules/server/init/migrations/*.ts"],
+
+      rules: {
+        "max-len": "off",
+      },
+    },
   ],
 };

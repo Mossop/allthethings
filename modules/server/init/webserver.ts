@@ -3,18 +3,17 @@ import path from "path";
 
 import type { ApolloServer } from "apollo-server-koa";
 import busboy from "async-busboy";
-import type { Knex } from "knex";
 import koa from "koa";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import koaSession from "koa-session";
 import koaStatic from "koa-static";
 
-import type { ServerConfig } from "#server/core";
-import {
+import type { Database } from "#db";
+import type { ServerConfig} from "#server/core";
+import { User ,
   buildServiceTransaction,
   ServiceManager,
-  buildCoreTransaction,
   withTransaction,
 } from "#server/core";
 import type {
@@ -50,7 +49,7 @@ interface TransactionHolder {
 
 export async function buildWebServerContext(
   config: ServerConfig,
-  knex: Knex,
+  db: Database,
 ): Promise<DescriptorsFor<ExtraContext>> {
   let transactions = new WeakMap<WebServerContext, TransactionHolder>();
   let segments = new WeakMap<WebServerContext, Segment>();
@@ -122,7 +121,7 @@ export async function buildWebServerContext(
           transactions.set(this, holder);
 
           holder.complete = withTransaction(
-            knex,
+            db,
             this.segment,
             (tx: Transaction): Promise<void> => {
               deferredTransaction.resolve(tx);
@@ -145,6 +144,7 @@ export async function buildWebServerContext(
         if (!holder) {
           if (segment) {
             segment.finish();
+            segments.delete(this);
           }
 
           return;
@@ -157,6 +157,7 @@ export async function buildWebServerContext(
 
         if (segment) {
           segment.finish();
+          segments.delete(this);
         }
       },
     },
@@ -171,6 +172,7 @@ export async function buildWebServerContext(
         if (!holder) {
           if (segment) {
             segment.finish();
+            segments.delete(this);
           }
           return;
         }
@@ -186,6 +188,7 @@ export async function buildWebServerContext(
 
         if (segment) {
           segment.finish();
+          segments.delete(this);
         }
       },
     },
@@ -200,7 +203,7 @@ async function transactionMiddleware(
 ): Promise<void> {
   try {
     await next();
-    ctx.segment.debug("Request complete");
+    ctx.segment.trace("Request complete");
     await ctx.commitTransaction();
   } catch (error) {
     ctx.segment.error("Error during request", { error });
@@ -216,8 +219,8 @@ async function authMiddleware(ctx: WebServerContext): Promise<unknown> {
         let { fields } = await busboy(ctx.req);
 
         if (fields.email && fields.password) {
-          let tx = buildCoreTransaction(await ctx.startTransaction());
-          let user = await tx.stores.users.first({ email: fields.email });
+          let tx = await ctx.startTransaction();
+          let user = await User.store(tx).findOne({ email: fields.email });
           if (user && (await user.verifyUser(fields.password))) {
             ctx.login(user.id);
             ctx.status = 200;
@@ -247,13 +250,13 @@ async function authMiddleware(ctx: WebServerContext): Promise<unknown> {
 
 export async function createWebServer(
   config: ServerConfig,
-  knex: Knex,
+  db: Database,
   gqlServer: ApolloServer,
 ): Promise<WebServer> {
   let webRoot = path.join(__dirname, "..", "..", "web");
 
   let htmlFile = path.join(webRoot, "index.html");
-  let context = await buildWebServerContext(config, knex);
+  let context = await buildWebServerContext(config, db);
 
   let app: WebServer = new koa();
   Object.defineProperties(app.context, {

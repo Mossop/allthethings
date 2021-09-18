@@ -1,29 +1,21 @@
-import type {
-  Server,
-  ServiceDbMigration,
-  ServiceExport,
-  ServiceTransaction,
-} from "#server/utils";
+import type { Server, ServiceExport, ServiceTransaction } from "#server/utils";
 import { BaseService } from "#server/utils";
 
-import { Issue, Search } from "./implementations";
-import buildMigrations from "./migrations";
+import { Account, Issue, Search } from "./implementations";
 import Resolvers from "./resolvers";
-import type { JiraTransaction } from "./stores";
-import { buildTransaction } from "./stores";
 
 const UPDATE_DELAY = 60000;
 
-export class JiraService extends BaseService<JiraTransaction> {
+export class JiraService extends BaseService {
   protected readonly listProviders = [Search];
 
   protected readonly itemProviders = [Issue];
 
-  public constructor(private readonly server: Server<JiraTransaction>) {
+  public constructor(private readonly server: Server) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("update", (tx: JiraTransaction) =>
+      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
         this.update(tx),
       );
 
@@ -31,10 +23,10 @@ export class JiraService extends BaseService<JiraTransaction> {
     }, UPDATE_DELAY);
   }
 
-  public override async update(tx: JiraTransaction): Promise<void> {
-    let accounts = await tx.stores.accounts.list();
+  public override async update(tx: ServiceTransaction): Promise<void> {
+    let accounts = await Account.store(tx).find();
     for (let account of accounts) {
-      await account.update();
+      await account.updateAccount();
     }
     await super.update(tx);
   }
@@ -43,19 +35,15 @@ export class JiraService extends BaseService<JiraTransaction> {
     return Resolvers;
   }
 
-  public buildTransaction(tx: ServiceTransaction): JiraTransaction {
-    return buildTransaction(tx);
+  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
+    return tx;
   }
 }
 
-const serviceExport: ServiceExport<unknown, JiraTransaction> = {
+const serviceExport: ServiceExport<unknown> = {
   id: "jira",
 
-  get dbMigrations(): ServiceDbMigration[] {
-    return buildMigrations();
-  },
-
-  init: (server: Server<JiraTransaction>) => new JiraService(server),
+  init: (server: Server) => new JiraService(server),
 };
 
 export default serviceExport;

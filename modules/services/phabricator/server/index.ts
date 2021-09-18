@@ -1,41 +1,32 @@
-import type {
-  Server,
-  ServiceDbMigration,
-  ServiceExport,
-  ServiceTransaction,
-} from "#server/utils";
+import type { Server, ServiceExport, ServiceTransaction } from "#server/utils";
 import { BaseService } from "#server/utils";
 
-import { Query, Revision } from "./implementations";
-import buildMigrations from "./migrations";
+import { Account, Query, Revision } from "./implementations";
 import Resolvers from "./resolvers";
-import type { PhabricatorTransaction } from "./stores";
-import { buildTransaction } from "./stores";
 
 const UPDATE_DELAY = 60000;
 
-class PhabricatorService extends BaseService<PhabricatorTransaction> {
+class PhabricatorService extends BaseService {
   public readonly itemProviders = [Revision];
 
   public readonly listProviders = [Query];
 
-  public constructor(private readonly server: Server<PhabricatorTransaction>) {
+  public constructor(private readonly server: Server) {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction(
-        "update",
-        (tx: PhabricatorTransaction) => this.update(tx),
+      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
+        this.update(tx),
       );
 
       return UPDATE_DELAY;
     }, UPDATE_DELAY);
   }
 
-  public override async update(tx: PhabricatorTransaction): Promise<void> {
-    let accounts = await tx.stores.accounts.list();
+  public override async update(tx: ServiceTransaction): Promise<void> {
+    let accounts = await Account.store(tx).find();
     for (let account of accounts) {
-      await account.update();
+      await account.updateAccount();
     }
 
     await super.update(tx);
@@ -45,20 +36,15 @@ class PhabricatorService extends BaseService<PhabricatorTransaction> {
     return Resolvers;
   }
 
-  public buildTransaction(tx: ServiceTransaction): PhabricatorTransaction {
-    return buildTransaction(tx);
+  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
+    return tx;
   }
 }
 
-const serviceExport: ServiceExport<unknown, PhabricatorTransaction> = {
+const serviceExport: ServiceExport<unknown> = {
   id: "phabricator",
 
-  get dbMigrations(): ServiceDbMigration[] {
-    return buildMigrations();
-  },
-
-  init: (server: Server<PhabricatorTransaction>) =>
-    new PhabricatorService(server),
+  init: (server: Server) => new PhabricatorService(server),
 };
 
 export default serviceExport;

@@ -8,31 +8,34 @@ import type {
   MutationDeleteBugzillaSearchArgs,
   MutationEditBugzillaSearchArgs,
 } from "#schema";
-import type { AuthedGraphQLCtx, GraphQLCtx } from "#server/utils";
+import type {
+  AuthedGraphQLCtx,
+  GraphQLCtx,
+  ServiceTransaction,
+} from "#server/utils";
 import { rootResolvers, bestIcon, loadPageInfo } from "#server/utils";
 
+import type { BugzillaAccountEntity } from "./entities";
 import { Search, Account } from "./implementations";
 import type { Resolvers } from "./schema";
-import type { BugzillaTransaction } from "./stores";
-import type { BugzillaAccountRecord } from "./types";
 
-export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
+export default rootResolvers<Resolvers>({
   User: {
     bugzillaAccounts(
-      ctx: AuthedGraphQLCtx<BugzillaTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
     ): Promise<Account[]> {
-      return ctx.transaction.stores.accounts.list({ userId: ctx.userId });
+      return Account.store(ctx.transaction).find({ userId: ctx.userId });
     },
   },
 
   Mutation: {
     async createBugzillaAccount(
-      ctx: AuthedGraphQLCtx<BugzillaTransaction>,
+      ctx: AuthedGraphQLCtx<ServiceTransaction>,
       {
         params: { url, name, username, password },
       }: MutationCreateBugzillaAccountArgs,
     ): Promise<Account> {
-      let record: Omit<BugzillaAccountRecord, "id" | "icon" | "userId"> = {
+      let record: Omit<BugzillaAccountEntity, "id" | "icon" | "userId"> = {
         url,
         name,
         username: username ?? null,
@@ -56,29 +59,22 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
     },
 
     async deleteBugzillaAccount(
-      ctx: GraphQLCtx<BugzillaTransaction>,
+      ctx: GraphQLCtx<ServiceTransaction>,
       { account: accountId }: MutationDeleteBugzillaAccountArgs,
     ): Promise<boolean> {
-      let account = await ctx.transaction.stores.accounts.get(accountId);
-      if (!account) {
-        return false;
-      }
-
+      let account = await Account.store(ctx.transaction).get(accountId);
       await account.delete();
       return true;
     },
 
     async createBugzillaSearch(
-      ctx: GraphQLCtx<BugzillaTransaction>,
+      ctx: GraphQLCtx<ServiceTransaction>,
       {
         account: accountId,
         params: { name, query, dueOffset },
       }: MutationCreateBugzillaSearchArgs,
     ): Promise<Search> {
-      let account = await ctx.transaction.stores.accounts.get(accountId);
-      if (!account) {
-        throw new Error("Unknown account.");
-      }
+      let account = await Account.store(ctx.transaction).get(accountId);
 
       return Search.create(account, {
         name,
@@ -89,18 +85,14 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
     },
 
     async editBugzillaSearch(
-      ctx: GraphQLCtx<BugzillaTransaction>,
+      ctx: GraphQLCtx<ServiceTransaction>,
       {
         search: searchId,
         params: { name, query, dueOffset },
       }: MutationEditBugzillaSearchArgs,
     ): Promise<Search | null> {
-      let search = await ctx.transaction.stores.searches.get(searchId);
-      if (!search) {
-        return null;
-      }
-
-      await ctx.transaction.stores.searches.updateOne(searchId, {
+      let search = await Search.store(ctx.transaction).get(searchId);
+      await search.update({
         name,
         query,
         dueOffset: dueOffset ? JSON.stringify(dueOffset) : null,
@@ -109,14 +101,10 @@ export default rootResolvers<Resolvers, AuthedGraphQLCtx<BugzillaTransaction>>({
     },
 
     async deleteBugzillaSearch(
-      ctx: GraphQLCtx<BugzillaTransaction>,
+      ctx: GraphQLCtx<ServiceTransaction>,
       { search: searchId }: MutationDeleteBugzillaSearchArgs,
     ): Promise<boolean> {
-      let search = await ctx.transaction.stores.searches.get(searchId);
-      if (!search) {
-        return false;
-      }
-
+      let search = await Search.store(ctx.transaction).get(searchId);
       await search.delete();
       return true;
     },

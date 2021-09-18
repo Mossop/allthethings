@@ -1,4 +1,3 @@
-export * from "./db";
 export * from "./base";
 export * from "./logging";
 export * from "./page";

@@ -118,3 +118,22 @@ export function relatedCache<S extends object, I, T extends IdItem<I>>(
     return new RelatedItemCache<S, I, T>(source, getter);
   });
 }
+
+export function map<T, R>(
+  values: Promise<T[]>,
+  mapper: (val: T) => Awaitable<R>,
+): Promise<R[]>;
+export function map<T, R>(values: T[], mapper: (val: T) => R): R[];
+export function map<T, R>(
+  values: Awaitable<T[]>,
+  mapper: (val: T) => Awaitable<R>,
+): R[] | Promise<R[]> {
+  if (isPromise(values)) {
+    return values.then(
+      (values: T[]): Promise<R[]> => Promise.all(values.map(mapper)),
+    );
+  }
+
+  // @ts-ignore
+  return values.map(mapper);
+}

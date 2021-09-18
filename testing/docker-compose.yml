@@ -24,12 +24,12 @@ services:
       - "7000:7000"
     volumes:
       - "./pgadmin.json:/pgadmin4/servers.json"
-  bugzilla:
-    image: mossop/bugzilla
-    restart: unless-stopped
-    environment:
-      ADMIN_EMAIL: admin@allthethings.dev
-      ADMIN_PASSWORD: allthethings
-      ADMIN_REALNAME: AllTheThings Admin
-    ports:
-      - "8888:80"
+  # bugzilla:
+  #   image: mossop/bugzilla
+  #   restart: unless-stopped
+  #   environment:
+  #     ADMIN_EMAIL: admin@allthethings.dev
+  #     ADMIN_PASSWORD: allthethings
+  #     ADMIN_REALNAME: AllTheThings Admin
+  #   ports:
+  #     - "8888:80"

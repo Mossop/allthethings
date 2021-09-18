@@ -6,10 +6,11 @@ import type { drive_v3, gmail_v1, people_v1 } from "googleapis";
 import { google, Auth } from "googleapis";
 import { GaxiosError } from "googleapis-common";
 
+import type { ServiceTransaction } from "#server/utils";
+
 import { GoogleService } from ".";
+import type { GoogleAccountEntity } from "./entities";
 import type { Account } from "./implementations";
-import type { GoogleTransaction } from "./stores";
-import type { GoogleAccountRecord } from "./types";
 
 export async function getAccountInfo(
   authClient: Auth.OAuth2Client,
@@ -71,7 +72,7 @@ export class GoogleApi {
 
   public constructor(
     private readonly account: Account,
-    credentials: GoogleAccountRecord,
+    credentials: GoogleAccountEntity,
   ) {
     this.client = GoogleApi.createAuthClient(account.tx.serviceUrl);
 
@@ -114,13 +115,13 @@ export class GoogleApi {
         );
       } else if (refreshToken) {
         GoogleService.service.clearProblem(this.account);
-        void this.account.tx.stores.accounts.updateOne(this.account.id, {
+        void this.account.update({
           accessToken,
           refreshToken,
           expiry: Math.floor(expiry / 1000),
         });
       } else {
-        void this.account.tx.stores.accounts.updateOne(this.account.id, {
+        void this.account.update({
           accessToken,
           expiry: Math.floor(expiry / 1000),
         });
@@ -128,7 +129,10 @@ export class GoogleApi {
     });
   }
 
-  public static generateAuthUrl(tx: GoogleTransaction, userId: string): string {
+  public static generateAuthUrl(
+    tx: ServiceTransaction,
+    userId: string,
+  ): string {
     let client = GoogleApi.createAuthClient(tx.serviceUrl);
 
     return client.generateAuthUrl({

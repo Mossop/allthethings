@@ -1,6 +1,5 @@
 import type { URL } from "url";
 
-import type { Knex } from "knex";
 import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
@@ -11,25 +10,6 @@ import type { Awaitable, MaybeCallable, RelativeDateTime } from "#utils";
 import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
-
-type CreateColumn = (
-  table: Knex.CreateTableBuilder,
-  column: string,
-) => Knex.ColumnBuilder;
-
-export interface DbMigrationHelper {
-  readonly idColumn: CreateColumn;
-  readonly userRef: CreateColumn;
-  readonly itemRef: CreateColumn;
-  readonly listRef: CreateColumn;
-  readonly tableName: (name: string) => string;
-}
-
-export interface ServiceDbMigration {
-  readonly name: string;
-
-  readonly up: (knex: Knex, helper: DbMigrationHelper) => Promise<void>;
-}
 
 export interface ItemList {
   name: string;
@@ -119,11 +99,10 @@ export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
 }
 
 export interface ServiceExport<
-  C = never,
+  C = any,
   Tx extends ServiceTransaction = ServiceTransaction,
 > {
   readonly id: string;
-  readonly dbMigrations: ServiceDbMigration[];
   readonly configDecoder?: JsonDecoder.Decoder<C>;
   readonly init: (server: Server<Tx>, config: C) => Awaitable<Service<Tx>>;
 }

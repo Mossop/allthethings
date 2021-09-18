@@ -3,6 +3,7 @@
   "references": [
     { "path": "../../schema" },
     { "path": "../utils" },
+    { "path": "../../db" },
     { "path": "../../utils" }
   ]
 }
