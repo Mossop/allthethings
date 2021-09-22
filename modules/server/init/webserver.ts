@@ -145,25 +145,20 @@ export async function buildWebServerContext(
         this: WebServerContext,
       ): Promise<void> {
         let segment = segments.get(this);
-        let holder = transactions.get(this);
-        if (!holder) {
-          if (segment) {
-            segment.finish();
-            segments.delete(this);
-          }
+        segments.delete(this);
 
+        let holder = transactions.get(this);
+        transactions.delete(this);
+
+        if (!holder) {
+          segment?.finish();
           return;
         }
-
-        transactions.delete(this);
 
         holder.resolve();
         await holder.complete;
 
-        if (segment) {
-          segment.finish();
-          segments.delete(this);
-        }
+        segment?.finish();
       },
     },
 
@@ -173,16 +168,15 @@ export async function buildWebServerContext(
         this: WebServerContext,
       ): Promise<void> {
         let segment = segments.get(this);
+        segments.delete(this);
+
         let holder = transactions.get(this);
+        transactions.delete(this);
+
         if (!holder) {
-          if (segment) {
-            segment.finish();
-            segments.delete(this);
-          }
+          segment?.finish();
           return;
         }
-
-        transactions.delete(this);
 
         holder.reject();
         try {
@@ -191,10 +185,7 @@ export async function buildWebServerContext(
           // expected.
         }
 
-        if (segment) {
-          segment.finish();
-          segments.delete(this);
-        }
+        segment?.finish();
       },
     },
   };
