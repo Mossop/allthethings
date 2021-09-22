@@ -21,7 +21,7 @@ import { Migration0008Knex } from "./migrations/0008-Knex";
 install();
 
 async function init(): Promise<void> {
-  return inSegment("init", async (segment: Segment) => {
+  return inSegment("Server Init", async (segment: Segment) => {
     if (process.argv.length < 3) {
       throw new Error("Must pass the path to a config file.");
     }
@@ -72,6 +72,7 @@ async function init(): Promise<void> {
       await withTransaction(
         connection,
         segment,
+        "DB prep",
         async (tx: Transaction): Promise<void> => {
           if (config.admin) {
             let existing = await User.store(tx).findOne({

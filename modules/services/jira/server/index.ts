@@ -15,7 +15,7 @@ export class JiraService extends BaseService {
     super();
 
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("update", (tx: ServiceTransaction) =>
+      await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
         this.update(tx),
       );
 

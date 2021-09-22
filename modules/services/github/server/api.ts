@@ -72,21 +72,25 @@ export class GitHubApi {
   }
 
   public async userInfo(): Promise<UserInfoQuery> {
-    return UserInfo(this.kit);
+    return this.account.tx.segment.inSegment("userInfo API request", () =>
+      UserInfo(this.kit),
+    );
   }
 
   public async node(nodeId: string): Promise<IssueLikeApiResult | null> {
-    let result = await this.sdk.Node({
-      nodeId,
-    });
+    return this.account.tx.segment.inSegment("node API request", async () => {
+      let result = await this.sdk.Node({
+        nodeId,
+      });
 
-    if (
-      result.node?.__typename == "Issue" ||
-      result.node?.__typename == "PullRequest"
-    ) {
-      return result.node;
-    }
-    return null;
+      if (
+        result.node?.__typename == "Issue" ||
+        result.node?.__typename == "PullRequest"
+      ) {
+        return result.node;
+      }
+      return null;
+    });
   }
 
   public async lookup(
@@ -94,38 +98,45 @@ export class GitHubApi {
     repo: string,
     number: number,
   ): Promise<IssueLikeApiResult | null> {
-    let result = await this.sdk.IssueLike({
-      owner,
-      repo,
-      number,
-    });
+    return this.account.tx.segment.inSegment("issue API request", async () => {
+      let result = await this.sdk.IssueLike({
+        owner,
+        repo,
+        number,
+      });
 
-    return result.repository?.issueOrPullRequest ?? null;
+      return result.repository?.issueOrPullRequest ?? null;
+    });
   }
 
   public async search(query: string): Promise<IssueLikeApiResult[]> {
-    let result = await this.sdk.Search({ terms: query, after: null });
-    let issueLikes: IssueLikeApiResult[] = [];
+    return this.account.tx.segment.inSegment("search API request", async () => {
+      let result = await this.sdk.Search({ terms: query, after: null });
+      let issueLikes: IssueLikeApiResult[] = [];
 
-    let appendIssues = (result: SearchQuery): void => {
-      for (let node of result.search.nodes ?? []) {
-        if (node?.__typename == "Issue" || node?.__typename == "PullRequest") {
-          issueLikes.push(node);
+      let appendIssues = (result: SearchQuery): void => {
+        for (let node of result.search.nodes ?? []) {
+          if (
+            node?.__typename == "Issue" ||
+            node?.__typename == "PullRequest"
+          ) {
+            issueLikes.push(node);
+          }
         }
-      }
-    };
-
-    appendIssues(result);
-    while (result.search.pageInfo.hasNextPage) {
-      result = await this.sdk.Search({
-        terms: query,
-        after: result.search.pageInfo.endCursor,
-      });
+      };
 
       appendIssues(result);
-    }
+      while (result.search.pageInfo.hasNextPage) {
+        result = await this.sdk.Search({
+          terms: query,
+          after: result.search.pageInfo.endCursor,
+        });
 
-    return issueLikes;
+        appendIssues(result);
+      }
+
+      return issueLikes;
+    });
   }
 
   public generateLoginUrl(): string {

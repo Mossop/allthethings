@@ -13,10 +13,6 @@ function logMethod(level: string): LogMethod {
     this.logger[level](message, {
       ...this.meta,
       ...meta,
-      id: this.id,
-      name: this.name,
-      parent: this.parent?.id,
-      depth: this.depth,
       mark: Math.round(performance.now() - this.start),
     });
   };
@@ -48,27 +44,38 @@ async function runSegmentOperation<T>(
   }
 }
 
-export class Segment implements Logger {
-  protected readonly id: number;
-  protected closed = false;
-  protected currentChild: Segment | null = null;
-  protected readonly children: Segment[] = [];
-  protected readonly depth: number;
+export abstract class Segment implements Logger {
   protected readonly start = performance.now();
-  protected loggedSlow = false;
+  protected end: number | null = null;
+  protected currentChild: Segment | null = null;
+  public readonly children: Segment[] = [];
+  protected readonly meta: Meta;
 
   protected static nextSegmentID = 0;
 
   public constructor(
     protected readonly parent: Segment | null,
-    protected readonly name: string,
     protected readonly logger: Logger,
-    protected readonly meta: Meta = {},
+    public readonly name: string,
+    meta: Meta,
   ) {
-    this.id = Segment.nextSegmentID++;
-    this.depth = parent ? parent.depth + 1 : 0;
-
     this.trace("Entering segment");
+
+    let tree: string[] = [];
+    let segment: Segment = this;
+    while (segment.parent) {
+      tree.unshift(segment.name);
+      segment = segment.parent;
+    }
+
+    this.meta = {
+      ...parent?.meta,
+      ...meta,
+    };
+
+    if (tree.length) {
+      this.meta.tree = tree;
+    }
   }
 
   public readonly error = logMethod("error");
@@ -79,6 +86,10 @@ export class Segment implements Logger {
 
   public get current(): Segment {
     return this.currentChild?.current ?? this;
+  }
+
+  public get duration(): number {
+    return Math.round((this.end ?? performance.now()) - this.start);
   }
 
   public inSegment<T>(name: string, operation: Operation<T>): Promise<T>;
@@ -94,55 +105,83 @@ export class Segment implements Logger {
     let meta = args.length == 2 ? args[0] : {};
     let operation = args.length == 2 ? args[1] : args[0];
 
-    let segment = this.enterSegment(name, meta);
+    let segment = this.current.enterSegment(name, meta);
     return runSegmentOperation(segment, operation);
   }
 
   public enterSegment(name: string, meta: Meta): Segment {
     if (this.currentChild) {
-      this.error(
-        `Entering new segment while ${this.currentChild.id} is still open.`,
-      );
+      this.error(`Entering new segment while a child is still open.`);
     }
 
-    this.currentChild = new Segment(this, name, this.logger, meta);
+    this.currentChild = new ChildSegment(this, this.logger, name, meta);
     this.children.push(this.currentChild);
     return this.currentChild;
   }
 
+  public get isClosed(): boolean {
+    return this.end !== null;
+  }
+
   public finish(): void {
-    if (this.closed) {
+    if (this.isClosed) {
       this.error("Double close");
       return;
     }
 
     if (
       this.currentChild ||
-      !this.children.every((child: Segment): boolean => child.closed)
+      !this.children.every((child: Segment): boolean => child.isClosed)
     ) {
       this.error("Closing before all children were closed.");
     }
 
-    this.closed = true;
-    if (this.parent && this.parent.currentChild === this) {
+    if (this.parent?.currentChild === this) {
       this.parent.currentChild = null;
     }
 
-    if (!this.loggedSlow) {
-      let length = performance.now() - this.start;
-      if (length >= MAX_SEGMENT_LENGTH) {
-        let parents: string[] = [];
-        let parent = this.parent;
-        while (parent) {
-          parent.loggedSlow = true;
-          parents.unshift(parent.name);
-          parent = parent.parent;
-        }
-        this.warn("Slow segment", { parents });
-      }
-    }
+    this.end = performance.now();
 
     this.trace("Leaving segment");
+  }
+}
+
+class ChildSegment extends Segment {}
+
+export class RootSegment extends Segment {
+  public constructor(logger: Logger, name: string, meta: Meta) {
+    super(null, logger, name, {
+      ...meta,
+      name,
+      id: Segment.nextSegmentID++,
+    });
+  }
+
+  public override finish(): void {
+    super.finish();
+
+    let length = this.end! - this.start;
+    if (length >= MAX_SEGMENT_LENGTH) {
+      interface SegmentTime {
+        tree: string;
+        duration: number;
+      }
+
+      let segmentTimes: [string, number][] = [];
+
+      let addSegments = (tree: string[], segments: Segment[]) => {
+        for (let child of segments) {
+          let segmentTree = [...tree, child.name];
+          segmentTimes.push([segmentTree.join(" -> "), child.duration]);
+
+          addSegments(segmentTree, child.children);
+        }
+      };
+
+      addSegments([], this.children);
+
+      this.warn("Slow segment", { segmentTimes });
+    }
   }
 }
 
@@ -152,7 +191,7 @@ function inSegment<T>(
   meta: Meta,
   operation: Operation<T>,
 ): Promise<T> {
-  let segment = new Segment(null, name, logger, meta);
+  let segment = new RootSegment(logger, name, meta);
   return runSegmentOperation(segment, operation);
 }
 

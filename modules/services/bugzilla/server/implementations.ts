@@ -164,7 +164,9 @@ export class Account
     let api = this.getAPI();
     let bugs: BugzillaAPIBug[];
     try {
-      bugs = await api.getBugs([id]);
+      bugs = await this.tx.segment.inSegment("Bug API Request", async () =>
+        api.getBugs([id!]),
+      );
     } catch (e) {
       return null;
     }
@@ -192,7 +194,11 @@ export class Account
 
     // If it is done we need to find the last time the resolution was changed.
     let api = this.getAPI();
-    let history = await api.bugHistory(bug.id);
+    let history = await this.tx.segment.inSegment(
+      "History API Lookup",
+      async () => api.bugHistory(bug.id),
+    );
+
     // Work newest to oldest.
     history.reverse();
 
@@ -304,25 +310,28 @@ export class Search
 
   public async getBugRecords(): Promise<BugzillaAPIBug[]> {
     let account = await this.owner();
-    return Search.getBugRecords(account.getAPI(), this.entity);
+    return Search.getBugRecords(account.tx, account.getAPI(), this.entity);
   }
 
   public static async getBugRecords(
+    tx: ServiceTransaction,
     api: BugzillaAPI,
     record: Pick<BugzillaSearchEntity, "type" | "query">,
   ): Promise<BugzillaAPIBug[]> {
-    if (record.type == SearchType.Quicksearch) {
-      return api.quicksearch(record.query);
-    } else {
-      return api.advancedSearch(record.query);
-    }
+    return tx.segment.inSegment("Bug API search", async () => {
+      if (record.type == SearchType.Quicksearch) {
+        return api.quicksearch(record.query);
+      } else {
+        return api.advancedSearch(record.query);
+      }
+    });
   }
 
   public static async create(
     account: Account,
     record: Omit<BugzillaSearchEntity, "id">,
   ): Promise<Search> {
-    let bugs = await Search.getBugRecords(account.getAPI(), {
+    let bugs = await Search.getBugRecords(account.tx, account.getAPI(), {
       type: record.type,
       query: record.query,
     });
@@ -381,18 +390,6 @@ export class Bug
     return null;
   }
 
-  public async getBug(): Promise<BugzillaAPIBug> {
-    let account = await this.owner();
-    let api = account.getAPI();
-    let bugs = await api.getBugs([this.id]);
-
-    if (!bugs.length) {
-      throw new Error("Bug is missing.");
-    }
-
-    return bugs[0];
-  }
-
   public get bugId(): number {
     return this.entity.bugId;
   }
@@ -413,7 +410,9 @@ export class Bug
     let account = await this.owner();
 
     if (!record) {
-      let bugs = await account.getAPI().getBugs([this.bugId]);
+      let bugs = await this.tx.segment.inSegment("Bug API update", async () =>
+        account.getAPI().getBugs([this.bugId]),
+      );
       if (!bugs.length) {
         throw new Error("Unknown bug.");
       }

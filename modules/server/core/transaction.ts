@@ -25,6 +25,8 @@ import {
   User,
 } from "./implementations";
 import { ServiceOwner } from "./services";
+import { QueryInstance } from "modules/db/client";
+import { QueryResult } from "pg";
 
 async function buildTransaction(
   database: Database,
@@ -254,24 +256,57 @@ export const buildServiceTransaction = memoized(
 export async function withTransaction<R>(
   db: Database,
   segment: Segment,
+  operation: string,
   action: (transaction: Transaction) => Promise<R>,
 ): Promise<R> {
-  return db.inTransaction<R>(
-    async (db: Database): Promise<R> =>
-      segment.inSegment<R>(
-        "transaction",
-        async (segment: Segment): Promise<R> => {
-          try {
-            let tx = await buildTransaction(db, segment);
-            let result: R = await action(tx);
-            await Item.deleteCompleteInboxTasks(tx);
+  return segment.inSegment<R>(
+    operation,
+    async (segment: Segment): Promise<R> => {
+      return db.inTransaction<R>(async (db: Database): Promise<R> => {
+        let querySegments = new WeakMap<QueryInstance, Segment>();
 
-            return result;
-          } catch (e) {
-            segment.warn("Rolling back transaction.");
-            throw e;
+        db.on("query", (db: Database, query: QueryInstance) => {
+          let inner = segment.current.enterSegment("DB Query", {
+            query: query.query,
+            parameters: query.parameters,
+          });
+          querySegments.set(query, inner);
+        });
+
+        db.on(
+          "result",
+          (db: Database, query: QueryInstance, result: QueryResult) => {
+            let inner = querySegments.get(query);
+            if (!inner) {
+              segment.current.error("Saw a query result while not in a query");
+            } else {
+              querySegments.delete(query);
+              inner.finish();
+            }
+          },
+        );
+
+        db.on("error", (db: Database, query: QueryInstance, error: Error) => {
+          let inner = querySegments.get(query);
+          if (!inner) {
+            segment.current.error("Saw a query error while not in a query");
+          } else {
+            querySegments.delete(query);
+            inner.finish();
           }
-        },
-      ),
+        });
+
+        try {
+          let tx = await buildTransaction(db, segment);
+          let result: R = await action(tx);
+          await Item.deleteCompleteInboxTasks(tx);
+
+          return result;
+        } catch (e) {
+          segment.warn("Rolling back transaction.");
+          throw e;
+        }
+      });
+    },
   );
 }

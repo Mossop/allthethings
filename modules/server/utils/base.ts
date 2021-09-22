@@ -146,14 +146,16 @@ export abstract class BaseList<
   }
 
   public async updateList(results?: SR): Promise<ServiceItem[]> {
-    let items = await this.listItems(results);
-    await this.tx.updateList(this.id, {
-      name: this.name,
-      url: await this.url(),
-      items: items.map((item: ServiceItem): string => item.id),
-      due: this.dueOffset,
+    return this.tx.segment.inSegment("Update List", async () => {
+      let items = await this.listItems(results);
+      await this.tx.updateList(this.id, {
+        name: this.name,
+        url: await this.url(),
+        items: items.map((item: ServiceItem): string => item.id),
+        due: this.dueOffset,
+      });
+      return items;
     });
-    return items;
   }
 
   public override async delete(): Promise<void> {

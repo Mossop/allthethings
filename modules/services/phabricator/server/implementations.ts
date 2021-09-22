@@ -45,19 +45,21 @@ export class Account
   private _projectPHIDs: string[] | null = null;
 
   public async getProjectPHIDs(): Promise<string[]> {
-    if (this._projectPHIDs === null) {
-      let projects = await requestAll(this.conduit.project.search, {
-        constraints: {
-          members: [this.phid],
-        },
-      });
+    return this.tx.segment.inSegment("Project API Request", async () => {
+      if (this._projectPHIDs === null) {
+        let projects = await requestAll(this.conduit.project.search, {
+          constraints: {
+            members: [this.phid],
+          },
+        });
 
-      this._projectPHIDs = projects.map(
-        (project: Project$Search$Result): string => project.phid,
-      );
-    }
+        this._projectPHIDs = projects.map(
+          (project: Project$Search$Result): string => project.phid,
+        );
+      }
 
-    return this._projectPHIDs;
+      return this._projectPHIDs;
+    });
   }
 
   public get conduit(): Conduit {
@@ -265,9 +267,10 @@ export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
     let account = await this.account();
 
     let api = account.conduit;
-    let revisions = await requestAll(
-      api.differential.revision.search,
-      await this.getParams(),
+    let revisions = await this.tx.segment.inSegment(
+      "Query API Request",
+      async () =>
+        requestAll(api.differential.revision.search, await this.getParams()),
     );
     let projectPHIDs = await account.getProjectPHIDs();
 
@@ -509,11 +512,15 @@ export class Revision
     let account = await this.account();
 
     if (!revision) {
-      let revisions = await account.conduit.differential.revision.search({
-        constraints: {
-          ids: [this.entity.revisionId],
-        },
-      });
+      let revisions = await account.tx.segment.inSegment(
+        "Revision API Search",
+        () =>
+          account.conduit.differential.revision.search({
+            constraints: {
+              ids: [this.entity.revisionId],
+            },
+          }),
+      );
 
       if (revisions.data.length < 1) {
         return this.tx.deleteItem(this.id);
@@ -550,11 +557,15 @@ export class Revision
         continue;
       }
 
-      let revisions = await account.conduit.differential.revision.search({
-        constraints: {
-          ids: [id],
-        },
-      });
+      let revisions = await account.tx.segment.inSegment(
+        "Revision API Search",
+        () =>
+          account.conduit.differential.revision.search({
+            constraints: {
+              ids: [id],
+            },
+          }),
+      );
 
       if (revisions.data.length == 1) {
         let [revision] = revisions.data;

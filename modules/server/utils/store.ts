@@ -131,39 +131,53 @@ export class Store<
       return [];
     }
 
-    let results = await this.db.query<Entity>(
-      sql`${insert(this.table, rows)} RETURNING *`,
-    );
-    return results.map((entity: Entity): Impl => this.build(entity));
+    return this.tx.segment.inSegment("Store.create", async () => {
+      let results = await this.db.query<Entity>(
+        sql`${insert(this.table, rows)} RETURNING *`,
+      );
+      return results.map((entity: Entity): Impl => this.build(entity));
+    });
   }
 
   public async get(id: string): Promise<Impl> {
-    let entity = await this.db.first<Entity>(
-      sql`SELECT * FROM ${sql.ref(this.table)} WHERE "id" = ${id}`,
-    );
-    return this.build(assert(entity));
+    return this.tx.segment.inSegment("Store.get", async () => {
+      let entity = await this.db.first<Entity>(
+        sql`SELECT * FROM ${sql.ref(this.table)} WHERE "id" = ${id}`,
+      );
+      return this.build(assert(entity));
+    });
   }
 
   public async list(query: Query): Promise<Impl[]> {
-    let entities = await this.db.query<Entity>(query);
+    return this.tx.segment.inSegment("Store.list", async () => {
+      let entities = await this.db.query<Entity>(query);
 
-    return entities.map((entity: Entity): Impl => this.build(entity));
+      return entities.map((entity: Entity): Impl => this.build(entity));
+    });
   }
 
-  public find(params?: WhereConditions<Entity>): Promise<Impl[]> {
-    return this.list(
-      params
-        ? sql`SELECT * FROM ${sql.ref(this.table)} WHERE ${where(params)}`
-        : sql`SELECT * FROM ${sql.ref(this.table)}`,
-    );
+  public async find(params?: WhereConditions<Entity>): Promise<Impl[]> {
+    return this.tx.segment.inSegment("Store.find", async () => {
+      let entities = await this.db.query<Entity>(
+        params
+          ? sql`SELECT * FROM ${sql.ref(this.table)} WHERE ${where(params)}`
+          : sql`SELECT * FROM ${sql.ref(this.table)}`,
+      );
+
+      return entities.map((entity: Entity): Impl => this.build(entity));
+    });
   }
 
   public async findOne(params: WhereConditions<Entity>): Promise<Impl | null> {
-    let entity = await this.db.first<Entity>(
-      sql`SELECT * FROM ${sql.ref(this.table)} WHERE ${where(params)} LIMIT 1`,
-    );
+    return this.tx.segment.inSegment("Store.findOne", async () => {
+      let entity = await this.db.first<Entity>(
+        sql`SELECT * FROM ${sql.ref(this.table)} WHERE ${where(
+          params,
+        )} LIMIT 1`,
+      );
 
-    return entity ? this.build(entity) : null;
+      return entity ? this.build(entity) : null;
+    });
   }
 
   public async upsert(values: Partial<Entity>[]): Promise<void> {
@@ -171,28 +185,36 @@ export class Store<
       return;
     }
 
-    await this.db.update(upsert(this.table, values, this.keys));
+    return this.tx.segment.inSegment("Store.upsert", () =>
+      this.db.update(upsert(this.table, values, this.keys)),
+    );
   }
 
-  public async update(
+  public update(
     values: Updates<Entity>,
     conditions?: WhereConditions<Entity>,
   ): Promise<void> {
-    await this.db.update(update(this.table, values, conditions));
+    return this.tx.segment.inSegment("Store.update", async () => {
+      await this.db.update(update(this.table, values, conditions));
+    });
   }
 
   public async count(params: WhereConditions<Entity>): Promise<number> {
-    return this.db.value<number>(
-      sql`SELECT COUNT(*)::integer FROM ${sql.ref(this.table)} WHERE ${where(
-        params,
-      )}`,
-    );
+    return this.tx.segment.inSegment("Store.count", async () => {
+      return this.db.value<number>(
+        sql`SELECT COUNT(*)::integer FROM ${sql.ref(this.table)} WHERE ${where(
+          params,
+        )}`,
+      );
+    });
   }
 
   public async delete(params: WhereConditions<Entity>): Promise<void> {
-    await this.db.update(
-      sql`DELETE FROM ${sql.ref(this.table)} WHERE ${where(params)}`,
-    );
+    return this.tx.segment.inSegment("Store.delete", async () => {
+      await this.db.update(
+        sql`DELETE FROM ${sql.ref(this.table)} WHERE ${where(params)}`,
+      );
+    });
   }
 }
 

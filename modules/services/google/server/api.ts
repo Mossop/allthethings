@@ -187,21 +187,23 @@ export class GoogleApi {
       auth: this.client,
     });
 
-    return this.apiCall(async () => {
-      try {
-        let { data: thread } = await api.users.threads.get({
-          userId: "me",
-          id: threadId,
-        });
+    return this.account.tx.segment.inSegment("thread API request", () =>
+      this.apiCall(async () => {
+        try {
+          let { data: thread } = await api.users.threads.get({
+            userId: "me",
+            id: threadId,
+          });
 
-        return thread;
-      } catch (e) {
-        if (e instanceof GaxiosError && e.response?.status == 404) {
-          return null;
+          return thread;
+        } catch (e) {
+          if (e instanceof GaxiosError && e.response?.status == 404) {
+            return null;
+          }
+          throw e;
         }
-        throw e;
-      }
-    });
+      }),
+    );
   }
 
   public async listThreads(query: string): Promise<gmail_v1.Schema$Thread[]> {
@@ -210,29 +212,31 @@ export class GoogleApi {
       auth: this.client,
     });
 
-    let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
+    return this.account.tx.segment.inSegment("list API threads", async () => {
+      let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
 
-    let pageToken: string | null | undefined = undefined;
-    while (pageToken !== null) {
-      let { data: response } = await this.apiCall(() =>
-        api.users.threads.list({
-          userId: "me",
-          q: query,
-          pageToken: pageToken!,
-        }),
-      );
+      let pageToken: string | null | undefined = undefined;
+      while (pageToken !== null) {
+        let { data: response } = await this.apiCall(() =>
+          api.users.threads.list({
+            userId: "me",
+            q: query,
+            pageToken: pageToken!,
+          }),
+        );
 
-      for (let thread of response.threads ?? []) {
-        if (thread.id) {
-          threads.push(this.getThread(thread.id));
+        for (let thread of response.threads ?? []) {
+          if (thread.id) {
+            threads.push(this.getThread(thread.id));
+          }
         }
+
+        pageToken = response.nextPageToken ?? null;
       }
 
-      pageToken = response.nextPageToken ?? null;
-    }
-
-    let results = await Promise.all(threads);
-    return results.filter(isNonNull);
+      let results = await Promise.all(threads);
+      return results.filter(isNonNull);
+    });
   }
 
   public async getLabels(): Promise<GoogleAPILabel[]> {
@@ -243,10 +247,12 @@ export class GoogleApi {
 
     let {
       data: { labels },
-    } = await this.apiCall(() =>
-      api.users.labels.list({
-        userId: "me",
-      }),
+    } = await this.account.tx.segment.inSegment("list API labels", () =>
+      this.apiCall(() =>
+        api.users.labels.list({
+          userId: "me",
+        }),
+      ),
     );
 
     if (!labels) {
@@ -262,32 +268,34 @@ export class GoogleApi {
       auth: this.client,
     });
 
-    return this.apiCall(async (): Promise<GoogleAPIFile | null> => {
-      try {
-        let { data } = await api.files.get({
-          fileId,
-          supportsAllDrives: true,
-          fields: fileFields.join(", "),
-        });
+    return this.account.tx.segment.inSegment("file API request", () =>
+      this.apiCall(async (): Promise<GoogleAPIFile | null> => {
+        try {
+          let { data } = await api.files.get({
+            fileId,
+            supportsAllDrives: true,
+            fields: fileFields.join(", "),
+          });
 
-        if (data.trashed) {
-          return null;
+          if (data.trashed) {
+            return null;
+          }
+
+          if (!data.id || !data.name || !data.mimeType) {
+            return null;
+          }
+
+          // @ts-ignore
+          return data;
+        } catch (e) {
+          if (e instanceof GaxiosError && e.response?.status == 404) {
+            return null;
+          }
+
+          throw e;
         }
-
-        if (!data.id || !data.name || !data.mimeType) {
-          return null;
-        }
-
-        // @ts-ignore
-        return data;
-      } catch (e) {
-        if (e instanceof GaxiosError && e.response?.status == 404) {
-          return null;
-        }
-
-        throw e;
-      }
-    });
+      }),
+    );
   }
 }
 

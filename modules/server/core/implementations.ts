@@ -524,13 +524,14 @@ export class Item
   }
 
   public static async deleteCompleteInboxTasks(tx: Transaction): Promise<void> {
-    let itemsInLists = sql`
+    return tx.segment.inSegment("Item.deleteCompleteInboxTasks", () => {
+      let itemsInLists = sql`
       SELECT DISTINCT "itemId"
       FROM ${ref(ServiceListItem)}
       WHERE "done" IS NULL
     `;
 
-    let items = sql`
+      let items = sql`
       SELECT "Item"."id"
       FROM ${ref(Item)} AS "Item"
         JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
@@ -540,7 +541,10 @@ export class Item
         "Item"."sectionId" IS NULL
     `;
 
-    await tx.db.update(sql`DELETE FROM ${ref(Item)} WHERE "id" IN (${items})`);
+      return tx.db.update(
+        sql`DELETE FROM ${ref(Item)} WHERE "id" IN (${items})`,
+      );
+    });
   }
 
   public get type(): ItemType | null {
@@ -684,51 +688,53 @@ export class TaskInfo
       return;
     }
 
-    let listStates = sql`
-      SELECT
-        "itemId" AS "id",
-        MIN("due") AS "due",
-        CASE COUNT(*) - COUNT("done") WHEN 0 THEN MAX("done") ELSE NULL END AS "done"
-      FROM ${ref(ServiceListItem)}
-      GROUP BY "itemId"
-    `;
+    return tx.segment.inSegment("TaskInfo.updateTaskDetails", () => {
+      let listStates = sql`
+        SELECT
+          "itemId" AS "id",
+          MIN("due") AS "due",
+          CASE COUNT(*) - COUNT("done") WHEN 0 THEN MAX("done") ELSE NULL END AS "done"
+        FROM ${ref(ServiceListItem)}
+        GROUP BY "itemId"
+      `;
 
-    let serviceStates = sql`
-      SELECT "id", "taskDue" AS "due", "taskDone" AS "done"
-      FROM ${ref(ServiceDetail)}
-      WHERE "hasTaskState" = ${true}
-    `;
+      let serviceStates = sql`
+        SELECT "id", "taskDue" AS "due", "taskDone" AS "done"
+        FROM ${ref(ServiceDetail)}
+        WHERE "hasTaskState" = ${true}
+      `;
 
-    let states = sql`
-      SELECT
-        "TaskInfo"."id" AS "id",
-        COALESCE("TaskInfo"."manualDue", CASE "TaskInfo"."controller"
-          WHEN ${TaskController.Service} THEN "ServiceStates"."due"
-          WHEN ${TaskController.ServiceList} THEN "ListStates"."due"
-        END) AS "due",
-        CASE "TaskInfo"."controller"
-          WHEN ${TaskController.Service} THEN "ServiceStates"."done"
-          WHEN ${TaskController.ServiceList} THEN "ListStates"."done"
-          ELSE "TaskInfo"."manualDone"
-        END AS "done"
-      FROM ${ref(TaskInfo)} AS "TaskInfo"
-      LEFT JOIN (${listStates}) AS "ListStates" USING ("id")
-      LEFT JOIN (${serviceStates}) AS "ServiceStates" USING ("id")
-    `;
+      let states = sql`
+        SELECT
+          "TaskInfo"."id" AS "id",
+          COALESCE("TaskInfo"."manualDue", CASE "TaskInfo"."controller"
+            WHEN ${TaskController.Service} THEN "ServiceStates"."due"
+            WHEN ${TaskController.ServiceList} THEN "ListStates"."due"
+          END) AS "due",
+          CASE "TaskInfo"."controller"
+            WHEN ${TaskController.Service} THEN "ServiceStates"."done"
+            WHEN ${TaskController.ServiceList} THEN "ListStates"."done"
+            ELSE "TaskInfo"."manualDone"
+          END AS "done"
+        FROM ${ref(TaskInfo)} AS "TaskInfo"
+        LEFT JOIN (${listStates}) AS "ListStates" USING ("id")
+        LEFT JOIN (${serviceStates}) AS "ServiceStates" USING ("id")
+      `;
 
-    if (items) {
-      states = sql`${states} WHERE ${where({ id: In(items) })}`;
-    }
+      if (items) {
+        states = sql`${states} WHERE ${where({ id: In(items) })}`;
+      }
 
-    await tx.db.update(sql`
-      UPDATE ${ref(TaskInfo)} AS "t"
-      SET
-        "id" = "s"."id",
-        "due" = "s"."due",
-        "done" = "s"."done"
-      FROM (${states}) AS "s"
-      WHERE "t"."id" = "s"."id"
-    `);
+      return tx.db.update(sql`
+        UPDATE ${ref(TaskInfo)} AS "t"
+        SET
+          "id" = "s"."id",
+          "due" = "s"."due",
+          "done" = "s"."done"
+        FROM (${states}) AS "s"
+        WHERE "t"."id" = "s"."id"
+      `);
+    });
   }
 
   public get due(): DateTime | null {
@@ -1033,48 +1039,50 @@ export class ServiceList
     itemIds: string[],
     due?: RelativeDateTime | null,
   ): Promise<void> {
-    let now = DateTime.now();
-    let itemDue = calcDue(now, due);
+    return this.tx.segment.inSegment("ServiceList.setItems", async () => {
+      let now = DateTime.now();
+      let itemDue = calcDue(now, due);
 
-    let itemIdsToUpdate = new Set<string>(itemIds);
-    let itemsToCreate = new Set(itemIds);
+      let itemIdsToUpdate = new Set<string>(itemIds);
+      let itemsToCreate = new Set(itemIds);
 
-    let existingPlacements = await ServiceListItem.store(this.tx).find({
-      listId: this.id,
-    });
-    let placements: ServiceListItemEntity[] = [];
-
-    for (let placement of existingPlacements) {
-      itemIdsToUpdate.add(placement.entity.itemId);
-
-      if (itemsToCreate.has(placement.entity.itemId)) {
-        itemsToCreate.delete(placement.entity.itemId);
-
-        placements.push(placement.entity);
-        placement.entity.done = null;
-
-        if (due !== undefined) {
-          placement.entity.due = calcDue(placement.entity.present, due);
-        }
-      } else if (placement.entity.done === null) {
-        placements.push(placement.entity);
-        placement.entity.done = DateTime.now();
-      }
-    }
-
-    for (let itemId of itemsToCreate) {
-      placements.push({
-        itemId,
-        serviceId: this.serviceId,
+      let existingPlacements = await ServiceListItem.store(this.tx).find({
         listId: this.id,
-        present: now,
-        done: null,
-        due: itemDue,
       });
-    }
+      let placements: ServiceListItemEntity[] = [];
 
-    await ServiceListItem.store(this.tx).upsert(placements);
-    await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
+      for (let placement of existingPlacements) {
+        itemIdsToUpdate.add(placement.entity.itemId);
+
+        if (itemsToCreate.has(placement.entity.itemId)) {
+          itemsToCreate.delete(placement.entity.itemId);
+
+          placements.push(placement.entity);
+          placement.entity.done = null;
+
+          if (due !== undefined) {
+            placement.entity.due = calcDue(placement.entity.present, due);
+          }
+        } else if (placement.entity.done === null) {
+          placements.push(placement.entity);
+          placement.entity.done = DateTime.now();
+        }
+      }
+
+      for (let itemId of itemsToCreate) {
+        placements.push({
+          itemId,
+          serviceId: this.serviceId,
+          listId: this.id,
+          present: now,
+          done: null,
+          due: itemDue,
+        });
+      }
+
+      await ServiceListItem.store(this.tx).upsert(placements);
+      await TaskInfo.updateTaskDetails(this.tx, [...itemIdsToUpdate]);
+    });
   }
 
   public async updateList({
@@ -1092,34 +1100,38 @@ export class ServiceList
   }
 
   public override async delete(): Promise<void> {
-    let currentIds = await this.db.pluck<string>(
-      sql`SELECT "itemId" FROM ${ref(ServiceListItem)} WHERE "listId" = ${
-        this.id
-      }`,
-    );
+    return this.tx.segment.inSegment("ServiceList.delete", async () => {
+      let currentIds = await this.db.pluck<string>(
+        sql`SELECT "itemId" FROM ${ref(ServiceListItem)} WHERE "listId" = ${
+          this.id
+        }`,
+      );
 
-    await super.delete();
+      await super.delete();
 
-    let presentIds = await this.db.pluck<string>(
-      sql`SELECT DISTINCT "itemId" FROM ${ref(ServiceListItem)} WHERE ${where({
-        itemId: In(currentIds),
-        present: Not(IsNull()),
-      })}`,
-    );
+      let presentIds = await this.db.pluck<string>(
+        sql`SELECT DISTINCT "itemId" FROM ${ref(ServiceListItem)} WHERE ${where(
+          {
+            itemId: In(currentIds),
+            present: Not(IsNull()),
+          },
+        )}`,
+      );
 
-    let idsToUpdate = currentIds.filter(
-      (id: string): boolean => !presentIds.includes(id),
-    );
+      let idsToUpdate = currentIds.filter(
+        (id: string): boolean => !presentIds.includes(id),
+      );
 
-    let done = DateTime.now();
-    await TaskInfo.store(this.tx).update(
-      { done },
-      {
-        id: In(idsToUpdate),
-        controller: TaskController.ServiceList,
-        done: IsNull(),
-      },
-    );
+      let done = DateTime.now();
+      await TaskInfo.store(this.tx).update(
+        { done },
+        {
+          id: In(idsToUpdate),
+          controller: TaskController.ServiceList,
+          done: IsNull(),
+        },
+      );
+    });
   }
 }
 

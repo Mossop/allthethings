@@ -78,7 +78,10 @@ export async function buildResolverContext({
         throw new Error("Not authenticated.");
       }
 
-      let transaction = await ctx.startTransaction();
+      let transaction = await ctx.startTransaction(
+        info.operation.name?.value ?? "GraphQL Operation",
+        info.operation.operation == "mutation",
+      );
       if (service) {
         transaction = await buildServiceTransaction(service, transaction);
       }

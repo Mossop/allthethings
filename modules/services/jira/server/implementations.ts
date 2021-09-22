@@ -197,10 +197,11 @@ export class Search
     account: Account,
     query: string,
   ): Promise<JiraIssue[]> {
-    let results =
-      await account.apiClient.issueSearch.searchForIssuesUsingJqlPost({
+    let results = await account.tx.segment.inSegment("Issue API List", () =>
+      account.apiClient.issueSearch.searchForIssuesUsingJqlPost({
         jql: query,
-      });
+      }),
+    );
 
     return results.issues ?? [];
   }
@@ -271,9 +272,13 @@ export class Issue
 
       let issueIdOrKey = url.pathname.substring(base.pathname.length);
       try {
-        let issue = await account.apiClient.issues.getIssue({
-          issueIdOrKey,
-        });
+        let issue = await account.tx.segment.inSegment(
+          "Issue API Request",
+          () =>
+            account.apiClient.issues.getIssue({
+              issueIdOrKey,
+            }),
+        );
 
         let controller = isTask ? TaskController.Service : null;
         if (controller && issue.fields.resolutiondate) {
@@ -308,9 +313,11 @@ export class Issue
     let account = await this.account();
 
     if (!issue) {
-      issue = await account.apiClient.issues.getIssue({
-        issueIdOrKey: this.issueKey,
-      });
+      issue = await account.tx.segment.inSegment("Issue API update", () =>
+        account.apiClient.issues.getIssue({
+          issueIdOrKey: this.issueKey,
+        }),
+      );
 
       if (!issue) {
         throw new Error("Unknown issue.");

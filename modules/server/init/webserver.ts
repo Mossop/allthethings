@@ -10,13 +10,15 @@ import koaSession from "koa-session";
 import koaStatic from "koa-static";
 
 import type { Database } from "#db";
-import type { ServerConfig} from "#server/core";
-import { User ,
+import type { ServerConfig } from "#server/core";
+import {
+  User,
   buildServiceTransaction,
   ServiceManager,
   withTransaction,
 } from "#server/core";
-import type {
+import {
+  RootSegment,
   Service,
   ServiceWebContext,
   ServiceWebContextExtras,
@@ -31,7 +33,7 @@ interface ExtraContext {
   readonly segment: Segment;
   login(userId: string): void;
   logout(): void;
-  startTransaction(): Promise<Transaction>;
+  startTransaction(operation: string, writable?: boolean): Promise<Transaction>;
   commitTransaction(): Promise<void>;
   rollbackTransaction(): Promise<void>;
 }
@@ -67,7 +69,7 @@ export async function buildWebServerContext(
       get(this: WebServerContext): Segment {
         let segment = segments.get(this);
         if (!segment) {
-          segment = new Segment(null, "webrequest", log, {
+          segment = new RootSegment(log, "Web Request", {
             path: this.path,
           });
           segments.set(this, segment);
@@ -105,6 +107,8 @@ export async function buildWebServerContext(
       enumerable: true,
       value: async function startTransaction(
         this: WebServerContext,
+        operation: string,
+        writable: boolean = true,
       ): Promise<Transaction> {
         let holder = transactions.get(this);
         if (!holder) {
@@ -123,6 +127,7 @@ export async function buildWebServerContext(
           holder.complete = withTransaction(
             db,
             this.segment,
+            operation,
             (tx: Transaction): Promise<void> => {
               deferredTransaction.resolve(tx);
               return deferred.promise;
@@ -219,7 +224,7 @@ async function authMiddleware(ctx: WebServerContext): Promise<unknown> {
         let { fields } = await busboy(ctx.req);
 
         if (fields.email && fields.password) {
-          let tx = await ctx.startTransaction();
+          let tx = await ctx.startTransaction("Authentication", false);
           let user = await User.store(tx).findOne({ email: fields.email });
           if (user && (await user.verifyUser(fields.password))) {
             ctx.login(user.id);
@@ -312,7 +317,10 @@ export async function createWebServer(
               throw new Error("Not authenticated.");
             }
 
-            let transaction = await ctx.startTransaction();
+            let transaction = await ctx.startTransaction(
+              "Service request",
+              true,
+            );
             let serviceTransaction = await buildServiceTransaction(
               service,
               transaction,

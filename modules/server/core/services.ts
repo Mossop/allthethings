@@ -62,7 +62,7 @@ export class ServiceOwner<
 
   public initService(): Promise<Service<Tx>> {
     return inSegment(
-      "init",
+      "initService",
       { service: this.serviceExport.id },
       async (segment: Segment) => {
         let config: C = undefined as unknown as C;
@@ -98,7 +98,7 @@ export class ServiceOwner<
     let service = await this.service;
 
     return inSegment(
-      "service",
+      "Service Operation",
       {
         service: this.serviceExport.id,
         operation,
@@ -108,6 +108,7 @@ export class ServiceOwner<
           let result = await withTransaction(
             this.db,
             segment,
+            "DB transaction",
             async (tx: Transaction): Promise<R> => {
               return task(await buildServiceTransaction(service, tx));
             },
