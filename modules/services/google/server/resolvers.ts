@@ -8,7 +8,7 @@ import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 
 import { GoogleApi } from "./api";
-import { Account , MailSearch } from "./implementations";
+import { Account, MailSearch } from "./implementations";
 import type { Resolvers } from "./schema";
 
 export default rootResolvers<Resolvers>({
