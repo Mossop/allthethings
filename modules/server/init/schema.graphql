@@ -7,6 +7,4 @@ type Query {
   schemaVersion: String!
 
   problems: [Problem!]!
-
-  pageContent(path: String!): String!
 }

@@ -49,10 +49,6 @@ query ListContextState($dueBefore: RelativeDateTime!) {
   schemaVersion
 }
 
-query PageContent($path: String!) {
-  pageContent(path: $path)
-}
-
 query ListUsers {
   users {
     id

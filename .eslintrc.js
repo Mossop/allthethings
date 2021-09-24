@@ -25,10 +25,16 @@ module.exports = {
     "import/default": "off",
     "import/no-named-as-default-member": "off",
     "import/no-unresolved": "off",
-    "no-console": "warn",
   },
 
   overrides: [
+    {
+      files: ["modules/**/*"],
+
+      rules: {
+        "no-console": "warn",
+      },
+    },
     {
       files: [
         "modules/client/**/*.ts",

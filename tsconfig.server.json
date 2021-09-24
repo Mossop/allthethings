@@ -2,6 +2,7 @@
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
     "module": "commonjs",
-    "lib": ["ESNext"]
+    "lib": ["ESNext"],
+    "experimentalDecorators": true
   }
 }

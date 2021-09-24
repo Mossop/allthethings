@@ -356,7 +356,6 @@ export type ProjectFieldPolicy = {
 export type QueryKeySpecifier = (
   | "githubLoginUrl"
   | "googleLoginUrl"
-  | "pageContent"
   | "problems"
   | "schemaVersion"
   | "taskList"
@@ -367,7 +366,6 @@ export type QueryKeySpecifier = (
 export type QueryFieldPolicy = {
   githubLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
-  pageContent?: FieldPolicy<any> | FieldReadFunction<any>;
   problems?: FieldPolicy<any> | FieldReadFunction<any>;
   schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>;
   taskList?: FieldPolicy<any> | FieldReadFunction<any>;

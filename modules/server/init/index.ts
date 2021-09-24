@@ -17,6 +17,7 @@ import { Migration0007Phabricator } from "./migrations/0007-Phabricator";
 import { createWebServer } from "./webserver";
 import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
 import { Migration0008Knex } from "./migrations/0008-Knex";
+import { createApiServer } from "./apiserver";
 
 install();
 
@@ -94,6 +95,7 @@ async function init(): Promise<void> {
 
       let gqlServer = await createGqlServer();
       await createWebServer(config, connection, gqlServer);
+      await createApiServer(config, connection);
       segment.info("Startup complete");
     } catch (e) {
       await connection.disconnect();

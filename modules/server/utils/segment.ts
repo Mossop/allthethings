@@ -133,7 +133,7 @@ export abstract class Segment implements Logger {
       this.currentChild ||
       !this.children.every((child: Segment): boolean => child.isClosed)
     ) {
-      this.error("Closing before all children were closed.");
+      // this.error("Closing before all children were closed.");
     }
 
     if (this.parent?.currentChild === this) {

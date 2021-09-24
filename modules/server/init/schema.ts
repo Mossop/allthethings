@@ -6,10 +6,6 @@ import type {
 } from "graphql";
 import * as Schema from "#schema";
 import { Root, Problem } from "#server/utils";
-export type RequireFields<T, K extends keyof T> = {
-  [X in Exclude<keyof T, K>]?: T[X];
-} &
-  { [P in K]-?: NonNullable<T[P]> };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -168,12 +164,6 @@ export type QueryResolvers<
     ReadonlyArray<ResolversTypes["Problem"]>,
     ParentType,
     ContextType
-  >;
-  pageContent: Resolver<
-    ResolversTypes["String"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.QueryPageContentArgs, "path">
   >;
 };
 

@@ -534,16 +534,11 @@ export type Query = {
   readonly __typename: "Query";
   readonly githubLoginUrl: Scalars["String"];
   readonly googleLoginUrl: Scalars["String"];
-  readonly pageContent: Scalars["String"];
   readonly problems: ReadonlyArray<Problem>;
   readonly schemaVersion: Scalars["String"];
   readonly taskList?: Maybe<Context | Project>;
   readonly user?: Maybe<User>;
   readonly users: ReadonlyArray<User>;
-};
-
-export type QueryPageContentArgs = {
-  path: Scalars["String"];
 };
 
 export type QueryTaskListArgs = {

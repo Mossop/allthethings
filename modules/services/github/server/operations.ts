@@ -18312,6 +18312,8 @@ export enum SecurityAdvisoryEcosystem {
   Pip = "PIP",
   /** Ruby gems hosted at RubyGems.org */
   Rubygems = "RUBYGEMS",
+  /** Rust crates */
+  Rust = "RUST",
 }
 
 /** An edge in a connection. */

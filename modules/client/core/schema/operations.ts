@@ -753,15 +753,6 @@ export type ListContextStateQuery = {
   }>;
 };
 
-export type PageContentQueryVariables = Schema.Exact<{
-  path: Schema.Scalars["String"];
-}>;
-
-export type PageContentQuery = {
-  readonly __typename: "Query";
-  readonly pageContent: string;
-};
-
 export type ListUsersQueryVariables = Schema.Exact<{ [key: string]: never }>;
 
 export type ListUsersQuery = {
@@ -1042,7 +1033,6 @@ export type ListTaskListQuery = {
 export const OperationNames = {
   Query: {
     ListContextState: "ListContextState",
-    PageContent: "PageContent",
     ListUsers: "ListUsers",
     ListInbox: "ListInbox",
     ListTaskList: "ListTaskList",
@@ -2462,63 +2452,6 @@ export function refetchListContextStateQuery(
   variables?: ListContextStateQueryVariables,
 ) {
   return { query: ListContextStateDocument, variables: variables };
-}
-export const PageContentDocument = gql`
-  query PageContent($path: String!) {
-    pageContent(path: $path)
-  }
-`;
-
-/**
- * __usePageContentQuery__
- *
- * To run a query within a React component, call `usePageContentQuery` and pass it any options that fit your needs.
- * When your component renders, `usePageContentQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = usePageContentQuery({
- *   variables: {
- *      path: // value for 'path'
- *   },
- * });
- */
-export function usePageContentQuery(
-  baseOptions: Apollo.QueryHookOptions<
-    PageContentQuery,
-    PageContentQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<PageContentQuery, PageContentQueryVariables>(
-    PageContentDocument,
-    options,
-  );
-}
-export function usePageContentLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<
-    PageContentQuery,
-    PageContentQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<PageContentQuery, PageContentQueryVariables>(
-    PageContentDocument,
-    options,
-  );
-}
-export type PageContentQueryHookResult = ReturnType<typeof usePageContentQuery>;
-export type PageContentLazyQueryHookResult = ReturnType<
-  typeof usePageContentLazyQuery
->;
-export type PageContentQueryResult = Apollo.QueryResult<
-  PageContentQuery,
-  PageContentQueryVariables
->;
-export function refetchPageContentQuery(variables?: PageContentQueryVariables) {
-  return { query: PageContentDocument, variables: variables };
 }
 export const ListUsersDocument = gql`
   query ListUsers {

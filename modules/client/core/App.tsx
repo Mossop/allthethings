@@ -1,4 +1,3 @@
-import type { ApolloClient } from "@apollo/client";
 import { ApolloProvider } from "@apollo/client";
 import LuxonUtils from "@date-io/luxon";
 import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
@@ -6,6 +5,7 @@ import type { Theme } from "@material-ui/core";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
 import type { ReactResult } from "#client/utils";
+import { ApiProvider } from "#client/utils";
 
 import ErrorHandler from "./components/ErrorHandler";
 import GlobalPopups from "./components/GlobalPopups";
@@ -115,27 +115,29 @@ const baseTheme = (theme: Theme): Theme =>
   });
 /* eslint-enable @typescript-eslint/naming-convention */
 
-export interface AppProps {
-  client: ApolloClient<unknown>;
-}
-
 export default function App(): ReactResult {
+  let url = new URL(document.URL);
+  let port = url.port ? parseInt(url.port) : 80;
+  let baseUrl = `http://${url.hostname}:${port + 10}`;
+
   return (
-    <ThemeProvider theme={base}>
-      <ThemeProvider theme={baseTheme}>
-        <DragContext>
-          <ApolloProvider client={client}>
-            <CssBaseline />
-            <ErrorHandler>
-              <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <GlobalPopups>
-                  <Main />
-                </GlobalPopups>
-              </MuiPickersUtilsProvider>
-            </ErrorHandler>
-          </ApolloProvider>
-        </DragContext>
+    <ApiProvider baseUrl={baseUrl}>
+      <ThemeProvider theme={base}>
+        <ThemeProvider theme={baseTheme}>
+          <DragContext>
+            <ApolloProvider client={client}>
+              <CssBaseline />
+              <ErrorHandler>
+                <MuiPickersUtilsProvider utils={LuxonUtils}>
+                  <GlobalPopups>
+                    <Main />
+                  </GlobalPopups>
+                </MuiPickersUtilsProvider>
+              </ErrorHandler>
+            </ApolloProvider>
+          </DragContext>
+        </ThemeProvider>
       </ThemeProvider>
-    </ThemeProvider>
+    </ApiProvider>
   );
 }

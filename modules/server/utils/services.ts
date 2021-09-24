@@ -1,5 +1,6 @@
 import type { URL } from "url";
 
+import type * as KoaRouter from "@koa/router";
 import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
@@ -7,6 +8,7 @@ import type { JsonDecoder } from "ts.data.json";
 import type { TaskController } from "#schema";
 import type { Awaitable, MaybeCallable, RelativeDateTime } from "#utils";
 
+import { RequestController } from "./controllers";
 import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
@@ -95,6 +97,7 @@ export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
   ) => Promise<string | null>;
   readonly getServiceItem: (tx: Tx, id: string) => Awaitable<ServiceItem>;
   readonly webMiddleware?: ServiceWebMiddleware<Tx>;
+  readonly addWebRoutes?: (router: KoaRouter) => void;
   readonly listProblems?: (tx: Tx, userId: string | null) => Promise<Problem[]>;
 }
 
@@ -106,3 +109,5 @@ export interface ServiceExport<
   readonly configDecoder?: JsonDecoder.Decoder<C>;
   readonly init: (server: Server<Tx>, config: C) => Awaitable<Service<Tx>>;
 }
+
+export class ServiceController extends RequestController {}
