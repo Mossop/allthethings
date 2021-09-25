@@ -10,8 +10,7 @@ import { Root, Problem } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
-} &
-  { [P in K]-?: NonNullable<T[P]> };
+} & { [P in K]-?: NonNullable<T[P]> };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -120,17 +119,17 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   BugzillaAccount: ResolverTypeWrapper<Account>;
-  ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
-  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   BugzillaAccountParams: Schema.BugzillaAccountParams;
   BugzillaSearch: ResolverTypeWrapper<Search>;
   BugzillaSearchParams: Schema.BugzillaSearchParams;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
+  ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   Mutation: ResolverTypeWrapper<Root>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
+  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "bugzillaAccounts"> & {
@@ -141,17 +140,17 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Boolean: Schema.Scalars["Boolean"];
   BugzillaAccount: Account;
-  ID: Schema.Scalars["ID"];
-  String: Schema.Scalars["String"];
   BugzillaAccountParams: Schema.BugzillaAccountParams;
   BugzillaSearch: Search;
   BugzillaSearchParams: Schema.BugzillaSearchParams;
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
+  ID: Schema.Scalars["ID"];
   Mutation: Root;
-  Boolean: Schema.Scalars["Boolean"];
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
+  String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "bugzillaAccounts"> & {
     bugzillaAccounts: ReadonlyArray<ResolversParentTypes["BugzillaAccount"]>;
@@ -162,21 +161,21 @@ export type BugzillaAccountResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["BugzillaAccount"] = ResolversParentTypes["BugzillaAccount"],
 > = {
-  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   icon: Resolver<
     Schema.Maybe<ResolversTypes["String"]>,
+    ParentType,
+    ContextType
+  >;
+  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  searches: Resolver<
+    ReadonlyArray<ResolversTypes["BugzillaSearch"]>,
     ParentType,
     ContextType
   >;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   username: Resolver<
     Schema.Maybe<ResolversTypes["String"]>,
-    ParentType,
-    ContextType
-  >;
-  searches: Resolver<
-    ReadonlyArray<ResolversTypes["BugzillaSearch"]>,
     ParentType,
     ContextType
   >;
@@ -187,16 +186,16 @@ export type BugzillaSearchResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["BugzillaSearch"] = ResolversParentTypes["BugzillaSearch"],
 > = {
-  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  type: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   dueOffset: Resolver<
     Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
     ParentType,
     ContextType
   >;
+  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  type: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -220,29 +219,29 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreateBugzillaAccountArgs, "params">
   >;
-  deleteBugzillaAccount: Resolver<
-    Schema.Maybe<ResolversTypes["Boolean"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteBugzillaAccountArgs, "account">
-  >;
   createBugzillaSearch: Resolver<
     ResolversTypes["BugzillaSearch"],
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateBugzillaSearchArgs, "account" | "params">
   >;
-  editBugzillaSearch: Resolver<
-    Schema.Maybe<ResolversTypes["BugzillaSearch"]>,
+  deleteBugzillaAccount: Resolver<
+    Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
-    RequireFields<Schema.MutationEditBugzillaSearchArgs, "search" | "params">
+    RequireFields<Schema.MutationDeleteBugzillaAccountArgs, "account">
   >;
   deleteBugzillaSearch: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeleteBugzillaSearchArgs, "search">
+  >;
+  editBugzillaSearch: Resolver<
+    Schema.Maybe<ResolversTypes["BugzillaSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditBugzillaSearchArgs, "params" | "search">
   >;
 };
 

@@ -47,7 +47,7 @@ export function bestIcon(icons: Icon[], size: number): Icon | null {
 async function loadIcon(segment: Segment, url: URL): Promise<Icon[]> {
   let response: Response;
   try {
-    response = await fetch(url);
+    response = await fetch(url.toString());
     if (!response.ok) {
       return [];
     }
@@ -99,7 +99,7 @@ export function loadPageInfo(
   return segment.inSegment(
     "loadPageInfo",
     async (segment: Segment): Promise<PageInfo> => {
-      let response = await fetch(pageUrl);
+      let response = await fetch(pageUrl.toString());
       if (!response.ok) {
         throw new Error(response.statusText);
       }

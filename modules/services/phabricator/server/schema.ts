@@ -10,8 +10,7 @@ import { Root, Problem } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
-} &
-  { [P in K]-?: NonNullable<T[P]> };
+} & { [P in K]-?: NonNullable<T[P]> };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -120,16 +119,16 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   CreatePhabricatorAccountParams: Schema.CreatePhabricatorAccountParams;
-  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
-  ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
+  ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   Mutation: ResolverTypeWrapper<Root>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   PhabricatorAccount: ResolverTypeWrapper<Account>;
   PhabricatorQuery: ResolverTypeWrapper<QueryClass>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
+  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: ResolverTypeWrapper<
@@ -142,16 +141,16 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Boolean: Schema.Scalars["Boolean"];
   CreatePhabricatorAccountParams: Schema.CreatePhabricatorAccountParams;
-  String: Schema.Scalars["String"];
-  ID: Schema.Scalars["ID"];
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
+  ID: Schema.Scalars["ID"];
   Mutation: Root;
-  Boolean: Schema.Scalars["Boolean"];
   PhabricatorAccount: Account;
   PhabricatorQuery: QueryClass;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
+  String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: Omit<Schema.User, "phabricatorAccounts" | "phabricatorQueries"> & {
@@ -182,17 +181,17 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreatePhabricatorAccountArgs, "params">
   >;
-  updatePhabricatorAccount: Resolver<
-    Schema.Maybe<ResolversTypes["PhabricatorAccount"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationUpdatePhabricatorAccountArgs, "id" | "params">
-  >;
   deletePhabricatorAccount: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeletePhabricatorAccountArgs, "account">
+  >;
+  updatePhabricatorAccount: Resolver<
+    Schema.Maybe<ResolversTypes["PhabricatorAccount"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationUpdatePhabricatorAccountArgs, "id" | "params">
   >;
 };
 
@@ -200,16 +199,16 @@ export type PhabricatorAccountResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["PhabricatorAccount"] = ResolversParentTypes["PhabricatorAccount"],
 > = {
-  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  icon: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  email: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   apiKey: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  email: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   enabledQueries: Resolver<
     ReadonlyArray<ResolversTypes["ID"]>,
     ParentType,
     ContextType
   >;
+  icon: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -217,9 +216,9 @@ export type PhabricatorQueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["PhabricatorQuery"] = ResolversParentTypes["PhabricatorQuery"],
 > = {
-  queryId: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   description: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  queryId: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 

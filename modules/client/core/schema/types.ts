@@ -6,61 +6,61 @@ import type {
   TypePolicy,
 } from "@apollo/client/cache";
 export type BugzillaAccountKeySpecifier = (
+  | "icon"
   | "id"
   | "name"
-  | "icon"
+  | "searches"
   | "url"
   | "username"
-  | "searches"
   | BugzillaAccountKeySpecifier
 )[];
 export type BugzillaAccountFieldPolicy = {
+  icon?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
-  icon?: FieldPolicy<any> | FieldReadFunction<any>;
+  searches?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
   username?: FieldPolicy<any> | FieldReadFunction<any>;
-  searches?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type BugzillaSearchKeySpecifier = (
+  | "dueOffset"
   | "id"
   | "name"
-  | "type"
   | "query"
+  | "type"
   | "url"
-  | "dueOffset"
   | BugzillaSearchKeySpecifier
 )[];
 export type BugzillaSearchFieldPolicy = {
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
-  type?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
+  type?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ContextKeySpecifier = (
-  | "subprojects"
-  | "sections"
-  | "items"
   | "id"
-  | "user"
-  | "stub"
+  | "items"
   | "name"
-  | "projects"
   | "projectById"
+  | "projects"
+  | "sections"
+  | "stub"
+  | "subprojects"
+  | "user"
   | ContextKeySpecifier
 )[];
 export type ContextFieldPolicy = {
-  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
-  sections?: FieldPolicy<any> | FieldReadFunction<any>;
-  items?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
-  user?: FieldPolicy<any> | FieldReadFunction<any>;
-  stub?: FieldPolicy<any> | FieldReadFunction<any>;
+  items?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
-  projects?: FieldPolicy<any> | FieldReadFunction<any>;
   projectById?: FieldPolicy<any> | FieldReadFunction<any>;
+  projects?: FieldPolicy<any> | FieldReadFunction<any>;
+  sections?: FieldPolicy<any> | FieldReadFunction<any>;
+  stub?: FieldPolicy<any> | FieldReadFunction<any>;
+  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
+  user?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type FileDetailKeySpecifier = (
   | "filename"
@@ -74,83 +74,83 @@ export type FileDetailFieldPolicy = {
   size?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type GithubAccountKeySpecifier = (
-  | "id"
-  | "user"
   | "avatar"
+  | "id"
   | "loginUrl"
   | "searches"
+  | "user"
   | GithubAccountKeySpecifier
 )[];
 export type GithubAccountFieldPolicy = {
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  user?: FieldPolicy<any> | FieldReadFunction<any>;
   avatar?: FieldPolicy<any> | FieldReadFunction<any>;
+  id?: FieldPolicy<any> | FieldReadFunction<any>;
   loginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   searches?: FieldPolicy<any> | FieldReadFunction<any>;
+  user?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type GithubSearchKeySpecifier = (
+  | "dueOffset"
   | "id"
   | "name"
   | "query"
-  | "dueOffset"
   | "url"
   | GithubSearchKeySpecifier
 )[];
 export type GithubSearchFieldPolicy = {
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type GoogleAccountKeySpecifier = (
-  | "id"
-  | "email"
   | "avatar"
-  | "mailSearches"
+  | "email"
+  | "id"
   | "loginUrl"
+  | "mailSearches"
   | GoogleAccountKeySpecifier
 )[];
 export type GoogleAccountFieldPolicy = {
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  email?: FieldPolicy<any> | FieldReadFunction<any>;
   avatar?: FieldPolicy<any> | FieldReadFunction<any>;
-  mailSearches?: FieldPolicy<any> | FieldReadFunction<any>;
+  email?: FieldPolicy<any> | FieldReadFunction<any>;
+  id?: FieldPolicy<any> | FieldReadFunction<any>;
   loginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
+  mailSearches?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type GoogleMailSearchKeySpecifier = (
+  | "dueOffset"
   | "id"
   | "name"
   | "query"
   | "url"
-  | "dueOffset"
   | GoogleMailSearchKeySpecifier
 )[];
 export type GoogleMailSearchFieldPolicy = {
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ItemKeySpecifier = (
-  | "id"
-  | "summary"
-  | "created"
   | "archived"
-  | "snoozed"
-  | "taskInfo"
+  | "created"
   | "detail"
+  | "id"
+  | "snoozed"
+  | "summary"
+  | "taskInfo"
   | ItemKeySpecifier
 )[];
 export type ItemFieldPolicy = {
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  summary?: FieldPolicy<any> | FieldReadFunction<any>;
-  created?: FieldPolicy<any> | FieldReadFunction<any>;
   archived?: FieldPolicy<any> | FieldReadFunction<any>;
-  snoozed?: FieldPolicy<any> | FieldReadFunction<any>;
-  taskInfo?: FieldPolicy<any> | FieldReadFunction<any>;
+  created?: FieldPolicy<any> | FieldReadFunction<any>;
   detail?: FieldPolicy<any> | FieldReadFunction<any>;
+  id?: FieldPolicy<any> | FieldReadFunction<any>;
+  snoozed?: FieldPolicy<any> | FieldReadFunction<any>;
+  summary?: FieldPolicy<any> | FieldReadFunction<any>;
+  taskInfo?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ItemSetKeySpecifier = ("count" | "items" | ItemSetKeySpecifier)[];
 export type ItemSetFieldPolicy = {
@@ -158,37 +158,37 @@ export type ItemSetFieldPolicy = {
   items?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type JiraAccountKeySpecifier = (
-  | "id"
-  | "serverName"
-  | "userName"
-  | "url"
-  | "email"
   | "apiToken"
+  | "email"
+  | "id"
   | "searches"
+  | "serverName"
+  | "url"
+  | "userName"
   | JiraAccountKeySpecifier
 )[];
 export type JiraAccountFieldPolicy = {
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  serverName?: FieldPolicy<any> | FieldReadFunction<any>;
-  userName?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-  email?: FieldPolicy<any> | FieldReadFunction<any>;
   apiToken?: FieldPolicy<any> | FieldReadFunction<any>;
+  email?: FieldPolicy<any> | FieldReadFunction<any>;
+  id?: FieldPolicy<any> | FieldReadFunction<any>;
   searches?: FieldPolicy<any> | FieldReadFunction<any>;
+  serverName?: FieldPolicy<any> | FieldReadFunction<any>;
+  url?: FieldPolicy<any> | FieldReadFunction<any>;
+  userName?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type JiraSearchKeySpecifier = (
+  | "dueOffset"
   | "id"
   | "name"
   | "query"
-  | "dueOffset"
   | "url"
   | JiraSearchKeySpecifier
 )[];
 export type JiraSearchFieldPolicy = {
+  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   query?: FieldPolicy<any> | FieldReadFunction<any>;
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type LinkDetailKeySpecifier = (
@@ -298,32 +298,32 @@ export type NoteDetailFieldPolicy = {
   note?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type PhabricatorAccountKeySpecifier = (
-  | "id"
-  | "icon"
-  | "url"
-  | "email"
   | "apiKey"
+  | "email"
   | "enabledQueries"
+  | "icon"
+  | "id"
+  | "url"
   | PhabricatorAccountKeySpecifier
 )[];
 export type PhabricatorAccountFieldPolicy = {
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  icon?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-  email?: FieldPolicy<any> | FieldReadFunction<any>;
   apiKey?: FieldPolicy<any> | FieldReadFunction<any>;
+  email?: FieldPolicy<any> | FieldReadFunction<any>;
   enabledQueries?: FieldPolicy<any> | FieldReadFunction<any>;
+  icon?: FieldPolicy<any> | FieldReadFunction<any>;
+  id?: FieldPolicy<any> | FieldReadFunction<any>;
+  url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type PhabricatorQueryKeySpecifier = (
-  | "queryId"
-  | "name"
   | "description"
+  | "name"
+  | "queryId"
   | PhabricatorQueryKeySpecifier
 )[];
 export type PhabricatorQueryFieldPolicy = {
-  queryId?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
   description?: FieldPolicy<any> | FieldReadFunction<any>;
+  name?: FieldPolicy<any> | FieldReadFunction<any>;
+  queryId?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ProblemKeySpecifier = (
   | "description"
@@ -335,22 +335,22 @@ export type ProblemFieldPolicy = {
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ProjectKeySpecifier = (
-  | "subprojects"
-  | "sections"
-  | "items"
   | "id"
-  | "stub"
+  | "items"
   | "name"
+  | "sections"
+  | "stub"
+  | "subprojects"
   | "taskList"
   | ProjectKeySpecifier
 )[];
 export type ProjectFieldPolicy = {
-  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
-  sections?: FieldPolicy<any> | FieldReadFunction<any>;
-  items?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
-  stub?: FieldPolicy<any> | FieldReadFunction<any>;
+  items?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
+  sections?: FieldPolicy<any> | FieldReadFunction<any>;
+  stub?: FieldPolicy<any> | FieldReadFunction<any>;
+  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
   taskList?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type QueryKeySpecifier = (
@@ -373,67 +373,67 @@ export type QueryFieldPolicy = {
   users?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type SectionKeySpecifier = (
-  | "items"
   | "id"
+  | "items"
   | "name"
   | SectionKeySpecifier
 )[];
 export type SectionFieldPolicy = {
-  items?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
+  items?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ServiceDetailKeySpecifier = (
-  | "serviceId"
-  | "hasTaskState"
-  | "wasEverListed"
-  | "isCurrentlyListed"
   | "fields"
+  | "hasTaskState"
+  | "isCurrentlyListed"
   | "lists"
+  | "serviceId"
+  | "wasEverListed"
   | ServiceDetailKeySpecifier
 )[];
 export type ServiceDetailFieldPolicy = {
-  serviceId?: FieldPolicy<any> | FieldReadFunction<any>;
-  hasTaskState?: FieldPolicy<any> | FieldReadFunction<any>;
-  wasEverListed?: FieldPolicy<any> | FieldReadFunction<any>;
-  isCurrentlyListed?: FieldPolicy<any> | FieldReadFunction<any>;
   fields?: FieldPolicy<any> | FieldReadFunction<any>;
+  hasTaskState?: FieldPolicy<any> | FieldReadFunction<any>;
+  isCurrentlyListed?: FieldPolicy<any> | FieldReadFunction<any>;
   lists?: FieldPolicy<any> | FieldReadFunction<any>;
+  serviceId?: FieldPolicy<any> | FieldReadFunction<any>;
+  wasEverListed?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type ServiceListKeySpecifier = (
   | "id"
-  | "serviceId"
   | "name"
+  | "serviceId"
   | "url"
   | ServiceListKeySpecifier
 )[];
 export type ServiceListFieldPolicy = {
   id?: FieldPolicy<any> | FieldReadFunction<any>;
-  serviceId?: FieldPolicy<any> | FieldReadFunction<any>;
   name?: FieldPolicy<any> | FieldReadFunction<any>;
+  serviceId?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type TaskInfoKeySpecifier = (
-  | "due"
-  | "done"
   | "controller"
+  | "done"
+  | "due"
   | TaskInfoKeySpecifier
 )[];
 export type TaskInfoFieldPolicy = {
-  due?: FieldPolicy<any> | FieldReadFunction<any>;
-  done?: FieldPolicy<any> | FieldReadFunction<any>;
   controller?: FieldPolicy<any> | FieldReadFunction<any>;
+  done?: FieldPolicy<any> | FieldReadFunction<any>;
+  due?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type TaskListKeySpecifier = (
-  | "subprojects"
-  | "sections"
   | "items"
+  | "sections"
+  | "subprojects"
   | TaskListKeySpecifier
 )[];
 export type TaskListFieldPolicy = {
-  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
-  sections?: FieldPolicy<any> | FieldReadFunction<any>;
   items?: FieldPolicy<any> | FieldReadFunction<any>;
+  sections?: FieldPolicy<any> | FieldReadFunction<any>;
+  subprojects?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type UserKeySpecifier = (
   | "bugzillaAccounts"
@@ -462,7 +462,7 @@ export type UserFieldPolicy = {
   phabricatorAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   phabricatorQueries?: FieldPolicy<any> | FieldReadFunction<any>;
 };
-export type TypedTypePolicies = TypePolicies & {
+export type StrictTypedTypePolicies = {
   BugzillaAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:
       | false
@@ -640,6 +640,7 @@ export type TypedTypePolicies = TypePolicies & {
     fields?: UserFieldPolicy;
   };
 };
+export type TypedTypePolicies = StrictTypedTypePolicies & TypePolicies;
 
 export interface PossibleTypesResultData {
   possibleTypes: {
@@ -648,7 +649,7 @@ export interface PossibleTypesResultData {
 }
 const result: PossibleTypesResultData = {
   possibleTypes: {
-    ItemDetail: ["ServiceDetail", "LinkDetail", "NoteDetail", "FileDetail"],
+    ItemDetail: ["FileDetail", "LinkDetail", "NoteDetail", "ServiceDetail"],
     TaskList: ["Context", "Project"],
   },
 };

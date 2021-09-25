@@ -18,6 +18,18 @@ export type ClientItemFieldsFragment = {
   }>;
   readonly detail: Schema.Maybe<
     | {
+        readonly __typename: "FileDetail";
+        readonly size: number;
+        readonly filename: string;
+        readonly mimetype: string;
+      }
+    | {
+        readonly __typename: "LinkDetail";
+        readonly icon: Schema.Maybe<string>;
+        readonly url: string;
+      }
+    | { readonly __typename: "NoteDetail"; readonly note: string }
+    | {
         readonly __typename: "ServiceDetail";
         readonly serviceId: string;
         readonly hasTaskState: boolean;
@@ -31,18 +43,6 @@ export type ClientItemFieldsFragment = {
           readonly name: string;
           readonly url: Schema.Maybe<string>;
         }>;
-      }
-    | {
-        readonly __typename: "LinkDetail";
-        readonly icon: Schema.Maybe<string>;
-        readonly url: string;
-      }
-    | { readonly __typename: "NoteDetail"; readonly note: string }
-    | {
-        readonly __typename: "FileDetail";
-        readonly size: number;
-        readonly filename: string;
-        readonly mimetype: string;
       }
   >;
 };
@@ -213,6 +213,18 @@ export type CreateTaskMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -226,18 +238,6 @@ export type CreateTaskMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   };
@@ -267,6 +267,18 @@ export type CreateLinkMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -280,18 +292,6 @@ export type CreateLinkMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   };
@@ -319,6 +319,18 @@ export type EditItemMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -332,18 +344,6 @@ export type EditItemMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -371,6 +371,18 @@ export type MarkTaskDoneMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -384,18 +396,6 @@ export type MarkTaskDoneMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -423,6 +423,18 @@ export type SetTaskControllerMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -436,18 +448,6 @@ export type SetTaskControllerMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -476,6 +476,18 @@ export type MoveItemMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -489,18 +501,6 @@ export type MoveItemMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -537,6 +537,18 @@ export type ArchiveItemMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -550,18 +562,6 @@ export type ArchiveItemMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -589,6 +589,18 @@ export type SnoozeItemMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -602,18 +614,6 @@ export type SnoozeItemMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -641,6 +641,18 @@ export type MarkTaskDueMutation = {
     }>;
     readonly detail: Schema.Maybe<
       | {
+          readonly __typename: "FileDetail";
+          readonly size: number;
+          readonly filename: string;
+          readonly mimetype: string;
+        }
+      | {
+          readonly __typename: "LinkDetail";
+          readonly icon: Schema.Maybe<string>;
+          readonly url: string;
+        }
+      | { readonly __typename: "NoteDetail"; readonly note: string }
+      | {
           readonly __typename: "ServiceDetail";
           readonly serviceId: string;
           readonly hasTaskState: boolean;
@@ -654,18 +666,6 @@ export type MarkTaskDueMutation = {
             readonly name: string;
             readonly url: Schema.Maybe<string>;
           }>;
-        }
-      | {
-          readonly __typename: "LinkDetail";
-          readonly icon: Schema.Maybe<string>;
-          readonly url: string;
-        }
-      | { readonly __typename: "NoteDetail"; readonly note: string }
-      | {
-          readonly __typename: "FileDetail";
-          readonly size: number;
-          readonly filename: string;
-          readonly mimetype: string;
         }
     >;
   }>;
@@ -788,6 +788,18 @@ export type ListInboxQuery = {
         }>;
         readonly detail: Schema.Maybe<
           | {
+              readonly __typename: "FileDetail";
+              readonly size: number;
+              readonly filename: string;
+              readonly mimetype: string;
+            }
+          | {
+              readonly __typename: "LinkDetail";
+              readonly icon: Schema.Maybe<string>;
+              readonly url: string;
+            }
+          | { readonly __typename: "NoteDetail"; readonly note: string }
+          | {
               readonly __typename: "ServiceDetail";
               readonly serviceId: string;
               readonly hasTaskState: boolean;
@@ -801,18 +813,6 @@ export type ListInboxQuery = {
                 readonly name: string;
                 readonly url: Schema.Maybe<string>;
               }>;
-            }
-          | {
-              readonly __typename: "LinkDetail";
-              readonly icon: Schema.Maybe<string>;
-              readonly url: string;
-            }
-          | { readonly __typename: "NoteDetail"; readonly note: string }
-          | {
-              readonly __typename: "FileDetail";
-              readonly size: number;
-              readonly filename: string;
-              readonly mimetype: string;
             }
         >;
       }>;
@@ -846,6 +846,18 @@ export type ListTaskListQuery = {
             }>;
             readonly detail: Schema.Maybe<
               | {
+                  readonly __typename: "FileDetail";
+                  readonly size: number;
+                  readonly filename: string;
+                  readonly mimetype: string;
+                }
+              | {
+                  readonly __typename: "LinkDetail";
+                  readonly icon: Schema.Maybe<string>;
+                  readonly url: string;
+                }
+              | { readonly __typename: "NoteDetail"; readonly note: string }
+              | {
                   readonly __typename: "ServiceDetail";
                   readonly serviceId: string;
                   readonly hasTaskState: boolean;
@@ -859,18 +871,6 @@ export type ListTaskListQuery = {
                     readonly name: string;
                     readonly url: Schema.Maybe<string>;
                   }>;
-                }
-              | {
-                  readonly __typename: "LinkDetail";
-                  readonly icon: Schema.Maybe<string>;
-                  readonly url: string;
-                }
-              | { readonly __typename: "NoteDetail"; readonly note: string }
-              | {
-                  readonly __typename: "FileDetail";
-                  readonly size: number;
-                  readonly filename: string;
-                  readonly mimetype: string;
                 }
             >;
           }>;
@@ -896,6 +896,18 @@ export type ListTaskListQuery = {
               }>;
               readonly detail: Schema.Maybe<
                 | {
+                    readonly __typename: "FileDetail";
+                    readonly size: number;
+                    readonly filename: string;
+                    readonly mimetype: string;
+                  }
+                | {
+                    readonly __typename: "LinkDetail";
+                    readonly icon: Schema.Maybe<string>;
+                    readonly url: string;
+                  }
+                | { readonly __typename: "NoteDetail"; readonly note: string }
+                | {
                     readonly __typename: "ServiceDetail";
                     readonly serviceId: string;
                     readonly hasTaskState: boolean;
@@ -909,18 +921,6 @@ export type ListTaskListQuery = {
                       readonly name: string;
                       readonly url: Schema.Maybe<string>;
                     }>;
-                  }
-                | {
-                    readonly __typename: "LinkDetail";
-                    readonly icon: Schema.Maybe<string>;
-                    readonly url: string;
-                  }
-                | { readonly __typename: "NoteDetail"; readonly note: string }
-                | {
-                    readonly __typename: "FileDetail";
-                    readonly size: number;
-                    readonly filename: string;
-                    readonly mimetype: string;
                   }
               >;
             }>;
@@ -946,6 +946,18 @@ export type ListTaskListQuery = {
             }>;
             readonly detail: Schema.Maybe<
               | {
+                  readonly __typename: "FileDetail";
+                  readonly size: number;
+                  readonly filename: string;
+                  readonly mimetype: string;
+                }
+              | {
+                  readonly __typename: "LinkDetail";
+                  readonly icon: Schema.Maybe<string>;
+                  readonly url: string;
+                }
+              | { readonly __typename: "NoteDetail"; readonly note: string }
+              | {
                   readonly __typename: "ServiceDetail";
                   readonly serviceId: string;
                   readonly hasTaskState: boolean;
@@ -959,18 +971,6 @@ export type ListTaskListQuery = {
                     readonly name: string;
                     readonly url: Schema.Maybe<string>;
                   }>;
-                }
-              | {
-                  readonly __typename: "LinkDetail";
-                  readonly icon: Schema.Maybe<string>;
-                  readonly url: string;
-                }
-              | { readonly __typename: "NoteDetail"; readonly note: string }
-              | {
-                  readonly __typename: "FileDetail";
-                  readonly size: number;
-                  readonly filename: string;
-                  readonly mimetype: string;
                 }
             >;
           }>;
@@ -996,6 +996,18 @@ export type ListTaskListQuery = {
               }>;
               readonly detail: Schema.Maybe<
                 | {
+                    readonly __typename: "FileDetail";
+                    readonly size: number;
+                    readonly filename: string;
+                    readonly mimetype: string;
+                  }
+                | {
+                    readonly __typename: "LinkDetail";
+                    readonly icon: Schema.Maybe<string>;
+                    readonly url: string;
+                  }
+                | { readonly __typename: "NoteDetail"; readonly note: string }
+                | {
                     readonly __typename: "ServiceDetail";
                     readonly serviceId: string;
                     readonly hasTaskState: boolean;
@@ -1009,18 +1021,6 @@ export type ListTaskListQuery = {
                       readonly name: string;
                       readonly url: Schema.Maybe<string>;
                     }>;
-                  }
-                | {
-                    readonly __typename: "LinkDetail";
-                    readonly icon: Schema.Maybe<string>;
-                    readonly url: string;
-                  }
-                | { readonly __typename: "NoteDetail"; readonly note: string }
-                | {
-                    readonly __typename: "FileDetail";
-                    readonly size: number;
-                    readonly filename: string;
-                    readonly mimetype: string;
                   }
               >;
             }>;

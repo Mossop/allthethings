@@ -10,8 +10,7 @@ import { Root, Problem } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
-} &
-  { [P in K]-?: NonNullable<T[P]> };
+} & { [P in K]-?: NonNullable<T[P]> };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -120,17 +119,17 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
-  JiraAccount: ResolverTypeWrapper<Account>;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
-  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
+  JiraAccount: ResolverTypeWrapper<Account>;
   JiraAccountParams: Schema.JiraAccountParams;
   JiraSearch: ResolverTypeWrapper<Search>;
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: ResolverTypeWrapper<Root>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
+  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "jiraAccounts"> & {
@@ -141,17 +140,17 @@ export type ResolversTypes = {
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Boolean: Schema.Scalars["Boolean"];
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
-  JiraAccount: Account;
   ID: Schema.Scalars["ID"];
-  String: Schema.Scalars["String"];
+  JiraAccount: Account;
   JiraAccountParams: Schema.JiraAccountParams;
   JiraSearch: Search;
   JiraSearchParams: Schema.JiraSearchParams;
   Mutation: Root;
-  Boolean: Schema.Scalars["Boolean"];
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
+  String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "jiraAccounts"> & {
     jiraAccounts: ReadonlyArray<ResolversParentTypes["JiraAccount"]>;
@@ -172,17 +171,17 @@ export type JiraAccountResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["JiraAccount"] = ResolversParentTypes["JiraAccount"],
 > = {
-  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  serverName: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  userName: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  email: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   apiToken: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  email: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
   searches: Resolver<
     ReadonlyArray<ResolversTypes["JiraSearch"]>,
     ParentType,
     ContextType
   >;
+  serverName: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  userName: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
 
@@ -190,14 +189,14 @@ export type JiraSearchResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["JiraSearch"] = ResolversParentTypes["JiraSearch"],
 > = {
-  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
-  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   dueOffset: Resolver<
     Schema.Maybe<ResolversTypes["DateTimeOffset"]>,
     ParentType,
     ContextType
   >;
+  id: Resolver<ResolversTypes["ID"], ParentType, ContextType>;
+  name: Resolver<ResolversTypes["String"], ParentType, ContextType>;
+  query: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
 };
@@ -212,29 +211,29 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreateJiraAccountArgs, "params">
   >;
-  deleteJiraAccount: Resolver<
-    Schema.Maybe<ResolversTypes["Boolean"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteJiraAccountArgs, "account">
-  >;
   createJiraSearch: Resolver<
     ResolversTypes["JiraSearch"],
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateJiraSearchArgs, "account" | "params">
   >;
-  editJiraSearch: Resolver<
-    Schema.Maybe<ResolversTypes["JiraSearch"]>,
+  deleteJiraAccount: Resolver<
+    Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
-    RequireFields<Schema.MutationEditJiraSearchArgs, "search" | "params">
+    RequireFields<Schema.MutationDeleteJiraAccountArgs, "account">
   >;
   deleteJiraSearch: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeleteJiraSearchArgs, "search">
+  >;
+  editJiraSearch: Resolver<
+    Schema.Maybe<ResolversTypes["JiraSearch"]>,
+    ParentType,
+    ContextType,
+    RequireFields<Schema.MutationEditJiraSearchArgs, "params" | "search">
   >;
 };
 

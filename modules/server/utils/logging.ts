@@ -30,7 +30,7 @@ const logLevels = {
 };
 
 function filtered(
-  obj: Record<string | symbol, unknown>,
+  obj: Record<string | symbol, any>,
 ): Record<string, unknown> | null {
   let entries = Object.entries(obj).filter(
     ([key]: [string | symbol, unknown]): boolean => typeof key != "symbol",

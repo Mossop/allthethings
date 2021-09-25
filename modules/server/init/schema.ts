@@ -114,26 +114,26 @@ export type DirectiveResolverFn<
 
 /** Mapping between all available schema types and the resolvers types */
 export type ResolversTypes = {
+  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   Problem: ResolverTypeWrapper<Problem>;
-  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
+  String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
-  Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
 export type ResolversParentTypes = {
+  Boolean: Schema.Scalars["Boolean"];
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   Problem: Problem;
-  String: Schema.Scalars["String"];
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
+  String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];
-  Boolean: Schema.Scalars["Boolean"];
 };
 
 export interface DateTimeScalarConfig
@@ -159,12 +159,12 @@ export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
 > = {
-  schemaVersion: Resolver<ResolversTypes["String"], ParentType, ContextType>;
   problems: Resolver<
     ReadonlyArray<ResolversTypes["Problem"]>,
     ParentType,
     ContextType
   >;
+  schemaVersion: Resolver<ResolversTypes["String"], ParentType, ContextType>;
 };
 
 export interface RelativeDateTimeScalarConfig

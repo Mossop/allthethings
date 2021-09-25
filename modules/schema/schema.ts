@@ -7,10 +7,12 @@ export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
 };
-export type MakeOptional<T, K extends keyof T> = Omit<T, K> &
-  { [SubKey in K]?: Maybe<T[SubKey]> };
-export type MakeMaybe<T, K extends keyof T> = Omit<T, K> &
-  { [SubKey in K]: Maybe<T[SubKey]> };
+export type MakeOptional<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]?: Maybe<T[SubKey]>;
+};
+export type MakeMaybe<T, K extends keyof T> = Omit<T, K> & {
+  [SubKey in K]: Maybe<T[SubKey]>;
+};
 /** All built-in and custom scalars, mapped to their actual values */
 export type Scalars = {
   ID: string;
@@ -26,48 +28,48 @@ export type Scalars = {
 
 export type BugzillaAccount = {
   readonly __typename: "BugzillaAccount";
+  readonly icon?: Maybe<Scalars["String"]>;
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
-  readonly icon?: Maybe<Scalars["String"]>;
+  readonly searches: ReadonlyArray<BugzillaSearch>;
   readonly url: Scalars["String"];
   readonly username?: Maybe<Scalars["String"]>;
-  readonly searches: ReadonlyArray<BugzillaSearch>;
 };
 
 export type BugzillaAccountParams = {
   readonly name: Scalars["String"];
+  readonly password?: Maybe<Scalars["String"]>;
   readonly url: Scalars["String"];
   readonly username?: Maybe<Scalars["String"]>;
-  readonly password?: Maybe<Scalars["String"]>;
 };
 
 export type BugzillaSearch = {
   readonly __typename: "BugzillaSearch";
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
-  readonly type: Scalars["String"];
   readonly query: Scalars["String"];
+  readonly type: Scalars["String"];
   readonly url: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type BugzillaSearchParams = {
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type Context = TaskList & {
   readonly __typename: "Context";
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ItemSet;
   readonly id: Scalars["ID"];
-  readonly user: User;
-  readonly stub: Scalars["String"];
+  readonly items: ItemSet;
   readonly name: Scalars["String"];
-  readonly projects: ReadonlyArray<Project>;
   readonly projectById?: Maybe<Project>;
+  readonly projects: ReadonlyArray<Project>;
+  readonly sections: ReadonlyArray<Section>;
+  readonly stub: Scalars["String"];
+  readonly subprojects: ReadonlyArray<Project>;
+  readonly user: User;
 };
 
 export type ContextItemsArgs = {
@@ -83,9 +85,9 @@ export type ContextParams = {
 };
 
 export type CreatePhabricatorAccountParams = {
-  readonly url: Scalars["String"];
   readonly apiKey: Scalars["String"];
   readonly queries: ReadonlyArray<Scalars["ID"]>;
+  readonly url: Scalars["String"];
 };
 
 export type FileDetail = {
@@ -97,78 +99,78 @@ export type FileDetail = {
 
 export type GithubAccount = {
   readonly __typename: "GithubAccount";
-  readonly id: Scalars["ID"];
-  readonly user: Scalars["String"];
   readonly avatar: Scalars["String"];
+  readonly id: Scalars["ID"];
   readonly loginUrl: Scalars["String"];
   readonly searches: ReadonlyArray<GithubSearch>;
+  readonly user: Scalars["String"];
 };
 
 export type GithubSearch = {
   readonly __typename: "GithubSearch";
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly url: Scalars["String"];
 };
 
 export type GithubSearchParams = {
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type GoogleAccount = {
   readonly __typename: "GoogleAccount";
-  readonly id: Scalars["ID"];
-  readonly email: Scalars["String"];
   readonly avatar?: Maybe<Scalars["String"]>;
-  readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
+  readonly email: Scalars["String"];
+  readonly id: Scalars["ID"];
   readonly loginUrl: Scalars["String"];
+  readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
 };
 
 export type GoogleMailSearch = {
   readonly __typename: "GoogleMailSearch";
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
   readonly url: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type GoogleMailSearchParams = {
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type Item = {
   readonly __typename: "Item";
-  readonly id: Scalars["ID"];
-  readonly summary: Scalars["String"];
-  readonly created: Scalars["DateTime"];
   readonly archived?: Maybe<Scalars["DateTime"]>;
-  readonly snoozed?: Maybe<Scalars["DateTime"]>;
-  readonly taskInfo?: Maybe<TaskInfo>;
+  readonly created: Scalars["DateTime"];
   readonly detail?: Maybe<ItemDetail>;
+  readonly id: Scalars["ID"];
+  readonly snoozed?: Maybe<Scalars["DateTime"]>;
+  readonly summary: Scalars["String"];
+  readonly taskInfo?: Maybe<TaskInfo>;
 };
 
-export type ItemDetail = ServiceDetail | LinkDetail | NoteDetail | FileDetail;
+export type ItemDetail = FileDetail | LinkDetail | NoteDetail | ServiceDetail;
 
 export type ItemFilter = {
-  readonly isSnoozed?: Maybe<Scalars["Boolean"]>;
-  readonly isArchived?: Maybe<Scalars["Boolean"]>;
-  readonly dueBefore?: Maybe<Scalars["RelativeDateTime"]>;
   readonly dueAfter?: Maybe<Scalars["RelativeDateTime"]>;
-  readonly isTask?: Maybe<Scalars["Boolean"]>;
+  readonly dueBefore?: Maybe<Scalars["RelativeDateTime"]>;
+  readonly isArchived?: Maybe<Scalars["Boolean"]>;
   readonly isPending?: Maybe<Scalars["Boolean"]>;
+  readonly isSnoozed?: Maybe<Scalars["Boolean"]>;
+  readonly isTask?: Maybe<Scalars["Boolean"]>;
 };
 
 export type ItemParams = {
-  readonly summary: Scalars["String"];
   readonly archived?: Maybe<Scalars["DateTime"]>;
   readonly snoozed?: Maybe<Scalars["DateTime"]>;
+  readonly summary: Scalars["String"];
 };
 
 export type ItemSet = {
@@ -179,34 +181,34 @@ export type ItemSet = {
 
 export type JiraAccount = {
   readonly __typename: "JiraAccount";
-  readonly id: Scalars["ID"];
-  readonly serverName: Scalars["String"];
-  readonly userName: Scalars["String"];
-  readonly url: Scalars["String"];
-  readonly email: Scalars["String"];
   readonly apiToken: Scalars["String"];
+  readonly email: Scalars["String"];
+  readonly id: Scalars["ID"];
   readonly searches: ReadonlyArray<JiraSearch>;
+  readonly serverName: Scalars["String"];
+  readonly url: Scalars["String"];
+  readonly userName: Scalars["String"];
 };
 
 export type JiraAccountParams = {
-  readonly url: Scalars["String"];
-  readonly email: Scalars["String"];
   readonly apiToken: Scalars["String"];
+  readonly email: Scalars["String"];
+  readonly url: Scalars["String"];
 };
 
 export type JiraSearch = {
   readonly __typename: "JiraSearch";
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly id: Scalars["ID"];
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly url: Scalars["String"];
 };
 
 export type JiraSearchParams = {
+  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
 };
 
 export type LinkDetail = {
@@ -268,8 +270,8 @@ export type Mutation = {
 };
 
 export type MutationArchiveItemArgs = {
-  id: Scalars["ID"];
   archived?: Maybe<Scalars["DateTime"]>;
+  id: Scalars["ID"];
 };
 
 export type MutationChangePasswordArgs = {
@@ -310,17 +312,17 @@ export type MutationCreateJiraSearchArgs = {
 };
 
 export type MutationCreateLinkArgs = {
-  section?: Maybe<Scalars["ID"]>;
-  item: ItemParams;
   detail: LinkDetailParams;
   isTask: Scalars["Boolean"];
+  item: ItemParams;
+  section?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationCreateNoteArgs = {
-  section?: Maybe<Scalars["ID"]>;
-  item: ItemParams;
   detail: NoteDetailParams;
   isTask: Scalars["Boolean"];
+  item: ItemParams;
+  section?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationCreatePhabricatorAccountArgs = {
@@ -328,25 +330,25 @@ export type MutationCreatePhabricatorAccountArgs = {
 };
 
 export type MutationCreateProjectArgs = {
-  taskList: Scalars["ID"];
   params: ProjectParams;
+  taskList: Scalars["ID"];
 };
 
 export type MutationCreateSectionArgs = {
-  taskList: Scalars["ID"];
   before?: Maybe<Scalars["ID"]>;
   params: SectionParams;
+  taskList: Scalars["ID"];
 };
 
 export type MutationCreateTaskArgs = {
-  section?: Maybe<Scalars["ID"]>;
   item: ItemParams;
+  section?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationCreateUserArgs = {
   email: Scalars["String"];
-  password: Scalars["String"];
   isAdmin?: Maybe<Scalars["Boolean"]>;
+  password: Scalars["String"];
 };
 
 export type MutationDeleteBugzillaAccountArgs = {
@@ -398,8 +400,8 @@ export type MutationDeleteUserArgs = {
 };
 
 export type MutationEditBugzillaSearchArgs = {
-  search: Scalars["ID"];
   params: BugzillaSearchParams;
+  search: Scalars["ID"];
 };
 
 export type MutationEditContextArgs = {
@@ -408,8 +410,8 @@ export type MutationEditContextArgs = {
 };
 
 export type MutationEditGithubSearchArgs = {
-  search: Scalars["ID"];
   params: GithubSearchParams;
+  search: Scalars["ID"];
 };
 
 export type MutationEditGoogleMailSearchArgs = {
@@ -423,8 +425,8 @@ export type MutationEditItemArgs = {
 };
 
 export type MutationEditJiraSearchArgs = {
-  search: Scalars["ID"];
   params: JiraSearchParams;
+  search: Scalars["ID"];
 };
 
 export type MutationEditProjectArgs = {
@@ -438,19 +440,19 @@ export type MutationEditSectionArgs = {
 };
 
 export type MutationMarkTaskDoneArgs = {
-  id: Scalars["ID"];
   done?: Maybe<Scalars["DateTime"]>;
+  id: Scalars["ID"];
 };
 
 export type MutationMarkTaskDueArgs = {
-  id: Scalars["ID"];
   due?: Maybe<Scalars["DateTime"]>;
+  id: Scalars["ID"];
 };
 
 export type MutationMoveItemArgs = {
+  before?: Maybe<Scalars["ID"]>;
   id: Scalars["ID"];
   section?: Maybe<Scalars["ID"]>;
-  before?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationMoveProjectArgs = {
@@ -459,14 +461,14 @@ export type MutationMoveProjectArgs = {
 };
 
 export type MutationMoveSectionArgs = {
+  before?: Maybe<Scalars["ID"]>;
   id: Scalars["ID"];
   taskList: Scalars["ID"];
-  before?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationSetTaskControllerArgs = {
-  id: Scalars["ID"];
   controller?: Maybe<Scalars["TaskController"]>;
+  id: Scalars["ID"];
 };
 
 export type MutationSnoozeItemArgs = {
@@ -490,19 +492,19 @@ export type NoteDetailParams = {
 
 export type PhabricatorAccount = {
   readonly __typename: "PhabricatorAccount";
-  readonly id: Scalars["ID"];
-  readonly icon: Scalars["String"];
-  readonly url: Scalars["String"];
-  readonly email: Scalars["String"];
   readonly apiKey: Scalars["String"];
+  readonly email: Scalars["String"];
   readonly enabledQueries: ReadonlyArray<Scalars["ID"]>;
+  readonly icon: Scalars["String"];
+  readonly id: Scalars["ID"];
+  readonly url: Scalars["String"];
 };
 
 export type PhabricatorQuery = {
   readonly __typename: "PhabricatorQuery";
-  readonly queryId: Scalars["ID"];
-  readonly name: Scalars["String"];
   readonly description: Scalars["String"];
+  readonly name: Scalars["String"];
+  readonly queryId: Scalars["ID"];
 };
 
 export type Problem = {
@@ -513,12 +515,12 @@ export type Problem = {
 
 export type Project = TaskList & {
   readonly __typename: "Project";
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly items: ItemSet;
   readonly id: Scalars["ID"];
-  readonly stub: Scalars["String"];
+  readonly items: ItemSet;
   readonly name: Scalars["String"];
+  readonly sections: ReadonlyArray<Section>;
+  readonly stub: Scalars["String"];
+  readonly subprojects: ReadonlyArray<Project>;
   readonly taskList: Context | Project;
 };
 
@@ -547,8 +549,8 @@ export type QueryTaskListArgs = {
 
 export type Section = {
   readonly __typename: "Section";
-  readonly items: ItemSet;
   readonly id: Scalars["ID"];
+  readonly items: ItemSet;
   readonly name: Scalars["String"];
 };
 
@@ -562,38 +564,38 @@ export type SectionParams = {
 
 export type ServiceDetail = {
   readonly __typename: "ServiceDetail";
-  readonly serviceId: Scalars["String"];
-  readonly hasTaskState: Scalars["Boolean"];
-  readonly wasEverListed: Scalars["Boolean"];
-  readonly isCurrentlyListed: Scalars["Boolean"];
   readonly fields: Scalars["String"];
+  readonly hasTaskState: Scalars["Boolean"];
+  readonly isCurrentlyListed: Scalars["Boolean"];
   readonly lists: ReadonlyArray<ServiceList>;
+  readonly serviceId: Scalars["String"];
+  readonly wasEverListed: Scalars["Boolean"];
 };
 
 export type ServiceList = {
   readonly __typename: "ServiceList";
   readonly id: Scalars["ID"];
-  readonly serviceId: Scalars["String"];
   readonly name: Scalars["String"];
+  readonly serviceId: Scalars["String"];
   readonly url?: Maybe<Scalars["String"]>;
 };
 
 export type TaskInfo = {
   readonly __typename: "TaskInfo";
-  readonly due?: Maybe<Scalars["DateTime"]>;
-  readonly done?: Maybe<Scalars["DateTime"]>;
   readonly controller: Scalars["TaskController"];
+  readonly done?: Maybe<Scalars["DateTime"]>;
+  readonly due?: Maybe<Scalars["DateTime"]>;
 };
 
 export type TaskInfoParams = {
-  readonly due?: Maybe<Scalars["DateTime"]>;
   readonly done?: Maybe<Scalars["DateTime"]>;
+  readonly due?: Maybe<Scalars["DateTime"]>;
 };
 
 export type TaskList = {
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
   readonly items: ItemSet;
+  readonly sections: ReadonlyArray<Section>;
+  readonly subprojects: ReadonlyArray<Project>;
 };
 
 export type TaskListItemsArgs = {
@@ -601,9 +603,9 @@ export type TaskListItemsArgs = {
 };
 
 export type UpdatePhabricatorAccountParams = {
-  readonly url?: Maybe<Scalars["String"]>;
   readonly apiKey?: Maybe<Scalars["String"]>;
   readonly queries?: Maybe<ReadonlyArray<Scalars["ID"]>>;
+  readonly url?: Maybe<Scalars["String"]>;
 };
 
 export type User = {
