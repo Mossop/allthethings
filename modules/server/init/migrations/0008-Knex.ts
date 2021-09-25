@@ -1,4 +1,5 @@
-import { Database, Migration, Sql, sql } from "#db";
+import type { Database, Migration, Sql } from "#db";
+import { sql } from "#db";
 
 export class Migration0008Knex implements Migration {
   public name = "0008-Knex";
@@ -15,19 +16,19 @@ export class Migration0008Knex implements Migration {
     }
 
     let migrate = (
-      old_schema: string,
-      new_schema: string,
-      old_table: string,
+      oldSchema: string,
+      newSchema: string,
+      oldTable: string,
       columns: string[],
-      new_table: string = old_table,
+      newTable: string = oldTable,
     ): Promise<void> => {
       let colSql = sql.join(
         columns.map((column: string): Sql => sql.ref(column)),
         ", ",
       );
       return db.update(sql`
-        INSERT INTO ${sql.ref(`${new_schema}.${new_table}`)} (${colSql})
-        SELECT ${colSql} FROM ${sql.ref(`${old_schema}.${old_table}`)}
+        INSERT INTO ${sql.ref(`${newSchema}.${newTable}`)} (${colSql})
+        SELECT ${colSql} FROM ${sql.ref(`${oldSchema}.${oldTable}`)}
       `);
     };
 

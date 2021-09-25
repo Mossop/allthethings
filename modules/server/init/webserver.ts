@@ -17,14 +17,14 @@ import {
   ServiceManager,
   withTransaction,
 } from "#server/core";
-import {
-  RootSegment,
+import type {
   Service,
   ServiceWebContext,
   ServiceWebContextExtras,
   Transaction,
+  Segment,
 } from "#server/utils";
-import { log, Segment } from "#server/utils";
+import { RootSegment, log } from "#server/utils";
 import type { DescriptorsFor } from "#utils";
 import { defer } from "#utils";
 
@@ -108,7 +108,7 @@ export async function buildWebServerContext(
       value: async function startTransaction(
         this: WebServerContext,
         operation: string,
-        writable: boolean = true,
+        _writable: boolean = true,
       ): Promise<Transaction> {
         let holder = transactions.get(this);
         if (!holder) {

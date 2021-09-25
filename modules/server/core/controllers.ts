@@ -1,7 +1,7 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import { Route, Get, Query } from "tsoa";
+import { Route, Get, Query } from "@tsoa/runtime";
 
 import type { Transaction } from "#server/utils";
 import { RequestController } from "#server/utils";

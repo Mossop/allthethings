@@ -7,17 +7,17 @@ import type { Transaction, Segment } from "#server/utils";
 import { inSegment } from "#server/utils";
 
 import { ServiceManager } from "../core/services";
+import { createApiServer } from "./apiserver";
 import { createGqlServer } from "./gqlserver";
+import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
 import { Migration0002Core } from "./migrations/0002-Core";
 import { Migration0003Bugzilla } from "./migrations/0003-Bugzilla";
 import { Migration0004Github } from "./migrations/0004-Github";
 import { Migration0005Google } from "./migrations/0005-Google";
 import { Migration0006Jira } from "./migrations/0006-Jira";
 import { Migration0007Phabricator } from "./migrations/0007-Phabricator";
-import { createWebServer } from "./webserver";
-import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
 import { Migration0008Knex } from "./migrations/0008-Knex";
-import { createApiServer } from "./apiserver";
+import { createWebServer } from "./webserver";
 
 install();
 

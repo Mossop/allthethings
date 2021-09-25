@@ -62,6 +62,7 @@ export abstract class Segment implements Logger {
     this.trace("Entering segment");
 
     let tree: string[] = [];
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     let segment: Segment = this;
     while (segment.parent) {
       tree.unshift(segment.name);
@@ -162,14 +163,9 @@ export class RootSegment extends Segment {
 
     let length = this.end! - this.start;
     if (length >= MAX_SEGMENT_LENGTH) {
-      interface SegmentTime {
-        tree: string;
-        duration: number;
-      }
-
       let segmentTimes: [string, number][] = [];
 
-      let addSegments = (tree: string[], segments: Segment[]) => {
+      let addSegments = (tree: string[], segments: Segment[]): void => {
         for (let child of segments) {
           let segmentTree = [...tree, child.name];
           segmentTimes.push([segmentTree.join(" -> "), child.duration]);

@@ -2,7 +2,7 @@ import { URL } from "url";
 
 import { DateTime } from "luxon";
 
-import type { Database } from "#db";
+import type { Database, QueryInstance } from "#db";
 import { TaskController } from "#schema";
 import type {
   Service,
@@ -25,8 +25,6 @@ import {
   User,
 } from "./implementations";
 import { ServiceOwner } from "./services";
-import { QueryInstance } from "modules/db/client";
-import { QueryResult } from "pg";
 
 async function buildTransaction(
   database: Database,
@@ -273,20 +271,17 @@ export async function withTransaction<R>(
           querySegments.set(query, inner);
         });
 
-        db.on(
-          "result",
-          (db: Database, query: QueryInstance, result: QueryResult) => {
-            let inner = querySegments.get(query);
-            if (!inner) {
-              segment.current.error("Saw a query result while not in a query");
-            } else {
-              querySegments.delete(query);
-              inner.finish();
-            }
-          },
-        );
+        db.on("result", (db: Database, query: QueryInstance) => {
+          let inner = querySegments.get(query);
+          if (!inner) {
+            segment.current.error("Saw a query result while not in a query");
+          } else {
+            querySegments.delete(query);
+            inner.finish();
+          }
+        });
 
-        db.on("error", (db: Database, query: QueryInstance, error: Error) => {
+        db.on("error", (db: Database, query: QueryInstance) => {
           let inner = querySegments.get(query);
           if (!inner) {
             segment.current.error("Saw a query error while not in a query");

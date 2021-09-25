@@ -2,7 +2,7 @@ import { DateTime } from "luxon";
 import { types } from "pg";
 
 export { connect, Database, Connection } from "./client";
-export type { DatabaseConfig, Query } from "./client";
+export type { DatabaseConfig, Query, QueryInstance } from "./client";
 export type { Migration, MigrationConfig } from "./migrations";
 export { migrate, rollback } from "./migrations";
 export { Sql, sql } from "./sql";

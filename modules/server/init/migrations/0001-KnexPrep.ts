@@ -1,4 +1,5 @@
-import { Database, Migration, sql } from "#db";
+import type { Database, Migration } from "#db";
+import { sql } from "#db";
 
 export class Migration0001KnexPrep implements Migration {
   public name = "0001-Knex-Prep";

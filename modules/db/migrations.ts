@@ -82,9 +82,10 @@ export async function migrate(
 
     for (let i = 0; i < migrations.length; i++) {
       if (i < applied.length) {
-        if (applied[i] != migrations[i].name) {
+        let { name } = migrations[i];
+        if (applied[i] != name) {
           throw new Error(
-            `Database has migration "${applied[i]}" applied when "${migrations[i].name}" was expected.`,
+            `Database has migration "${applied[i]}" applied when "${name}" was expected.`,
           );
         }
         continue;
@@ -126,9 +127,10 @@ export async function rollback(
 
     migrations = migrations.slice(0, applied.length);
     for (let i = migrations.length - 1; i >= 0; i--) {
-      if (applied[i] != migrations[i].name) {
+      let { name } = migrations[i];
+      if (applied[i] != name) {
         throw new Error(
-          `Database has migration "${applied[i]}" applied when "${migrations[i].name}" was expected.`,
+          `Database has migration "${applied[i]}" applied when "${name}" was expected.`,
         );
       }
 
