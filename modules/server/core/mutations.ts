@@ -5,23 +5,19 @@ import type {
   MutationChangePasswordArgs,
   MutationCreateContextArgs,
   MutationCreateLinkArgs,
-  MutationCreateProjectArgs,
   MutationCreateSectionArgs,
   MutationCreateTaskArgs,
   MutationCreateUserArgs,
   MutationDeleteContextArgs,
   MutationDeleteItemArgs,
-  MutationDeleteProjectArgs,
   MutationDeleteSectionArgs,
   MutationDeleteUserArgs,
   MutationEditContextArgs,
   MutationEditItemArgs,
-  MutationEditProjectArgs,
   MutationEditSectionArgs,
   MutationMarkTaskDoneArgs,
   MutationMarkTaskDueArgs,
   MutationMoveItemArgs,
-  MutationMoveProjectArgs,
   MutationMoveSectionArgs,
   MutationSetTaskControllerArgs,
   MutationSnoozeItemArgs,
@@ -38,7 +34,6 @@ import {
   LinkDetail,
   ItemHolderBase,
   Context,
-  Project,
   Section,
   TaskListBase,
   Item,
@@ -89,64 +84,6 @@ const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
       }
 
       await context.delete();
-      return true;
-    },
-  ),
-
-  createProject: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { taskList: taskListId, params }: MutationCreateProjectArgs,
-    ): Promise<Project> => {
-      let taskList = await TaskListBase.getTaskList(tx, taskListId);
-      if (!taskList) {
-        throw new Error("Unknown task list.");
-      }
-
-      return Project.create(tx, taskList, params);
-    },
-  ),
-
-  editProject: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, params }: MutationEditProjectArgs,
-    ): Promise<Project | null> => {
-      let project = await Project.store(tx).get(id);
-      await project.update(params);
-
-      return project;
-    },
-  ),
-
-  moveProject: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, taskList: taskListId }: MutationMoveProjectArgs,
-    ): Promise<Project | null> => {
-      let project = await Project.store(tx).get(id);
-
-      let taskList = await TaskListBase.getTaskList(tx, taskListId);
-      if (!taskList) {
-        throw new Error("Unknown task list.");
-      }
-
-      await project.move(taskList);
-      return project;
-    },
-  ),
-
-  deleteProject: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id }: MutationDeleteProjectArgs,
-    ): Promise<boolean> => {
-      let project = await Project.store(tx).get(id);
-      await project.delete();
       return true;
     },
   ),

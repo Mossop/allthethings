@@ -57,6 +57,13 @@ export interface ProjectParams {
   name: string;
 }
 
+/**
+ * Make all properties in T optional
+ */
+export interface PartialProjectParams {
+  name?: string;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
@@ -348,6 +355,56 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
       this.request<ProjectState, any>({
         path: `/api/project`,
         method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditProject
+     * @request PATCH:/api/project
+     * @response `200` `ProjectState` Ok
+     */
+    editProject: (data: { params: PartialProjectParams; id: string }, params: RequestParams = {}) =>
+      this.request<ProjectState, any>({
+        path: `/api/project`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteProject
+     * @request DELETE:/api/project
+     * @response `204` `void` No content
+     */
+    deleteProject: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/project`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name MoveProject
+     * @request PATCH:/api/project/move
+     * @response `200` `ProjectState` Ok
+     */
+    moveProject: (data: { taskListId: string; id: string }, params: RequestParams = {}) =>
+      this.request<ProjectState, any>({
+        path: `/api/project/move`,
+        method: "PATCH",
         body: data,
         type: ContentType.Json,
         format: "json",

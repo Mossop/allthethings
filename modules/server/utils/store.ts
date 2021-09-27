@@ -40,13 +40,31 @@ export abstract class EntityImpl<Entity, Tx extends Transaction = Transaction> {
   }
 
   public async update(fields: Partial<Entity>): Promise<void> {
+    let updates: Partial<Entity> = {};
     for (let [k, v] of Object.entries(fields)) {
-      if (k in this.entity) {
-        this.entity[k] = v;
+      if (k in this.entity && this.entity[k] != v) {
+        if (this.store.keys.includes(k)) {
+          throw new Error("Cannot modify an entity's primary key.");
+        }
+
+        updates[k] = v;
       }
     }
 
-    await this.save();
+    await this.store.update(
+      updates,
+      // @ts-ignore
+      Object.fromEntries(
+        this.store.keys.map((key: string): [string, unknown] => [
+          key,
+          this.entity[key],
+        ]),
+      ),
+    );
+
+    for (let [k, v] of Object.entries(updates)) {
+      this.entity[k] = v;
+    }
   }
 
   protected get where(): WhereConditions<Entity> {
@@ -57,10 +75,6 @@ export abstract class EntityImpl<Entity, Tx extends Transaction = Transaction> {
         this.entity[key],
       ]),
     );
-  }
-
-  protected async save(): Promise<void> {
-    await this.store.upsert([this.entity]);
   }
 
   public async delete(): Promise<void> {

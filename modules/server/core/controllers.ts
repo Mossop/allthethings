@@ -1,7 +1,17 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import { Route, Get, Query, Post, Body, Put, Inject } from "@tsoa/runtime";
+import {
+  Route,
+  Get,
+  Query,
+  Post,
+  Body,
+  Put,
+  Inject,
+  Patch,
+  Delete,
+} from "@tsoa/runtime";
 
 import type { Transaction } from "#server/utils";
 import { HttpError, NotFoundError } from "#server/utils";
@@ -217,5 +227,53 @@ export class ProjectController extends CoreController {
 
     let project = await Project.create(tx, taskList, params);
     return project.state;
+  }
+
+  @Authenticated(true)
+  @Patch()
+  public async editProject(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id, params }: { id: string; params: Partial<ProjectParams> },
+  ): Promise<ProjectState> {
+    let project = await Project.store(tx).get(id);
+
+    await project.update(params);
+
+    return project.state;
+  }
+
+  @Authenticated(true)
+  @Patch("/move")
+  public async moveProject(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id, taskListId }: { id: string; taskListId: string },
+  ): Promise<ProjectState> {
+    let project = await Project.store(tx).get(id);
+
+    let taskList = await TaskListBase.getTaskList(tx, taskListId);
+    if (!taskList) {
+      throw new Error("Unknown task list.");
+    }
+
+    await project.move(taskList);
+
+    return project.state;
+  }
+
+  @Authenticated(true)
+  @Delete()
+  public async deleteProject(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id }: { id: string },
+  ): Promise<void> {
+    let project = await Project.store(tx).get(id);
+
+    await project.delete();
   }
 }

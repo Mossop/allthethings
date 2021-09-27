@@ -9,7 +9,7 @@ import {
 } from "react";
 
 import type { ReactResult, ReactChildren } from "#client/utils";
-import { log, ReactMemo } from "#client/utils";
+import { refresh, api, log, ReactMemo } from "#client/utils";
 
 import type {
   GraphQLType,
@@ -17,19 +17,15 @@ import type {
   Item,
   Section,
   TaskList,
-  MoveProjectMutationVariables,
-  MoveProjectMutation,
   MoveItemMutation,
   MoveItemMutationVariables,
   Inbox,
 } from "../schema";
 import {
-  OperationNames,
   refetchQueriesForSection,
   isInbox,
   refetchQueriesForItem,
   MoveItemDocument,
-  MoveProjectDocument,
   isTaskList,
   isProject,
   isSection,
@@ -182,17 +178,12 @@ class ProjectDragOperation extends BaseDragOperation<ProjectDrag> {
       return;
     }
 
-    await ApolloClient.mutate<
-      MoveProjectMutation,
-      MoveProjectMutationVariables
-    >({
-      mutation: MoveProjectDocument,
-      variables: {
-        id: this.dragSource.id,
-        taskList: this.state.dropTarget.id,
-      },
-      refetchQueries: [OperationNames.Query.ListContextState],
+    await api.project.moveProject({
+      id: this.dragSource.id,
+      taskListId: this.state.dropTarget.id,
     });
+
+    await refresh(api.state.getState);
   }
 
   public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {

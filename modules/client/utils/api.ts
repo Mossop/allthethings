@@ -4,10 +4,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Deferred } from "#utils";
 import { defer, TypedEmitter } from "#utils";
 
-import { Refresh } from ".";
 import { Api } from "./client";
 import type { HttpResponse, RequestParams } from "./client";
 import { log } from "./logging";
+import type { Token } from "./refresh";
+import { addRefreshable, refresh, removeRefreshable } from "./refresh";
 
 export type ApiMethod<A extends unknown[], D> = (
   ...args: [...A, RequestParams]
@@ -48,7 +49,7 @@ export class Query<
     super();
 
     if (!paused) {
-      Refresh.addQuery(method, this);
+      addRefreshable(method, this);
     }
 
     this.schedule();
@@ -60,7 +61,7 @@ export class Query<
     }
 
     this.paused = false;
-    Refresh.addQuery(this.method, this);
+    addRefreshable(this.method, this);
 
     if (this.pendingResult) {
       this.pendingResult = false;
@@ -98,11 +99,11 @@ export class Query<
     }
 
     this.paused = true;
-    Refresh.removeQuery(this.method, this);
+    removeRefreshable(this.method, this);
     api.abortRequest(this.cancelToken);
   }
 
-  public poll(): Promise<D> {
+  public refresh(): Promise<D> {
     let deferred = defer<D>();
     this.polls.push(deferred);
 
@@ -259,7 +260,7 @@ export function queryHook<A extends unknown[], D>(
 }
 
 export type MutationOptions = Omit<RequestParams, "cancelToken"> & {
-  refreshTokens?: any[];
+  refreshTokens?: Token[];
 };
 
 export type Mutation<A extends unknown[], D> = (...args: A) => Promise<D>;
@@ -302,7 +303,7 @@ export function mutationHook<A extends unknown[], D>(
         if (options.refreshTokens) {
           await Promise.all(
             options.refreshTokens.map(
-              (token: unknown): Promise<void> => Refresh.refresh(token),
+              (token: Token): Promise<void> => refresh(token),
             ),
           );
         }

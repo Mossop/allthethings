@@ -159,11 +159,6 @@ type Mutation {
   editContext(id: ID!, params: ContextParams!): Context
   deleteContext(id: ID!): Boolean!
 
-  createProject(taskList: ID!, params: ProjectParams!): Project!
-  moveProject(id: ID!, taskList: ID!): Project
-  editProject(id: ID!, params: ProjectParams!): Project
-  deleteProject(id: ID!): Boolean!
-
   createSection(taskList: ID!, before: ID, params: SectionParams!): Section!
   moveSection(id: ID!, taskList: ID!, before: ID): Section
   editSection(id: ID!, params: SectionParams!): Section

@@ -6,6 +6,8 @@ import { useState, forwardRef, useCallback } from "react";
 
 import type { ReactRef, ReactResult } from "#client/utils";
 import {
+  api,
+  mutationHook,
   Icons,
   Styles,
   TextStyles,
@@ -21,7 +23,6 @@ import type { Context, Project, Section } from "../schema";
 import {
   isProject,
   useEditContextMutation,
-  useEditProjectMutation,
   useTaskListContents,
 } from "../schema";
 import { useDragSource } from "../utils/drag";
@@ -116,6 +117,10 @@ interface ProjectHeaderProps {
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
+const useEditProjectMutation = mutationHook(api.project.editProject, {
+  refreshTokens: [api.state.getState],
+});
+
 const ProjectHeader = ReactMemo(
   forwardRef(function ProjectHeader(
     { project, filter, setFilter }: ProjectHeaderProps,
@@ -127,11 +132,9 @@ const ProjectHeader = ReactMemo(
     let changeTaskListName = useCallback(
       (name: string): void => {
         void editProject({
-          variables: {
-            id: project.id,
-            params: {
-              name,
-            },
+          id: project.id,
+          params: {
+            name,
           },
         });
       },

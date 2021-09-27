@@ -12,6 +12,8 @@ import { useMemo } from "react";
 
 import type { ReactResult } from "#client/utils";
 import {
+  api,
+  mutationHook,
   Icons,
   Styles,
   ReactMemo,
@@ -31,7 +33,6 @@ import {
   isInbox,
   isProject,
   useDeleteContextMutation,
-  useDeleteProjectMutation,
   useDeleteSectionMutation,
   refetchQueriesForSection,
   isTaskList,
@@ -53,6 +54,10 @@ interface ItemListActionsProps {
   list: Inbox | TaskList | Section;
 }
 
+const useDeleteProjectMutation = mutationHook(api.project.deleteProject, {
+  refreshTokens: [api.state.getState],
+});
+
 export default ReactMemo(function ItemListActions({
   list,
 }: ItemListActionsProps): ReactResult {
@@ -67,9 +72,7 @@ export default ReactMemo(function ItemListActions({
   let [linkAddDialogOpen, openAddLink, closeAddLink] = useBoolState();
 
   let [deleteSection] = useDeleteSectionMutation();
-  let [deleteProject] = useDeleteProjectMutation({
-    refetchQueries: [OperationNames.Query.ListContextState],
-  });
+  let [deleteProject] = useDeleteProjectMutation();
   let [deleteContext] = useDeleteContextMutation({
     refetchQueries: [OperationNames.Query.ListContextState],
   });
@@ -87,9 +90,7 @@ export default ReactMemo(function ItemListActions({
         });
 
         void deleteProject({
-          variables: {
-            id: list.id,
-          },
+          id: list.id,
         });
       } else if (isContext(list)) {
         replaceView({

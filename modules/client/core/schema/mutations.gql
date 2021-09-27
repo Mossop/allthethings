@@ -43,34 +43,6 @@ mutation DeleteSection($id: ID!) {
   deleteSection(id: $id)
 }
 
-mutation CreateProject($taskList: ID!, $params: ProjectParams!) {
-  createProject(taskList: $taskList, params: $params) {
-    id
-    name
-    stub
-  }
-}
-
-mutation EditProject($id: ID!, $params: ProjectParams!) {
-  editProject(id: $id, params: $params) {
-    id
-    name
-    stub
-  }
-}
-
-mutation MoveProject($id: ID!, $taskList: ID!) {
-  moveProject(id: $id, taskList: $taskList) {
-    id
-    name
-    stub
-  }
-}
-
-mutation DeleteProject($id: ID!) {
-  deleteProject(id: $id)
-}
-
 mutation CreateTask($section: ID, $item: ItemParams!) {
   createTask(section: $section, item: $item) {
     ...clientItemFields

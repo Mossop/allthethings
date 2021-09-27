@@ -372,12 +372,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreateNoteArgs, "detail" | "isTask" | "item">
   >;
-  createProject: Resolver<
-    ResolversTypes["Project"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateProjectArgs, "params" | "taskList">
-  >;
   createSection: Resolver<
     ResolversTypes["Section"],
     ParentType,
@@ -408,12 +402,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationDeleteItemArgs, "id">
   >;
-  deleteProject: Resolver<
-    ResolversTypes["Boolean"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteProjectArgs, "id">
-  >;
   deleteSection: Resolver<
     ResolversTypes["Boolean"],
     ParentType,
@@ -438,12 +426,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationEditItemArgs, "id" | "item">
   >;
-  editProject: Resolver<
-    Schema.Maybe<ResolversTypes["Project"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationEditProjectArgs, "id" | "params">
-  >;
   editSection: Resolver<
     Schema.Maybe<ResolversTypes["Section"]>,
     ParentType,
@@ -467,12 +449,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationMoveItemArgs, "id">
-  >;
-  moveProject: Resolver<
-    Schema.Maybe<ResolversTypes["Project"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMoveProjectArgs, "id" | "taskList">
   >;
   moveSection: Resolver<
     Schema.Maybe<ResolversTypes["Section"]>,
