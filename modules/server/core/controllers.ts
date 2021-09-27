@@ -1,21 +1,21 @@
 import { promises as fs } from "fs";
 import path from "path";
 
-import { Route, Get, Query, Post, Body } from "@tsoa/runtime";
+import { Route, Get, Query, Post, Body, Put, Inject } from "@tsoa/runtime";
 
-import { HttpError } from "#server/utils";
+import type { Transaction } from "#server/utils";
+import { HttpError, NotFoundError } from "#server/utils";
 import { decodeRelativeDateTime, map } from "#utils";
 
 import type {
   Context,
   ContextState,
-  Project,
   UserState,
   ProjectState,
 } from "./implementations";
-import { User } from "./implementations";
-import { CoreController } from "./utils";
+import { Project, TaskListBase, User } from "./implementations";
 import { ServiceManager } from "./services";
+import { Authenticated, CoreController } from "./utils";
 
 const pageRoot = path.normalize(
   path.join(__dirname, "..", "..", "..", "static", "pages"),
@@ -193,5 +193,29 @@ export class StateController extends CoreController {
       problems: await ServiceManager.listProblems(tx, this.userId),
       schemaVersion: "",
     };
+  }
+}
+
+interface ProjectParams {
+  name: string;
+}
+
+@Route("/project")
+export class ProjectController extends CoreController {
+  @Authenticated(true)
+  @Put()
+  public async createProject(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { taskListId, params }: { taskListId: string; params: ProjectParams },
+  ): Promise<ProjectState> {
+    let taskList = await TaskListBase.getTaskList(tx, taskListId);
+    if (!taskList) {
+      throw new NotFoundError();
+    }
+
+    let project = await Project.create(tx, taskList, params);
+    return project.state;
   }
 }

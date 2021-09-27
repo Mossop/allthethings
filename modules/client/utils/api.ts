@@ -1,15 +1,17 @@
 import equal from "fast-deep-equal/es6";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { TypedEmitter } from "#utils";
+import type { Deferred } from "#utils";
+import { defer, TypedEmitter } from "#utils";
 
+import { Refresh } from ".";
 import { Api } from "./client";
 import type { HttpResponse, RequestParams } from "./client";
 import { log } from "./logging";
 
-export type ApiMethod<A extends unknown[], D, E> = (
+export type ApiMethod<A extends unknown[], D> = (
   ...args: [...A, RequestParams]
-) => Promise<HttpResponse<D, E>>;
+) => Promise<HttpResponse<D, Error | undefined | null>>;
 
 export type QueryOptions = Omit<
   RequestParams,
@@ -18,29 +20,27 @@ export type QueryOptions = Omit<
   pollInterval?: number;
 };
 
-export function useApi(): Api {
-  return api;
-}
-
-interface QueryEvents<D, E> {
+interface QueryEvents<D> {
+  load: [];
   data: [data: D];
-  error: [error: E];
+  error: [error: Error];
 }
 
 export class Query<
-  A extends unknown[],
-  D,
-  E extends Error = Error,
-> extends TypedEmitter<QueryEvents<D, E>> {
+  A extends unknown[] = unknown[],
+  D = unknown,
+> extends TypedEmitter<QueryEvents<D>> {
   protected data: D | undefined = undefined;
-  protected error: E | undefined = undefined;
+  protected error: Error | undefined = undefined;
   protected cancelToken = Symbol();
   protected nextPoll: number | null = 0;
   protected pendingResult = false;
+  protected timer: number | null = null;
+  protected polls: Deferred<D>[] = [];
+  protected loading = false;
 
   public constructor(
-    protected readonly api: Api,
-    protected readonly method: ApiMethod<A, D, E>,
+    protected readonly method: ApiMethod<A, D>,
     protected readonly args: A,
     protected readonly options: QueryOptions = {},
     protected paused: boolean = false,
@@ -48,8 +48,10 @@ export class Query<
     super();
 
     if (!paused) {
-      void this.poll();
+      Refresh.addQuery(method, this);
     }
+
+    this.schedule();
   }
 
   public start(): void {
@@ -58,6 +60,7 @@ export class Query<
     }
 
     this.paused = false;
+    Refresh.addQuery(this.method, this);
 
     if (this.pendingResult) {
       this.pendingResult = false;
@@ -69,22 +72,24 @@ export class Query<
       }
     }
 
-    this.schedulePoll();
+    this.schedule();
   }
 
-  protected schedulePoll(): void {
-    if (this.nextPoll === null) {
+  protected schedule(): void {
+    if (this.paused || this.nextPoll === null) {
       return;
     }
 
-    let now = Date.now();
-    if (now > this.nextPoll) {
-      void this.poll();
-    } else {
-      setTimeout(() => {
-        void this.poll();
-      }, this.nextPoll - now);
+    if (this.timer) {
+      window.clearTimeout(this.timer);
+      this.timer = null;
     }
+
+    this.timer = window.setTimeout(() => {
+      this.timer = null;
+
+      void this.request();
+    }, Math.max(0, this.nextPoll - Date.now()));
   }
 
   public stop(): void {
@@ -93,7 +98,22 @@ export class Query<
     }
 
     this.paused = true;
-    this.api.abortRequest(this.cancelToken);
+    Refresh.removeQuery(this.method, this);
+    api.abortRequest(this.cancelToken);
+  }
+
+  public poll(): Promise<D> {
+    let deferred = defer<D>();
+    this.polls.push(deferred);
+
+    if (this.timer) {
+      window.clearTimeout(this.timer);
+      this.timer = null;
+    }
+
+    void this.request();
+
+    return deferred.promise;
   }
 
   protected setData(data: D): void {
@@ -111,7 +131,7 @@ export class Query<
     }
   }
 
-  protected setError(error: E): void {
+  protected setError(error: Error): void {
     // @ts-ignore
     log.error(error);
 
@@ -125,7 +145,18 @@ export class Query<
     }
   }
 
-  protected async poll(): Promise<void> {
+  protected async request(): Promise<void> {
+    if (this.loading) {
+      await new Promise<void>((resolve: () => void): void =>
+        this.once("load", resolve),
+      );
+    }
+
+    this.nextPoll = null;
+    this.loading = true;
+
+    let pollers = this.polls.splice(0, this.polls.length);
+
     try {
       let credentials: RequestCredentials = "include";
 
@@ -146,54 +177,67 @@ export class Query<
 
     if (this.options.pollInterval) {
       this.nextPoll = Date.now() + this.options.pollInterval;
-      this.schedulePoll();
+    }
+
+    this.schedule();
+    this.loading = false;
+
+    this.emit("load");
+
+    for (let poller of pollers) {
+      if (this.error) {
+        poller.reject(this.error);
+      } else {
+        poller.resolve(this.data!);
+      }
     }
   }
 }
 
-export interface QueryHookResult<D, E> {
+export interface RequestState {
   loading: boolean;
-  data?: D;
-  error?: E;
+  error?: Error;
 }
 
-export type QueryHook<A extends unknown[], D, E> = (
-  ...args: A
-) => QueryHookResult<D, E>;
+export type QueryHookResult<D> = [data: D | undefined, state: RequestState];
 
-export function queryHook<A extends unknown[], D, E extends Error = Error>(
-  methodGetter: (api: Api) => ApiMethod<A, D, E>,
+export type QueryHook<A extends unknown[], D> = (
+  ...args: A
+) => QueryHookResult<D>;
+
+export function queryHook<A extends unknown[], D>(
+  method: ApiMethod<A, D>,
   options: QueryOptions = {},
-): QueryHook<A, D, E> {
-  return (...args: A): QueryHookResult<D, E> => {
-    let api = useApi();
-    let method = useMemo(() => methodGetter(api), [api]);
-    let [state, setState] = useState<QueryHookResult<D, E>>({ loading: true });
+): QueryHook<A, D> {
+  return (...args: A): QueryHookResult<D> => {
+    let [state, setState] = useState<QueryHookResult<D>>([
+      undefined,
+      { loading: true },
+    ]);
 
     let setData = useCallback(
-      (data: D) =>
-        setState({
-          loading: false,
-          data,
-        }),
+      (data: D) => setState([data, { loading: false }]),
       [],
     );
 
     let setError = useCallback(
-      (error: E) =>
-        setState({
-          loading: false,
-          error,
-        }),
+      (error: Error) =>
+        setState([
+          undefined,
+          {
+            loading: false,
+            error,
+          },
+        ]),
       [],
     );
 
-    let queryRef = useRef<Query<A, D, E>>();
+    let queryRef = useRef<Query<A, D>>();
     let previousArgs = useRef<A>(args);
 
-    let query: Query<A, D, E>;
+    let query: Query<A, D>;
     if (!queryRef.current || !equal(args, previousArgs.current)) {
-      queryRef.current = new Query(api, method, args, options, true);
+      queryRef.current = new Query(method, args, options, true);
       previousArgs.current = args;
     }
     query = queryRef.current;
@@ -214,39 +258,62 @@ export function queryHook<A extends unknown[], D, E extends Error = Error>(
   };
 }
 
-export type MutationOptions = Omit<RequestParams, "cancelToken">;
+export type MutationOptions = Omit<RequestParams, "cancelToken"> & {
+  refreshTokens?: any[];
+};
 
 export type Mutation<A extends unknown[], D> = (...args: A) => Promise<D>;
 
-export type MutationHook<A extends unknown[], D> = () => Mutation<A, D>;
+export type MutationHook<A extends unknown[], D> = () => [
+  mutation: Mutation<A, D>,
+  state: RequestState,
+];
 
-export function mutationHook<A extends unknown[], D, E>(
-  methodGetter: (api: Api) => ApiMethod<A, D, E>,
+export function mutationHook<A extends unknown[], D>(
+  method: ApiMethod<A, D>,
   options: MutationOptions = {},
 ): MutationHook<A, D> {
-  return (): Mutation<A, D> => {
-    let api = useApi();
-    let method = methodGetter(api);
+  return (): [mutation: Mutation<A, D>, state: RequestState] => {
     let cancelToken = useMemo(() => Symbol(), []);
+    let [state, setState] = useState<RequestState>({
+      loading: false,
+      error: undefined,
+    });
 
     useEffect(() => {
       return () => api.abortRequest(cancelToken);
-    }, [cancelToken, api]);
+    }, [cancelToken]);
 
-    return useCallback(
+    let mutation = useCallback(
       async (...args: A): Promise<D> => {
+        setState({ loading: true, error: undefined });
+
+        let credentials: RequestCredentials = "include";
         let response = await method(...args, {
           ...options,
           cancelToken,
+          credentials,
         });
         if (response.error) {
+          setState({ loading: false, error: response.error });
           throw response.error;
         }
 
+        if (options.refreshTokens) {
+          await Promise.all(
+            options.refreshTokens.map(
+              (token: unknown): Promise<void> => Refresh.refresh(token),
+            ),
+          );
+        }
+
+        setState({ loading: false, error: undefined });
         return response.data;
       },
-      [method, cancelToken],
+      [cancelToken],
     );
+
+    return [mutation, state];
   };
 }
 

@@ -2,8 +2,15 @@ import type { Theme } from "@material-ui/core";
 import { Divider, makeStyles, createStyles } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 
-import { Styles, Loading, ReactMemo, Link, queryHook } from "#client/utils";
-import type { ReactResult, Api } from "#client/utils";
+import {
+  Styles,
+  Loading,
+  ReactMemo,
+  Link,
+  queryHook,
+  api,
+} from "#client/utils";
+import type { ReactResult } from "#client/utils";
 
 import Page from "../components/Page";
 import { useUrl, ViewType } from "../utils/view";
@@ -62,7 +69,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const usePageContentQuery = queryHook((api: Api) => api.page.getPageContent, {
+const usePageContentQuery = queryHook(api.page.getPageContent, {
   format: "text",
 });
 
@@ -75,7 +82,7 @@ export default ReactMemo(function MarkdownPage({
 }: MarkdownPageProps): ReactResult {
   let classes = useStyles();
 
-  let { data, error } = usePageContentQuery({ path });
+  let [data, { error }] = usePageContentQuery({ path });
 
   let privacyUrl = useUrl({
     type: ViewType.Page,

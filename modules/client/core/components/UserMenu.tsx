@@ -16,8 +16,9 @@ import {
   bindTrigger,
   useResetStore,
   mutationHook,
+  api,
 } from "#client/utils";
-import type { ReactResult, Api } from "#client/utils";
+import type { ReactResult } from "#client/utils";
 
 import ChangePasswordDialog from "../dialogs/ChangePassword";
 import { useUser } from "../utils/globalState";
@@ -41,7 +42,7 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-let useLogout = mutationHook((api: Api) => api.logout.logout);
+let useLogout = mutationHook(api.logout.logout);
 
 export default ReactMemo(function UserMenu(): ReactResult {
   let user = useUser();
@@ -50,20 +51,16 @@ export default ReactMemo(function UserMenu(): ReactResult {
   let [changePasswordOpen, showChangePassword, closeChangePassword] =
     useBoolState();
   let resetStore = useResetStore();
-  let logout = useLogout();
+  let [logout] = useLogout();
 
   let doLogout = useCallback(async (): Promise<void> => {
-    try {
-      await logout();
+    await logout();
 
-      let url = new URL("/api/logout", document.URL);
-      await fetch(url.toString(), {
-        method: "POST",
-      });
-      await resetStore();
-    } catch (e) {
-      console.error(e);
-    }
+    let url = new URL("/api/logout", document.URL);
+    await fetch(url.toString(), {
+      method: "POST",
+    });
+    await resetStore();
   }, [resetStore, logout]);
 
   let doSettings = useCallback((): void => {

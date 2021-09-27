@@ -1,8 +1,8 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
-import type { Api } from "#client/utils";
 import {
+  api,
   TextFieldInput,
   ReactMemo,
   Dialog,
@@ -16,7 +16,7 @@ interface LoginDialogProps {
   onClosed: () => void;
 }
 
-let useLogin = mutationHook((api: Api) => api.login.login);
+let useLogin = mutationHook(api.login.login);
 
 export default ReactMemo(function LoginDialog({
   onClosed,
@@ -26,7 +26,7 @@ export default ReactMemo(function LoginDialog({
     password: "",
   });
 
-  let login = useLogin();
+  let [login] = useLogin();
   let [loading, setLoading] = useState(false);
   let [error, setError] = useState<Error | null>(null);
 

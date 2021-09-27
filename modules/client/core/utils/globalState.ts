@@ -1,8 +1,10 @@
 import type { Update, Location } from "history";
 import { SystemZone } from "luxon";
 
-import { api, Api, history, log, Query, ServerState } from "#client/utils";
-import { DateTimeUnit, encodeRelativeDateTime, RelativeDateTime } from "#utils";
+import type { ServerState } from "#client/utils";
+import { api, history, log, Query } from "#client/utils";
+import type { RelativeDateTime } from "#utils";
+import { DateTimeUnit, encodeRelativeDateTime } from "#utils";
 
 import type { Problem, State, User } from "../schema";
 import { buildState } from "../schema";
@@ -13,7 +15,7 @@ import { urlToView } from "./view";
 // eslint-disable-next-line @typescript-eslint/naming-convention
 declare let SCHEMA_VERSION: string;
 
-const POLL_INTERVAL = 5000;
+const POLL_INTERVAL = 60000;
 
 function urlForLocation(location: Location): URL {
   return new URL(
@@ -45,14 +47,13 @@ class GlobalStateManager {
     ];
 
     this.query = new Query(
-      api,
       api.state.getState,
       [{ dueBefore: encodeRelativeDateTime(dueBefore) }],
       { pollInterval: POLL_INTERVAL },
     );
 
-    this.query.on("data", (data) => this.onData(data));
-    this.query.on("error", (error) => this.onError(error));
+    this.query.on("data", (data: ServerState) => this.onData(data));
+    this.query.on("error", (error: Error) => this.onError(error));
 
     history.listen(({ location }: Update) => {
       if (!this.appState.value) {

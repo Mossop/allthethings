@@ -225,6 +225,18 @@
         ],
         "type": "object",
         "additionalProperties": false
+      },
+      "ProjectParams": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "additionalProperties": false
       }
     },
     "securitySchemes": {}
@@ -329,6 +341,47 @@
             }
           }
         ]
+      }
+    },
+    "/api/project": {
+      "put": {
+        "operationId": "CreateProject",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProjectState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/ProjectParams"
+                  },
+                  "taskListId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "taskListId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
       }
     }
   }

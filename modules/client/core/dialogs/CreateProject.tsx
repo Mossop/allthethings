@@ -7,10 +7,11 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
+  api,
+  mutationHook,
 } from "#client/utils";
 
 import type { Project, TaskList } from "../schema";
-import { OperationNames, useCreateProjectMutation } from "../schema";
 import GlobalState from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
@@ -18,6 +19,10 @@ interface CreateProjectProps {
   onClosed: () => void;
   taskList: TaskList;
 }
+
+let useCreateProject = mutationHook(api.project.createProject, {
+  refreshTokens: [api.state.getState],
+});
 
 export default ReactMemo(function CreateProjectDialog({
   onClosed,
@@ -29,25 +34,23 @@ export default ReactMemo(function CreateProjectDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [createProjectMutation, { loading, error }] = useCreateProjectMutation({
-    variables: {
-      taskList: taskList.id,
-      params: state,
-    },
-    refetchQueries: [OperationNames.Query.ListContextState],
-  });
+  let [createProjectMutation, { loading, error }] = useCreateProject();
 
   let createProject = useCallback(async () => {
-    let { data } = await createProjectMutation();
+    let data = await createProjectMutation({
+      taskListId: taskList.id,
+      params: state,
+    });
+
     let user = GlobalState.user;
-    if (!data || !user) {
+    if (!user) {
       throw new Error("Invalid state.");
     }
 
     let newProject: Project | undefined = undefined;
 
     for (let context of user.contexts.values()) {
-      newProject = context.projects.get(data.createProject.id);
+      newProject = context.projects.get(data.id);
       if (newProject) {
         break;
       }
@@ -63,7 +66,7 @@ export default ReactMemo(function CreateProjectDialog({
     });
 
     close();
-  }, [close, createProjectMutation]);
+  }, [close, createProjectMutation, state, taskList.id]);
 
   return (
     <Dialog

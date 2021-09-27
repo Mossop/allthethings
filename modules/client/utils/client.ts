@@ -53,6 +53,10 @@ export interface ServerState {
   schemaVersion: string;
 }
 
+export interface ProjectParams {
+  name: string;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
@@ -328,6 +332,24 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
         path: `/api/state`,
         method: "GET",
         query: query,
+        format: "json",
+        ...params,
+      }),
+  };
+  project = {
+    /**
+     * No description
+     *
+     * @name CreateProject
+     * @request PUT:/api/project
+     * @response `200` `ProjectState` Ok
+     */
+    createProject: (data: { params: ProjectParams; taskListId: string }, params: RequestParams = {}) =>
+      this.request<ProjectState, any>({
+        path: `/api/project`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
