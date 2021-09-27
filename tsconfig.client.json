@@ -1,7 +1,7 @@
 {
   "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "target": "es2015",
+    "target": "es2020",
     "module": "esnext",
     "lib": ["ESNext", "DOM", "DOM.Iterable"],
     "emitDeclarationOnly": true,

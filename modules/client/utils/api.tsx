@@ -59,7 +59,7 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
   public constructor(
     protected readonly api: Api,
     protected readonly method: ApiMethod<A, D, E>,
-    protected readonly params: QueryParams<A>,
+    protected readonly args: A,
     protected readonly options: QueryOptions = {},
     protected paused: boolean = false,
   ) {
@@ -117,15 +117,15 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
     }
 
     try {
-      let response = await this.method(...this.params.args, {
+      let response = await this.method(...this.args, {
         ...this.options,
         cancelToken: this.cancelToken,
       });
 
-      if (response.data) {
-        this.setData(response.data);
-      } else {
+      if (response.error) {
         this.setError(response.error);
+      } else {
+        this.setData(response.data);
       }
     } catch (e) {
       this.setError(e);
@@ -139,19 +139,15 @@ export interface QueryHookResult<D, E> {
   error?: E;
 }
 
-export interface QueryParams<A extends unknown[]> {
-  args: A;
-}
-
 export type QueryHook<A extends unknown[], D, E> = (
-  params: QueryParams<A>,
+  ...args: A
 ) => QueryHookResult<D, E>;
 
 export function queryHook<A extends unknown[], D, E>(
   methodGetter: (api: Api) => ApiMethod<A, D, E>,
   options: QueryOptions = {},
 ): QueryHook<A, D, E> {
-  return (params: QueryParams<A>): QueryHookResult<D, E> => {
+  return (...args: A): QueryHookResult<D, E> => {
     let api = useApi();
     let method = useMemo(() => methodGetter(api), [api]);
     let [state, setState] = useState<QueryHookResult<D, E>>({ loading: true });
@@ -175,12 +171,12 @@ export function queryHook<A extends unknown[], D, E>(
     );
 
     let queryRef = useRef<Query<A, D, E>>();
-    let previousOptions = useRef<QueryParams<A>>(params);
+    let previousArgs = useRef<A>(args);
 
     let query: Query<A, D, E>;
-    if (!queryRef.current || !equal(params, previousOptions.current)) {
-      queryRef.current = new Query(api, method, params, options, true);
-      previousOptions.current = params;
+    if (!queryRef.current || !equal(args, previousArgs.current)) {
+      queryRef.current = new Query(api, method, args, options, true);
+      previousArgs.current = args;
     }
     query = queryRef.current;
 
@@ -197,5 +193,41 @@ export function queryHook<A extends unknown[], D, E>(
     }, [query, setData, setError]);
 
     return state;
+  };
+}
+
+export type MutationOptions = Omit<RequestParams, "cancelToken">;
+
+export type Mutation<A extends unknown[], D> = (...args: A) => Promise<D>;
+
+export type MutationHook<A extends unknown[], D> = () => Mutation<A, D>;
+
+export function mutationHook<A extends unknown[], D, E>(
+  methodGetter: (api: Api) => ApiMethod<A, D, E>,
+  options: MutationOptions = {},
+): MutationHook<A, D> {
+  return (): Mutation<A, D> => {
+    let api = useApi();
+    let method = methodGetter(api);
+    let cancelToken = useMemo(() => Symbol(), []);
+
+    useEffect(() => {
+      return () => api.abortRequest(cancelToken);
+    }, [cancelToken, api]);
+
+    return useCallback(
+      async (...args: A): Promise<D> => {
+        let response = await method(...args, {
+          ...options,
+          cancelToken,
+        });
+        if (response.error) {
+          throw response.error;
+        }
+
+        return response.data;
+      },
+      [method, cancelToken],
+    );
   };
 }

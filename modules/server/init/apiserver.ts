@@ -4,6 +4,7 @@ import path from "path";
 import Router from "@koa/router";
 import koa from "koa";
 import type Koa from "koa";
+import koaBody from "koa-body";
 import koaMount from "koa-mount";
 import koaSession from "koa-session";
 import koaStatic from "koa-static";
@@ -210,7 +211,21 @@ export async function createApiServer(
     ),
   );
 
+  app.use(async (ctx: WebServerContext, next: Koa.Next): Promise<void> => {
+    ctx.set("Access-Control-Allow-Origin", "*");
+
+    if (ctx.method == "OPTIONS" && ctx.get("Access-Control-Request-Method")) {
+      ctx.status = 204;
+      ctx.set("Access-Control-Allow-Methods", "*");
+      ctx.set("Access-Control-Allow-Headers", "*");
+    } else {
+      await next();
+    }
+  });
+
   app.use(transactionMiddleware);
+
+  app.use(koaBody());
 
   let router = new Router({
     prefix: "/api",

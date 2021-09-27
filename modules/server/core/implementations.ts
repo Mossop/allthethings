@@ -36,6 +36,7 @@ import {
 import type { RelativeDateTime } from "#utils";
 import { addOffset, call, memoized, waitFor } from "#utils";
 
+import type { UserState } from "./controllers";
 import type {
   ContextEntity,
   FileDetailEntity,
@@ -183,6 +184,13 @@ export class User
     });
 
     return user;
+  }
+
+  public get state(): UserState {
+    return {
+      email: this.email,
+      isAdmin: this.isAdmin,
+    };
   }
 
   public get email(): string {

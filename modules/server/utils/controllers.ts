@@ -17,7 +17,6 @@ export type WebServerContext = WebContext &
 export class RequestController extends Controller {
   public constructor(protected readonly context: WebServerContext) {
     super();
-    this.setHeader("Access-Control-Allow-Origin", "*");
   }
 
   public get segment(): Segment {
@@ -31,4 +30,10 @@ export function iocContainer(request: Koa.Request): IocContainer {
       return new controller(request.ctx as unknown as WebServerContext);
     },
   };
+}
+
+export class HttpError extends Error {
+  public constructor(public readonly status: number, message: string) {
+    super(message);
+  }
 }

@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { Api } from "#client/utils";
 import {
   TextFieldInput,
   ReactMemo,
@@ -8,11 +9,14 @@ import {
   FormState,
   useBoolState,
   useResetStore,
+  mutationHook,
 } from "#client/utils";
 
 interface LoginDialogProps {
   onClosed: () => void;
 }
+
+let useLogin = mutationHook((api: Api) => api.login.login);
 
 export default ReactMemo(function LoginDialog({
   onClosed,
@@ -22,6 +26,7 @@ export default ReactMemo(function LoginDialog({
     password: "",
   });
 
+  let login = useLogin();
   let [loading, setLoading] = useState(false);
   let [error, setError] = useState<Error | null>(null);
 
@@ -46,7 +51,9 @@ export default ReactMemo(function LoginDialog({
     }
 
     await resetStore();
-  }, [state, resetStore]);
+
+    await login(state);
+  }, [state, resetStore, login]);
 
   return (
     <Dialog

@@ -75,9 +75,7 @@ export default ReactMemo(function MarkdownPage({
 }: MarkdownPageProps): ReactResult {
   let classes = useStyles();
 
-  let { data, error } = usePageContentQuery({
-    args: [{ path }],
-  });
+  let { data, error } = usePageContentQuery({ path });
 
   let privacyUrl = useUrl({
     type: ViewType.Page,

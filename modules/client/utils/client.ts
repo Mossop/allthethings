@@ -9,6 +9,16 @@
  * ---------------------------------------------------------------
  */
 
+export interface UserState {
+  email: string;
+  isAdmin: boolean;
+}
+
+export interface LoginParams {
+  email: string;
+  password: string;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
@@ -234,6 +244,37 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
         method: "GET",
         query: query,
         format: "json",
+        ...params,
+      }),
+  };
+  login = {
+    /**
+     * No description
+     *
+     * @name Login
+     * @request POST:/api/login
+     */
+    login: (data: LoginParams, params: RequestParams = {}) =>
+      this.request<UserState, any>({
+        path: `/api/login`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+  };
+  logout = {
+    /**
+     * No description
+     *
+     * @name Logout
+     * @request POST:/api/logout
+     */
+    logout: (params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/logout`,
+        method: "POST",
         ...params,
       }),
   };
