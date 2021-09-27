@@ -36,7 +36,6 @@ import {
 import type { RelativeDateTime } from "#utils";
 import { addOffset, call, memoized, waitFor } from "#utils";
 
-import type { UserState } from "./controllers";
 import type {
   ContextEntity,
   FileDetailEntity,
@@ -86,10 +85,9 @@ function todo(): never {
 
 type ItemSetParams = {
   [K in keyof ItemEntity as `Item.${K}`]: ItemEntity[K];
-} &
-  {
-    [K in keyof TaskInfoEntity as `TaskInfo.${K}`]: TaskInfoEntity[K];
-  };
+} & {
+  [K in keyof TaskInfoEntity as `TaskInfo.${K}`]: TaskInfoEntity[K];
+};
 
 export class ItemSet implements ResolverImpl<ItemSetResolvers> {
   private readonly query: Sql;
@@ -163,6 +161,13 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
   }
 }
 
+export interface UserState {
+  __typename: "User";
+  id: string;
+  email: string;
+  isAdmin: boolean;
+}
+
 export class User
   extends IdentifiedEntityImpl<UserEntity>
   implements ResolverImpl<UserResolvers>
@@ -188,6 +193,8 @@ export class User
 
   public get state(): UserState {
     return {
+      __typename: "User",
+      id: this.id,
       email: this.email,
       isAdmin: this.isAdmin,
     };
@@ -295,6 +302,13 @@ export abstract class TaskListBase<
   }
 }
 
+export interface ContextState {
+  __typename: "Context";
+  id: string;
+  stub: string;
+  name: string;
+}
+
 export class Context
   extends TaskListBase<ContextEntity>
   implements ResolverImpl<ContextResolvers>
@@ -339,6 +353,15 @@ export class Context
     return this.entity.stub;
   }
 
+  public get state(): ContextState {
+    return {
+      __typename: "Context",
+      id: this.id,
+      stub: this.stub,
+      name: this.name,
+    };
+  }
+
   public context(): Promise<Context> {
     return Promise.resolve(this);
   }
@@ -357,6 +380,14 @@ export class Context
       id,
     });
   }
+}
+
+export interface ProjectState {
+  __typename: "Project";
+  id: string;
+  parentId: string | null;
+  stub: string;
+  name: string;
 }
 
 export class Project
@@ -400,6 +431,19 @@ export class Project
     return this.entity.stub;
   }
 
+  public get state(): ProjectState {
+    return {
+      __typename: "Project",
+      id: this.id,
+      parentId:
+        this.entity.parentId == this.entity.contextId
+          ? null
+          : this.entity.parentId,
+      stub: this.stub,
+      name: this.name,
+    };
+  }
+
   public context(): Promise<Context> {
     return Context.store(this.tx).get(this.entity.contextId);
   }
@@ -419,6 +463,13 @@ export class Project
       parentId: taskList.id,
     });
   }
+}
+
+export interface SectionState {
+  __typename: "Section";
+  id: string;
+  stub: string;
+  name: string;
 }
 
 export class Section
@@ -466,6 +517,15 @@ export class Section
 
   public get name(): string {
     return this.entity.name;
+  }
+
+  public get state(): SectionState {
+    return {
+      __typename: "Section",
+      id: this.id,
+      stub: this.entity.stub,
+      name: this.name,
+    };
   }
 
   public override section(): Promise<Section> {

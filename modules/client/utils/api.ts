@@ -1,60 +1,42 @@
 import equal from "fast-deep-equal/es6";
-import {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { TypedEmitter } from "#utils";
 
-import type { ApiConfig, HttpResponse, RequestParams } from "./client";
-import { Api as Client } from "./client";
+import { Api } from "./client";
+import type { HttpResponse, RequestParams } from "./client";
 import { log } from "./logging";
-import type { ReactChildren, ReactResult } from "./types";
-import { ReactMemo } from "./types";
-
-export type Api = Client<unknown>;
 
 export type ApiMethod<A extends unknown[], D, E> = (
   ...args: [...A, RequestParams]
 ) => Promise<HttpResponse<D, E>>;
 
-export type QueryOptions = Omit<RequestParams, "cancelToken">;
-
-const ApiContext = createContext<Api | null>(null);
+export type QueryOptions = Omit<
+  RequestParams,
+  "cancelToken" | "credentials"
+> & {
+  pollInterval?: number;
+};
 
 export function useApi(): Api {
-  let api = useContext(ApiContext);
-  if (api) {
-    return api;
-  }
-
-  throw new Error("Cannot use API outside of the API provider.");
+  return api;
 }
-
-export const ApiProvider = ReactMemo(function ApiProvider({
-  children,
-  ...config
-}: ApiConfig & ReactChildren): ReactResult {
-  let api = new Client(config);
-
-  return <ApiContext.Provider value={api}>{children}</ApiContext.Provider>;
-});
 
 interface QueryEvents<D, E> {
   data: [data: D];
   error: [error: E];
 }
 
-class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
-  protected loading = true;
+export class Query<
+  A extends unknown[],
+  D,
+  E extends Error = Error,
+> extends TypedEmitter<QueryEvents<D, E>> {
   protected data: D | undefined = undefined;
   protected error: E | undefined = undefined;
   protected cancelToken = Symbol();
+  protected nextPoll: number | null = 0;
+  protected pendingResult = false;
 
   public constructor(
     protected readonly api: Api,
@@ -65,7 +47,9 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
   ) {
     super();
 
-    void this.poll();
+    if (!paused) {
+      void this.poll();
+    }
   }
 
   public start(): void {
@@ -74,8 +58,32 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
     }
 
     this.paused = false;
-    if (this.loading) {
+
+    if (this.pendingResult) {
+      this.pendingResult = false;
+
+      if (this.error) {
+        this.emit("error", this.error);
+      } else {
+        this.emit("data", this.data!);
+      }
+    }
+
+    this.schedulePoll();
+  }
+
+  protected schedulePoll(): void {
+    if (this.nextPoll === null) {
+      return;
+    }
+
+    let now = Date.now();
+    if (now > this.nextPoll) {
       void this.poll();
+    } else {
+      setTimeout(() => {
+        void this.poll();
+      }, this.nextPoll - now);
     }
   }
 
@@ -91,10 +99,15 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
   protected setData(data: D): void {
     this.data = data;
     this.error = undefined;
-    this.loading = false;
+
+    if (!equal(this.data, data)) {
+      return;
+    }
 
     if (!this.paused) {
       this.emit("data", this.data);
+    } else {
+      this.pendingResult = true;
     }
   }
 
@@ -104,21 +117,21 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
 
     this.error = error;
     this.data = undefined;
-    this.loading = false;
 
     if (!this.paused) {
       this.emit("error", this.error);
+    } else {
+      this.pendingResult = true;
     }
   }
 
   protected async poll(): Promise<void> {
-    if (this.paused) {
-      return;
-    }
-
     try {
+      let credentials: RequestCredentials = "include";
+
       let response = await this.method(...this.args, {
         ...this.options,
+        credentials,
         cancelToken: this.cancelToken,
       });
 
@@ -129,6 +142,11 @@ class Query<A extends unknown[], D, E> extends TypedEmitter<QueryEvents<D, E>> {
       }
     } catch (e) {
       this.setError(e);
+    }
+
+    if (this.options.pollInterval) {
+      this.nextPoll = Date.now() + this.options.pollInterval;
+      this.schedulePoll();
     }
   }
 }
@@ -143,7 +161,7 @@ export type QueryHook<A extends unknown[], D, E> = (
   ...args: A
 ) => QueryHookResult<D, E>;
 
-export function queryHook<A extends unknown[], D, E>(
+export function queryHook<A extends unknown[], D, E extends Error = Error>(
   methodGetter: (api: Api) => ApiMethod<A, D, E>,
   options: QueryOptions = {},
 ): QueryHook<A, D, E> {
@@ -231,3 +249,8 @@ export function mutationHook<A extends unknown[], D, E>(
     );
   };
 }
+
+let url = new URL(document.URL);
+let port = url.port ? parseInt(url.port) : 80;
+let baseUrl = `http://${url.hostname}:${port + 10}`;
+export const api = new Api({ baseUrl });

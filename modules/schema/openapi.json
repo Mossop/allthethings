@@ -8,6 +8,16 @@
     "schemas": {
       "UserState": {
         "properties": {
+          "__typename": {
+            "type": "string",
+            "enum": [
+              "User"
+            ],
+            "nullable": false
+          },
+          "id": {
+            "type": "string"
+          },
           "email": {
             "type": "string"
           },
@@ -16,6 +26,8 @@
           }
         },
         "required": [
+          "__typename",
+          "id",
           "email",
           "isAdmin"
         ],
@@ -34,6 +46,182 @@
         "required": [
           "email",
           "password"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ContextState": {
+        "properties": {
+          "__typename": {
+            "type": "string",
+            "enum": [
+              "Context"
+            ],
+            "nullable": false
+          },
+          "id": {
+            "type": "string"
+          },
+          "stub": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__typename",
+          "id",
+          "stub",
+          "name"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ProjectState": {
+        "properties": {
+          "__typename": {
+            "type": "string",
+            "enum": [
+              "Project"
+            ],
+            "nullable": false
+          },
+          "id": {
+            "type": "string"
+          },
+          "parentId": {
+            "type": "string",
+            "nullable": true
+          },
+          "stub": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__typename",
+          "id",
+          "parentId",
+          "stub",
+          "name"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ServerProjectState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProjectState"
+          },
+          {
+            "properties": {
+              "dueTasks": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "required": [
+              "dueTasks"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ServerContextState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContextState"
+          },
+          {
+            "properties": {
+              "projects": {
+                "items": {
+                  "$ref": "#/components/schemas/ServerProjectState"
+                },
+                "type": "array"
+              },
+              "dueTasks": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "required": [
+              "projects",
+              "dueTasks"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ServerUserState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/UserState"
+          },
+          {
+            "properties": {
+              "contexts": {
+                "items": {
+                  "$ref": "#/components/schemas/ServerContextState"
+                },
+                "type": "array"
+              },
+              "inbox": {
+                "type": "number",
+                "format": "double"
+              }
+            },
+            "required": [
+              "contexts",
+              "inbox"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ServerProblem": {
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "description"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ServerState": {
+        "properties": {
+          "user": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/ServerUserState"
+              }
+            ],
+            "nullable": true
+          },
+          "problems": {
+            "items": {
+              "$ref": "#/components/schemas/ServerProblem"
+            },
+            "type": "array"
+          },
+          "schemaVersion": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "user",
+          "problems",
+          "schemaVersion"
         ],
         "type": "object",
         "additionalProperties": false
@@ -113,6 +301,34 @@
         },
         "security": [],
         "parameters": []
+      }
+    },
+    "/api/state": {
+      "get": {
+        "operationId": "GetState",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ServerState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [
+          {
+            "in": "query",
+            "name": "dueBefore",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
       }
     }
   }

@@ -94,9 +94,20 @@ async function run() {
     silent: true,
     output: path.join(modules, "client", "utils"),
     input: path.join(modules, "schema", "openapi.json"),
+    generateResponses: true,
     httpClientType: "fetch",
     moduleNameIndex: 1,
   });
+
+  let client = path.join(modules, "client", "utils", "client.ts");
+  let content = await fs.readFile(client, { encoding: "utf-8" });
+  await fs.writeFile(
+    client,
+    content.replace(
+      "Api<SecurityDataType extends unknown>",
+      "Api<SecurityDataType extends unknown = unknown>",
+    ),
+  );
 }
 
 run().catch((e) => console.error(e));

@@ -37,3 +37,15 @@ export class HttpError extends Error {
     super(message);
   }
 }
+
+export class NotFoundError extends HttpError {
+  public constructor() {
+    super(404, "Not found");
+  }
+}
+
+export class NotAuthenticatedError extends HttpError {
+  public constructor() {
+    super(403, "Not yet authenticated");
+  }
+}

@@ -1,21 +1,15 @@
+import type {
+  ServerContextState,
+  ServerProblem,
+  ServerProjectState,
+  ServerState,
+  ServerUserState,
+} from "#client/utils";
 import type { Overwrite } from "#utils";
 
 import type { GraphQLType } from ".";
-import type { ListContextStateQuery } from "./operations";
 
-type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
-interface StateId {
-  id: string;
-}
-type StateQuery = ListContextStateQuery;
-type StateQuery$Problem = ArrayContents<StateQuery["problems"]>;
-type StateQuery$User = NonNullable<StateQuery["user"]>;
-type StateQuery$User$Context = ArrayContents<StateQuery$User["contexts"]>;
-type StateQuery$User$Project = ArrayContents<
-  StateQuery$User$Context["projects"]
->;
-
-export type Problem = Omit<StateQuery$Problem, "__typename">;
+export type Problem = Readonly<ServerProblem>;
 
 export interface State {
   readonly user: User | null;
@@ -23,27 +17,25 @@ export interface State {
 }
 
 export type User = Overwrite<
-  StateQuery$User,
+  Readonly<ServerUserState>,
   {
-    readonly contexts: ReadonlyMap<string, Context>;
     readonly inbox: Inbox;
+    readonly contexts: ReadonlyMap<string, Context>;
     readonly defaultContext: Context;
   }
 >;
 
 export type Context = Overwrite<
-  StateQuery$User$Context,
+  Readonly<ServerContextState>,
   {
     readonly projects: ReadonlyMap<string, Project>;
     readonly subprojects: readonly Project[];
-    readonly dueTasks: number;
   }
 >;
 
 export type Project = Overwrite<
-  StateQuery$User$Project,
+  Readonly<Omit<ServerProjectState, "parentId">>,
   {
-    readonly dueTasks: number;
     readonly parent: Project | null;
     readonly subprojects: readonly Project[];
   }
@@ -77,62 +69,77 @@ export function isTaskList(val: GraphQLType): val is TaskList {
   return isProject(val) || isContext(val);
 }
 
-function buildContext(queryResult: StateQuery$User$Context): Context {
-  type TempProject = Overwrite<
+function buildContext(contextState: ServerContextState): Context {
+  type WritableProject = Overwrite<
     Project,
     {
-      subprojects: TempProject[];
-      parent: TempProject | null;
+      parent: WritableProject | null;
+      subprojects: WritableProject[];
     }
   >;
 
-  let projects = new Map(
-    queryResult.projects.map(
-      (state: StateQuery$User$Project): [string, TempProject] => [
-        state.id,
-        {
-          ...state,
-          dueTasks: state.dueTasks.count,
-          subprojects: [],
-          parent: null,
-        },
+  let projectStates = new Map<string, ServerProjectState>(
+    contextState.projects.map(
+      (project: ServerProjectState): [string, ServerProjectState] => [
+        project.id,
+        project,
       ],
     ),
   );
 
-  for (let state of queryResult.projects) {
-    let project = projects.get(state.id)!;
-    project.subprojects = state.subprojects.map(
-      ({ id }: StateId) => projects.get(id)!,
-    );
-    for (let inner of project.subprojects) {
-      inner.parent = project;
+  let projects = new Map<string, WritableProject>();
+  let addProject = (id: string): WritableProject => {
+    let project = projects.get(id);
+    if (!project) {
+      let state = projectStates.get(id);
+      if (!state) {
+        throw new Error("Unknown project");
+      }
+
+      project = {
+        ...state,
+        parent: null,
+        subprojects: [],
+      };
+
+      projects.set(state.id, project);
+
+      if (state.parentId) {
+        project.parent = addProject(state.parentId);
+        project.parent.subprojects.push(project);
+      }
+    }
+
+    return project;
+  };
+
+  let subprojects: Project[] = [];
+  for (let id of projectStates.keys()) {
+    let project = addProject(id);
+    if (!project.parent) {
+      subprojects.push(project);
     }
   }
 
   return {
-    ...queryResult,
-    id: queryResult.id,
-    dueTasks: queryResult.dueTasks.count,
+    ...contextState,
     projects,
-    subprojects: queryResult.subprojects.map(
-      ({ id }: StateId) => projects.get(id)!,
-    ),
+    subprojects,
   };
 }
 
-function buildUser(queryResult: StateQuery$User): User {
-  let contexts = queryResult.contexts.map(buildContext);
+function buildUser(userState: ServerUserState): User {
+  let contexts = userState.contexts.map(buildContext);
   if (contexts.length == 0) {
     throw new Error("Invalid user.");
   }
 
   return {
-    ...queryResult,
+    ...userState,
     inbox: {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       __typename: "Inbox",
-      itemCount: queryResult.inbox.count,
+      itemCount: userState.inbox,
     },
     defaultContext: contexts[0],
     contexts: new Map(
@@ -144,9 +151,9 @@ function buildUser(queryResult: StateQuery$User): User {
   };
 }
 
-export function buildState(queryResult: StateQuery): State {
+export function buildState(serverState: ServerState): State {
   return {
-    user: queryResult.user ? buildUser(queryResult.user) : null,
-    problems: queryResult.problems,
+    user: serverState.user ? buildUser(serverState.user) : null,
+    problems: serverState.problems,
   };
 }

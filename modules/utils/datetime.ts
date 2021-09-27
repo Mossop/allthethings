@@ -219,3 +219,20 @@ export function relativeDateTimeFromJson(json: unknown): RelativeDateTime {
   }
   return offsetFromJson(json);
 }
+
+export function encodeRelativeDateTime(rdt: RelativeDateTime): string {
+  if (DateTime.isDateTime(rdt)) {
+    return rdt.toISO();
+  }
+
+  return JSON.stringify(rdt);
+}
+
+export function decodeRelativeDateTime(value: string): RelativeDateTime {
+  if (value.charAt(0) == "[" || value.charAt(0) == "{") {
+    let json = JSON.parse(value);
+    return offsetFromJson(json);
+  }
+
+  return DateTime.fromISO(value);
+}

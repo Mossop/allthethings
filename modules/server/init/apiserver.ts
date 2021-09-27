@@ -212,12 +212,26 @@ export async function createApiServer(
   );
 
   app.use(async (ctx: WebServerContext, next: Koa.Next): Promise<void> => {
-    ctx.set("Access-Control-Allow-Origin", "*");
+    if (ctx.get("Origin")) {
+      ctx.set("Access-Control-Allow-Origin", ctx.get("Origin"));
+      ctx.set("Access-Control-Allow-Credentials", "true");
+    }
 
-    if (ctx.method == "OPTIONS" && ctx.get("Access-Control-Request-Method")) {
+    if (ctx.method == "OPTIONS") {
       ctx.status = 204;
-      ctx.set("Access-Control-Allow-Methods", "*");
-      ctx.set("Access-Control-Allow-Headers", "*");
+      if (ctx.get("Access-Control-Request-Method")) {
+        ctx.set(
+          "Access-Control-Allow-Methods",
+          ctx.get("Access-Control-Request-Method"),
+        );
+      }
+
+      if (ctx.get("Access-Control-Request-Headers")) {
+        ctx.set(
+          "Access-Control-Allow-Headers",
+          ctx.get("Access-Control-Request-Headers"),
+        );
+      }
     } else {
       await next();
     }

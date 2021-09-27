@@ -10,6 +10,8 @@
  */
 
 export interface UserState {
+  __typename: "User";
+  id: string;
   email: string;
   isAdmin: boolean;
 }
@@ -17,6 +19,38 @@ export interface UserState {
 export interface LoginParams {
   email: string;
   password: string;
+}
+
+export interface ContextState {
+  __typename: "Context";
+  id: string;
+  stub: string;
+  name: string;
+}
+
+export interface ProjectState {
+  __typename: "Project";
+  id: string;
+  parentId: string | null;
+  stub: string;
+  name: string;
+}
+
+export type ServerProjectState = ProjectState & { dueTasks: number };
+
+export type ServerContextState = ContextState & { projects: ServerProjectState[]; dueTasks: number };
+
+export type ServerUserState = UserState & { contexts: ServerContextState[]; inbox: number };
+
+export interface ServerProblem {
+  url: string;
+  description: string;
+}
+
+export interface ServerState {
+  user: ServerUserState | null;
+  problems: ServerProblem[];
+  schemaVersion: string;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -230,13 +264,14 @@ export class HttpClient<SecurityDataType = unknown> {
 /**
  * @title No title
  */
-export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDataType> {
+export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<SecurityDataType> {
   page = {
     /**
      * No description
      *
      * @name GetPageContent
      * @request GET:/api/page
+     * @response `200` `string` Ok
      */
     getPageContent: (query: { path: string }, params: RequestParams = {}) =>
       this.request<string, any>({
@@ -253,6 +288,7 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name Login
      * @request POST:/api/login
+     * @response `200` `UserState` Ok
      */
     login: (data: LoginParams, params: RequestParams = {}) =>
       this.request<UserState, any>({
@@ -270,11 +306,29 @@ export class Api<SecurityDataType extends unknown> extends HttpClient<SecurityDa
      *
      * @name Logout
      * @request POST:/api/logout
+     * @response `204` `void` No content
      */
     logout: (params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/logout`,
         method: "POST",
+        ...params,
+      }),
+  };
+  state = {
+    /**
+     * No description
+     *
+     * @name GetState
+     * @request GET:/api/state
+     * @response `200` `ServerState` Ok
+     */
+    getState: (query: { dueBefore: string }, params: RequestParams = {}) =>
+      this.request<ServerState, any>({
+        path: `/api/state`,
+        method: "GET",
+        query: query,
+        format: "json",
         ...params,
       }),
   };

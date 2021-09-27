@@ -1,4 +1,5 @@
 export * from "./api";
+export * from "./client";
 export * from "./DateTimeDialog";
 export * from "./DateTimeOffsetDialog";
 export * from "./Dialog";

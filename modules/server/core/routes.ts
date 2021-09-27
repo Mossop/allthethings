@@ -4,6 +4,8 @@
   import { Controller, ValidationService, FieldErrors, ValidateError, TsoaRoute, HttpStatusCodeLiteral, TsoaResponse } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MainController } from './controllers';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { StateController } from './controllers';
 import { iocContainer } from '#server/utils';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import * as KoaRouter from '@koa/router';
@@ -14,6 +16,8 @@ const models: TsoaRoute.Models = {
     "UserState": {
         "dataType": "refObject",
         "properties": {
+            "__typename": {"dataType":"enum","enums":["User"],"required":true},
+            "id": {"dataType":"string","required":true},
             "email": {"dataType":"string","required":true},
             "isAdmin": {"dataType":"boolean","required":true},
         },
@@ -25,6 +29,63 @@ const models: TsoaRoute.Models = {
         "properties": {
             "email": {"dataType":"string","required":true},
             "password": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ContextState": {
+        "dataType": "refObject",
+        "properties": {
+            "__typename": {"dataType":"enum","enums":["Context"],"required":true},
+            "id": {"dataType":"string","required":true},
+            "stub": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ProjectState": {
+        "dataType": "refObject",
+        "properties": {
+            "__typename": {"dataType":"enum","enums":["Project"],"required":true},
+            "id": {"dataType":"string","required":true},
+            "parentId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
+            "stub": {"dataType":"string","required":true},
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServerProjectState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ProjectState"},{"dataType":"nestedObjectLiteral","nestedProperties":{"dueTasks":{"dataType":"double","required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServerContextState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ContextState"},{"dataType":"nestedObjectLiteral","nestedProperties":{"projects":{"dataType":"array","array":{"dataType":"refAlias","ref":"ServerProjectState"},"required":true},"dueTasks":{"dataType":"double","required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServerUserState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"UserState"},{"dataType":"nestedObjectLiteral","nestedProperties":{"contexts":{"dataType":"array","array":{"dataType":"refAlias","ref":"ServerContextState"},"required":true},"inbox":{"dataType":"double","required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServerProblem": {
+        "dataType": "refObject",
+        "properties": {
+            "url": {"dataType":"string","required":true},
+            "description": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServerState": {
+        "dataType": "refObject",
+        "properties": {
+            "user": {"dataType":"union","subSchemas":[{"ref":"ServerUserState"},{"dataType":"enum","enums":[null]}],"required":true},
+            "problems": {"dataType":"array","array":{"dataType":"refObject","ref":"ServerProblem"},"required":true},
+            "schemaVersion": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
     },
@@ -113,6 +174,32 @@ export function RegisterRoutes(router: KoaRouter) {
             }
 
             const promise = controller.logout.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.get('/state',
+            async function StateController_getState(context: any, next: any) {
+            const args = {
+                    dueBefore: {"in":"query","name":"dueBefore","required":true,"dataType":"string"},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<StateController>(StateController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.getState.apply(controller, validatedArgs as any);
             return promiseHandler(controller, promise, context, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

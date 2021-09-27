@@ -3,20 +3,19 @@ import path from "path";
 
 import { Route, Get, Query, Post, Body } from "@tsoa/runtime";
 
-import type { Transaction } from "#server/utils";
-import { RequestController, HttpError } from "#server/utils";
+import { HttpError } from "#server/utils";
+import { decodeRelativeDateTime, map } from "#utils";
 
+import type {
+  Context,
+  ContextState,
+  Project,
+  UserState,
+  ProjectState,
+} from "./implementations";
 import { User } from "./implementations";
-
-class CoreController extends RequestController {
-  public get userId(): string | null {
-    return (this.context.session?.userId as string | undefined) ?? null;
-  }
-
-  public startTransaction(writable: boolean): Promise<Transaction> {
-    return this.context.startTransaction(writable);
-  }
-}
+import { CoreController } from "./utils";
+import { ServiceManager } from "./services";
 
 const pageRoot = path.normalize(
   path.join(__dirname, "..", "..", "..", "static", "pages"),
@@ -36,11 +35,6 @@ async function loadFile(name: string): Promise<string | null> {
 interface LoginParams {
   email: string;
   password: string;
-}
-
-export interface UserState {
-  email: string;
-  isAdmin: boolean;
 }
 
 @Route()
@@ -95,5 +89,109 @@ export class MainController extends CoreController {
 
     this.context.session.userId = null;
     this.context.session.save();
+  }
+}
+
+type ServerProjectState = ProjectState & {
+  dueTasks: number;
+};
+
+type ServerContextState = ContextState & {
+  dueTasks: number;
+
+  projects: ServerProjectState[];
+};
+
+type ServerUserState = UserState & {
+  inbox: number;
+
+  contexts: ServerContextState[];
+};
+
+export interface ServerProblem {
+  url: string;
+  description: string;
+}
+
+export interface ServerState {
+  user: ServerUserState | null;
+
+  problems: ServerProblem[];
+
+  schemaVersion: string;
+}
+
+@Route("/state")
+export class StateController extends CoreController {
+  @Get()
+  public async getState(@Query() dueBefore: string): Promise<ServerState> {
+    let tx = await this.startTransaction(false);
+
+    let user: ServerUserState | null = null;
+    this.segment.info("getState", {
+      session: this.context.session,
+      userId: this.userId,
+    });
+
+    if (this.userId) {
+      let userImpl = await User.store(tx).findOne({ id: this.userId });
+
+      if (userImpl) {
+        let before = decodeRelativeDateTime(dueBefore);
+
+        let inbox = await userImpl.inbox({
+          filter: { isArchived: false, isSnoozed: false, isPending: true },
+        });
+
+        let contexts = await map(
+          userImpl.contexts(),
+          async (context: Context): Promise<ServerContextState> => {
+            let tasks = await context.items({
+              filter: {
+                isArchived: false,
+                isSnoozed: false,
+                dueBefore: before,
+              },
+            });
+
+            let projects = await map(
+              context.projects(),
+              async (project: Project): Promise<ServerProjectState> => {
+                let tasks = await context.items({
+                  filter: {
+                    isArchived: false,
+                    isSnoozed: false,
+                    dueBefore: before,
+                  },
+                });
+
+                return {
+                  ...project.state,
+                  dueTasks: await tasks.count(),
+                };
+              },
+            );
+
+            return {
+              ...context.state,
+              dueTasks: await tasks.count(),
+              projects,
+            };
+          },
+        );
+
+        user = {
+          ...userImpl.state,
+          inbox: await inbox.count(),
+          contexts,
+        };
+      }
+    }
+
+    return {
+      user,
+      problems: await ServiceManager.listProblems(tx, this.userId),
+      schemaVersion: "",
+    };
   }
 }
