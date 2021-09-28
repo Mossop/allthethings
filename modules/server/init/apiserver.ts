@@ -239,7 +239,11 @@ export async function createApiServer(
 
   app.use(transactionMiddleware);
 
-  app.use(koaBody());
+  app.use(
+    koaBody({
+      parsedMethods: ["POST", "PUT", "PATCH", "DELETE"],
+    }),
+  );
 
   let router = new Router({
     prefix: "/api",

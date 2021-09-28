@@ -82,28 +82,28 @@ export default ReactMemo(function ItemListActions({
       return null;
     }
 
-    return () => {
+    return async () => {
       if (isProject(list)) {
+        await deleteProject({
+          id: list.id,
+        });
+
         replaceView({
           type: ViewType.TaskList,
           taskList: list.parent ?? view.context,
         });
-
-        void deleteProject({
+      } else if (isContext(list)) {
+        await deleteContext({
           id: list.id,
         });
-      } else if (isContext(list)) {
+
         replaceView({
           type: ViewType.TaskList,
           taskList: user.defaultContext,
           context: user.defaultContext,
         });
-
-        void deleteContext({
-          id: list.id,
-        });
       } else {
-        void deleteSection({
+        await deleteSection({
           variables: {
             id: list.id,
           },
