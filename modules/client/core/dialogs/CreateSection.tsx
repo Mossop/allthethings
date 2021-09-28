@@ -7,15 +7,21 @@ import {
   ReactMemo,
   TextFieldInput,
   FormState,
+  mutationHook,
+  api,
 } from "#client/utils";
 
 import type { TaskList } from "../schema";
-import { refetchQueriesForSection, useCreateSectionMutation } from "../schema";
 
 interface CreateSectionProps {
   onClosed: () => void;
   taskList: TaskList;
 }
+
+const useCreateSectionMutation = mutationHook(api.section.createSection, {
+  // TODO
+  refreshTokens: [],
+});
 
 export default ReactMemo(function CreateSectionDialog({
   onClosed,
@@ -27,18 +33,15 @@ export default ReactMemo(function CreateSectionDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [createSection, { loading, error }] = useCreateSectionMutation({
-    variables: {
-      taskList: taskList.id,
-      params: state,
-    },
-    refetchQueries: refetchQueriesForSection(taskList),
-  });
+  let [createSection, { loading, error }] = useCreateSectionMutation();
 
   let submit = useCallback(async (): Promise<void> => {
-    await createSection();
+    await createSection({
+      taskListId: taskList.id,
+      params: state,
+    });
     close();
-  }, [createSection, close]);
+  }, [createSection, taskList.id, state, close]);
 
   return (
     <Dialog

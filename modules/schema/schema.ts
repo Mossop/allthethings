@@ -230,7 +230,6 @@ export type Mutation = {
   readonly createLink: Item;
   readonly createNote: Item;
   readonly createPhabricatorAccount: PhabricatorAccount;
-  readonly createSection: Section;
   readonly createTask: Item;
   readonly createUser: User;
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
@@ -241,18 +240,15 @@ export type Mutation = {
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
-  readonly deleteSection: Scalars["Boolean"];
   readonly deleteUser?: Maybe<Scalars["Boolean"]>;
   readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editItem?: Maybe<Item>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
-  readonly editSection?: Maybe<Section>;
   readonly markTaskDone?: Maybe<Item>;
   readonly markTaskDue?: Maybe<Item>;
   readonly moveItem?: Maybe<Item>;
-  readonly moveSection?: Maybe<Section>;
   readonly setTaskController?: Maybe<Item>;
   readonly snoozeItem?: Maybe<Item>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
@@ -314,12 +310,6 @@ export type MutationCreatePhabricatorAccountArgs = {
   params: CreatePhabricatorAccountParams;
 };
 
-export type MutationCreateSectionArgs = {
-  before?: Maybe<Scalars["ID"]>;
-  params: SectionParams;
-  taskList: Scalars["ID"];
-};
-
 export type MutationCreateTaskArgs = {
   item: ItemParams;
   section?: Maybe<Scalars["ID"]>;
@@ -363,10 +353,6 @@ export type MutationDeletePhabricatorAccountArgs = {
   account: Scalars["ID"];
 };
 
-export type MutationDeleteSectionArgs = {
-  id: Scalars["ID"];
-};
-
 export type MutationDeleteUserArgs = {
   id?: Maybe<Scalars["ID"]>;
 };
@@ -396,11 +382,6 @@ export type MutationEditJiraSearchArgs = {
   search: Scalars["ID"];
 };
 
-export type MutationEditSectionArgs = {
-  id: Scalars["ID"];
-  params: SectionParams;
-};
-
 export type MutationMarkTaskDoneArgs = {
   done?: Maybe<Scalars["DateTime"]>;
   id: Scalars["ID"];
@@ -415,12 +396,6 @@ export type MutationMoveItemArgs = {
   before?: Maybe<Scalars["ID"]>;
   id: Scalars["ID"];
   section?: Maybe<Scalars["ID"]>;
-};
-
-export type MutationMoveSectionArgs = {
-  before?: Maybe<Scalars["ID"]>;
-  id: Scalars["ID"];
-  taskList: Scalars["ID"];
 };
 
 export type MutationSetTaskControllerArgs = {
@@ -485,10 +460,6 @@ export type ProjectItemsArgs = {
   filter?: Maybe<ItemFilter>;
 };
 
-export type ProjectParams = {
-  readonly name: Scalars["String"];
-};
-
 export type Query = {
   readonly __typename: "Query";
   readonly githubLoginUrl: Scalars["String"];
@@ -513,10 +484,6 @@ export type Section = {
 
 export type SectionItemsArgs = {
   filter?: Maybe<ItemFilter>;
-};
-
-export type SectionParams = {
-  readonly name: Scalars["String"];
 };
 
 export type ServiceDetail = {

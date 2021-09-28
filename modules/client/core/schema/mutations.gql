@@ -1,28 +1,3 @@
-mutation CreateSection($taskList: ID!, $params: SectionParams!) {
-  createSection(taskList: $taskList, params: $params) {
-    id
-    name
-  }
-}
-
-mutation EditSection($id: ID!, $params: SectionParams!) {
-  editSection(id: $id, params: $params) {
-    id
-    name
-  }
-}
-
-mutation MoveSection($id: ID!, $taskList: ID!, $before: ID) {
-  moveSection(id: $id, taskList: $taskList, before: $before) {
-    id
-    name
-  }
-}
-
-mutation DeleteSection($id: ID!) {
-  deleteSection(id: $id)
-}
-
 mutation CreateTask($section: ID, $item: ItemParams!) {
   createTask(section: $section, item: $item) {
     ...clientItemFields

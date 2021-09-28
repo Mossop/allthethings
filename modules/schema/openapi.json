@@ -226,7 +226,7 @@
         "type": "object",
         "additionalProperties": false
       },
-      "ProjectParams": {
+      "Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__": {
         "properties": {
           "name": {
             "type": "string"
@@ -236,7 +236,13 @@
           "name"
         ],
         "type": "object",
-        "additionalProperties": false
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_": {
+        "$ref": "#/components/schemas/Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__"
+      },
+      "ProjectParams": {
+        "$ref": "#/components/schemas/Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_"
       },
       "Partial_ProjectParams_": {
         "properties": {
@@ -247,7 +253,7 @@
         "type": "object",
         "description": "Make all properties in T optional"
       },
-      "ContextParams": {
+      "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
         "properties": {
           "name": {
             "type": "string"
@@ -257,9 +263,70 @@
           "name"
         ],
         "type": "object",
-        "additionalProperties": false
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_ContextEntity.id-or-userId-or-stub_": {
+        "$ref": "#/components/schemas/Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__"
+      },
+      "ContextParams": {
+        "$ref": "#/components/schemas/Omit_ContextEntity.id-or-userId-or-stub_"
       },
       "Partial_ContextParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "SectionState": {
+        "properties": {
+          "__typename": {
+            "type": "string",
+            "enum": [
+              "Section"
+            ],
+            "nullable": false
+          },
+          "id": {
+            "type": "string"
+          },
+          "stub": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "__typename",
+          "id",
+          "stub",
+          "name"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_": {
+        "$ref": "#/components/schemas/Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__"
+      },
+      "SectionParams": {
+        "$ref": "#/components/schemas/Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_"
+      },
+      "Partial_SectionParams_": {
         "properties": {
           "name": {
             "type": "string"
@@ -599,6 +666,118 @@
       },
       "delete": {
         "operationId": "DeleteContext",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/section": {
+      "put": {
+        "operationId": "CreateSection",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/SectionParams"
+                  },
+                  "beforeId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "taskListId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "taskListId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditSection",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SectionState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_SectionParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteSection",
         "responses": {
           "204": {
             "description": "No content"

@@ -154,11 +154,9 @@ export type ResolversTypes = {
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
   NoteDetailParams: Schema.NoteDetailParams;
   Project: ResolverTypeWrapper<Project>;
-  ProjectParams: Schema.ProjectParams;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   Section: ResolverTypeWrapper<Section>;
-  SectionParams: Schema.SectionParams;
   ServiceDetail: ResolverTypeWrapper<ServiceDetail>;
   ServiceList: ResolverTypeWrapper<ServiceList>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
@@ -193,11 +191,9 @@ export type ResolversParentTypes = {
   NoteDetail: NoteDetail;
   NoteDetailParams: Schema.NoteDetailParams;
   Project: Project;
-  ProjectParams: Schema.ProjectParams;
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   Section: Section;
-  SectionParams: Schema.SectionParams;
   ServiceDetail: ServiceDetail;
   ServiceList: ServiceList;
   String: Schema.Scalars["String"];
@@ -364,12 +360,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreateNoteArgs, "detail" | "isTask" | "item">
   >;
-  createSection: Resolver<
-    ResolversTypes["Section"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateSectionArgs, "params" | "taskList">
-  >;
   createTask: Resolver<
     ResolversTypes["Item"],
     ParentType,
@@ -388,12 +378,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationDeleteItemArgs, "id">
   >;
-  deleteSection: Resolver<
-    ResolversTypes["Boolean"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteSectionArgs, "id">
-  >;
   deleteUser: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
@@ -405,12 +389,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationEditItemArgs, "id" | "item">
-  >;
-  editSection: Resolver<
-    Schema.Maybe<ResolversTypes["Section"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationEditSectionArgs, "id" | "params">
   >;
   markTaskDone: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
@@ -429,12 +407,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationMoveItemArgs, "id">
-  >;
-  moveSection: Resolver<
-    Schema.Maybe<ResolversTypes["Section"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMoveSectionArgs, "id" | "taskList">
   >;
   setTaskController: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,

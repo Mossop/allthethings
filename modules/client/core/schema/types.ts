@@ -212,7 +212,6 @@ export type MutationKeySpecifier = (
   | "createLink"
   | "createNote"
   | "createPhabricatorAccount"
-  | "createSection"
   | "createTask"
   | "createUser"
   | "deleteBugzillaAccount"
@@ -223,18 +222,15 @@ export type MutationKeySpecifier = (
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
-  | "deleteSection"
   | "deleteUser"
   | "editBugzillaSearch"
   | "editGithubSearch"
   | "editGoogleMailSearch"
   | "editItem"
   | "editJiraSearch"
-  | "editSection"
   | "markTaskDone"
   | "markTaskDue"
   | "moveItem"
-  | "moveSection"
   | "setTaskController"
   | "snoozeItem"
   | "updatePhabricatorAccount"
@@ -252,7 +248,6 @@ export type MutationFieldPolicy = {
   createLink?: FieldPolicy<any> | FieldReadFunction<any>;
   createNote?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  createSection?: FieldPolicy<any> | FieldReadFunction<any>;
   createTask?: FieldPolicy<any> | FieldReadFunction<any>;
   createUser?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -263,18 +258,15 @@ export type MutationFieldPolicy = {
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteSection?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteUser?: FieldPolicy<any> | FieldReadFunction<any>;
   editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editItem?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  editSection?: FieldPolicy<any> | FieldReadFunction<any>;
   markTaskDone?: FieldPolicy<any> | FieldReadFunction<any>;
   markTaskDue?: FieldPolicy<any> | FieldReadFunction<any>;
   moveItem?: FieldPolicy<any> | FieldReadFunction<any>;
-  moveSection?: FieldPolicy<any> | FieldReadFunction<any>;
   setTaskController?: FieldPolicy<any> | FieldReadFunction<any>;
   snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;

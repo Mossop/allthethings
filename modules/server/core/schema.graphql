@@ -123,14 +123,6 @@ type Query {
   taskList(id: ID!): TaskList
 }
 
-input ProjectParams {
-  name: String!
-}
-
-input SectionParams {
-  name: String!
-}
-
 input ItemParams {
   summary: String!
   archived: DateTime
@@ -151,11 +143,6 @@ input NoteDetailParams {
 }
 
 type Mutation {
-  createSection(taskList: ID!, before: ID, params: SectionParams!): Section!
-  moveSection(id: ID!, taskList: ID!, before: ID): Section
-  editSection(id: ID!, params: SectionParams!): Section
-  deleteSection(id: ID!): Boolean!
-
   createTask(section: ID, item: ItemParams!): Item!
   createNote(
     section: ID

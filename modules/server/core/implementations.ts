@@ -16,7 +16,6 @@ import { TaskController } from "#schema";
 import type {
   ContextItemsArgs,
   ContextProjectByIdArgs,
-  SectionParams,
   TaskInfoParams,
   TaskListItemsArgs,
   UserInboxArgs,
@@ -477,6 +476,11 @@ export interface SectionState {
   name: string;
 }
 
+export type SectionParams = Omit<
+  SectionEntity,
+  "id" | "userId" | "projectId" | "index" | "stub"
+>;
+
 export class Section
   extends ItemHolderBase<SectionEntity>
   implements ResolverImpl<SectionResolvers>
@@ -515,6 +519,7 @@ export class Section
     return Section.store(tx).create({
       ...params,
       id: await id(),
+      userId: taskList.entity.userId,
       projectId: taskList.id,
       index,
     });

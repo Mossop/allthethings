@@ -16,10 +16,11 @@ import {
   Icons,
   Styles,
   TextStyles,
+  mutationHook,
+  api,
 } from "#client/utils";
 import type { ReactResult } from "#client/utils";
 
-import { useEditSectionMutation } from "../schema";
 import type { Item, Section } from "../schema";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
@@ -82,6 +83,11 @@ interface SectionListProps {
   filter: ListFilter;
 }
 
+const useEditSectionMutation = mutationHook(api.section.editSection, {
+  // TODO
+  refreshTokens: [],
+});
+
 export default ReactMemo(function SectionList({
   section,
   filter,
@@ -93,11 +99,9 @@ export default ReactMemo(function SectionList({
   let changeSectionName = useCallback(
     (name: string): void => {
       void editSection({
-        variables: {
-          id: section.id,
-          params: {
-            name,
-          },
+        id: section.id,
+        params: {
+          name,
         },
       });
     },

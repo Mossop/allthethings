@@ -27,14 +27,7 @@ import CreateSectionDialog from "../dialogs/CreateSection";
 import LinkDialog from "../dialogs/Link";
 import TaskDialog from "../dialogs/Task";
 import type { Inbox, TaskList, Section } from "../schema";
-import {
-  isContext,
-  isInbox,
-  isProject,
-  useDeleteSectionMutation,
-  refetchQueriesForSection,
-  isTaskList,
-} from "../schema";
+import { isContext, isInbox, isProject, isTaskList } from "../schema";
 import { useUser } from "../utils/globalState";
 import { ViewType, replaceView, useLoggedInView } from "../utils/view";
 
@@ -58,6 +51,11 @@ const useDeleteContextMutation = mutationHook(api.context.deleteContext, {
 
 const useDeleteProjectMutation = mutationHook(api.project.deleteProject, {
   refreshTokens: [api.state.getState],
+});
+
+const useDeleteSectionMutation = mutationHook(api.section.deleteSection, {
+  // TODO
+  refreshTokens: [],
 });
 
 export default ReactMemo(function ItemListActions({
@@ -104,10 +102,7 @@ export default ReactMemo(function ItemListActions({
         });
       } else {
         await deleteSection({
-          variables: {
-            id: list.id,
-          },
-          refetchQueries: refetchQueriesForSection(list.taskList),
+          id: list.id,
         });
       }
     };

@@ -4,18 +4,14 @@ import type {
   MutationArchiveItemArgs,
   MutationChangePasswordArgs,
   MutationCreateLinkArgs,
-  MutationCreateSectionArgs,
   MutationCreateTaskArgs,
   MutationCreateUserArgs,
   MutationDeleteItemArgs,
-  MutationDeleteSectionArgs,
   MutationDeleteUserArgs,
   MutationEditItemArgs,
-  MutationEditSectionArgs,
   MutationMarkTaskDoneArgs,
   MutationMarkTaskDueArgs,
   MutationMoveItemArgs,
-  MutationMoveSectionArgs,
   MutationSetTaskControllerArgs,
   MutationSnoozeItemArgs,
 } from "#schema";
@@ -30,8 +26,6 @@ import {
   TaskInfo,
   LinkDetail,
   ItemHolderBase,
-  Section,
-  TaskListBase,
   Item,
   User,
 } from "./implementations";
@@ -40,78 +34,6 @@ import { ServiceManager } from "./services";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
 const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
-  createSection: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      {
-        taskList: taskListId,
-        before: beforeId,
-        params,
-      }: MutationCreateSectionArgs,
-    ): Promise<Section> => {
-      let taskList = await TaskListBase.getTaskList(tx, taskListId);
-      if (!taskList) {
-        throw new Error("Unknown task list.");
-      }
-
-      let before: Section | null = null;
-      if (beforeId) {
-        before = await Section.store(tx).get(beforeId);
-      }
-
-      return Section.create(tx, taskList, before ?? null, params);
-    },
-  ),
-
-  editSection: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, params }: MutationEditSectionArgs,
-    ): Promise<Section | null> => {
-      let section = await Section.store(tx).get(id);
-      await section.update(params);
-
-      return section;
-    },
-  ),
-
-  moveSection: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, before: beforeId, taskList }: MutationMoveSectionArgs,
-    ): Promise<Section | null> => {
-      let section = await Section.store(tx).get(id);
-
-      let list = await TaskListBase.getTaskList(tx, taskList);
-      if (list === null) {
-        throw new Error("TaskList not found.");
-      }
-
-      let before: Section | null = null;
-      if (beforeId) {
-        before = await Section.store(tx).get(beforeId);
-      }
-
-      await section.move(list, before ?? null);
-      return section;
-    },
-  ),
-
-  deleteSection: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id }: MutationDeleteSectionArgs,
-    ): Promise<boolean> => {
-      let section = await Section.store(tx).get(id);
-      await section.delete();
-      return true;
-    },
-  ),
-
   createTask: ensureAuthed(
     async (
       tx: Transaction,

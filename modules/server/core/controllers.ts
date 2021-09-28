@@ -23,8 +23,16 @@ import type {
   ProjectState,
   ProjectParams,
   ContextParams,
+  SectionParams,
+  SectionState,
 } from "./implementations";
-import { Project, TaskListBase, User, Context } from "./implementations";
+import {
+  Section,
+  Project,
+  TaskListBase,
+  User,
+  Context,
+} from "./implementations";
 import { ServiceManager } from "./services";
 import { Authenticated, CoreController } from "./utils";
 
@@ -324,5 +332,59 @@ export class ContextController extends CoreController {
     }
 
     await context.delete();
+  }
+}
+
+@Route("/section")
+export class SectionController extends CoreController {
+  @Authenticated(true)
+  @Put()
+  public async createSection(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      taskListId,
+      beforeId,
+      params,
+    }: { taskListId: string; beforeId?: string | null; params: SectionParams },
+  ): Promise<SectionState> {
+    let taskList = await TaskListBase.getTaskList(tx, taskListId);
+    if (!taskList) {
+      throw new NotFoundError();
+    }
+
+    let before = beforeId ? await Section.store(tx).get(beforeId) : null;
+
+    let section = await Section.create(tx, taskList, before, params);
+    return section.state;
+  }
+
+  @Authenticated(true)
+  @Patch()
+  public async editSection(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id, params }: { id: string; params: Partial<SectionParams> },
+  ): Promise<SectionState> {
+    let section = await Section.store(tx).get(id);
+
+    await section.update(params);
+
+    return section.state;
+  }
+
+  @Authenticated(true)
+  @Delete()
+  public async deleteSection(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id }: { id: string },
+  ): Promise<void> {
+    let section = await Section.store(tx).get(id);
+
+    await section.delete();
   }
 }

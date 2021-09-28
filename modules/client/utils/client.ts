@@ -53,9 +53,17 @@ export interface ServerState {
   schemaVersion: string;
 }
 
-export interface ProjectParams {
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub {
   name: string;
 }
+
+export type OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub =
+  PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub;
+
+export type ProjectParams = OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub;
 
 /**
  * Make all properties in T optional
@@ -64,14 +72,47 @@ export interface PartialProjectParams {
   name?: string;
 }
 
-export interface ContextParams {
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickContextEntityExcludeKeysIdOrUserIdOrStub {
   name: string;
 }
+
+export type OmitContextEntityIdOrUserIdOrStub = PickContextEntityExcludeKeysIdOrUserIdOrStub;
+
+export type ContextParams = OmitContextEntityIdOrUserIdOrStub;
 
 /**
  * Make all properties in T optional
  */
 export interface PartialContextParams {
+  name?: string;
+}
+
+export interface SectionState {
+  __typename: "Section";
+  id: string;
+  stub: string;
+  name: string;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub {
+  name: string;
+}
+
+export type OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub =
+  PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub;
+
+export type SectionParams = OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialSectionParams {
   name?: string;
 }
 
@@ -467,6 +508,60 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
     deleteContext: (data: { id: string }, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/api/context`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
+  section = {
+    /**
+     * No description
+     *
+     * @name CreateSection
+     * @request PUT:/api/section
+     * @response `200` `SectionState` Ok
+     */
+    createSection: (
+      data: { params: SectionParams; beforeId?: string | null; taskListId: string },
+      params: RequestParams = {},
+    ) =>
+      this.request<SectionState, any>({
+        path: `/api/section`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditSection
+     * @request PATCH:/api/section
+     * @response `200` `SectionState` Ok
+     */
+    editSection: (data: { params: PartialSectionParams; id: string }, params: RequestParams = {}) =>
+      this.request<SectionState, any>({
+        path: `/api/section`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteSection
+     * @request DELETE:/api/section
+     * @response `204` `void` No content
+     */
+    deleteSection: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/section`,
         method: "DELETE",
         body: data,
         type: ContentType.Json,
