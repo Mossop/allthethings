@@ -1,10 +1,10 @@
 import { GraphQLScalarType } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 
-import type { Problem as SchemaProblem } from "#schema";
 import { isPromise, waitFor } from "#utils";
 import type { Awaitable, MaybeCallable, Overwrite } from "#utils";
 
+import type { Problem as SchemaProblem } from "../../schema";
 import type { ServiceTransaction } from "./services";
 import type { Transaction } from "./transaction";
 import type { Resolver } from "./types";

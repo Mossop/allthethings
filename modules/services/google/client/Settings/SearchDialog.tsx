@@ -14,10 +14,10 @@ import {
   DateTimeOffsetDialog,
   Styles,
 } from "#client/utils";
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import type { DateTimeOffset } from "#utils";
 import { addOffset } from "#utils";
 
+import type { GoogleAccount, GoogleMailSearch } from "../../../../schema";
 import {
   useCreateGoogleMailSearchMutation,
   useEditGoogleMailSearchMutation,

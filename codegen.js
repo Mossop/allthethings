@@ -32,11 +32,14 @@ const clientOperationPlugins = {
     namespacedImportName: "Schema",
   },
   add: {
-    content: ["/* eslint-disable */", "import * as Schema from '#schema';"],
+    content: [
+      "/* eslint-disable */",
+      "import * as Schema from '../../../schema';",
+    ],
   },
 };
 
-const resolverPlugins = (mappers = {}) => ({
+const resolverPlugins = (schemaPath, mappers = {}) => ({
   "typescript-resolvers": {
     useIndexSignature: false,
     useTypeImports: true,
@@ -50,7 +53,7 @@ const resolverPlugins = (mappers = {}) => ({
   add: {
     content: [
       "/* eslint-disable */",
-      "import * as Schema from '#schema';",
+      `import * as Schema from '${schemaPath}';`,
       "import { Root, Problem } from '#server/utils';",
     ],
   },
@@ -68,7 +71,7 @@ const serviceTargets = (service, mappers = {}) => ({
       path.join(rootDir, "schema", "scalars.graphql"),
       path.join(rootDir, "services", service, "schema", "schema.graphql"),
     ],
-    plugins: resolverPlugins(mappers),
+    plugins: resolverPlugins("../../../schema", mappers),
   },
 });
 
@@ -150,7 +153,7 @@ module.exports = {
       ],
 
       plugins: {
-        ...resolverPlugins({
+        ...resolverPlugins("../../schema", {
           Problem: "Problem",
         }),
       },
@@ -163,7 +166,7 @@ module.exports = {
       ],
 
       plugins: {
-        ...resolverPlugins({
+        ...resolverPlugins("../../schema", {
           User: "./implementations#User",
           Context: "./implementations#Context",
           Project: "./implementations#Project",

@@ -123,50 +123,10 @@ type Query {
   taskList(id: ID!): TaskList
 }
 
-input ItemParams {
-  summary: String!
-  archived: DateTime
-  snoozed: DateTime
-}
-
-input TaskInfoParams {
-  due: DateTime
-  done: DateTime
-}
-
-input LinkDetailParams {
-  url: String!
-}
-
-input NoteDetailParams {
-  note: String!
-}
-
 type Mutation {
-  createTask(section: ID, item: ItemParams!): Item!
-  createNote(
-    section: ID
-    item: ItemParams!
-    detail: NoteDetailParams!
-    isTask: Boolean!
-  ): Item!
-  createLink(
-    section: ID
-    item: ItemParams!
-    detail: LinkDetailParams!
-    isTask: Boolean!
-  ): Item!
-
-  editItem(id: ID!, item: ItemParams!): Item
   markTaskDone(id: ID!, done: DateTime): Item
   markTaskDue(id: ID!, due: DateTime): Item
   setTaskController(id: ID!, controller: TaskController): Item
-
-  moveItem(id: ID!, section: ID, before: ID): Item
-  deleteItem(id: ID!): Boolean!
-
-  archiveItem(id: ID!, archived: DateTime): Item
-  snoozeItem(id: ID!, snoozed: DateTime): Item
 
   createUser(email: String!, password: String!, isAdmin: Boolean): User!
   deleteUser(id: ID): Boolean

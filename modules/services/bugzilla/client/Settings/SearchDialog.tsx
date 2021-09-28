@@ -14,9 +14,13 @@ import {
   Icons,
   Styles,
 } from "#client/utils";
-import type { BugzillaAccount, BugzillaSearch, DateTimeOffset } from "#schema";
 import { addOffset } from "#utils";
 
+import type {
+  BugzillaAccount,
+  BugzillaSearch,
+  DateTimeOffset,
+} from "../../../../schema";
 import {
   useCreateBugzillaSearchMutation,
   useEditBugzillaSearchMutation,

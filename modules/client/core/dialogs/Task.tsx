@@ -7,14 +7,12 @@ import {
   useBoolState,
   Dialog,
   FormState,
+  mutationHook,
+  api,
 } from "#client/utils";
+import { encodeDateTime } from "#utils";
 
-import {
-  useCreateTaskMutation,
-  useEditItemMutation,
-  refetchQueriesForSection,
-  isInbox,
-} from "../schema";
+import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section, TaskItem } from "../schema";
 
 type CreateTaskProps =
@@ -26,6 +24,16 @@ type CreateTaskProps =
       onClosed: () => void;
       task: TaskItem;
     };
+
+const useCreateTaskMutation = mutationHook(api.item.createTask, {
+  // TODO
+  refreshTokens: [],
+});
+
+const useEditItemMutation = mutationHook(api.item.editItem, {
+  // TODO
+  refreshTokens: [],
+});
 
 export default ReactMemo(function TaskDialog({
   onClosed,
@@ -48,36 +56,28 @@ export default ReactMemo(function TaskDialog({
   let [isOpen, , close] = useBoolState(true);
 
   let [createTask, { loading: createLoading, error: createError }] =
-    useCreateTaskMutation({
-      refetchQueries: refetchQueriesForSection(list),
-    });
+    useCreateTaskMutation();
 
   let [editItem, { loading: editLoading, error: editError }] =
-    useEditItemMutation({
-      refetchQueries: refetchQueriesForSection(list),
-    });
+    useEditItemMutation();
 
   let submit = useCallback(async (): Promise<void> => {
     if (task) {
       await editItem({
-        variables: {
-          id: task.id,
-          item: {
-            ...state,
-            archived: task.archived,
-            snoozed: task.snoozed,
-          },
+        id: task.id,
+        params: {
+          ...state,
+          archived: encodeDateTime(task.archived),
+          snoozed: encodeDateTime(task.snoozed),
         },
       });
     } else {
       await createTask({
-        variables: {
-          section: isInbox(list) ? null : list.id,
-          item: {
-            ...state,
-            archived: null,
-            snoozed: null,
-          },
+        itemHolderId: isInbox(list) ? null : list.id,
+        item: {
+          ...state,
+          archived: null,
+          snoozed: null,
         },
       });
     }

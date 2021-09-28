@@ -1,6 +1,6 @@
-import type { QueryTaskListArgs } from "#schema";
 import type { GraphQLCtx, Transaction, TypeResolver } from "#server/utils";
 
+import type { QueryTaskListArgs } from "../../schema";
 import type { TaskList } from "./implementations";
 import { User, TaskListBase } from "./implementations";
 import type { QueryResolvers } from "./schema";

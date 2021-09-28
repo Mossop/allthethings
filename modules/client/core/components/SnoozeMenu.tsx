@@ -18,10 +18,12 @@ import {
   ReactMemo,
   DateTimeDialog,
   Menu,
+  mutationHook,
+  api,
 } from "#client/utils";
 import type { ReactRef, ReactResult } from "#client/utils";
+import { encodeDateTime } from "#utils";
 
-import { useSnoozeItemMutation, refetchQueriesForItem } from "../schema";
 import type { Item } from "../schema";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
@@ -39,25 +41,28 @@ interface SnoozeMenuProps {
   isInner?: boolean;
 }
 
+const useEditItemMutation = mutationHook(api.item.editItem, {
+  // TODO
+  refreshTokens: [],
+});
+
 export const WakeUpItems = ReactMemo(
   forwardRef(function WakeUpItems(
     { item }: SnoozeMenuProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [snoozeItemMutation] = useSnoozeItemMutation({
-      refetchQueries: refetchQueriesForItem(item),
-    });
+    let [editItemMutation] = useEditItemMutation();
 
     let snoozeItem = useCallback(
       (till: DateTime | null) => {
-        return snoozeItemMutation({
-          variables: {
-            id: item.id,
-            snoozed: till,
+        return editItemMutation({
+          id: item.id,
+          params: {
+            snoozed: encodeDateTime(till),
           },
         });
       },
-      [item.id, snoozeItemMutation],
+      [item.id, editItemMutation],
     );
 
     let wakeUp = useBoundCallback(snoozeItem, null);
@@ -105,20 +110,18 @@ export const SnoozeItems = ReactMemo(
     let classes = useStyles();
     let [pickerOpen, openPicker, closePicker] = useBoolState();
 
-    let [snoozeItemMutation] = useSnoozeItemMutation({
-      refetchQueries: refetchQueriesForItem(item),
-    });
+    let [editItemMutation] = useEditItemMutation();
 
     let snoozeItem = useCallback(
       (till: DateTime | null) => {
-        return snoozeItemMutation({
-          variables: {
-            id: item.id,
-            snoozed: till,
+        return editItemMutation({
+          id: item.id,
+          params: {
+            snoozed: encodeDateTime(till),
           },
         });
       },
-      [item.id, snoozeItemMutation],
+      [item.id, editItemMutation],
     );
 
     let snoozeAfternoon = useMemo(() => {

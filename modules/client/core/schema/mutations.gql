@@ -1,26 +1,3 @@
-mutation CreateTask($section: ID, $item: ItemParams!) {
-  createTask(section: $section, item: $item) {
-    ...clientItemFields
-  }
-}
-
-mutation CreateLink(
-  $section: ID
-  $item: ItemParams!
-  $detail: LinkDetailParams!
-  $isTask: Boolean!
-) {
-  createLink(section: $section, item: $item, detail: $detail, isTask: $isTask) {
-    ...clientItemFields
-  }
-}
-
-mutation EditItem($id: ID!, $item: ItemParams!) {
-  editItem(id: $id, item: $item) {
-    ...clientItemFields
-  }
-}
-
 mutation MarkTaskDone($id: ID!, $done: DateTime) {
   markTaskDone(id: $id, done: $done) {
     ...clientItemFields
@@ -29,28 +6,6 @@ mutation MarkTaskDone($id: ID!, $done: DateTime) {
 
 mutation SetTaskController($id: ID!, $controller: TaskController) {
   setTaskController(id: $id, controller: $controller) {
-    ...clientItemFields
-  }
-}
-
-mutation MoveItem($id: ID!, $section: ID, $before: ID) {
-  moveItem(id: $id, section: $section, before: $before) {
-    ...clientItemFields
-  }
-}
-
-mutation DeleteItem($id: ID!) {
-  deleteItem(id: $id)
-}
-
-mutation ArchiveItem($id: ID!, $archived: DateTime) {
-  archiveItem(id: $id, archived: $archived) {
-    ...clientItemFields
-  }
-}
-
-mutation SnoozeItem($id: ID!, $snoozed: DateTime) {
-  snoozeItem(id: $id, snoozed: $snoozed) {
     ...clientItemFields
   }
 }

@@ -6,8 +6,8 @@ import { useCallback } from "react";
 
 import { Icons, ReactMemo } from "#client/utils";
 import type { ReactResult } from "#client/utils";
-import { TaskController } from "#schema";
 
+import { TaskController } from "../../../schema";
 import { refetchQueriesForItem, useMarkTaskDoneMutation } from "../schema";
 import type { Item } from "../schema";
 

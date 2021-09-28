@@ -3,7 +3,7 @@ import type {
   MutationCreatePhabricatorAccountArgs,
   MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
-} from "#schema";
+} from "../../../schema";
 import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 

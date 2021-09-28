@@ -1,5 +1,6 @@
-import type { JiraAccount } from "#schema";
 import type { GraphQLType } from "#utils";
+
+import type { JiraAccount } from "../../../schema";
 
 export type JiraAccountEntity = Omit<GraphQLType<JiraAccount>, "searches"> & {
   userId: string;

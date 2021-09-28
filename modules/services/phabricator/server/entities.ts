@@ -1,6 +1,6 @@
 import type { RevisionStatus } from "conduit-api";
 
-import type { PhabricatorAccount } from "#schema";
+import type { PhabricatorAccount } from "../../../schema";
 import type { GraphQLType } from "#utils";
 
 export type PhabricatorAccountEntity = Omit<

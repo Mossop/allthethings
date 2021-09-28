@@ -3,7 +3,7 @@ import type {
   MutationCreateGithubSearchArgs,
   MutationDeleteGithubSearchArgs,
   MutationEditGithubSearchArgs,
-} from "#schema";
+} from "../../../schema";
 import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
 import { rootResolvers } from "#server/utils";
 

@@ -17,8 +17,8 @@ import {
   Icons,
   useResetStore,
 } from "#client/utils";
-import type { BugzillaAccount, BugzillaSearch } from "#schema";
 
+import type { BugzillaAccount, BugzillaSearch } from "../../../../schema";
 import Icon from "../Icon";
 import {
   useDeleteBugzillaSearchMutation,

@@ -1,8 +1,9 @@
 import type { Bug as BugzillaAPIBug } from "bugzilla";
 
-import type { BugzillaAccount, BugzillaSearch } from "#schema";
 import type { SearchType } from "#services/bugzilla/schema";
 import type { GraphQLType } from "#utils";
+
+import type { BugzillaAccount, BugzillaSearch } from "../../../schema";
 
 export type BugzillaAccountEntity = Required<
   Omit<GraphQLType<BugzillaAccount>, "searches">

@@ -24,9 +24,6 @@
     "test": "jest"
   },
   "imports": {
-    "#schema": {
-      "default": "./dist/schema/index.js"
-    },
     "#schema/schema.graphql": {
       "default": "./dist/schema/schema.graphql"
     },

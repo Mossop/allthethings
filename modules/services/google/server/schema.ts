@@ -5,7 +5,7 @@ import type {
   GraphQLScalarTypeConfig,
 } from "graphql";
 import type { Account, MailSearch } from "./implementations";
-import * as Schema from "#schema";
+import * as Schema from "../../../schema";
 import { Root, Problem } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {

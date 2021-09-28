@@ -14,9 +14,13 @@ import {
   DateTimeOffsetDialog,
   Styles,
 } from "#client/utils";
-import type { DateTimeOffset, GithubAccount, GithubSearch } from "#schema";
 import { addOffset } from "#utils";
 
+import type {
+  DateTimeOffset,
+  GithubAccount,
+  GithubSearch,
+} from "../../../../schema";
 import {
   useCreateGithubSearchMutation,
   useEditGithubSearchMutation,

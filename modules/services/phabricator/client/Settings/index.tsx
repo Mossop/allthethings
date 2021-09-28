@@ -6,8 +6,8 @@ import {
   SettingsPageItem,
   useBoolState,
 } from "#client/utils";
-import type { PhabricatorAccount } from "#schema";
 
+import type { PhabricatorAccount } from "../../../../schema";
 import Icon from "../Icon";
 import { useListPhabricatorAccountsQuery } from "../operations";
 import AccountSettings from "./Account";

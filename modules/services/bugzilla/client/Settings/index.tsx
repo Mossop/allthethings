@@ -6,8 +6,8 @@ import {
   SettingsPageItem,
   useBoolState,
 } from "#client/utils";
-import type { BugzillaAccount } from "#schema";
 
+import type { BugzillaAccount } from "../../../../schema";
 import Icon from "../Icon";
 import { useListBugzillaAccountsQuery } from "../operations";
 import AccountSettings from "./Account";

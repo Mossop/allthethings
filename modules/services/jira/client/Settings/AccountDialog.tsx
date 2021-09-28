@@ -2,8 +2,8 @@ import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import { TextFieldInput, Dialog, useBoolState, FormState } from "#client/utils";
-import type { JiraAccount } from "#schema";
 
+import type { JiraAccount } from "../../../../schema";
 import {
   refetchListJiraAccountsQuery,
   useCreateJiraAccountMutation,

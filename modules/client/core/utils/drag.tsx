@@ -17,21 +17,9 @@ import type {
   Item,
   Section,
   TaskList,
-  MoveItemMutation,
-  MoveItemMutationVariables,
   Inbox,
 } from "../schema";
-import {
-  refetchQueriesForSection,
-  isInbox,
-  refetchQueriesForItem,
-  MoveItemDocument,
-  isTaskList,
-  isProject,
-  isSection,
-  isItem,
-  client as ApolloClient,
-} from "../schema";
+import { isInbox, isTaskList, isProject, isSection, isItem } from "../schema";
 import { SharedState, useAsyncSharedState } from "./sharedstate";
 
 interface BaseDrag {
@@ -109,21 +97,15 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
       return;
     }
 
-    await ApolloClient.mutate<MoveItemMutation, MoveItemMutationVariables>({
-      mutation: MoveItemDocument,
-      variables: {
-        id: this.dragSource.id,
-        section: isInbox(this.state.dropTarget)
-          ? null
-          : this.state.dropTarget.id,
-        before: null,
-      },
-      refetchQueries: [
-        ...refetchQueriesForItem(this.dragSource),
-        ...refetchQueriesForSection(this.state.dropTarget),
-      ],
+    await api.item.moveItem({
+      id: this.dragSource.id,
+      itemHolderId: isInbox(this.state.dropTarget)
+        ? null
+        : this.state.dropTarget.id,
+      beforeId: null,
     });
 
+    // TODO refetch queries
     return;
   }
 

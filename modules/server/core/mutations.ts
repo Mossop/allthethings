@@ -1,157 +1,19 @@
-import { URL } from "url";
+import type { GraphQLCtx, Transaction, TypeResolver } from "#server/utils";
 
 import type {
-  MutationArchiveItemArgs,
   MutationChangePasswordArgs,
-  MutationCreateLinkArgs,
-  MutationCreateTaskArgs,
   MutationCreateUserArgs,
-  MutationDeleteItemArgs,
   MutationDeleteUserArgs,
-  MutationEditItemArgs,
   MutationMarkTaskDoneArgs,
   MutationMarkTaskDueArgs,
-  MutationMoveItemArgs,
   MutationSetTaskControllerArgs,
-  MutationSnoozeItemArgs,
-} from "#schema";
-import { TaskController } from "#schema";
-import type { GraphQLCtx, Transaction, TypeResolver } from "#server/utils";
-import { bestIcon, loadPageInfo } from "#server/utils";
-
-import { ItemType } from "./entities";
-import type { ItemHolder } from "./implementations";
-import {
-  ServiceDetail,
-  TaskInfo,
-  LinkDetail,
-  ItemHolderBase,
-  Item,
-  User,
-} from "./implementations";
+} from "../../schema";
+import { TaskController } from "../../schema";
+import { ServiceDetail, TaskInfo, Item, User } from "./implementations";
 import type { MutationResolvers } from "./schema";
-import { ServiceManager } from "./services";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
 const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
-  createTask: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { section: sectionId, item: itemParams }: MutationCreateTaskArgs,
-    ): Promise<Item> => {
-      let itemHolder = sectionId
-        ? await ItemHolderBase.getItemHolder(tx, sectionId)
-        : null;
-
-      if (sectionId && !itemHolder) {
-        throw new Error("Unknown section.");
-      }
-
-      let item = await Item.create(tx, user, null, itemParams, {});
-
-      if (itemHolder) {
-        await item.move(itemHolder);
-      }
-
-      return item;
-    },
-  ),
-
-  createLink: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      {
-        detail: { url },
-        section: sectionId,
-        isTask,
-        item: itemParams,
-      }: MutationCreateLinkArgs,
-    ): Promise<Item> => {
-      let targetUrl: URL;
-      try {
-        targetUrl = new URL(url);
-      } catch (e) {
-        throw new Error("Invalid url.");
-      }
-
-      let itemHolder: ItemHolder | null = null;
-      if (sectionId) {
-        itemHolder = await ItemHolderBase.getItemHolder(tx, sectionId);
-
-        if (!itemHolder) {
-          throw new Error("Unknown section.");
-        }
-      }
-
-      let id = await ServiceManager.createItemFromURL(
-        tx,
-        user.id,
-        targetUrl,
-        isTask,
-      );
-      if (id) {
-        let item = await Item.store(tx).get(id);
-        if (itemHolder) {
-          await item.move(itemHolder, null);
-        }
-
-        return item;
-      }
-
-      let pageInfo = await loadPageInfo(tx.segment, targetUrl);
-
-      let summary = itemParams.summary;
-      if (!summary) {
-        summary = pageInfo.title ?? targetUrl.toString();
-      }
-
-      let item = await Item.create(
-        tx,
-        user,
-        ItemType.Link,
-        {
-          ...itemParams,
-          summary,
-        },
-        isTask ? { due: null, done: null } : null,
-      );
-
-      let icons = [...pageInfo.icons];
-      let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
-
-      await LinkDetail.create(tx, item, {
-        url,
-        icon,
-      });
-
-      return item;
-    },
-  ),
-
-  createNote: ensureAuthed(async (): Promise<Item> => {
-    throw new Error("Not implemented");
-  }),
-
-  editItem: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, item: params }: MutationEditItemArgs,
-    ): Promise<Item | null> => {
-      let item = await Item.store(tx).get(id);
-
-      await item.update({
-        ...params,
-        archived: params.archived ?? null,
-        snoozed: params.snoozed ?? null,
-      });
-
-      return item;
-    },
-  ),
-
   markTaskDone: ensureAuthed(
     async (
       tx: Transaction,
@@ -237,80 +99,6 @@ const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
           manualDone: null,
         });
       }
-
-      return item;
-    },
-  ),
-
-  moveItem: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, section: sectionId, before: beforeId }: MutationMoveItemArgs,
-    ): Promise<Item | null> => {
-      let item = await Item.store(tx).get(id);
-
-      let itemHolder: ItemHolder | null = null;
-      if (sectionId) {
-        itemHolder = await ItemHolderBase.getItemHolder(tx, sectionId);
-
-        if (!itemHolder) {
-          throw new Error("Unknown section.");
-        }
-      }
-
-      if (itemHolder) {
-        let before: Item | null = null;
-        if (beforeId) {
-          before = await Item.store(tx).get(beforeId);
-        }
-
-        await item.move(itemHolder, before);
-      } else {
-        await item.move(null);
-      }
-
-      return item;
-    },
-  ),
-
-  deleteItem: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id }: MutationDeleteItemArgs,
-    ): Promise<boolean> => {
-      let item = await Item.store(tx).get(id);
-      await item.delete();
-      return true;
-    },
-  ),
-
-  archiveItem: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, archived }: MutationArchiveItemArgs,
-    ): Promise<Item | null> => {
-      let item = await Item.store(tx).get(id);
-      await item.update({
-        archived: archived ?? null,
-      });
-
-      return item;
-    },
-  ),
-
-  snoozeItem: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, snoozed }: MutationSnoozeItemArgs,
-    ): Promise<Item | null> => {
-      let item = await Item.store(tx).get(id);
-      await item.update({
-        snoozed: snoozed ?? null,
-      });
 
       return item;
     },

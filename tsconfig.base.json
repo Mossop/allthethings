@@ -22,7 +22,6 @@
     "strictBindCallApply": true,
 
     "paths": {
-      "#schema": ["./modules/schema/index.ts"],
       "#utils": ["./modules/utils/index.ts"],
       "#db": ["./modules/db/index.ts"],
 

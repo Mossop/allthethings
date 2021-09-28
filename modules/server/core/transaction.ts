@@ -3,7 +3,6 @@ import { URL } from "url";
 import { DateTime } from "luxon";
 
 import type { Database, QueryInstance } from "#db";
-import { TaskController } from "#schema";
 import type {
   Service,
   ServiceTransaction,
@@ -15,6 +14,7 @@ import type {
 import type { DescriptorsFor, Logger } from "#utils";
 import { memoized, waitFor } from "#utils";
 
+import { TaskController } from "../../schema";
 import { ItemType } from "./entities";
 import {
   Item,

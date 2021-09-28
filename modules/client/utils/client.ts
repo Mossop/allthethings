@@ -9,32 +9,67 @@
  * ---------------------------------------------------------------
  */
 
-export interface UserState {
-  __typename: "User";
-  id: string;
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickUserEntityExcludeKeysPassword {
   email: string;
   isAdmin: boolean;
+  id: string;
 }
+
+export type OmitUserEntityPassword = PickUserEntityExcludeKeysPassword;
+
+export type UserState = OmitUserEntityPassword & { __typename: "User" };
 
 export interface LoginParams {
   email: string;
   password: string;
 }
 
-export interface ContextState {
-  __typename: "Context";
-  id: string;
-  stub: string;
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickContextEntityExcludeKeysIdOrUserIdOrStub {
   name: string;
 }
 
-export interface ProjectState {
-  __typename: "Project";
+export type OmitContextEntityIdOrUserIdOrStub = PickContextEntityExcludeKeysIdOrUserIdOrStub;
+
+export type ContextParams = OmitContextEntityIdOrUserIdOrStub;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickContextEntityIdOrStub {
   id: string;
-  parentId: string | null;
   stub: string;
+}
+
+export type ContextState = ContextParams & PickContextEntityIdOrStub & { __typename: "Context" };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub {
   name: string;
 }
+
+export type OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub =
+  PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub;
+
+export type ProjectParams = OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickProjectEntityIdOrParentIdOrStub {
+  id: string;
+  stub: string;
+  parentId: string | null;
+}
+
+export type ProjectState = ProjectParams & PickProjectEntityIdOrParentIdOrStub & { __typename: "Project" };
 
 export type ServerProjectState = ProjectState & { dueTasks: number };
 
@@ -54,18 +89,6 @@ export interface ServerState {
 }
 
 /**
- * From T, pick a set of properties whose keys are in the union K
- */
-export interface PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub {
-  name: string;
-}
-
-export type OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub =
-  PickProjectEntityExcludeKeysIdOrContextIdOrUserIdOrParentIdOrStub;
-
-export type ProjectParams = OmitProjectEntityIdOrContextIdOrUserIdOrParentIdOrStub;
-
-/**
  * Make all properties in T optional
  */
 export interface PartialProjectParams {
@@ -73,28 +96,10 @@ export interface PartialProjectParams {
 }
 
 /**
- * From T, pick a set of properties whose keys are in the union K
- */
-export interface PickContextEntityExcludeKeysIdOrUserIdOrStub {
-  name: string;
-}
-
-export type OmitContextEntityIdOrUserIdOrStub = PickContextEntityExcludeKeysIdOrUserIdOrStub;
-
-export type ContextParams = OmitContextEntityIdOrUserIdOrStub;
-
-/**
  * Make all properties in T optional
  */
 export interface PartialContextParams {
   name?: string;
-}
-
-export interface SectionState {
-  __typename: "Section";
-  id: string;
-  stub: string;
-  name: string;
 }
 
 /**
@@ -110,10 +115,213 @@ export type OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub =
 export type SectionParams = OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub;
 
 /**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickSectionEntityIdOrStub {
+  id: string;
+  stub: string;
+}
+
+export type SectionState = SectionParams & PickSectionEntityIdOrStub & { __typename: "Section" };
+
+/**
  * Make all properties in T optional
  */
 export interface PartialSectionParams {
   name?: string;
+}
+
+/**
+* A DateTime is an immutable data structure representing a specific date and time and accompanying methods.
+It contains class and instance methods for creating, parsing, interrogating, transforming, and formatting them.
+
+A DateTime comprises of:
+* A timestamp. Each DateTime instance refers to a specific millisecond of the Unix epoch.
+* A time zone. Each instance is considered in the context of a specific zone (by default the local system's zone).
+* Configuration properties that effect how output strings are formatted, such as `locale`, `numberingSystem`, and `outputCalendar`.
+
+Here is a brief overview of the most commonly used functionality it provides:
+
+* **Creation**: To create a DateTime from its components, use one of its factory class methods: {@link DateTime.local}, {@link DateTime.utc}, and (most flexibly) {@link DateTime.fromObject}.
+To create one from a standard string format, use {@link DateTime.fromISO}, {@link DateTime.fromHTTP}, and {@link DateTime.fromRFC2822}.
+To create one from a custom string format, use {@link DateTime.fromFormat}. To create one from a native JS date, use {@link DateTime.fromJSDate}.
+* **Gregorian calendar and time**: To examine the Gregorian properties of a DateTime individually (i.e as opposed to collectively through {@link DateTime#toObject }), use the {@link DateTime#year },
+{@link DateTime#month }, {@link DateTime#day }, {@link DateTime#hour }, {@link DateTime#minute }, {@link DateTime#second }, {@link DateTime#millisecond } accessors.
+* **Week calendar**: For ISO week calendar attributes, see the {@link DateTime#weekYear }, {@link DateTime#weekNumber }, and {@link DateTime#weekday } accessors.
+* **Configuration** See the {@link DateTime#locale } and {@link DateTime#numberingSystem } accessors.
+* **Transformation**: To transform the DateTime into other DateTimes, use {@link DateTime#set }, {@link DateTime#reconfigure }, {@link DateTime#setZone }, {@link DateTime#setLocale },
+{@link DateTime.plus}, {@link DateTime#minus }, {@link DateTime#endOf }, {@link DateTime#startOf }, {@link DateTime#toUTC }, and {@link DateTime#toLocal }.
+* **Output**: To convert the DateTime to other representations, use the {@link DateTime#toRelative }, {@link DateTime#toRelativeCalendar }, {@link DateTime#toJSON }, {@link DateTime#toISO },
+{@link DateTime#toHTTP }, {@link DateTime#toObject }, {@link DateTime#toRFC2822 }, {@link DateTime#toString }, {@link DateTime#toLocaleString }, {@link DateTime#toFormat },
+{@link DateTime#toMillis } and {@link DateTime#toJSDate }.
+
+There's plenty others documented below. In addition, for more information on subtler topics
+like internationalization, time zones, alternative calendars, validity, and so on, see the external documentation.
+*/
+export type DateTime = string;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickItemEntityExcludeKeysIdOrUserIdOrSectionIdOrSectionIndexOrTypeOrCreated {
+  summary: string;
+  archived: DateTime | null;
+  snoozed: DateTime | null;
+}
+
+export type OmitItemEntityIdOrUserIdOrSectionIdOrSectionIndexOrTypeOrCreated =
+  PickItemEntityExcludeKeysIdOrUserIdOrSectionIdOrSectionIndexOrTypeOrCreated;
+
+export type ItemParams = OmitItemEntityIdOrUserIdOrSectionIdOrSectionIndexOrTypeOrCreated;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickItemEntityIdOrCreated {
+  id: string;
+
+  /**
+   * A DateTime is an immutable data structure representing a specific date and time and accompanying methods.
+   * It contains class and instance methods for creating, parsing, interrogating, transforming, and formatting them.
+   *
+   * A DateTime comprises of:
+   * * A timestamp. Each DateTime instance refers to a specific millisecond of the Unix epoch.
+   * * A time zone. Each instance is considered in the context of a specific zone (by default the local system's zone).
+   * * Configuration properties that effect how output strings are formatted, such as `locale`, `numberingSystem`, and `outputCalendar`.
+   *
+   * Here is a brief overview of the most commonly used functionality it provides:
+   *
+   * * **Creation**: To create a DateTime from its components, use one of its factory class methods: {@link DateTime.local}, {@link DateTime.utc}, and (most flexibly) {@link DateTime.fromObject}.
+   * To create one from a standard string format, use {@link DateTime.fromISO}, {@link DateTime.fromHTTP}, and {@link DateTime.fromRFC2822}.
+   * To create one from a custom string format, use {@link DateTime.fromFormat}. To create one from a native JS date, use {@link DateTime.fromJSDate}.
+   * * **Gregorian calendar and time**: To examine the Gregorian properties of a DateTime individually (i.e as opposed to collectively through {@link DateTime#toObject }), use the {@link DateTime#year },
+   * {@link DateTime#month }, {@link DateTime#day }, {@link DateTime#hour }, {@link DateTime#minute }, {@link DateTime#second }, {@link DateTime#millisecond } accessors.
+   * * **Week calendar**: For ISO week calendar attributes, see the {@link DateTime#weekYear }, {@link DateTime#weekNumber }, and {@link DateTime#weekday } accessors.
+   * * **Configuration** See the {@link DateTime#locale } and {@link DateTime#numberingSystem } accessors.
+   * * **Transformation**: To transform the DateTime into other DateTimes, use {@link DateTime#set }, {@link DateTime#reconfigure }, {@link DateTime#setZone }, {@link DateTime#setLocale },
+   * {@link DateTime.plus}, {@link DateTime#minus }, {@link DateTime#endOf }, {@link DateTime#startOf }, {@link DateTime#toUTC }, and {@link DateTime#toLocal }.
+   * * **Output**: To convert the DateTime to other representations, use the {@link DateTime#toRelative }, {@link DateTime#toRelativeCalendar }, {@link DateTime#toJSON }, {@link DateTime#toISO },
+   * {@link DateTime#toHTTP }, {@link DateTime#toObject }, {@link DateTime#toRFC2822 }, {@link DateTime#toString }, {@link DateTime#toLocaleString }, {@link DateTime#toFormat },
+   * {@link DateTime#toMillis } and {@link DateTime#toJSDate }.
+   *
+   * There's plenty others documented below. In addition, for more information on subtler topics
+   * like internationalization, time zones, alternative calendars, validity, and so on, see the external documentation.
+   */
+  created: DateTime;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickTaskInfoEntityDueOrDone {
+  due: DateTime | null;
+  done: DateTime | null;
+}
+
+export type TaskInfoParams = PickTaskInfoEntityDueOrDone;
+
+export enum TaskController {
+  Manual = "manual",
+  List = "list",
+  Service = "service",
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickTaskInfoEntityController {
+  controller: TaskController;
+}
+
+export type TaskInfoState = TaskInfoParams & PickTaskInfoEntityController & { __typename: "TaskInfo" };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickLinkDetailEntityExcludeKeysIdOrIcon {
+  url: string;
+}
+
+export type OmitLinkDetailEntityIdOrIcon = PickLinkDetailEntityExcludeKeysIdOrIcon;
+
+export type LinkDetailParams = OmitLinkDetailEntityIdOrIcon;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickLinkDetailEntityIcon {
+  icon: string | null;
+}
+
+export type LinkDetailState = LinkDetailParams & PickLinkDetailEntityIcon & { __typename: "LinkDetail" };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickNoteDetailEntityExcludeKeysIdOrUrl {
+  note: string;
+}
+
+export type OmitNoteDetailEntityIdOrUrl = PickNoteDetailEntityExcludeKeysIdOrUrl;
+
+export type NoteDetailParams = OmitNoteDetailEntityIdOrUrl;
+
+export type NoteDetailState = NoteDetailParams & { __typename: "NoteDetail" };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickServiceDetailEntityExcludeKeysIdOrHasTaskStateOrTaskDueOrTaskDone {
+  serviceId: string;
+}
+
+export type OmitServiceDetailEntityIdOrHasTaskStateOrTaskDueOrTaskDone =
+  PickServiceDetailEntityExcludeKeysIdOrHasTaskStateOrTaskDueOrTaskDone;
+
+export type ServiceDetailState = OmitServiceDetailEntityIdOrHasTaskStateOrTaskDueOrTaskDone & {
+  fields: any;
+  __typename: "ServiceDetail";
+};
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickFileDetailEntityExcludeKeysIdOrPathOrSizeOrMimetype {
+  filename: string;
+}
+
+export type OmitFileDetailEntityIdOrPathOrSizeOrMimetype = PickFileDetailEntityExcludeKeysIdOrPathOrSizeOrMimetype;
+
+export type FileDetailParams = OmitFileDetailEntityIdOrPathOrSizeOrMimetype;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickFileDetailEntitySizeOrMimetype {
+  /** @format double */
+  size: number;
+  mimetype: string;
+}
+
+export type FileDetailState = FileDetailParams & PickFileDetailEntitySizeOrMimetype & { __typename: "FileDetail" };
+
+export type ItemDetailState =
+  | LinkDetailState
+  | NoteDetailState
+  | ServiceDetailState
+  | FileDetailState
+  | (LinkDetailState & NoteDetailState & ServiceDetailState & FileDetailState);
+
+export type ItemState = ItemParams &
+  PickItemEntityIdOrCreated & { detail: ItemDetailState | null; taskInfo: TaskInfoState | null; __typename: "Item" };
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialItemParams {
+  summary?: string;
+  archived?: DateTime | null;
+  snoozed?: DateTime | null;
 }
 
 export type QueryParamsType = Record<string | number, any>;
@@ -334,10 +542,10 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
      *
      * @name GetPageContent
      * @request GET:/api/page
-     * @response `200` `string` Ok
+     * @response `200` `DateTime` Ok
      */
     getPageContent: (query: { path: string }, params: RequestParams = {}) =>
-      this.request<string, any>({
+      this.request<DateTime, any>({
         path: `/api/page`,
         method: "GET",
         query: query,
@@ -565,6 +773,107 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
         method: "DELETE",
         body: data,
         type: ContentType.Json,
+        ...params,
+      }),
+  };
+  item = {
+    /**
+     * No description
+     *
+     * @name CreateTask
+     * @request PUT:/api/item/task
+     * @response `200` `ItemState` Ok
+     */
+    createTask: (
+      data: { task?: TaskInfoParams | null; item: ItemParams; beforeId?: string | null; itemHolderId?: string | null },
+      params: RequestParams = {},
+    ) =>
+      this.request<ItemState, any>({
+        path: `/api/item/task`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateLink
+     * @request PUT:/api/item/link
+     * @response `200` `ItemState` Ok
+     */
+    createLink: (
+      data: {
+        isTask: boolean;
+        link: LinkDetailParams;
+        item: ItemParams;
+        beforeId?: string | null;
+        itemHolderId?: string | null;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ItemState, any>({
+        path: `/api/item/link`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name MoveItem
+     * @request PATCH:/api/item/move
+     * @response `200` `ItemState` Ok
+     */
+    moveItem: (
+      data: { beforeId?: string | null; itemHolderId: string | null; id: string },
+      params: RequestParams = {},
+    ) =>
+      this.request<ItemState, any>({
+        path: `/api/item/move`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditItem
+     * @request PATCH:/api/item
+     * @response `200` `ItemState` Ok
+     */
+    editItem: (data: { params: PartialItemParams; id: string }, params: RequestParams = {}) =>
+      this.request<ItemState, any>({
+        path: `/api/item`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteItem
+     * @request DELETE:/api/item
+     * @response `200` `ItemState` Ok
+     */
+    deleteItem: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<ItemState, any>({
+        path: `/api/item`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
   };

@@ -4,7 +4,7 @@ import type {
   GraphQLScalarType,
   GraphQLScalarTypeConfig,
 } from "graphql";
-import * as Schema from "#schema";
+import * as Schema from "../../schema";
 import { Root, Problem } from "#server/utils";
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;

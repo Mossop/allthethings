@@ -15,6 +15,8 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import type { ReactResult, ReactRef, RefetchQueries } from "#client/utils";
 import {
+  mutationHook,
+  api,
   Icons,
   Styles,
   ReactMemo,
@@ -22,12 +24,11 @@ import {
   bindTrigger,
   Menu,
 } from "#client/utils";
-import { TaskController } from "#schema";
 
+import { TaskController } from "../../../schema";
 import type { Item } from "../schema";
 import {
   isInbox,
-  useArchiveItemMutation,
   useSetTaskControllerMutation,
   refetchQueriesForItem,
   isNoteItem,
@@ -186,6 +187,11 @@ export type ItemRenderProps = Pick<ItemProps, "item"> & {
   isDragging: boolean;
 };
 
+const useEditItemMutation = mutationHook(api.item.editItem, {
+  // TODO
+  refreshTokens: [],
+});
+
 export default ReactMemo(function ItemDisplay({
   item,
   filter,
@@ -214,27 +220,25 @@ export default ReactMemo(function ItemDisplay({
 
   let refetchQueries = refetchQueriesForItem(item);
 
-  let [archiveItemMutation] = useArchiveItemMutation({
-    refetchQueries,
-  });
+  let [editItemMutation] = useEditItemMutation();
 
   let archiveItem = useCallback(() => {
     if (item.archived) {
-      return archiveItemMutation({
-        variables: {
-          id: item.id,
+      return editItemMutation({
+        id: item.id,
+        params: {
           archived: null,
         },
       });
     } else {
-      return archiveItemMutation({
-        variables: {
-          id: item.id,
-          archived: DateTime.now(),
+      return editItemMutation({
+        id: item.id,
+        params: {
+          archived: DateTime.now().toISO(),
         },
       });
     }
-  }, [item, archiveItemMutation]);
+  }, [item, editItemMutation]);
 
   let typeMenuItemProps: Omit<TypeMenuItemProps, "controller"> = {
     refetchQueries,

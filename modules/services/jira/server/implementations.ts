@@ -4,8 +4,8 @@ import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
 
-import { TaskController } from "#schema";
-import type { JiraAccountParams } from "#schema";
+import { TaskController } from "../../../schema";
+import type { JiraAccountParams } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,

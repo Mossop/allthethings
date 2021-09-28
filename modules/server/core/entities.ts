@@ -1,6 +1,6 @@
 import type { DateTime } from "luxon";
 
-import type { TaskController } from "#schema";
+import type { TaskController } from "../../schema";
 
 export enum ItemType {
   Link = "link",

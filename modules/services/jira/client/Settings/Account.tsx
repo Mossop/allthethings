@@ -17,8 +17,8 @@ import {
   SubHeading,
   SettingsListItem,
 } from "#client/utils";
-import type { JiraAccount, JiraSearch } from "#schema";
 
+import type { JiraAccount, JiraSearch } from "../../../../schema";
 import Icon from "../Icon";
 import {
   useDeleteJiraSearchMutation,

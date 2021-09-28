@@ -12,16 +12,6 @@ import {
   sql,
   where,
 } from "#db";
-import { TaskController } from "#schema";
-import type {
-  ContextItemsArgs,
-  ContextProjectByIdArgs,
-  TaskInfoParams,
-  TaskListItemsArgs,
-  UserInboxArgs,
-  ItemParams,
-  ItemFilter,
-} from "#schema";
 import type { ItemList, ResolverImpl, Transaction, Store } from "#server/utils";
 import {
   id,
@@ -30,9 +20,17 @@ import {
   storeBuilder,
   EntityImpl,
 } from "#server/utils";
-import type { RelativeDateTime } from "#utils";
+import type { Awaitable, RelativeDateTime } from "#utils";
 import { addOffset, call, memoized, waitFor } from "#utils";
 
+import { TaskController } from "../../schema";
+import type {
+  ContextItemsArgs,
+  ContextProjectByIdArgs,
+  TaskListItemsArgs,
+  UserInboxArgs,
+  ItemFilter,
+} from "../../schema";
 import type {
   ContextEntity,
   FileDetailEntity,
@@ -158,12 +156,9 @@ export class ItemSet implements ResolverImpl<ItemSetResolvers> {
   }
 }
 
-export interface UserState {
+export type UserState = Omit<UserEntity, "password"> & {
   __typename: "User";
-  id: string;
-  email: string;
-  isAdmin: boolean;
-}
+};
 
 export class User
   extends IdentifiedEntityImpl<UserEntity>
@@ -301,12 +296,10 @@ export abstract class TaskListBase<
 
 export type ContextParams = Omit<ContextEntity, "id" | "userId" | "stub">;
 
-export interface ContextState {
-  __typename: "Context";
-  id: string;
-  stub: string;
-  name: string;
-}
+export type ContextState = ContextParams &
+  Pick<ContextEntity, "id" | "stub"> & {
+    __typename: "Context";
+  };
 
 export class Context
   extends TaskListBase<ContextEntity>
@@ -381,18 +374,15 @@ export class Context
   }
 }
 
-export interface ProjectState {
-  __typename: "Project";
-  id: string;
-  parentId: string | null;
-  stub: string;
-  name: string;
-}
-
 export type ProjectParams = Omit<
   ProjectEntity,
   "id" | "contextId" | "userId" | "parentId" | "stub"
 >;
+
+export type ProjectState = ProjectParams &
+  Pick<ProjectEntity, "id" | "parentId" | "stub"> & {
+    __typename: "Project";
+  };
 
 export class Project
   extends TaskListBase<ProjectEntity>
@@ -469,17 +459,15 @@ export class Project
   }
 }
 
-export interface SectionState {
-  __typename: "Section";
-  id: string;
-  stub: string;
-  name: string;
-}
-
 export type SectionParams = Omit<
   SectionEntity,
   "id" | "userId" | "projectId" | "index" | "stub"
 >;
+
+export type SectionState = SectionParams &
+  Pick<SectionEntity, "id" | "stub"> & {
+    __typename: "Section";
+  };
 
 export class Section
   extends ItemHolderBase<SectionEntity>
@@ -562,6 +550,18 @@ export class Section
   }
 }
 
+export type ItemParams = Omit<
+  ItemEntity,
+  "id" | "userId" | "sectionId" | "sectionIndex" | "type" | "created"
+>;
+
+export type ItemState = ItemParams &
+  Pick<ItemEntity, "id" | "created"> & {
+    __typename: "Item";
+    taskInfo: TaskInfoState | null;
+    detail: ItemDetailState | null;
+  };
+
 export class Item
   extends IdentifiedEntityImpl<ItemEntity>
   implements ResolverImpl<ItemResolvers>
@@ -579,8 +579,8 @@ export class Item
       let item = await Item.store(tx).create({
         ...itemParams,
         id: await id(),
-        archived: itemParams.archived ?? null,
-        snoozed: itemParams.snoozed ?? null,
+        archived: itemParams.archived,
+        snoozed: itemParams.snoozed,
         userId: user.id,
         type,
       });
@@ -588,8 +588,8 @@ export class Item
       if (taskInfo) {
         await TaskInfo.store(tx).create({
           id: item.id,
-          manualDue: taskInfo.due ?? null,
-          manualDone: taskInfo.done ?? null,
+          manualDue: taskInfo.due,
+          manualDone: taskInfo.done,
           controller: TaskController.Manual,
         });
       }
@@ -643,6 +643,24 @@ export class Item
 
   public get archived(): DateTime | null {
     return this.entity.archived;
+  }
+
+  public get state(): Promise<ItemState> {
+    return (async (): Promise<ItemState> => {
+      let taskInfo = await this.taskInfo;
+      let detail = await this.detail;
+
+      return {
+        __typename: "Item",
+        id: this.id,
+        summary: this.summary,
+        archived: this.archived,
+        snoozed: this.snoozed,
+        created: this.created,
+        taskInfo: taskInfo?.state ?? null,
+        detail: detail ? await detail.state : null,
+      };
+    })();
   }
 
   public readonly user = memoized(async function (this: Item): Promise<User> {
@@ -726,6 +744,13 @@ abstract class ItemProperty<
     return Item.store(this.tx).get(this.itemId);
   });
 }
+
+export type TaskInfoParams = Pick<TaskInfoEntity, "due" | "done">;
+
+export type TaskInfoState = TaskInfoParams &
+  Pick<TaskInfoEntity, "controller"> & {
+    __typename: "TaskInfo";
+  };
 
 export class TaskInfo
   extends ItemProperty<TaskInfoEntity>
@@ -835,6 +860,15 @@ export class TaskInfo
     return this.entity.controller;
   }
 
+  public get state(): TaskInfoState {
+    return {
+      __typename: "TaskInfo",
+      due: this.due,
+      done: this.done,
+      controller: this.controller,
+    };
+  }
+
   public override async update({
     due,
     done,
@@ -878,6 +912,12 @@ export class TaskInfo
   }
 }
 
+export type ItemDetailState =
+  | LinkDetailState
+  | NoteDetailState
+  | ServiceDetailState
+  | FileDetailState;
+
 abstract class ItemDetailImpl<
   Entity extends ItemPropertyEntity,
 > extends ItemProperty<Entity> {
@@ -902,7 +942,16 @@ abstract class ItemDetailImpl<
       id: item.id,
     });
   }
+
+  public abstract get state(): Awaitable<ItemDetailState>;
 }
+
+export type LinkDetailParams = Omit<LinkDetailEntity, "id" | "icon">;
+
+export type LinkDetailState = LinkDetailParams &
+  Pick<LinkDetailEntity, "icon"> & {
+    __typename: "LinkDetail";
+  };
 
 export class LinkDetail
   extends ItemDetailImpl<LinkDetailEntity>
@@ -930,7 +979,25 @@ export class LinkDetail
   public get icon(): string | null {
     return this.entity.icon;
   }
+
+  public get state(): LinkDetailState {
+    return {
+      __typename: "LinkDetail",
+      url: this.url,
+      icon: this.icon,
+    };
+  }
 }
+
+export type FileDetailParams = Omit<
+  FileDetailEntity,
+  "id" | "path" | "size" | "mimetype"
+>;
+
+export type FileDetailState = FileDetailParams &
+  Pick<FileDetailEntity, "size" | "mimetype"> & {
+    __typename: "FileDetail";
+  };
 
 export class FileDetail
   extends ItemDetailImpl<FileDetailEntity>
@@ -962,7 +1029,22 @@ export class FileDetail
   public get size(): number {
     return this.entity.size;
   }
+
+  public get state(): FileDetailState {
+    return {
+      __typename: "FileDetail",
+      filename: this.filename,
+      size: this.size,
+      mimetype: this.mimetype,
+    };
+  }
 }
+
+export type NoteDetailParams = Omit<NoteDetailEntity, "id" | "url">;
+
+export type NoteDetailState = NoteDetailParams & {
+  __typename: "NoteDetail";
+};
 
 export class NoteDetail
   extends ItemDetailImpl<NoteDetailEntity>
@@ -986,7 +1068,22 @@ export class NoteDetail
   public get note(): string {
     return this.entity.note;
   }
+
+  public get state(): NoteDetailState {
+    return {
+      __typename: "NoteDetail",
+      note: this.note,
+    };
+  }
 }
+
+export type ServiceDetailState = Omit<
+  ServiceDetailEntity,
+  "id" | "hasTaskState" | "taskDue" | "taskDone"
+> & {
+  __typename: "ServiceDetail";
+  fields: unknown;
+};
 
 export class ServiceDetail
   extends ItemDetailImpl<ServiceDetailEntity>
@@ -1024,6 +1121,14 @@ export class ServiceDetail
 
   public get taskDone(): DateTime | null {
     return this.entity.taskDone;
+  }
+
+  public get state(): Promise<ServiceDetailState> {
+    return (async (): Promise<ServiceDetailState> => ({
+      __typename: "ServiceDetail",
+      serviceId: this.serviceId,
+      fields: JSON.parse(await this.fields()),
+    }))();
   }
 
   public async fields(): Promise<string> {

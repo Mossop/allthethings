@@ -4,8 +4,6 @@ import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
-import { TaskController } from "#schema";
-import type { BugzillaAccount, BugzillaAccountParams } from "#schema";
 import type {
   ResolverImpl,
   ServiceItem,
@@ -23,6 +21,8 @@ import type { BugFields } from "#services/bugzilla/schema";
 import type { DateTimeOffset } from "#utils";
 import { offsetFromJson } from "#utils";
 
+import type { BugzillaAccount, BugzillaAccountParams } from "../../../schema";
+import { TaskController } from "../../../schema";
 import type {
   BugzillaAccountEntity,
   BugzillaBugEntity,

@@ -201,7 +201,6 @@ export type LinkDetailFieldPolicy = {
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type MutationKeySpecifier = (
-  | "archiveItem"
   | "changePassword"
   | "createBugzillaAccount"
   | "createBugzillaSearch"
@@ -209,16 +208,12 @@ export type MutationKeySpecifier = (
   | "createGoogleMailSearch"
   | "createJiraAccount"
   | "createJiraSearch"
-  | "createLink"
-  | "createNote"
   | "createPhabricatorAccount"
-  | "createTask"
   | "createUser"
   | "deleteBugzillaAccount"
   | "deleteBugzillaSearch"
   | "deleteGithubSearch"
   | "deleteGoogleMailSearch"
-  | "deleteItem"
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
@@ -226,18 +221,14 @@ export type MutationKeySpecifier = (
   | "editBugzillaSearch"
   | "editGithubSearch"
   | "editGoogleMailSearch"
-  | "editItem"
   | "editJiraSearch"
   | "markTaskDone"
   | "markTaskDue"
-  | "moveItem"
   | "setTaskController"
-  | "snoozeItem"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
 )[];
 export type MutationFieldPolicy = {
-  archiveItem?: FieldPolicy<any> | FieldReadFunction<any>;
   changePassword?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -245,16 +236,12 @@ export type MutationFieldPolicy = {
   createGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  createLink?: FieldPolicy<any> | FieldReadFunction<any>;
-  createNote?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  createTask?: FieldPolicy<any> | FieldReadFunction<any>;
   createUser?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteItem?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -262,13 +249,10 @@ export type MutationFieldPolicy = {
   editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  editItem?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   markTaskDone?: FieldPolicy<any> | FieldReadFunction<any>;
   markTaskDue?: FieldPolicy<any> | FieldReadFunction<any>;
-  moveItem?: FieldPolicy<any> | FieldReadFunction<any>;
   setTaskController?: FieldPolicy<any> | FieldReadFunction<any>;
-  snoozeItem?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type NoteDetailKeySpecifier = ("note" | NoteDetailKeySpecifier)[];

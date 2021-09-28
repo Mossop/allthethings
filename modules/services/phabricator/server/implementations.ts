@@ -10,8 +10,8 @@ import type {
 import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
 
-import { TaskController } from "#schema";
-import type { CreatePhabricatorAccountParams } from "#schema";
+import { TaskController } from "../../../schema";
+import type { CreatePhabricatorAccountParams } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,

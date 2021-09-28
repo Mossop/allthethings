@@ -19,9 +19,9 @@ import {
   SubHeading,
   useBoolState,
 } from "#client/utils";
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
 import { addOffset } from "#utils";
 
+import type { GoogleAccount, GoogleMailSearch } from "../../../../schema";
 import Google from "../logos/Google";
 import { useDeleteGoogleMailSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";

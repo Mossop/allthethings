@@ -12,6 +12,8 @@ import { ProjectController } from './controllers';
 import { ContextController } from './controllers';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { SectionController } from './controllers';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ItemController } from './controllers';
 import { iocContainer } from '#server/utils';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import * as KoaRouter from '@koa/router';
@@ -19,15 +21,19 @@ import * as KoaRouter from '@koa/router';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 
 const models: TsoaRoute.Models = {
+    "Pick_UserEntity.Exclude_keyofUserEntity.password__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"email":{"dataType":"string","required":true},"isAdmin":{"dataType":"boolean","required":true},"id":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_UserEntity.password_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_UserEntity.Exclude_keyofUserEntity.password__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "UserState": {
-        "dataType": "refObject",
-        "properties": {
-            "__typename": {"dataType":"enum","enums":["User"],"required":true},
-            "id": {"dataType":"string","required":true},
-            "email": {"dataType":"string","required":true},
-            "isAdmin": {"dataType":"boolean","required":true},
-        },
-        "additionalProperties": false,
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"Omit_UserEntity.password_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["User"],"required":true}}}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "LoginParams": {
@@ -39,27 +45,54 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_ContextEntity.id-or-userId-or-stub_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ContextParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_ContextEntity.id-or-userId-or-stub_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ContextEntity.id-or-stub_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true},"stub":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ContextState": {
-        "dataType": "refObject",
-        "properties": {
-            "__typename": {"dataType":"enum","enums":["Context"],"required":true},
-            "id": {"dataType":"string","required":true},
-            "stub": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ContextParams"},{"ref":"Pick_ContextEntity.id-or-stub_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["Context"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ProjectParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ProjectEntity.id-or-parentId-or-stub_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true},"stub":{"dataType":"string","required":true},"parentId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ProjectState": {
-        "dataType": "refObject",
-        "properties": {
-            "__typename": {"dataType":"enum","enums":["Project"],"required":true},
-            "id": {"dataType":"string","required":true},
-            "parentId": {"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},
-            "stub": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ProjectParams"},{"ref":"Pick_ProjectEntity.id-or-parentId-or-stub_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["Project"],"required":true}}}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ServerProjectState": {
@@ -96,55 +129,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_": {
-        "dataType": "refAlias",
-        "type": {"ref":"Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ProjectParams": {
-        "dataType": "refAlias",
-        "type": {"ref":"Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_ProjectParams_": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Omit_ContextEntity.id-or-userId-or-stub_": {
-        "dataType": "refAlias",
-        "type": {"ref":"Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ContextParams": {
-        "dataType": "refAlias",
-        "type": {"ref":"Omit_ContextEntity.id-or-userId-or-stub_","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_ContextParams_": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "SectionState": {
-        "dataType": "refObject",
-        "properties": {
-            "__typename": {"dataType":"enum","enums":["Section"],"required":true},
-            "id": {"dataType":"string","required":true},
-            "stub": {"dataType":"string","required":true},
-            "name": {"dataType":"string","required":true},
-        },
-        "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__": {
@@ -162,9 +154,169 @@ const models: TsoaRoute.Models = {
         "type": {"ref":"Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_","validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_SectionEntity.id-or-stub_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true},"stub":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "SectionState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"SectionParams"},{"ref":"Pick_SectionEntity.id-or-stub_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["Section"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_SectionParams_": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "DateTime": {
+        "dataType": "refAlias",
+        "type": {"dataType":"string","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ItemEntity.Exclude_keyofItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"summary":{"dataType":"string","required":true},"archived":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"snoozed":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_ItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_ItemEntity.Exclude_keyofItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ItemParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_ItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ItemEntity.id-or-created_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true},"created":{"ref":"DateTime","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_TaskInfoEntity.due-or-done_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"due":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"done":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskInfoParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_TaskInfoEntity.due-or-done_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskController": {
+        "dataType": "refEnum",
+        "enums": ["manual","list","service"],
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_TaskInfoEntity.controller_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"controller":{"ref":"TaskController","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "TaskInfoState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"TaskInfoParams"},{"ref":"Pick_TaskInfoEntity.controller_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["TaskInfo"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_LinkDetailEntity.Exclude_keyofLinkDetailEntity.id-or-icon__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"url":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_LinkDetailEntity.id-or-icon_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_LinkDetailEntity.Exclude_keyofLinkDetailEntity.id-or-icon__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "LinkDetailParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_LinkDetailEntity.id-or-icon_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_LinkDetailEntity.icon_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"icon":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "LinkDetailState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"LinkDetailParams"},{"ref":"Pick_LinkDetailEntity.icon_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["LinkDetail"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_NoteDetailEntity.Exclude_keyofNoteDetailEntity.id-or-url__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"note":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_NoteDetailEntity.id-or-url_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_NoteDetailEntity.Exclude_keyofNoteDetailEntity.id-or-url__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NoteDetailParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_NoteDetailEntity.id-or-url_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "NoteDetailState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"NoteDetailParams"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["NoteDetail"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"serviceId":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ServiceDetailState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"fields":{"dataType":"any","required":true},"__typename":{"dataType":"enum","enums":["ServiceDetail"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_FileDetailEntity.Exclude_keyofFileDetailEntity.id-or-path-or-size-or-mimetype__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"filename":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_FileDetailEntity.id-or-path-or-size-or-mimetype_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_FileDetailEntity.Exclude_keyofFileDetailEntity.id-or-path-or-size-or-mimetype__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "FileDetailParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_FileDetailEntity.id-or-path-or-size-or-mimetype_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_FileDetailEntity.size-or-mimetype_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"size":{"dataType":"double","required":true},"mimetype":{"dataType":"string","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "FileDetailState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"FileDetailParams"},{"ref":"Pick_FileDetailEntity.size-or-mimetype_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["FileDetail"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ItemDetailState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"union","subSchemas":[{"ref":"LinkDetailState"},{"ref":"NoteDetailState"},{"ref":"ServiceDetailState"},{"ref":"FileDetailState"}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ItemState": {
+        "dataType": "refAlias",
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ItemParams"},{"ref":"Pick_ItemEntity.id-or-created_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"detail":{"dataType":"union","subSchemas":[{"ref":"ItemDetailState"},{"dataType":"enum","enums":[null]}],"required":true},"taskInfo":{"dataType":"union","subSchemas":[{"ref":"TaskInfoState"},{"dataType":"enum","enums":[null]}],"required":true},"__typename":{"dataType":"enum","enums":["Item"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Partial_ItemParams_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"summary":{"dataType":"string"},"archived":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}]},"snoozed":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}]}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -537,6 +689,136 @@ export function RegisterRoutes(router: KoaRouter) {
             }
 
             const promise = controller.deleteSection.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.put('/item/task',
+            async function ItemController_createTask(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"task":{"dataType":"union","subSchemas":[{"ref":"TaskInfoParams"},{"dataType":"enum","enums":[null]}]},"item":{"ref":"ItemParams","required":true},"beforeId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"itemHolderId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.createTask.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.put('/item/link',
+            async function ItemController_createLink(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"isTask":{"dataType":"boolean","required":true},"link":{"ref":"LinkDetailParams","required":true},"item":{"ref":"ItemParams","required":true},"beforeId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"itemHolderId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.createLink.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/item/move',
+            async function ItemController_moveItem(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"beforeId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"itemHolderId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.moveItem.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/item',
+            async function ItemController_editItem(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"Partial_ItemParams_","required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.editItem.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.delete('/item',
+            async function ItemController_deleteItem(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.deleteItem.apply(controller, validatedArgs as any);
             return promiseHandler(controller, promise, context, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -4,7 +4,7 @@ import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
 import { In, Not, sql } from "#db";
-import { TaskController } from "#schema";
+import { TaskController } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,

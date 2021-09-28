@@ -236,3 +236,13 @@ export function decodeRelativeDateTime(value: string): RelativeDateTime {
 
   return DateTime.fromISO(value);
 }
+
+export function encodeDateTime(dt: DateTime): string;
+export function encodeDateTime(dt: DateTime | undefined | null): string | null;
+export function encodeDateTime(dt: DateTime | undefined | null): string | null {
+  if (dt) {
+    return dt.toISO();
+  }
+
+  return null;
+}

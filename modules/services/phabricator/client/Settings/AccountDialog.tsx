@@ -12,8 +12,8 @@ import {
   Checkbox,
 } from "#client/utils";
 import type { ReactResult } from "#client/utils";
-import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 
+import type { PhabricatorAccount, PhabricatorQuery } from "../../../../schema";
 import {
   useListPhabricatorQueriesQuery,
   refetchListPhabricatorAccountsQuery,

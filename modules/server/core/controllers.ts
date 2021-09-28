@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { URL } from "url";
 
 import {
   Route,
@@ -14,9 +15,16 @@ import {
 } from "@tsoa/runtime";
 
 import type { Transaction } from "#server/utils";
-import { HttpError, NotFoundError } from "#server/utils";
+import {
+  bestIcon,
+  loadPageInfo,
+  HttpError,
+  NotFoundError,
+} from "#server/utils";
 import { decodeRelativeDateTime, map } from "#utils";
 
+import { ItemHolderBase } from ".";
+import { ItemType } from "./entities";
 import type {
   ContextState,
   UserState,
@@ -25,8 +33,15 @@ import type {
   ContextParams,
   SectionParams,
   SectionState,
+  ItemParams,
+  TaskInfoParams,
+  ItemHolder,
+  ItemState,
+  LinkDetailParams,
 } from "./implementations";
 import {
+  LinkDetail,
+  Item,
   Section,
   Project,
   TaskListBase,
@@ -386,5 +401,215 @@ export class SectionController extends CoreController {
     let section = await Section.store(tx).get(id);
 
     await section.delete();
+  }
+}
+
+@Route("/item")
+export class ItemController extends CoreController {
+  @Authenticated(true)
+  @Put("/task")
+  public async createTask(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      itemHolderId,
+      beforeId,
+      item: itemParams,
+      task: taskParams,
+    }: {
+      itemHolderId?: string | null;
+      beforeId?: string | null;
+      item: ItemParams;
+      task?: TaskInfoParams | null;
+    },
+  ): Promise<ItemState> {
+    let itemHolder: ItemHolder | null = null;
+    let before: Item | null = null;
+    if (itemHolderId) {
+      itemHolder = await ItemHolderBase.getItemHolder(tx, itemHolderId);
+      if (!itemHolder) {
+        throw new NotFoundError();
+      }
+
+      if (beforeId) {
+        before = await Item.store(tx).get(beforeId);
+      }
+    }
+
+    let item = await Item.create(
+      tx,
+      user,
+      null,
+      itemParams,
+      taskParams ?? { due: null, done: null },
+    );
+
+    if (itemHolder) {
+      await item.move(itemHolder, before);
+    }
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Put("/link")
+  public async createLink(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      itemHolderId,
+      beforeId,
+      item: itemParams,
+      link: { url },
+      isTask,
+    }: {
+      itemHolderId?: string | null;
+      beforeId?: string | null;
+      item: ItemParams;
+      link: LinkDetailParams;
+      isTask: boolean;
+    },
+  ): Promise<ItemState> {
+    let targetUrl: URL;
+    try {
+      targetUrl = new URL(url);
+    } catch (e) {
+      throw new Error("Invalid url.");
+    }
+
+    let itemHolder: ItemHolder | null = null;
+    let before: Item | null = null;
+    if (itemHolderId) {
+      itemHolder = await ItemHolderBase.getItemHolder(tx, itemHolderId);
+      if (!itemHolder) {
+        throw new NotFoundError();
+      }
+
+      if (beforeId) {
+        before = await Item.store(tx).get(beforeId);
+      }
+    }
+
+    let id = await ServiceManager.createItemFromURL(
+      tx,
+      user.id,
+      targetUrl,
+      isTask,
+    );
+    if (id) {
+      let item = await Item.store(tx).get(id);
+      if (itemHolder) {
+        await item.move(itemHolder, null);
+      }
+
+      return item.state;
+    }
+
+    let pageInfo = await loadPageInfo(tx.segment, targetUrl);
+
+    let summary = itemParams.summary;
+    if (!summary) {
+      summary = pageInfo.title ?? targetUrl.toString();
+    }
+
+    let item = await Item.create(
+      tx,
+      user,
+      ItemType.Link,
+      {
+        ...itemParams,
+        summary,
+      },
+      isTask ? { due: null, done: null } : null,
+    );
+
+    let icons = [...pageInfo.icons];
+    let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;
+
+    await LinkDetail.create(tx, item, {
+      url,
+      icon,
+    });
+
+    if (itemHolder) {
+      await item.move(itemHolder, before);
+    }
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Patch("/move")
+  public async moveItem(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      itemHolderId,
+      beforeId,
+    }: {
+      id: string;
+      itemHolderId: string | null;
+      beforeId?: string | null;
+    },
+  ): Promise<ItemState> {
+    let item = await Item.store(tx).get(id);
+
+    let itemHolder: ItemHolder | null = null;
+    if (itemHolderId) {
+      itemHolder = await ItemHolderBase.getItemHolder(tx, itemHolderId);
+      if (!itemHolder) {
+        throw new NotFoundError();
+      }
+
+      let before = beforeId ? await Item.store(tx).get(beforeId) : null;
+
+      await item.move(itemHolder, before);
+    } else {
+      await item.move(null);
+    }
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Patch()
+  public async editItem(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      params,
+    }: {
+      id: string;
+      params: Partial<ItemParams>;
+    },
+  ): Promise<ItemState> {
+    let item = await Item.store(tx).get(id);
+    await item.update(params);
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Delete()
+  public async deleteItem(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+    }: {
+      id: string;
+    },
+  ): Promise<ItemState> {
+    let item = await Item.store(tx).get(id);
+    await item.delete();
+
+    return item.state;
   }
 }

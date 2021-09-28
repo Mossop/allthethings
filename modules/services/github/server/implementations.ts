@@ -3,7 +3,7 @@ import { URL } from "url";
 import { DateTime } from "luxon";
 
 import { In, Not, sql } from "#db";
-import { TaskController } from "#schema";
+import { TaskController } from "../../../schema";
 import {
   BaseAccount,
   BaseItem,

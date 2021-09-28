@@ -1,7 +1,7 @@
 import type { ReactResult } from "#client/utils";
 import { SettingsPageItem } from "#client/utils";
-import type { GithubAccount } from "#schema";
 
+import type { GithubAccount } from "../../../../schema";
 import GitHub from "../logos/GitHub";
 import {
   useListGithubAccountsQuery,

@@ -6,33 +6,50 @@
     "requestBodies": {},
     "responses": {},
     "schemas": {
-      "UserState": {
+      "Pick_UserEntity.Exclude_keyofUserEntity.password__": {
         "properties": {
-          "__typename": {
-            "type": "string",
-            "enum": [
-              "User"
-            ],
-            "nullable": false
-          },
-          "id": {
-            "type": "string"
-          },
           "email": {
             "type": "string"
           },
           "isAdmin": {
             "type": "boolean"
+          },
+          "id": {
+            "type": "string"
           }
         },
         "required": [
-          "__typename",
-          "id",
           "email",
-          "isAdmin"
+          "isAdmin",
+          "id"
         ],
         "type": "object",
-        "additionalProperties": false
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_UserEntity.password_": {
+        "$ref": "#/components/schemas/Pick_UserEntity.Exclude_keyofUserEntity.password__"
+      },
+      "UserState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_UserEntity.password_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "User"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "LoginParams": {
         "properties": {
@@ -50,66 +67,128 @@
         "type": "object",
         "additionalProperties": false
       },
-      "ContextState": {
+      "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
         "properties": {
-          "__typename": {
-            "type": "string",
-            "enum": [
-              "Context"
-            ],
-            "nullable": false
-          },
-          "id": {
-            "type": "string"
-          },
-          "stub": {
-            "type": "string"
-          },
           "name": {
             "type": "string"
           }
         },
         "required": [
-          "__typename",
-          "id",
-          "stub",
           "name"
         ],
         "type": "object",
-        "additionalProperties": false
+        "description": "From T, pick a set of properties whose keys are in the union K"
       },
-      "ProjectState": {
+      "Omit_ContextEntity.id-or-userId-or-stub_": {
+        "$ref": "#/components/schemas/Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__"
+      },
+      "ContextParams": {
+        "$ref": "#/components/schemas/Omit_ContextEntity.id-or-userId-or-stub_"
+      },
+      "Pick_ContextEntity.id-or-stub_": {
         "properties": {
-          "__typename": {
-            "type": "string",
-            "enum": [
-              "Project"
-            ],
-            "nullable": false
-          },
           "id": {
+            "type": "string"
+          },
+          "stub": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stub"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "ContextState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContextParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_ContextEntity.id-or-stub_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "Context"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_": {
+        "$ref": "#/components/schemas/Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__"
+      },
+      "ProjectParams": {
+        "$ref": "#/components/schemas/Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_"
+      },
+      "Pick_ProjectEntity.id-or-parentId-or-stub_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stub": {
             "type": "string"
           },
           "parentId": {
             "type": "string",
             "nullable": true
-          },
-          "stub": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
           }
         },
         "required": [
-          "__typename",
           "id",
-          "parentId",
           "stub",
-          "name"
+          "parentId"
         ],
         "type": "object",
-        "additionalProperties": false
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "ProjectState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProjectParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_ProjectEntity.id-or-parentId-or-stub_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "Project"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "ServerProjectState": {
         "allOf": [
@@ -226,24 +305,6 @@
         "type": "object",
         "additionalProperties": false
       },
-      "Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "description": "From T, pick a set of properties whose keys are in the union K"
-      },
-      "Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_": {
-        "$ref": "#/components/schemas/Pick_ProjectEntity.Exclude_keyofProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub__"
-      },
-      "ProjectParams": {
-        "$ref": "#/components/schemas/Omit_ProjectEntity.id-or-contextId-or-userId-or-parentId-or-stub_"
-      },
       "Partial_ProjectParams_": {
         "properties": {
           "name": {
@@ -253,24 +314,6 @@
         "type": "object",
         "description": "Make all properties in T optional"
       },
-      "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
-        "type": "object",
-        "description": "From T, pick a set of properties whose keys are in the union K"
-      },
-      "Omit_ContextEntity.id-or-userId-or-stub_": {
-        "$ref": "#/components/schemas/Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__"
-      },
-      "ContextParams": {
-        "$ref": "#/components/schemas/Omit_ContextEntity.id-or-userId-or-stub_"
-      },
       "Partial_ContextParams_": {
         "properties": {
           "name": {
@@ -279,34 +322,6 @@
         },
         "type": "object",
         "description": "Make all properties in T optional"
-      },
-      "SectionState": {
-        "properties": {
-          "__typename": {
-            "type": "string",
-            "enum": [
-              "Section"
-            ],
-            "nullable": false
-          },
-          "id": {
-            "type": "string"
-          },
-          "stub": {
-            "type": "string"
-          },
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "__typename",
-          "id",
-          "stub",
-          "name"
-        ],
-        "type": "object",
-        "additionalProperties": false
       },
       "Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__": {
         "properties": {
@@ -326,10 +341,460 @@
       "SectionParams": {
         "$ref": "#/components/schemas/Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_"
       },
+      "Pick_SectionEntity.id-or-stub_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stub": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stub"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "SectionState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SectionParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_SectionEntity.id-or-stub_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "Section"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "Partial_SectionParams_": {
         "properties": {
           "name": {
             "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "DateTime": {
+        "type": "string",
+        "description": "A DateTime is an immutable data structure representing a specific date and time and accompanying methods.\nIt contains class and instance methods for creating, parsing, interrogating, transforming, and formatting them.\n\nA DateTime comprises of:\n* A timestamp. Each DateTime instance refers to a specific millisecond of the Unix epoch.\n* A time zone. Each instance is considered in the context of a specific zone (by default the local system's zone).\n* Configuration properties that effect how output strings are formatted, such as `locale`, `numberingSystem`, and `outputCalendar`.\n\nHere is a brief overview of the most commonly used functionality it provides:\n\n* **Creation**: To create a DateTime from its components, use one of its factory class methods: {@link DateTime.local}, {@link DateTime.utc}, and (most flexibly) {@link DateTime.fromObject}.\nTo create one from a standard string format, use {@link DateTime.fromISO}, {@link DateTime.fromHTTP}, and {@link DateTime.fromRFC2822}.\nTo create one from a custom string format, use {@link DateTime.fromFormat}. To create one from a native JS date, use {@link DateTime.fromJSDate}.\n* **Gregorian calendar and time**: To examine the Gregorian properties of a DateTime individually (i.e as opposed to collectively through {@link DateTime#toObject }), use the {@link DateTime#year },\n{@link DateTime#month }, {@link DateTime#day }, {@link DateTime#hour }, {@link DateTime#minute }, {@link DateTime#second }, {@link DateTime#millisecond } accessors.\n* **Week calendar**: For ISO week calendar attributes, see the {@link DateTime#weekYear }, {@link DateTime#weekNumber }, and {@link DateTime#weekday } accessors.\n* **Configuration** See the {@link DateTime#locale } and {@link DateTime#numberingSystem } accessors.\n* **Transformation**: To transform the DateTime into other DateTimes, use {@link DateTime#set }, {@link DateTime#reconfigure }, {@link DateTime#setZone }, {@link DateTime#setLocale },\n{@link DateTime.plus}, {@link DateTime#minus }, {@link DateTime#endOf }, {@link DateTime#startOf }, {@link DateTime#toUTC }, and {@link DateTime#toLocal }.\n* **Output**: To convert the DateTime to other representations, use the {@link DateTime#toRelative }, {@link DateTime#toRelativeCalendar }, {@link DateTime#toJSON }, {@link DateTime#toISO },\n{@link DateTime#toHTTP }, {@link DateTime#toObject }, {@link DateTime#toRFC2822 }, {@link DateTime#toString }, {@link DateTime#toLocaleString }, {@link DateTime#toFormat },\n{@link DateTime#toMillis } and {@link DateTime#toJSDate }.\n\nThere's plenty others documented below. In addition, for more information on subtler topics\nlike internationalization, time zones, alternative calendars, validity, and so on, see the external documentation."
+      },
+      "Pick_ItemEntity.Exclude_keyofItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created__": {
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "archived": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "snoozed": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "summary",
+          "archived",
+          "snoozed"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_ItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created_": {
+        "$ref": "#/components/schemas/Pick_ItemEntity.Exclude_keyofItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created__"
+      },
+      "ItemParams": {
+        "$ref": "#/components/schemas/Omit_ItemEntity.id-or-userId-or-sectionId-or-sectionIndex-or-type-or-created_"
+      },
+      "Pick_ItemEntity.id-or-created_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "created": {
+            "$ref": "#/components/schemas/DateTime"
+          }
+        },
+        "required": [
+          "id",
+          "created"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Pick_TaskInfoEntity.due-or-done_": {
+        "properties": {
+          "due": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "done": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          }
+        },
+        "required": [
+          "due",
+          "done"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "TaskInfoParams": {
+        "$ref": "#/components/schemas/Pick_TaskInfoEntity.due-or-done_"
+      },
+      "TaskController": {
+        "enum": [
+          "manual",
+          "list",
+          "service"
+        ],
+        "type": "string"
+      },
+      "Pick_TaskInfoEntity.controller_": {
+        "properties": {
+          "controller": {
+            "$ref": "#/components/schemas/TaskController"
+          }
+        },
+        "required": [
+          "controller"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "TaskInfoState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/TaskInfoParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_TaskInfoEntity.controller_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "TaskInfo"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_LinkDetailEntity.Exclude_keyofLinkDetailEntity.id-or-icon__": {
+        "properties": {
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_LinkDetailEntity.id-or-icon_": {
+        "$ref": "#/components/schemas/Pick_LinkDetailEntity.Exclude_keyofLinkDetailEntity.id-or-icon__"
+      },
+      "LinkDetailParams": {
+        "$ref": "#/components/schemas/Omit_LinkDetailEntity.id-or-icon_"
+      },
+      "Pick_LinkDetailEntity.icon_": {
+        "properties": {
+          "icon": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "icon"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "LinkDetailState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/LinkDetailParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_LinkDetailEntity.icon_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "LinkDetail"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_NoteDetailEntity.Exclude_keyofNoteDetailEntity.id-or-url__": {
+        "properties": {
+          "note": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "note"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_NoteDetailEntity.id-or-url_": {
+        "$ref": "#/components/schemas/Pick_NoteDetailEntity.Exclude_keyofNoteDetailEntity.id-or-url__"
+      },
+      "NoteDetailParams": {
+        "$ref": "#/components/schemas/Omit_NoteDetailEntity.id-or-url_"
+      },
+      "NoteDetailState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/NoteDetailParams"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "NoteDetail"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__": {
+        "properties": {
+          "serviceId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "serviceId"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_": {
+        "$ref": "#/components/schemas/Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__"
+      },
+      "ServiceDetailState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_"
+          },
+          {
+            "properties": {
+              "fields": {},
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "ServiceDetail"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "fields",
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_FileDetailEntity.Exclude_keyofFileDetailEntity.id-or-path-or-size-or-mimetype__": {
+        "properties": {
+          "filename": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "filename"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_FileDetailEntity.id-or-path-or-size-or-mimetype_": {
+        "$ref": "#/components/schemas/Pick_FileDetailEntity.Exclude_keyofFileDetailEntity.id-or-path-or-size-or-mimetype__"
+      },
+      "FileDetailParams": {
+        "$ref": "#/components/schemas/Omit_FileDetailEntity.id-or-path-or-size-or-mimetype_"
+      },
+      "Pick_FileDetailEntity.size-or-mimetype_": {
+        "properties": {
+          "size": {
+            "type": "number",
+            "format": "double"
+          },
+          "mimetype": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "size",
+          "mimetype"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "FileDetailState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/FileDetailParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_FileDetailEntity.size-or-mimetype_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "FileDetail"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ItemDetailState": {
+        "anyOf": [
+          {
+            "$ref": "#/components/schemas/LinkDetailState"
+          },
+          {
+            "$ref": "#/components/schemas/NoteDetailState"
+          },
+          {
+            "$ref": "#/components/schemas/ServiceDetailState"
+          },
+          {
+            "$ref": "#/components/schemas/FileDetailState"
+          }
+        ]
+      },
+      "ItemState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ItemParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_ItemEntity.id-or-created_"
+          },
+          {
+            "properties": {
+              "detail": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/ItemDetailState"
+                  }
+                ],
+                "nullable": true
+              },
+              "taskInfo": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/TaskInfoState"
+                  }
+                ],
+                "nullable": true
+              },
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "Item"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "detail",
+              "taskInfo",
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Partial_ItemParams_": {
+        "properties": {
+          "summary": {
+            "type": "string"
+          },
+          "archived": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "snoozed": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
           }
         },
         "type": "object",
@@ -781,6 +1246,234 @@
         "responses": {
           "204": {
             "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item/task": {
+      "put": {
+        "operationId": "CreateTask",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "task": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/TaskInfoParams"
+                      }
+                    ],
+                    "nullable": true
+                  },
+                  "item": {
+                    "$ref": "#/components/schemas/ItemParams"
+                  },
+                  "beforeId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "itemHolderId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "item"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item/link": {
+      "put": {
+        "operationId": "CreateLink",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "isTask": {
+                    "type": "boolean"
+                  },
+                  "link": {
+                    "$ref": "#/components/schemas/LinkDetailParams"
+                  },
+                  "item": {
+                    "$ref": "#/components/schemas/ItemParams"
+                  },
+                  "beforeId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "itemHolderId": {
+                    "type": "string",
+                    "nullable": true
+                  }
+                },
+                "required": [
+                  "isTask",
+                  "link",
+                  "item"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item/move": {
+      "patch": {
+        "operationId": "MoveItem",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "beforeId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "itemHolderId": {
+                    "type": "string",
+                    "nullable": true
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "itemHolderId",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item": {
+      "patch": {
+        "operationId": "EditItem",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_ItemParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteItem",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
           }
         },
         "security": [],

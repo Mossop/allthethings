@@ -19,7 +19,7 @@ import type {
   ServiceList,
   ItemSet,
 } from "./implementations";
-import * as Schema from "#schema";
+import * as Schema from "../../schema";
 import { Root, Problem } from "#server/utils";
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
@@ -146,13 +146,10 @@ export type ResolversTypes = {
     | ResolversTypes["NoteDetail"]
     | ResolversTypes["ServiceDetail"];
   ItemFilter: Schema.ItemFilter;
-  ItemParams: Schema.ItemParams;
   ItemSet: ResolverTypeWrapper<ItemSet>;
   LinkDetail: ResolverTypeWrapper<LinkDetail>;
-  LinkDetailParams: Schema.LinkDetailParams;
   Mutation: ResolverTypeWrapper<Root>;
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
-  NoteDetailParams: Schema.NoteDetailParams;
   Project: ResolverTypeWrapper<Project>;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
@@ -162,7 +159,6 @@ export type ResolversTypes = {
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   TaskInfo: ResolverTypeWrapper<TaskInfo>;
-  TaskInfoParams: Schema.TaskInfoParams;
   TaskList: ResolverTypeWrapper<TaskList>;
   User: ResolverTypeWrapper<User>;
 };
@@ -183,13 +179,10 @@ export type ResolversParentTypes = {
     | ResolversParentTypes["NoteDetail"]
     | ResolversParentTypes["ServiceDetail"];
   ItemFilter: Schema.ItemFilter;
-  ItemParams: Schema.ItemParams;
   ItemSet: ItemSet;
   LinkDetail: LinkDetail;
-  LinkDetailParams: Schema.LinkDetailParams;
   Mutation: Root;
   NoteDetail: NoteDetail;
-  NoteDetailParams: Schema.NoteDetailParams;
   Project: Project;
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
@@ -199,7 +192,6 @@ export type ResolversParentTypes = {
   String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];
   TaskInfo: TaskInfo;
-  TaskInfoParams: Schema.TaskInfoParams;
   TaskList: TaskList;
   User: User;
 };
@@ -333,12 +325,6 @@ export type MutationResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
 > = {
-  archiveItem: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationArchiveItemArgs, "id">
-  >;
   changePassword: Resolver<
     Schema.Maybe<ResolversTypes["User"]>,
     ParentType,
@@ -348,47 +334,17 @@ export type MutationResolvers<
       "currentPassword" | "newPassword"
     >
   >;
-  createLink: Resolver<
-    ResolversTypes["Item"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateLinkArgs, "detail" | "isTask" | "item">
-  >;
-  createNote: Resolver<
-    ResolversTypes["Item"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateNoteArgs, "detail" | "isTask" | "item">
-  >;
-  createTask: Resolver<
-    ResolversTypes["Item"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateTaskArgs, "item">
-  >;
   createUser: Resolver<
     ResolversTypes["User"],
     ParentType,
     ContextType,
     RequireFields<Schema.MutationCreateUserArgs, "email" | "password">
   >;
-  deleteItem: Resolver<
-    ResolversTypes["Boolean"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteItemArgs, "id">
-  >;
   deleteUser: Resolver<
     Schema.Maybe<ResolversTypes["Boolean"]>,
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeleteUserArgs, never>
-  >;
-  editItem: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationEditItemArgs, "id" | "item">
   >;
   markTaskDone: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
@@ -402,23 +358,11 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationMarkTaskDueArgs, "id">
   >;
-  moveItem: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMoveItemArgs, "id">
-  >;
   setTaskController: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,
     ParentType,
     ContextType,
     RequireFields<Schema.MutationSetTaskControllerArgs, "id">
-  >;
-  snoozeItem: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationSnoozeItemArgs, "id">
   >;
 };
 

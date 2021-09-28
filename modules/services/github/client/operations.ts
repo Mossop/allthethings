@@ -1,5 +1,5 @@
 /* eslint-disable */
-import * as Schema from "#schema";
+import * as Schema from "../../../schema";
 import { gql } from "@apollo/client";
 import * as Apollo from "@apollo/client";
 const defaultOptions = {};

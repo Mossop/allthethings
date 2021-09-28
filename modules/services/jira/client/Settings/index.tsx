@@ -6,8 +6,8 @@ import {
   useSetSettingsPage,
   SettingsPageItem,
 } from "#client/utils";
-import type { JiraAccount } from "#schema";
 
+import type { JiraAccount } from "../../../../schema";
 import Icon from "../Icon";
 import { useListJiraAccountsQuery } from "../operations";
 import AccountSettings from "./Account";

@@ -8,8 +8,8 @@ import {
   useBoolState,
   FormState,
 } from "#client/utils";
-import type { BugzillaAccount } from "#schema";
 
+import type { BugzillaAccount } from "../../../../schema";
 import {
   refetchListBugzillaAccountsQuery,
   useCreateBugzillaAccountMutation,

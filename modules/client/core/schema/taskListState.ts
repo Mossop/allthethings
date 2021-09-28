@@ -1,4 +1,4 @@
-import type * as Schema from "#schema";
+import type * as Schema from "../../../schema";
 import type { Overwrite, ArrayContents } from "#utils";
 
 import type { GraphQLType } from ".";

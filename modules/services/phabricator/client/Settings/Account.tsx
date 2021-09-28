@@ -14,8 +14,8 @@ import {
   SubHeading,
   ReactMemo,
 } from "#client/utils";
-import type { PhabricatorAccount, PhabricatorQuery } from "#schema";
 
+import type { PhabricatorAccount, PhabricatorQuery } from "../../../../schema";
 import {
   useUpdatePhabricatorAccountMutation,
   useListPhabricatorQueriesQuery,

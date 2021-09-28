@@ -18,8 +18,8 @@ import {
   SubHeading,
   useBoolState,
 } from "#client/utils";
-import type { GithubAccount, GithubSearch } from "#schema";
 
+import type { GithubAccount, GithubSearch } from "../../../../schema";
 import GitHub from "../logos/GitHub";
 import { useDeleteGithubSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";

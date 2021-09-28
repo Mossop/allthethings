@@ -5,9 +5,9 @@ import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
-import type { TaskController } from "#schema";
 import type { Awaitable, MaybeCallable, RelativeDateTime } from "#utils";
 
+import type { TaskController } from "../../schema";
 import { RequestController } from "./controllers";
 import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";

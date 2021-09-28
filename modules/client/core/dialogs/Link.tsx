@@ -8,13 +8,11 @@ import {
   Dialog,
   BooleanCheckboxInput,
   FormState,
+  mutationHook,
+  api,
 } from "#client/utils";
 
-import {
-  useCreateLinkMutation,
-  refetchQueriesForSection,
-  isInbox,
-} from "../schema";
+import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
 
 interface LinkDialogProps {
@@ -23,6 +21,11 @@ interface LinkDialogProps {
   initialUrl?: string;
   title?: string | null;
 }
+
+const useCreateLinkMutation = mutationHook(api.item.createLink, {
+  // TODO
+  refreshTokens: [],
+});
 
 export default ReactMemo(function LinkDialog({
   onClosed,
@@ -37,24 +40,20 @@ export default ReactMemo(function LinkDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [createLink, { loading, error: createError }] = useCreateLinkMutation({
-    refetchQueries: refetchQueriesForSection(list),
-  });
+  let [createLink, { loading, error: createError }] = useCreateLinkMutation();
 
   let submit = useCallback(async (): Promise<void> => {
     await createLink({
-      variables: {
-        section: isInbox(list) ? null : list.id,
-        item: {
-          summary: title ?? "",
-          archived: null,
-          snoozed: null,
-        },
-        detail: {
-          url: state.url,
-        },
-        isTask: state.isTask,
+      itemHolderId: isInbox(list) ? null : list.id,
+      item: {
+        summary: title ?? "",
+        archived: null,
+        snoozed: null,
       },
+      link: {
+        url: state.url,
+      },
+      isTask: state.isTask,
     });
 
     close();

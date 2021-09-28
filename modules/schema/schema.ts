@@ -163,12 +163,6 @@ export type ItemFilter = {
   readonly isTask?: Maybe<Scalars["Boolean"]>;
 };
 
-export type ItemParams = {
-  readonly archived?: Maybe<Scalars["DateTime"]>;
-  readonly snoozed?: Maybe<Scalars["DateTime"]>;
-  readonly summary: Scalars["String"];
-};
-
 export type ItemSet = {
   readonly __typename: "ItemSet";
   readonly count: Scalars["Int"];
@@ -213,13 +207,8 @@ export type LinkDetail = {
   readonly url: Scalars["String"];
 };
 
-export type LinkDetailParams = {
-  readonly url: Scalars["String"];
-};
-
 export type Mutation = {
   readonly __typename: "Mutation";
-  readonly archiveItem?: Maybe<Item>;
   readonly changePassword?: Maybe<User>;
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
@@ -227,16 +216,12 @@ export type Mutation = {
   readonly createGoogleMailSearch: GoogleMailSearch;
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
-  readonly createLink: Item;
-  readonly createNote: Item;
   readonly createPhabricatorAccount: PhabricatorAccount;
-  readonly createTask: Item;
   readonly createUser: User;
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
   readonly deleteGithubSearch: Scalars["Boolean"];
   readonly deleteGoogleMailSearch: Scalars["Boolean"];
-  readonly deleteItem: Scalars["Boolean"];
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
@@ -244,19 +229,11 @@ export type Mutation = {
   readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
-  readonly editItem?: Maybe<Item>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly markTaskDone?: Maybe<Item>;
   readonly markTaskDue?: Maybe<Item>;
-  readonly moveItem?: Maybe<Item>;
   readonly setTaskController?: Maybe<Item>;
-  readonly snoozeItem?: Maybe<Item>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
-};
-
-export type MutationArchiveItemArgs = {
-  archived?: Maybe<Scalars["DateTime"]>;
-  id: Scalars["ID"];
 };
 
 export type MutationChangePasswordArgs = {
@@ -292,27 +269,8 @@ export type MutationCreateJiraSearchArgs = {
   params: JiraSearchParams;
 };
 
-export type MutationCreateLinkArgs = {
-  detail: LinkDetailParams;
-  isTask: Scalars["Boolean"];
-  item: ItemParams;
-  section?: Maybe<Scalars["ID"]>;
-};
-
-export type MutationCreateNoteArgs = {
-  detail: NoteDetailParams;
-  isTask: Scalars["Boolean"];
-  item: ItemParams;
-  section?: Maybe<Scalars["ID"]>;
-};
-
 export type MutationCreatePhabricatorAccountArgs = {
   params: CreatePhabricatorAccountParams;
-};
-
-export type MutationCreateTaskArgs = {
-  item: ItemParams;
-  section?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationCreateUserArgs = {
@@ -334,10 +292,6 @@ export type MutationDeleteGithubSearchArgs = {
 };
 
 export type MutationDeleteGoogleMailSearchArgs = {
-  id: Scalars["ID"];
-};
-
-export type MutationDeleteItemArgs = {
   id: Scalars["ID"];
 };
 
@@ -372,11 +326,6 @@ export type MutationEditGoogleMailSearchArgs = {
   params: GoogleMailSearchParams;
 };
 
-export type MutationEditItemArgs = {
-  id: Scalars["ID"];
-  item: ItemParams;
-};
-
 export type MutationEditJiraSearchArgs = {
   params: JiraSearchParams;
   search: Scalars["ID"];
@@ -392,20 +341,9 @@ export type MutationMarkTaskDueArgs = {
   id: Scalars["ID"];
 };
 
-export type MutationMoveItemArgs = {
-  before?: Maybe<Scalars["ID"]>;
-  id: Scalars["ID"];
-  section?: Maybe<Scalars["ID"]>;
-};
-
 export type MutationSetTaskControllerArgs = {
   controller?: Maybe<Scalars["TaskController"]>;
   id: Scalars["ID"];
-};
-
-export type MutationSnoozeItemArgs = {
-  id: Scalars["ID"];
-  snoozed?: Maybe<Scalars["DateTime"]>;
 };
 
 export type MutationUpdatePhabricatorAccountArgs = {
@@ -415,10 +353,6 @@ export type MutationUpdatePhabricatorAccountArgs = {
 
 export type NoteDetail = {
   readonly __typename: "NoteDetail";
-  readonly note: Scalars["String"];
-};
-
-export type NoteDetailParams = {
   readonly note: Scalars["String"];
 };
 
@@ -507,11 +441,6 @@ export type ServiceList = {
 export type TaskInfo = {
   readonly __typename: "TaskInfo";
   readonly controller: Scalars["TaskController"];
-  readonly done?: Maybe<Scalars["DateTime"]>;
-  readonly due?: Maybe<Scalars["DateTime"]>;
-};
-
-export type TaskInfoParams = {
   readonly done?: Maybe<Scalars["DateTime"]>;
   readonly due?: Maybe<Scalars["DateTime"]>;
 };

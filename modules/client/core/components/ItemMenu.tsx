@@ -14,19 +14,14 @@ import {
   useBoundCallback,
   ReactMemo,
   Menu,
+  mutationHook,
+  api,
 } from "#client/utils";
 import type { ReactResult } from "#client/utils";
 
 import TaskDialog from "../dialogs/Task";
 import type { Item } from "../schema";
-import {
-  useDeleteItemMutation,
-  refetchQueriesForItem,
-  isNoteItem,
-  isFileItem,
-  isLinkItem,
-  isServiceItem,
-} from "../schema";
+import { isNoteItem, isFileItem, isLinkItem, isServiceItem } from "../schema";
 import { DueItemItems, DueItems } from "./DueMenu";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
@@ -50,6 +45,11 @@ interface ItemMenuProps {
   item: Item;
 }
 
+const useDeleteItemMutation = mutationHook(api.item.deleteItem, {
+  // TODO
+  refreshTokens: [],
+});
+
 const ItemMenu = ReactMemo(function ItemMenu({
   item,
   state,
@@ -70,16 +70,11 @@ const ItemMenu = ReactMemo(function ItemMenu({
 
   let [editDialogOpen, openEditDialog, closeEditDialog] = useBoolState();
 
-  let [deleteItemMutation] = useDeleteItemMutation({
-    variables: {
-      id: item.id,
-    },
-    refetchQueries: refetchQueriesForItem(item),
-  });
+  let [deleteItemMutation] = useDeleteItemMutation();
 
   let deleteItem = useCallback(
-    () => deleteItemMutation(),
-    [deleteItemMutation],
+    () => deleteItemMutation({ id: item.id }),
+    [deleteItemMutation, item.id],
   );
 
   let isCurrentlyListed = isServiceItem(item)

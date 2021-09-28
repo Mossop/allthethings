@@ -1,4 +1,4 @@
-import type { GoogleAccount, GoogleMailSearch } from "#schema";
+import type { GoogleAccount, GoogleMailSearch } from "../../../schema";
 import type { FileFields, ThreadFields } from "#services/google/schema";
 import type { GraphQLType } from "#utils";
 
