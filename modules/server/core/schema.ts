@@ -134,7 +134,6 @@ export type DirectiveResolverFn<
 export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   Context: ResolverTypeWrapper<Context>;
-  ContextParams: Schema.ContextParams;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   FileDetail: ResolverTypeWrapper<FileDetail>;
@@ -174,7 +173,6 @@ export type ResolversTypes = {
 export type ResolversParentTypes = {
   Boolean: Schema.Scalars["Boolean"];
   Context: Context;
-  ContextParams: Schema.ContextParams;
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   FileDetail: FileDetail;
@@ -354,12 +352,6 @@ export type MutationResolvers<
       "currentPassword" | "newPassword"
     >
   >;
-  createContext: Resolver<
-    ResolversTypes["Context"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateContextArgs, "params">
-  >;
   createLink: Resolver<
     ResolversTypes["Item"],
     ParentType,
@@ -390,12 +382,6 @@ export type MutationResolvers<
     ContextType,
     RequireFields<Schema.MutationCreateUserArgs, "email" | "password">
   >;
-  deleteContext: Resolver<
-    ResolversTypes["Boolean"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteContextArgs, "id">
-  >;
   deleteItem: Resolver<
     ResolversTypes["Boolean"],
     ParentType,
@@ -413,12 +399,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeleteUserArgs, never>
-  >;
-  editContext: Resolver<
-    Schema.Maybe<ResolversTypes["Context"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationEditContextArgs, "id" | "params">
   >;
   editItem: Resolver<
     Schema.Maybe<ResolversTypes["Item"]>,

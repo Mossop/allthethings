@@ -3,16 +3,13 @@ import { URL } from "url";
 import type {
   MutationArchiveItemArgs,
   MutationChangePasswordArgs,
-  MutationCreateContextArgs,
   MutationCreateLinkArgs,
   MutationCreateSectionArgs,
   MutationCreateTaskArgs,
   MutationCreateUserArgs,
-  MutationDeleteContextArgs,
   MutationDeleteItemArgs,
   MutationDeleteSectionArgs,
   MutationDeleteUserArgs,
-  MutationEditContextArgs,
   MutationEditItemArgs,
   MutationEditSectionArgs,
   MutationMarkTaskDoneArgs,
@@ -33,7 +30,6 @@ import {
   TaskInfo,
   LinkDetail,
   ItemHolderBase,
-  Context,
   Section,
   TaskListBase,
   Item,
@@ -44,50 +40,6 @@ import { ServiceManager } from "./services";
 import { ensureAdmin, ensureAuthed } from "./utils";
 
 const mutationResolvers: TypeResolver<MutationResolvers, GraphQLCtx> = {
-  createContext: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { params }: MutationCreateContextArgs,
-    ): Promise<Context> => {
-      return Context.create(tx, user, params);
-    },
-  ),
-
-  editContext: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id, params }: MutationEditContextArgs,
-    ): Promise<Context | null> => {
-      let context = await Context.store(tx).get(id);
-      await context.update(params);
-
-      return context;
-    },
-  ),
-
-  deleteContext: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id }: MutationDeleteContextArgs,
-    ): Promise<boolean> => {
-      let context = await Context.store(tx).get(id);
-
-      let contexts = await Context.store(tx).count({
-        userId: user.id,
-      });
-
-      if (contexts == 1) {
-        throw new Error("Cannot delete the last context.");
-      }
-
-      await context.delete();
-      return true;
-    },
-  ),
-
   createSection: ensureAuthed(
     async (
       tx: Transaction,

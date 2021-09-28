@@ -80,10 +80,6 @@ export type ContextProjectByIdArgs = {
   id: Scalars["ID"];
 };
 
-export type ContextParams = {
-  readonly name: Scalars["String"];
-};
-
 export type CreatePhabricatorAccountParams = {
   readonly apiKey: Scalars["String"];
   readonly queries: ReadonlyArray<Scalars["ID"]>;
@@ -227,7 +223,6 @@ export type Mutation = {
   readonly changePassword?: Maybe<User>;
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
-  readonly createContext: Context;
   readonly createGithubSearch: GithubSearch;
   readonly createGoogleMailSearch: GoogleMailSearch;
   readonly createJiraAccount: JiraAccount;
@@ -240,7 +235,6 @@ export type Mutation = {
   readonly createUser: User;
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
-  readonly deleteContext: Scalars["Boolean"];
   readonly deleteGithubSearch: Scalars["Boolean"];
   readonly deleteGoogleMailSearch: Scalars["Boolean"];
   readonly deleteItem: Scalars["Boolean"];
@@ -250,7 +244,6 @@ export type Mutation = {
   readonly deleteSection: Scalars["Boolean"];
   readonly deleteUser?: Maybe<Scalars["Boolean"]>;
   readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
-  readonly editContext?: Maybe<Context>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editItem?: Maybe<Item>;
@@ -282,10 +275,6 @@ export type MutationCreateBugzillaAccountArgs = {
 export type MutationCreateBugzillaSearchArgs = {
   account: Scalars["ID"];
   params: BugzillaSearchParams;
-};
-
-export type MutationCreateContextArgs = {
-  params: ContextParams;
 };
 
 export type MutationCreateGithubSearchArgs = {
@@ -350,10 +339,6 @@ export type MutationDeleteBugzillaSearchArgs = {
   search: Scalars["ID"];
 };
 
-export type MutationDeleteContextArgs = {
-  id: Scalars["ID"];
-};
-
 export type MutationDeleteGithubSearchArgs = {
   search: Scalars["ID"];
 };
@@ -389,11 +374,6 @@ export type MutationDeleteUserArgs = {
 export type MutationEditBugzillaSearchArgs = {
   params: BugzillaSearchParams;
   search: Scalars["ID"];
-};
-
-export type MutationEditContextArgs = {
-  id: Scalars["ID"];
-  params: ContextParams;
 };
 
 export type MutationEditGithubSearchArgs = {

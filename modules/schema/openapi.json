@@ -246,6 +246,27 @@
         },
         "type": "object",
         "description": "Make all properties in T optional"
+      },
+      "ContextParams": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "Partial_ContextParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
       }
     },
     "securitySchemes": {}
@@ -492,6 +513,110 @@
                 },
                 "required": [
                   "taskListId",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/context": {
+      "put": {
+        "operationId": "CreateContext",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/ContextParams"
+                  }
+                },
+                "required": [
+                  "params"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditContext",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ContextState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_ContextParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteContext",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
                   "id"
                 ],
                 "type": "object"

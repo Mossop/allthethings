@@ -28,11 +28,9 @@ import LinkDialog from "../dialogs/Link";
 import TaskDialog from "../dialogs/Task";
 import type { Inbox, TaskList, Section } from "../schema";
 import {
-  OperationNames,
   isContext,
   isInbox,
   isProject,
-  useDeleteContextMutation,
   useDeleteSectionMutation,
   refetchQueriesForSection,
   isTaskList,
@@ -54,6 +52,10 @@ interface ItemListActionsProps {
   list: Inbox | TaskList | Section;
 }
 
+const useDeleteContextMutation = mutationHook(api.context.deleteContext, {
+  refreshTokens: [api.state.getState],
+});
+
 const useDeleteProjectMutation = mutationHook(api.project.deleteProject, {
   refreshTokens: [api.state.getState],
 });
@@ -73,9 +75,7 @@ export default ReactMemo(function ItemListActions({
 
   let [deleteSection] = useDeleteSectionMutation();
   let [deleteProject] = useDeleteProjectMutation();
-  let [deleteContext] = useDeleteContextMutation({
-    refetchQueries: [OperationNames.Query.ListContextState],
-  });
+  let [deleteContext] = useDeleteContextMutation();
 
   let deleteList = useMemo(() => {
     if ((isContext(list) && list === user.defaultContext) || isInbox(list)) {
@@ -100,9 +100,7 @@ export default ReactMemo(function ItemListActions({
         });
 
         void deleteContext({
-          variables: {
-            id: list.id,
-          },
+          id: list.id,
         });
       } else {
         void deleteSection({

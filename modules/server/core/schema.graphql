@@ -123,10 +123,6 @@ type Query {
   taskList(id: ID!): TaskList
 }
 
-input ContextParams {
-  name: String!
-}
-
 input ProjectParams {
   name: String!
 }
@@ -155,10 +151,6 @@ input NoteDetailParams {
 }
 
 type Mutation {
-  createContext(params: ContextParams!): Context!
-  editContext(id: ID!, params: ContextParams!): Context
-  deleteContext(id: ID!): Boolean!
-
   createSection(taskList: ID!, before: ID, params: SectionParams!): Section!
   moveSection(id: ID!, taskList: ID!, before: ID): Section
   editSection(id: ID!, params: SectionParams!): Section

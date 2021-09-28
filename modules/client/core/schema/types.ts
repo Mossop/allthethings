@@ -205,7 +205,6 @@ export type MutationKeySpecifier = (
   | "changePassword"
   | "createBugzillaAccount"
   | "createBugzillaSearch"
-  | "createContext"
   | "createGithubSearch"
   | "createGoogleMailSearch"
   | "createJiraAccount"
@@ -218,7 +217,6 @@ export type MutationKeySpecifier = (
   | "createUser"
   | "deleteBugzillaAccount"
   | "deleteBugzillaSearch"
-  | "deleteContext"
   | "deleteGithubSearch"
   | "deleteGoogleMailSearch"
   | "deleteItem"
@@ -228,7 +226,6 @@ export type MutationKeySpecifier = (
   | "deleteSection"
   | "deleteUser"
   | "editBugzillaSearch"
-  | "editContext"
   | "editGithubSearch"
   | "editGoogleMailSearch"
   | "editItem"
@@ -248,7 +245,6 @@ export type MutationFieldPolicy = {
   changePassword?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  createContext?: FieldPolicy<any> | FieldReadFunction<any>;
   createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -261,7 +257,6 @@ export type MutationFieldPolicy = {
   createUser?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteContext?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteItem?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -271,7 +266,6 @@ export type MutationFieldPolicy = {
   deleteSection?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteUser?: FieldPolicy<any> | FieldReadFunction<any>;
   editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  editContext?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editItem?: FieldPolicy<any> | FieldReadFunction<any>;

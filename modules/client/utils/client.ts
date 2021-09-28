@@ -64,6 +64,17 @@ export interface PartialProjectParams {
   name?: string;
 }
 
+export interface ContextParams {
+  name: string;
+}
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialContextParams {
+  name?: string;
+}
+
 export type QueryParamsType = Record<string | number, any>;
 export type ResponseFormat = keyof Omit<Body, "body" | "bodyUsed">;
 
@@ -408,6 +419,57 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
         body: data,
         type: ContentType.Json,
         format: "json",
+        ...params,
+      }),
+  };
+  context = {
+    /**
+     * No description
+     *
+     * @name CreateContext
+     * @request PUT:/api/context
+     * @response `200` `ContextState` Ok
+     */
+    createContext: (data: { params: ContextParams }, params: RequestParams = {}) =>
+      this.request<ContextState, any>({
+        path: `/api/context`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditContext
+     * @request PATCH:/api/context
+     * @response `200` `ContextState` Ok
+     */
+    editContext: (data: { params: PartialContextParams; id: string }, params: RequestParams = {}) =>
+      this.request<ContextState, any>({
+        path: `/api/context`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteContext
+     * @request DELETE:/api/context
+     * @response `204` `void` No content
+     */
+    deleteContext: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/context`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
   };

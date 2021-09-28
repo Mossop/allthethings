@@ -18,12 +18,13 @@ import { HttpError, NotFoundError } from "#server/utils";
 import { decodeRelativeDateTime, map } from "#utils";
 
 import type {
-  Context,
   ContextState,
   UserState,
   ProjectState,
+  ProjectParams,
+  ContextParams,
 } from "./implementations";
-import { Project, TaskListBase, User } from "./implementations";
+import { Project, TaskListBase, User, Context } from "./implementations";
 import { ServiceManager } from "./services";
 import { Authenticated, CoreController } from "./utils";
 
@@ -206,10 +207,6 @@ export class StateController extends CoreController {
   }
 }
 
-interface ProjectParams {
-  name: string;
-}
-
 @Route("/project")
 export class ProjectController extends CoreController {
   @Authenticated(true)
@@ -275,5 +272,57 @@ export class ProjectController extends CoreController {
     let project = await Project.store(tx).get(id);
 
     await project.delete();
+  }
+}
+
+@Route("/context")
+export class ContextController extends CoreController {
+  @Authenticated(true)
+  @Put()
+  public async createContext(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { params }: { params: ContextParams },
+  ): Promise<ContextState> {
+    let context = await Context.create(tx, user, params);
+    return context.state;
+  }
+
+  @Authenticated(true)
+  @Patch()
+  public async editContext(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id, params }: { id: string; params: Partial<ContextParams> },
+  ): Promise<ContextState> {
+    let context = await Context.store(tx).get(id);
+
+    await context.update(params);
+
+    return context.state;
+  }
+
+  @Authenticated(true)
+  @Delete()
+  public async deleteContext(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    { id }: { id: string },
+  ): Promise<void> {
+    // Do this first to verify the context exists.
+    let context = await Context.store(tx).get(id);
+
+    let contexts = await Context.store(tx).count({
+      userId: user.id,
+    });
+
+    if (contexts == 1) {
+      throw new Error("Cannot delete the last context.");
+    }
+
+    await context.delete();
   }
 }

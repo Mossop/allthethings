@@ -8,6 +8,8 @@ import { MainController } from './controllers';
 import { StateController } from './controllers';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ProjectController } from './controllers';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { ContextController } from './controllers';
 import { iocContainer } from '#server/utils';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import * as KoaRouter from '@koa/router';
@@ -101,6 +103,19 @@ const models: TsoaRoute.Models = {
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_ProjectParams_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "ContextParams": {
+        "dataType": "refObject",
+        "properties": {
+            "name": {"dataType":"string","required":true},
+        },
+        "additionalProperties": false,
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Partial_ContextParams_": {
         "dataType": "refAlias",
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"}},"validators":{}},
     },
@@ -319,6 +334,84 @@ export function RegisterRoutes(router: KoaRouter) {
             }
 
             const promise = controller.deleteProject.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.put('/context',
+            async function ContextController_createContext(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"ContextParams","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ContextController>(ContextController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.createContext.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/context',
+            async function ContextController_editContext(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"Partial_ContextParams_","required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ContextController>(ContextController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.editContext.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.delete('/context',
+            async function ContextController_deleteContext(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ContextController>(ContextController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.deleteContext.apply(controller, validatedArgs as any);
             return promiseHandler(controller, promise, context, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

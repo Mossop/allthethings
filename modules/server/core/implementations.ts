@@ -15,9 +15,7 @@ import {
 import { TaskController } from "#schema";
 import type {
   ContextItemsArgs,
-  ContextParams,
   ContextProjectByIdArgs,
-  ProjectParams,
   SectionParams,
   TaskInfoParams,
   TaskListItemsArgs,
@@ -302,6 +300,8 @@ export abstract class TaskListBase<
   }
 }
 
+export type ContextParams = Omit<ContextEntity, "id" | "userId" | "stub">;
+
 export interface ContextState {
   __typename: "Context";
   id: string;
@@ -389,6 +389,11 @@ export interface ProjectState {
   stub: string;
   name: string;
 }
+
+export type ProjectParams = Omit<
+  ProjectEntity,
+  "id" | "contextId" | "userId" | "parentId" | "stub"
+>;
 
 export class Project
   extends TaskListBase<ProjectEntity>

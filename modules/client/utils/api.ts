@@ -11,7 +11,7 @@ import type { Token } from "./refresh";
 import { addRefreshable, refresh, removeRefreshable } from "./refresh";
 
 export type ApiMethod<A extends unknown[], D> = (
-  ...args: [...A, RequestParams]
+  ...args: [...A, RequestParams | undefined]
 ) => Promise<HttpResponse<D, Error | undefined | null>>;
 
 export type QueryOptions = Omit<

@@ -20,11 +20,7 @@ import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { ItemList } from "../components/SectionList";
 import type { Context, Project, Section } from "../schema";
-import {
-  isProject,
-  useEditContextMutation,
-  useTaskListContents,
-} from "../schema";
+import { isProject, useTaskListContents } from "../schema";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { Filters } from "../utils/filter";
@@ -71,6 +67,10 @@ interface ContextHeaderProps {
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
+const useEditContextMutation = mutationHook(api.context.editContext, {
+  refreshTokens: [api.state.getState],
+});
+
 const ContextHeader = ReactMemo(
   forwardRef(function TasksHeader(
     { context, filter, setFilter }: ContextHeaderProps,
@@ -83,11 +83,9 @@ const ContextHeader = ReactMemo(
     let changeContextName = useCallback(
       (name: string) => {
         void editContext({
-          variables: {
-            id: context.id,
-            params: {
-              name,
-            },
+          id: context.id,
+          params: {
+            name,
           },
         });
       },

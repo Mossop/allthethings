@@ -7,15 +7,20 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
+  mutationHook,
+  api,
 } from "#client/utils";
 
-import { useCreateContextMutation, OperationNames } from "../schema";
 import GlobalState from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
   onClosed: () => void;
 }
+
+const useCreateContextMutation = mutationHook(api.context.createContext, {
+  refreshTokens: [api.state.getState],
+});
 
 export default ReactMemo(function CreateContextDialog({
   onClosed,
@@ -26,21 +31,16 @@ export default ReactMemo(function CreateContextDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [createContextMutation, { loading, error }] = useCreateContextMutation({
-    variables: {
-      params: state,
-    },
-    refetchQueries: [OperationNames.Query.ListContextState],
-  });
+  let [createContextMutation, { loading, error }] = useCreateContextMutation();
 
   let createContext = useCallback(async () => {
-    let { data } = await createContextMutation();
+    let data = await createContextMutation({ params: state });
     let user = GlobalState.user;
     if (!data || !user) {
       throw new Error("Invalid state.");
     }
 
-    let newContext = user.contexts.get(data.createContext.id);
+    let newContext = user.contexts.get(data.id);
     if (!newContext) {
       throw new Error("New context not present in user state.");
     }
@@ -50,7 +50,9 @@ export default ReactMemo(function CreateContextDialog({
       context: newContext,
       taskList: newContext,
     });
-  }, [createContextMutation]);
+
+    close();
+  }, [createContextMutation, state, close]);
 
   return (
     <Dialog
