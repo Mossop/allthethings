@@ -287,15 +287,6 @@ export type PhabricatorQueryFieldPolicy = {
   name?: FieldPolicy<any> | FieldReadFunction<any>;
   queryId?: FieldPolicy<any> | FieldReadFunction<any>;
 };
-export type ProblemKeySpecifier = (
-  | "description"
-  | "url"
-  | ProblemKeySpecifier
-)[];
-export type ProblemFieldPolicy = {
-  description?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-};
 export type ProjectKeySpecifier = (
   | "id"
   | "items"
@@ -318,7 +309,6 @@ export type ProjectFieldPolicy = {
 export type QueryKeySpecifier = (
   | "githubLoginUrl"
   | "googleLoginUrl"
-  | "problems"
   | "schemaVersion"
   | "taskList"
   | "user"
@@ -328,7 +318,6 @@ export type QueryKeySpecifier = (
 export type QueryFieldPolicy = {
   githubLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
-  problems?: FieldPolicy<any> | FieldReadFunction<any>;
   schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>;
   taskList?: FieldPolicy<any> | FieldReadFunction<any>;
   user?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -540,13 +529,6 @@ export type StrictTypedTypePolicies = {
       | PhabricatorQueryKeySpecifier
       | (() => undefined | PhabricatorQueryKeySpecifier);
     fields?: PhabricatorQueryFieldPolicy;
-  };
-  Problem?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | ProblemKeySpecifier
-      | (() => undefined | ProblemKeySpecifier);
-    fields?: ProblemFieldPolicy;
   };
   Project?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:

@@ -1,3 +1,8 @@
+export interface Problem {
+  url: string;
+  description: string;
+}
+
 export enum TaskController {
   Manual = "manual",
   ServiceList = "list",

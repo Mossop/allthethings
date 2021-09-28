@@ -5,7 +5,7 @@ import type {
   GraphQLScalarTypeConfig,
 } from "graphql";
 import * as Schema from "../../schema";
-import { Root, Problem } from "#server/utils";
+import { Root } from "#server/utils";
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -117,7 +117,6 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
-  Problem: ResolverTypeWrapper<Problem>;
   Query: ResolverTypeWrapper<Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
@@ -129,7 +128,6 @@ export type ResolversParentTypes = {
   Boolean: Schema.Scalars["Boolean"];
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
-  Problem: Problem;
   Query: Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
@@ -146,24 +144,10 @@ export interface DateTimeOffsetScalarConfig
   name: "DateTimeOffset";
 }
 
-export type ProblemResolvers<
-  ContextType = any,
-  ParentType extends ResolversParentTypes["Problem"] = ResolversParentTypes["Problem"],
-> = {
-  description: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  url: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
-
 export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
 > = {
-  problems: Resolver<
-    ReadonlyArray<ResolversTypes["Problem"]>,
-    ParentType,
-    ContextType
-  >;
   schemaVersion: Resolver<ResolversTypes["String"], ParentType, ContextType>;
 };
 
@@ -180,7 +164,6 @@ export interface TaskControllerScalarConfig
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
   DateTimeOffset: GraphQLScalarType;
-  Problem: ProblemResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
   TaskController: GraphQLScalarType;

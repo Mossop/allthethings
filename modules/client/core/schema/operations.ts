@@ -236,55 +236,6 @@ export type ChangePasswordMutation = {
   }>;
 };
 
-export type ListContextStateQueryVariables = Schema.Exact<{
-  dueBefore: Schema.Scalars["RelativeDateTime"];
-}>;
-
-export type ListContextStateQuery = {
-  readonly __typename: "Query";
-  readonly schemaVersion: string;
-  readonly user: Schema.Maybe<{
-    readonly __typename: "User";
-    readonly id: string;
-    readonly email: string;
-    readonly isAdmin: boolean;
-    readonly inbox: { readonly __typename: "ItemSet"; readonly count: number };
-    readonly contexts: ReadonlyArray<{
-      readonly __typename: "Context";
-      readonly id: string;
-      readonly stub: string;
-      readonly name: string;
-      readonly dueTasks: {
-        readonly __typename: "ItemSet";
-        readonly count: number;
-      };
-      readonly subprojects: ReadonlyArray<{
-        readonly __typename: "Project";
-        readonly id: string;
-      }>;
-      readonly projects: ReadonlyArray<{
-        readonly __typename: "Project";
-        readonly id: string;
-        readonly stub: string;
-        readonly name: string;
-        readonly dueTasks: {
-          readonly __typename: "ItemSet";
-          readonly count: number;
-        };
-        readonly subprojects: ReadonlyArray<{
-          readonly __typename: "Project";
-          readonly id: string;
-        }>;
-      }>;
-    }>;
-  }>;
-  readonly problems: ReadonlyArray<{
-    readonly __typename: "Problem";
-    readonly description: string;
-    readonly url: string;
-  }>;
-};
-
 export type ListUsersQueryVariables = Schema.Exact<{ [key: string]: never }>;
 
 export type ListUsersQuery = {
@@ -564,7 +515,6 @@ export type ListTaskListQuery = {
 
 export const OperationNames = {
   Query: {
-    ListContextState: "ListContextState",
     ListUsers: "ListUsers",
     ListInbox: "ListInbox",
     ListTaskList: "ListTaskList",
@@ -932,109 +882,6 @@ export type ChangePasswordMutationOptions = Apollo.BaseMutationOptions<
   ChangePasswordMutation,
   ChangePasswordMutationVariables
 >;
-export const ListContextStateDocument = gql`
-  query ListContextState($dueBefore: RelativeDateTime!) {
-    user {
-      id
-      email
-      isAdmin
-      inbox(filter: { isArchived: false, isSnoozed: false, isPending: true }) {
-        count
-      }
-      contexts {
-        id
-        stub
-        name
-        dueTasks: items(
-          filter: { isArchived: false, isSnoozed: false, dueBefore: $dueBefore }
-        ) {
-          count
-        }
-        subprojects {
-          id
-        }
-        projects {
-          id
-          stub
-          name
-          dueTasks: items(
-            filter: {
-              isArchived: false
-              isSnoozed: false
-              dueBefore: $dueBefore
-            }
-          ) {
-            count
-          }
-          subprojects {
-            id
-          }
-        }
-      }
-    }
-    problems {
-      description
-      url
-    }
-    schemaVersion
-  }
-`;
-
-/**
- * __useListContextStateQuery__
- *
- * To run a query within a React component, call `useListContextStateQuery` and pass it any options that fit your needs.
- * When your component renders, `useListContextStateQuery` returns an object from Apollo Client that contains loading, error, and data properties
- * you can use to render your UI.
- *
- * @param baseOptions options that will be passed into the query, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options;
- *
- * @example
- * const { data, loading, error } = useListContextStateQuery({
- *   variables: {
- *      dueBefore: // value for 'dueBefore'
- *   },
- * });
- */
-export function useListContextStateQuery(
-  baseOptions: Apollo.QueryHookOptions<
-    ListContextStateQuery,
-    ListContextStateQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useQuery<ListContextStateQuery, ListContextStateQueryVariables>(
-    ListContextStateDocument,
-    options,
-  );
-}
-export function useListContextStateLazyQuery(
-  baseOptions?: Apollo.LazyQueryHookOptions<
-    ListContextStateQuery,
-    ListContextStateQueryVariables
-  >,
-) {
-  const options = { ...defaultOptions, ...baseOptions };
-  return Apollo.useLazyQuery<
-    ListContextStateQuery,
-    ListContextStateQueryVariables
-  >(ListContextStateDocument, options);
-}
-export type ListContextStateQueryHookResult = ReturnType<
-  typeof useListContextStateQuery
->;
-export type ListContextStateLazyQueryHookResult = ReturnType<
-  typeof useListContextStateLazyQuery
->;
-export type ListContextStateQueryResult = Apollo.QueryResult<
-  ListContextStateQuery,
-  ListContextStateQueryVariables
->;
-export function refetchListContextStateQuery(
-  variables?: ListContextStateQueryVariables,
-) {
-  return { query: ListContextStateDocument, variables: variables };
-}
 export const ListUsersDocument = gql`
   query ListUsers {
     users {

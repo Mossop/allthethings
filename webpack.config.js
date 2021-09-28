@@ -67,11 +67,13 @@ function buildExternals() {
     };
   });
 }
-let baseSchema = fs.readFileSync(require.resolve("#schema/schema.graphql"), {
-  encoding: "utf8",
-});
+let baseSchema = JSON.parse(
+  fs.readFileSync(path.join(__dirname, "modules", "schema", "openapi.json"), {
+    encoding: "utf8",
+  }),
+);
 let hasher = createHash("sha256");
-hasher.update(baseSchema);
+hasher.update(JSON.stringify(baseSchema));
 let schemaVersion = `"${hasher.digest("hex")}"`;
 
 module.exports = {

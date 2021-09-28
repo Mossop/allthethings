@@ -1,4 +1,3 @@
-import { createHash } from "crypto";
 import { promises as fs } from "fs";
 
 import { mergeResolvers } from "@graphql-tools/merge";
@@ -101,9 +100,6 @@ export async function createGqlServer(): Promise<ApolloServer> {
       encoding: "utf8",
     },
   );
-  let hasher = createHash("sha256");
-  hasher.update(baseSchema);
-  let schemaVersion = hasher.digest("hex");
 
   let serviceResolvers = await ServiceManager.getServiceResolvers();
 
@@ -116,7 +112,7 @@ export async function createGqlServer(): Promise<ApolloServer> {
 
     // @ts-ignore
     resolvers: mergeResolvers([
-      initResolvers(schemaVersion),
+      initResolvers,
       coreResolvers,
       // @ts-ignore
       ...serviceResolvers,

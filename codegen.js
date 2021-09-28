@@ -54,7 +54,7 @@ const resolverPlugins = (schemaPath, mappers = {}) => ({
     content: [
       "/* eslint-disable */",
       `import * as Schema from '${schemaPath}';`,
-      "import { Root, Problem } from '#server/utils';",
+      "import { Root } from '#server/utils';",
     ],
   },
 });
@@ -153,9 +153,7 @@ module.exports = {
       ],
 
       plugins: {
-        ...resolverPlugins("../../schema", {
-          Problem: "Problem",
-        }),
+        ...resolverPlugins("../../schema"),
       },
     },
 

@@ -1,3 +1,4 @@
+import { createHash } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 import { URL } from "url";
@@ -14,7 +15,7 @@ import {
   Delete,
 } from "@tsoa/runtime";
 
-import type { Transaction } from "#server/utils";
+import type { Problem, Transaction } from "#server/utils";
 import {
   bestIcon,
   loadPageInfo,
@@ -24,6 +25,7 @@ import {
 import { decodeRelativeDateTime, map } from "#utils";
 
 import { ItemHolderBase } from ".";
+import schema from "../../schema/openapi.json";
 import { ItemType } from "./entities";
 import type {
   ContextState,
@@ -70,6 +72,10 @@ interface LoginParams {
   email: string;
   password: string;
 }
+
+let hasher = createHash("sha256");
+hasher.update(JSON.stringify(schema));
+let schemaVersion = hasher.digest("hex");
 
 @Route()
 export class MainController extends CoreController {
@@ -142,15 +148,10 @@ type ServerUserState = UserState & {
   contexts: ServerContextState[];
 };
 
-export interface ServerProblem {
-  url: string;
-  description: string;
-}
-
 export interface ServerState {
   user: ServerUserState | null;
 
-  problems: ServerProblem[];
+  problems: Problem[];
 
   schemaVersion: string;
 }
@@ -225,7 +226,7 @@ export class StateController extends CoreController {
     return {
       user,
       problems: await ServiceManager.listProblems(tx, this.userId),
-      schemaVersion: "",
+      schemaVersion,
     };
   }
 }

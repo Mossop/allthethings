@@ -6,7 +6,7 @@ import type {
 } from "graphql";
 import type { Account, Search } from "./implementations";
 import * as Schema from "../../../schema";
-import { Root, Problem } from "#server/utils";
+import { Root } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];

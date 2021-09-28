@@ -77,16 +77,16 @@ class GlobalStateManager {
       view: urlToView(userState.user, urlForLocation(history.location)),
     });
 
-    // if (data.schemaVersion !== SCHEMA_VERSION) {
-    //   this.problems.set([
-    //     {
-    //       description: "This page is outdated and must be reloaded.",
-    //       url: "javascript:window.location.reload()",
-    //     },
-    //   ]);
-    // } else {
-    this.problems.set(problems);
-    // }
+    if (data.schemaVersion !== SCHEMA_VERSION) {
+      this.problems.set([
+        {
+          description: "This page is outdated and must be reloaded.",
+          url: "javascript:window.location.reload()",
+        },
+      ]);
+    } else {
+      this.problems.set(problems);
+    }
   }
 
   private onError(error: Error): void {

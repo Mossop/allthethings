@@ -373,12 +373,6 @@ export type PhabricatorQuery = {
   readonly queryId: Scalars["ID"];
 };
 
-export type Problem = {
-  readonly __typename: "Problem";
-  readonly description: Scalars["String"];
-  readonly url: Scalars["String"];
-};
-
 export type Project = TaskList & {
   readonly __typename: "Project";
   readonly id: Scalars["ID"];
@@ -398,7 +392,6 @@ export type Query = {
   readonly __typename: "Query";
   readonly githubLoginUrl: Scalars["String"];
   readonly googleLoginUrl: Scalars["String"];
-  readonly problems: ReadonlyArray<Problem>;
   readonly schemaVersion: Scalars["String"];
   readonly taskList?: Maybe<Context | Project>;
   readonly user?: Maybe<User>;

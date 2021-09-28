@@ -2,18 +2,14 @@ import type { RefetchQueries } from "#client/utils";
 
 import type { Inbox, TaskList } from "./contextState";
 import { isInbox } from "./contextState";
-import {
-  OperationNames,
-  refetchListInboxQuery,
-  refetchListTaskListQuery,
-} from "./operations";
+import { refetchListInboxQuery, refetchListTaskListQuery } from "./operations";
 import type { Item, Section } from "./taskListState";
 import { sectionTaskList } from "./taskListState";
 
 export function refetchQueriesForSection(
   section: Inbox | Section | TaskList,
 ): RefetchQueries {
-  let refetchQueries: RefetchQueries = [OperationNames.Query.ListContextState];
+  let refetchQueries: RefetchQueries = [];
 
   let taskList = sectionTaskList(section);
 

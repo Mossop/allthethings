@@ -20,7 +20,7 @@ import type {
   ItemSet,
 } from "./implementations";
 import * as Schema from "../../schema";
-import { Root, Problem } from "#server/utils";
+import { Root } from "#server/utils";
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } & { [P in K]-?: NonNullable<T[P]> };
