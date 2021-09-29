@@ -4,6 +4,10 @@ import { DateTime } from "luxon";
 import type { ReactElement } from "react";
 import { useMemo, useState, useCallback } from "react";
 
+import type {
+  GoogleAccountState,
+  GoogleMailSearchState,
+} from "../../../../client/utils";
 import {
   TextFieldInput,
   Dialog,
@@ -14,9 +18,8 @@ import {
   DateTimeOffsetDialog,
   Styles,
 } from "../../../../client/utils";
-import type { GoogleAccount, GoogleMailSearch } from "../../../../schema";
 import type { DateTimeOffset } from "../../../../utils";
-import { addOffset } from "../../../../utils";
+import { decodeRelativeDateTime, addOffset } from "../../../../utils";
 import {
   useCreateGoogleMailSearchMutation,
   useEditGoogleMailSearchMutation,
@@ -35,8 +38,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchDialogProps {
-  account: GoogleAccount;
-  search?: GoogleMailSearch;
+  account: GoogleAccountState;
+  search?: GoogleMailSearchState;
   onClosed: () => void;
 }
 
@@ -58,7 +61,9 @@ export default function SearchDialog({
       return {
         name: search.name,
         query: search.query,
-        dueOffset: search.dueOffset ?? null,
+        dueOffset: search.dueOffset
+          ? (decodeRelativeDateTime(search.dueOffset) as DateTimeOffset)
+          : null,
       };
     }
 

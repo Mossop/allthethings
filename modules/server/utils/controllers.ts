@@ -10,12 +10,13 @@ export interface WebContext {
   startTransaction(writable: boolean): Promise<Transaction>;
 }
 
-export type WebServerContext = WebContext &
-  Koa.DefaultContext &
-  Koa.ExtendableContext;
+export type MiddlewareContext<Ctx extends WebContext> =
+  Koa.ParameterizedContext<Koa.DefaultState, Ctx & Koa.DefaultContext>;
 
-export class RequestController extends Controller {
-  public constructor(protected readonly context: WebServerContext) {
+export class RequestController<
+  Ctx extends WebContext = WebContext,
+> extends Controller {
+  public constructor(protected readonly context: MiddlewareContext<Ctx>) {
     super();
   }
 
@@ -26,8 +27,8 @@ export class RequestController extends Controller {
 
 export function iocContainer(request: Koa.Request): IocContainer {
   return {
-    get<T>(controller: new (request: WebServerContext) => T): T {
-      return new controller(request.ctx as unknown as WebServerContext);
+    get<T>(controller: new (ctx: unknown) => T): T {
+      return new controller(request.ctx);
     },
   };
 }

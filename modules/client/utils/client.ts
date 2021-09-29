@@ -12,6 +12,37 @@
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickGoogleAccountEntityExcludeKeysUserIdOrAccessTokenOrRefreshTokenOrExpiry {
+  id: string;
+  email: string;
+  avatar: string | null;
+}
+
+export type OmitGoogleAccountEntityUserIdOrAccessTokenOrRefreshTokenOrExpiry =
+  PickGoogleAccountEntityExcludeKeysUserIdOrAccessTokenOrRefreshTokenOrExpiry;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickGoogleMailSearchEntityExcludeKeysAccountId {
+  id: string;
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitGoogleMailSearchEntityAccountId = PickGoogleMailSearchEntityExcludeKeysAccountId;
+
+export type GoogleMailSearchState = OmitGoogleMailSearchEntityAccountId & { url: string };
+
+export type GoogleAccountState = OmitGoogleAccountEntityUserIdOrAccessTokenOrRefreshTokenOrExpiry & {
+  mailSearches: GoogleMailSearchState[];
+  loginUrl: string;
+};
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickUserEntityExcludeKeysPassword {
   email: string;
   isAdmin: boolean;
@@ -606,6 +637,37 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title No title
  */
 export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<SecurityDataType> {
+  google = {
+    /**
+     * No description
+     *
+     * @name GetLoginUrl
+     * @request GET:/service/google/loginUrl
+     * @response `200` `DateTime` Ok
+     */
+    getLoginUrl: (params: RequestParams = {}) =>
+      this.request<DateTime, any>({
+        path: `/service/google/loginUrl`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name ListAccounts
+     * @request GET:/service/google/accounts
+     * @response `200` `(GoogleAccountState)[]` Ok
+     */
+    listAccounts: (params: RequestParams = {}) =>
+      this.request<GoogleAccountState[], any>({
+        path: `/service/google/accounts`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
   page = {
     /**
      * No description

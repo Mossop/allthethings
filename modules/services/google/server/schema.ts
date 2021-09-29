@@ -6,7 +6,6 @@ import type {
 } from "graphql";
 import type { Account, MailSearch } from "./implementations";
 import * as Schema from "../../../schema";
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } & { [P in K]-?: NonNullable<T[P]> };
@@ -126,14 +125,8 @@ export type ResolversTypes = {
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
   Mutation: ResolverTypeWrapper<Schema.Root>;
-  Query: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
-  User: ResolverTypeWrapper<
-    Omit<Schema.User, "googleAccounts"> & {
-      googleAccounts: ReadonlyArray<ResolversTypes["GoogleAccount"]>;
-    }
-  >;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -146,12 +139,8 @@ export type ResolversParentTypes = {
   GoogleMailSearchParams: Schema.GoogleMailSearchParams;
   ID: Schema.Scalars["ID"];
   Mutation: Schema.Root;
-  Query: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
-  User: Omit<Schema.User, "googleAccounts"> & {
-    googleAccounts: ReadonlyArray<ResolversParentTypes["GoogleAccount"]>;
-  };
 };
 
 export interface DateTimeScalarConfig
@@ -227,29 +216,10 @@ export type MutationResolvers<
   >;
 };
 
-export type QueryResolvers<
-  ContextType = any,
-  ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
-> = {
-  googleLoginUrl: Resolver<ResolversTypes["String"], ParentType, ContextType>;
-};
-
 export interface RelativeDateTimeScalarConfig
   extends GraphQLScalarTypeConfig<ResolversTypes["RelativeDateTime"], any> {
   name: "RelativeDateTime";
 }
-
-export type UserResolvers<
-  ContextType = any,
-  ParentType extends ResolversParentTypes["User"] = ResolversParentTypes["User"],
-> = {
-  googleAccounts: Resolver<
-    ReadonlyArray<ResolversTypes["GoogleAccount"]>,
-    ParentType,
-    ContextType
-  >;
-  __isTypeOf?: IsTypeOfResolverFn<ParentType, ContextType>;
-};
 
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
@@ -257,7 +227,5 @@ export type Resolvers<ContextType = any> = {
   GoogleAccount: GoogleAccountResolvers<ContextType>;
   GoogleMailSearch: GoogleMailSearchResolvers<ContextType>;
   Mutation: MutationResolvers<ContextType>;
-  Query: QueryResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
-  User: UserResolvers<ContextType>;
 };

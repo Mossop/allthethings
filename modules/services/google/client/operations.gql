@@ -1,26 +1,3 @@
-query ListGoogleAccounts {
-  user {
-    id
-    googleAccounts {
-      id
-      email
-      avatar
-      loginUrl
-      mailSearches {
-        id
-        name
-        query
-        dueOffset
-        url
-      }
-    }
-  }
-}
-
-query RequestLoginUrl {
-  googleLoginUrl
-}
-
 mutation CreateGoogleMailSearch(
   $account: ID!
   $params: GoogleMailSearchParams!

@@ -271,7 +271,6 @@ export type PhabricatorQuery = {
 export type Query = {
   readonly __typename: "Query";
   readonly githubLoginUrl: Scalars["String"];
-  readonly googleLoginUrl: Scalars["String"];
   readonly schemaVersion: Scalars["String"];
   readonly user?: Maybe<User>;
 };
@@ -287,7 +286,6 @@ export type User = {
   readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
   readonly email: Scalars["String"];
   readonly githubAccounts: ReadonlyArray<GithubAccount>;
-  readonly googleAccounts: ReadonlyArray<GoogleAccount>;
   readonly id: Scalars["ID"];
   readonly isAdmin: Scalars["Boolean"];
   readonly jiraAccounts: ReadonlyArray<JiraAccount>;

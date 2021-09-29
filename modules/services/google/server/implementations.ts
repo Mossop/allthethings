@@ -22,7 +22,7 @@ import {
   BaseList,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { offsetFromJson } from "../../../utils";
+import { map, encodeRelativeDateTime, offsetFromJson } from "../../../utils";
 import type { FileFields, ThreadFields } from "../schema";
 import type { GoogleAPIFile, GoogleAPILabel } from "./api";
 import { encodeWebId, getAccountInfo, decodeWebId, GoogleApi } from "./api";
@@ -40,6 +40,14 @@ import type {
 } from "./schema";
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
+
+export type GoogleAccountState = Omit<
+  GoogleAccountEntity,
+  "userId" | "accessToken" | "refreshToken" | "expiry"
+> & {
+  loginUrl: string;
+  mailSearches: GoogleMailSearchState[];
+};
 
 export class Account
   extends BaseAccount<GoogleAccountEntity>
@@ -63,6 +71,19 @@ export class Account
 
   public get loginUrl(): string {
     return this.authClient.generateAuthUrl();
+  }
+
+  public async state(): Promise<GoogleAccountState> {
+    return {
+      id: this.id,
+      email: this.email,
+      avatar: this.avatar,
+      loginUrl: this.loginUrl,
+      mailSearches: await map(
+        this.mailSearches(),
+        (search: MailSearch): Promise<GoogleMailSearchState> => search.state(),
+      ),
+    };
   }
 
   public async items(): Promise<(Thread | File)[]> {
@@ -216,6 +237,13 @@ export class Account
   }
 }
 
+export type GoogleMailSearchState = Omit<
+  GoogleMailSearchEntity,
+  "accountId"
+> & {
+  url: string;
+};
+
 export class MailSearch
   extends BaseList<GoogleMailSearchEntity, gmail_v1.Schema$Thread[]>
   implements ResolverImpl<GoogleMailSearchResolvers>
@@ -238,6 +266,16 @@ export class MailSearch
 
   public account(): Promise<Account> {
     return Account.store(this.tx).get(this.entity.accountId);
+  }
+
+  public async state(): Promise<GoogleMailSearchState> {
+    return {
+      id: this.id,
+      url: await this.url(),
+      name: this.name,
+      query: this.query,
+      dueOffset: this.dueOffset ? encodeRelativeDateTime(this.dueOffset) : null,
+    };
   }
 
   public override async url(): Promise<string> {

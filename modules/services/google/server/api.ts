@@ -7,7 +7,6 @@ import { google, Auth } from "googleapis";
 import { GaxiosError } from "googleapis-common";
 
 import { GoogleService } from ".";
-import type { ServiceTransaction } from "../../../server/utils";
 import type { GoogleAccountEntity } from "./entities";
 import type { Account } from "./implementations";
 
@@ -127,11 +126,8 @@ export class GoogleApi {
     });
   }
 
-  public static generateAuthUrl(
-    tx: ServiceTransaction,
-    userId: string,
-  ): string {
-    let client = GoogleApi.createAuthClient(tx.serviceUrl);
+  public static generateAuthUrl(serviceUrl: URL, userId: string): string {
+    let client = GoogleApi.createAuthClient(serviceUrl);
 
     return client.generateAuthUrl({
       // eslint-disable-next-line @typescript-eslint/naming-convention

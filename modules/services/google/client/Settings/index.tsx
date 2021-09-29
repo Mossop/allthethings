@@ -1,22 +1,22 @@
-import type { ReactResult } from "../../../../client/utils";
-import { SettingsPageItem } from "../../../../client/utils";
-import type { GoogleAccount } from "../../../../schema";
+import type { GoogleAccountState, ReactResult } from "../../../../client/utils";
+import { api, queryHook, SettingsPageItem } from "../../../../client/utils";
 import Google from "../logos/Google";
-import {
-  useListGoogleAccountsQuery,
-  useRequestLoginUrlQuery,
-} from "../operations";
 import AccountSettings from "./Account";
 
+const useLoginUrlQuery = queryHook(api.google.getLoginUrl, {
+  format: "text",
+});
+
+const useListGoogleAccountsQuery = queryHook(api.google.listAccounts);
+
 export function SettingsPages(): ReactResult {
-  let { data: loginUrlData } = useRequestLoginUrlQuery();
-  let loginUrl = loginUrlData?.googleLoginUrl;
-  let { data } = useListGoogleAccountsQuery();
-  let accounts = data?.user?.googleAccounts ?? [];
+  let [loginUrl] = useLoginUrlQuery();
+
+  let [accounts = []] = useListGoogleAccountsQuery();
 
   return (
     <>
-      {accounts.map((account: GoogleAccount) => (
+      {accounts.map((account: GoogleAccountState) => (
         <SettingsPageItem
           key={account.id}
           serviceId="google"
@@ -26,7 +26,7 @@ export function SettingsPages(): ReactResult {
           {account.email}
         </SettingsPageItem>
       ))}
-      {loginUrlData && (
+      {loginUrl && (
         <SettingsPageItem icon={<Google />} href={loginUrl}>
           Add Account
         </SettingsPageItem>
@@ -40,8 +40,7 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ page }: SettingsPageProps): ReactResult {
-  let { data } = useListGoogleAccountsQuery();
-  let accounts = data?.user?.googleAccounts ?? [];
+  let [accounts = []] = useListGoogleAccountsQuery();
 
   for (let account of accounts) {
     if (account.id == page) {

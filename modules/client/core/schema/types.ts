@@ -206,14 +206,12 @@ export type PhabricatorQueryFieldPolicy = {
 };
 export type QueryKeySpecifier = (
   | "githubLoginUrl"
-  | "googleLoginUrl"
   | "schemaVersion"
   | "user"
   | QueryKeySpecifier
 )[];
 export type QueryFieldPolicy = {
   githubLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
-  googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>;
   user?: FieldPolicy<any> | FieldReadFunction<any>;
 };
@@ -221,7 +219,6 @@ export type UserKeySpecifier = (
   | "bugzillaAccounts"
   | "email"
   | "githubAccounts"
-  | "googleAccounts"
   | "id"
   | "isAdmin"
   | "jiraAccounts"
@@ -233,7 +230,6 @@ export type UserFieldPolicy = {
   bugzillaAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   email?: FieldPolicy<any> | FieldReadFunction<any>;
   githubAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
-  googleAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   isAdmin?: FieldPolicy<any> | FieldReadFunction<any>;
   jiraAccounts?: FieldPolicy<any> | FieldReadFunction<any>;

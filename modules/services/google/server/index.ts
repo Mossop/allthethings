@@ -1,3 +1,4 @@
+import type * as KoaRouter from "@koa/router";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
@@ -10,9 +11,11 @@ import type {
   ServiceWebContext,
   ServiceExport,
   ServiceTransaction,
+  ServiceMiddlewareContext,
 } from "../../../server/utils";
 import { Account, File, MailSearch, Thread } from "./implementations";
 import Resolvers from "./resolvers";
+import { RegisterRoutes } from "./routes";
 import type { GoogleServiceConfig } from "./types";
 
 function first(param: string | string[] | undefined): string | undefined {
@@ -93,6 +96,29 @@ export class GoogleService extends BaseService {
 
       return UPDATE_DELAY;
     }, INITIAL_DELAY);
+  }
+
+  public addWebRoutes(router: KoaRouter): void {
+    router.get(
+      "/oauth",
+      async (ctx: ServiceMiddlewareContext, next: Koa.Next) => {
+        let code = first(ctx.query.code);
+        let userId = first(ctx.query.state);
+
+        if (!code || userId != ctx.userId) {
+          ctx.segment.error("Bad oauth", { code, userId });
+          return next();
+        }
+
+        ctx.set("Cache-Control", "no-cache");
+
+        let tx = await ctx.startTransaction(true);
+        let account = await Account.create(tx, ctx.userId, code);
+        ctx.redirect(ctx.transaction.settingsPageUrl(account.id).toString());
+      },
+    );
+
+    RegisterRoutes(router);
   }
 
   public override async update(tx: ServiceTransaction): Promise<void> {

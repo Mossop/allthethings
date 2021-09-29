@@ -6,6 +6,101 @@
     "requestBodies": {},
     "responses": {},
     "schemas": {
+      "Pick_GoogleAccountEntity.Exclude_keyofGoogleAccountEntity.userId-or-accessToken-or-refreshToken-or-expiry__": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "avatar"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GoogleAccountEntity.userId-or-accessToken-or-refreshToken-or-expiry_": {
+        "$ref": "#/components/schemas/Pick_GoogleAccountEntity.Exclude_keyofGoogleAccountEntity.userId-or-accessToken-or-refreshToken-or-expiry__"
+      },
+      "Pick_GoogleMailSearchEntity.Exclude_keyofGoogleMailSearchEntity.accountId__": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "query",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GoogleMailSearchEntity.accountId_": {
+        "$ref": "#/components/schemas/Pick_GoogleMailSearchEntity.Exclude_keyofGoogleMailSearchEntity.accountId__"
+      },
+      "GoogleMailSearchState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_GoogleMailSearchEntity.accountId_"
+          },
+          {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "GoogleAccountState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_GoogleAccountEntity.userId-or-accessToken-or-refreshToken-or-expiry_"
+          },
+          {
+            "properties": {
+              "mailSearches": {
+                "items": {
+                  "$ref": "#/components/schemas/GoogleMailSearchState"
+                },
+                "type": "array"
+              },
+              "loginUrl": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "mailSearches",
+              "loginUrl"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "Pick_UserEntity.Exclude_keyofUserEntity.password__": {
         "properties": {
           "email": {
@@ -1070,6 +1165,47 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/service/google/loginUrl": {
+      "get": {
+        "operationId": "GetLoginUrl",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      }
+    },
+    "/service/google/accounts": {
+      "get": {
+        "operationId": "ListAccounts",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GoogleAccountState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      }
+    },
     "/api/page": {
       "get": {
         "operationId": "GetPageContent",

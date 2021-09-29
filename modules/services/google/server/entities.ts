@@ -1,25 +1,22 @@
-import type { GoogleAccount, GoogleMailSearch } from "../../../schema";
-import type { GraphQLType } from "../../../utils";
 import type { FileFields, ThreadFields } from "../schema";
 
-export type GoogleAccountEntity = Omit<
-  GraphQLType<GoogleAccount>,
-  "mailSearches" | "loginUrl"
-> & {
+export interface GoogleAccountEntity {
+  id: string;
   userId: string;
+  email: string;
   avatar: string | null;
   accessToken: string;
   refreshToken: string | null;
   expiry: number;
-};
+}
 
-export type GoogleMailSearchEntity = Omit<
-  GraphQLType<GoogleMailSearch>,
-  "url" | "dueOffset"
-> & {
+export interface GoogleMailSearchEntity {
+  id: string;
   accountId: string;
+  name: string;
+  query: string;
   dueOffset: string | null;
-};
+}
 
 export type GoogleFileEntity = Omit<FileFields, "type">;
 

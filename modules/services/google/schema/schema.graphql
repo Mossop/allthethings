@@ -20,14 +20,6 @@ input GoogleMailSearchParams {
   dueOffset: DateTimeOffset
 }
 
-type User {
-  googleAccounts: [GoogleAccount!]!
-}
-
-type Query {
-  googleLoginUrl: String!
-}
-
 type Mutation {
   createGoogleMailSearch(
     account: ID!

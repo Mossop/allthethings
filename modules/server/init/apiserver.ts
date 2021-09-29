@@ -1,5 +1,6 @@
 import { promises as fs } from "fs";
 import path from "path";
+import { URL } from "url";
 
 import Router from "@koa/router";
 import koa from "koa";
@@ -13,8 +14,21 @@ import type { Database } from "../../db";
 import type { DescriptorsFor } from "../../utils";
 import { defer } from "../../utils";
 import type { ServerConfig } from "../core";
-import { addCoreRoutes, ServiceManager, withTransaction } from "../core";
-import type { Service, Transaction, WebContext, Segment } from "../utils";
+import {
+  ServiceOwner,
+  buildServiceTransaction,
+  addCoreRoutes,
+  ServiceManager,
+  withTransaction,
+} from "../core";
+import type {
+  Service,
+  Transaction,
+  WebContext,
+  Segment,
+  MiddlewareContext,
+  ServiceTransaction,
+} from "../utils";
 import { RootSegment, log } from "../utils";
 
 interface TransactionHolder {
@@ -30,9 +44,7 @@ type ExtraContext = WebContext & {
   rollbackTransaction(): Promise<void>;
 };
 
-type WebServerContext = ExtraContext &
-  Koa.DefaultContext &
-  Koa.ExtendableContext;
+type WebServerContext = MiddlewareContext<ExtraContext>;
 
 export async function buildWebServerContext(
   db: Database,
@@ -250,17 +262,79 @@ export async function createApiServer(
   });
   addCoreRoutes(router);
 
-  app.use(router.routes()).use(router.allowedMethods());
+  app.use(router.routes());
+  app.use(router.allowedMethods());
 
   ServiceManager.services.forEach((service: Service) => {
     if (service.addWebRoutes) {
+      let pathPrefix = `/service/${ServiceManager.getServiceId(service)}`;
+      let serviceOwner = ServiceOwner.getOwner(service);
+
       let router = new Router({
-        prefix: `/service/${ServiceManager.getServiceId(service)}`,
+        prefix: pathPrefix,
       });
 
       service.addWebRoutes(router);
 
-      app.use(router.routes()).use(router.allowedMethods());
+      let routes = router.routes();
+
+      app.use((ctx: WebServerContext, next: Koa.Next) => {
+        if (!ctx.path.startsWith(pathPrefix + "/")) {
+          return next();
+        }
+
+        let userId = ctx.session?.userId as string | undefined;
+        if (!userId) {
+          ctx.throw(403);
+        }
+
+        let startTransaction = ctx.startTransaction.bind(ctx);
+
+        Object.defineProperties(ctx, {
+          userId: {
+            enumerable: true,
+            writable: false,
+            value: userId,
+          },
+
+          rootUrl: {
+            enumerable: true,
+            writable: false,
+            value: serviceOwner.rootUrl,
+          },
+
+          serviceUrl: {
+            enumerable: true,
+            writable: false,
+            value: serviceOwner.serviceUrl,
+          },
+
+          startTransaction: {
+            enumerable: true,
+            writable: false,
+            async value(writable: boolean): Promise<ServiceTransaction> {
+              let tx = await startTransaction(writable);
+              return buildServiceTransaction(service, tx);
+            },
+          },
+
+          settingsPageUrl: {
+            enumerable: true,
+            writable: false,
+            value(page: string): URL {
+              let url = new URL(`settings/${page}`, serviceOwner.rootUrl);
+              url.searchParams.set("service", serviceOwner.id);
+              return url;
+            },
+          },
+        });
+
+        // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return routes(ctx, next);
+      });
+
+      app.use(router.allowedMethods());
     }
   });
 

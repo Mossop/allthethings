@@ -5,7 +5,7 @@ const { generateApi } = require("swagger-typescript-api");
 const { withDir } = require("tmp-promise");
 const { generateSpec, generateRoutes } = require("tsoa");
 
-const SERVICES = [];
+const SERVICES = ["google"];
 
 let modules = path.resolve(path.join(__dirname, "modules"));
 
@@ -32,10 +32,12 @@ function buildSpec(controller, pathPrefix, mergeWith = {}) {
       );
       delete spec.servers;
       spec.paths = Object.fromEntries(
-        Object.entries(spec.paths).map(([path, api]) => [
-          pathPrefix + path,
-          api,
-        ]),
+        Object.entries(spec.paths).map(([path, api]) => {
+          if (path.startsWith("/api/") || path.startsWith("/service/")) {
+            return [path, api];
+          }
+          return [pathPrefix + path, api];
+        }),
       );
 
       // eslint-disable-next-line @typescript-eslint/no-unsafe-return

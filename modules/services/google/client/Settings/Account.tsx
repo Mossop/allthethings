@@ -6,7 +6,11 @@ import SearchIcon from "@material-ui/icons/Search";
 import { DateTime } from "luxon";
 import { useCallback, useMemo } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  GoogleAccountState,
+  GoogleMailSearchState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   useResetStore,
   Icons,
@@ -19,8 +23,8 @@ import {
   SubHeading,
   useBoolState,
 } from "../../../../client/utils";
-import type { GoogleAccount, GoogleMailSearch } from "../../../../schema";
-import { addOffset } from "../../../../utils";
+import type { DateTimeOffset } from "../../../../utils";
+import { addOffset, decodeRelativeDateTime } from "../../../../utils";
 import Google from "../logos/Google";
 import { useDeleteGoogleMailSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";
@@ -53,8 +57,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
-  account: GoogleAccount;
-  search: GoogleMailSearch;
+  account: GoogleAccountState;
+  search: GoogleMailSearchState;
 }
 
 function SearchSettingsItem({
@@ -80,7 +84,8 @@ function SearchSettingsItem({
 
   let dueOffset = useMemo(() => {
     if (search.dueOffset) {
-      let result = addOffset(DateTime.now(), search.dueOffset);
+      let dueOffset = decodeRelativeDateTime(search.dueOffset);
+      let result = addOffset(DateTime.now(), dueOffset as DateTimeOffset);
       return `Due ${result.toRelative()}`;
     }
 
@@ -123,7 +128,7 @@ function SearchSettingsItem({
 }
 
 interface AccountSettingsProps {
-  account: GoogleAccount;
+  account: GoogleAccountState;
 }
 
 export default function AccountSettings({
@@ -162,7 +167,7 @@ export default function AccountSettings({
           </>
         }
       >
-        {account.mailSearches.map((search: GoogleMailSearch) => (
+        {account.mailSearches.map((search: GoogleMailSearchState) => (
           <SearchSettingsItem
             key={search.id}
             account={account}

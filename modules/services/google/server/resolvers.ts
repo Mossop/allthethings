@@ -9,27 +9,10 @@ import type {
   ServiceTransaction,
 } from "../../../server/utils";
 import { rootResolvers } from "../../../server/utils";
-import { GoogleApi } from "./api";
 import { Account, MailSearch } from "./implementations";
 import type { Resolvers } from "./schema";
 
 export default rootResolvers<Resolvers>({
-  User: {
-    async googleAccounts(
-      ctx: AuthedGraphQLCtx<ServiceTransaction>,
-    ): Promise<Account[]> {
-      return Account.store(ctx.transaction).find({ userId: ctx.userId });
-    },
-  },
-
-  Query: {
-    async googleLoginUrl(
-      ctx: AuthedGraphQLCtx<ServiceTransaction>,
-    ): Promise<string> {
-      return GoogleApi.generateAuthUrl(ctx.transaction, ctx.userId);
-    },
-  },
-
   Mutation: {
     async createGoogleMailSearch(
       ctx: AuthedGraphQLCtx<ServiceTransaction>,

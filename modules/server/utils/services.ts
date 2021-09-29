@@ -5,7 +5,14 @@ import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
-import type { Awaitable, MaybeCallable, RelativeDateTime } from "../../utils";
+import type { MiddlewareContext } from ".";
+import type {
+  Awaitable,
+  MaybeCallable,
+  Overwrite,
+  RelativeDateTime,
+} from "../../utils";
+import type { WebContext } from "./controllers";
 import { RequestController } from "./controllers";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
@@ -84,6 +91,48 @@ export type ServiceWebMiddleware<Tx extends ServiceTransaction> = (
   next: Koa.Next,
 ) => Promise<any>;
 
+export type ServiceWebContext2<
+  Tx extends ServiceTransaction = ServiceTransaction,
+> = Overwrite<
+  WebContext,
+  {
+    readonly userId: string;
+    readonly rootUrl: URL;
+    readonly serviceUrl: URL;
+
+    startTransaction(writable: boolean): Promise<Tx>;
+    settingsPageUrl(page: string): URL;
+  }
+>;
+
+export type ServiceMiddlewareContext<
+  Tx extends ServiceTransaction = ServiceTransaction,
+> = MiddlewareContext<ServiceWebContext2<Tx>>;
+
+export class ServiceController<
+  Tx extends ServiceTransaction = ServiceTransaction,
+> extends RequestController<ServiceWebContext2<Tx>> {
+  public get userId(): string {
+    return this.context.userId;
+  }
+
+  public get rootUrl(): URL {
+    return this.context.rootUrl;
+  }
+
+  public get serviceUrl(): URL {
+    return this.context.serviceUrl;
+  }
+
+  public startTransaction(writable: boolean): Promise<Tx> {
+    return this.context.startTransaction(writable);
+  }
+
+  public settingsPageUrl(page: string): URL {
+    return this.context.settingsPageUrl(page);
+  }
+}
+
 export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
   readonly buildTransaction: (transaction: ServiceTransaction) => Awaitable<Tx>;
   readonly resolvers: Record<string, unknown>;
@@ -107,5 +156,3 @@ export interface ServiceExport<
   readonly configDecoder?: JsonDecoder.Decoder<C>;
   readonly init: (server: Server<Tx>, config: C) => Awaitable<Service<Tx>>;
 }
-
-export class ServiceController extends RequestController {}
