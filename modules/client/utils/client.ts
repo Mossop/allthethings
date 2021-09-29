@@ -30,6 +30,28 @@ export interface LoginParams {
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickUserEntityExcludeKeysId {
+  password: string;
+  email: string;
+  isAdmin: boolean;
+}
+
+export type OmitUserEntityId = PickUserEntityExcludeKeysId;
+
+export type UserParams = OmitUserEntityId;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialUserParams {
+  password?: string;
+  email?: string;
+  isAdmin?: boolean;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickContextEntityExcludeKeysIdOrUserIdOrStub {
   name: string;
 }
@@ -631,6 +653,72 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
       this.request<void, any>({
         path: `/api/logout`,
         method: "POST",
+        ...params,
+      }),
+  };
+  users = {
+    /**
+     * No description
+     *
+     * @name ListUsers
+     * @request GET:/api/users
+     * @response `200` `(UserState)[]` Ok
+     */
+    listUsers: (params: RequestParams = {}) =>
+      this.request<UserState[], any>({
+        path: `/api/users`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateUser
+     * @request PUT:/api/users
+     * @response `200` `UserState` Ok
+     */
+    createUser: (data: UserParams, params: RequestParams = {}) =>
+      this.request<UserState, any>({
+        path: `/api/users`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditUser
+     * @request PATCH:/api/users
+     * @response `200` `UserState` Ok
+     */
+    editUser: (data: PartialUserParams & { currentPassword?: string; id?: string }, params: RequestParams = {}) =>
+      this.request<UserState, any>({
+        path: `/api/users`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteUser
+     * @request DELETE:/api/users
+     * @response `204` `void` No content
+     */
+    deleteUser: (data: { id?: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/api/users`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
   };

@@ -133,6 +133,8 @@ function filtersToSql(filters: ItemFilter | ItemFilter[]): Sql {
   return any(filters.map(filterToSql));
 }
 
+export type UserParams = Omit<UserEntity, "id">;
+
 export type UserState = Omit<UserEntity, "password"> & {
   __typename: "User";
 };
@@ -145,7 +147,7 @@ export class User
 
   public static async create(
     tx: Transaction,
-    userRecord: Omit<UserEntity, "id">,
+    userRecord: UserParams,
   ): Promise<User> {
     let user = await User.store(tx).create({
       ...userRecord,
@@ -177,10 +179,14 @@ export class User
     return this.entity.isAdmin;
   }
 
-  public async setPassword(password: string): Promise<void> {
-    await this.update({
-      password: await bcryptHash(password, 12),
-    });
+  public override async update({
+    ...params
+  }: Partial<UserParams>): Promise<void> {
+    if (params.password) {
+      params.password = await bcryptHash(params.password, 12);
+    }
+
+    return super.update(params);
   }
 
   public verifyUser(password: string): Promise<boolean> {

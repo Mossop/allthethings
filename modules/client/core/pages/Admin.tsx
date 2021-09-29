@@ -16,14 +16,12 @@ import {
   Heading,
   ReactMemo,
   SettingsPage,
+  mutationHook,
+  api,
+  queryHook,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import CreateUserDialog from "../dialogs/CreateUser";
-import {
-  useDeleteUserMutation,
-  refetchListUsersQuery,
-  useListUsersQuery,
-} from "../schema";
 import { useUser } from "../utils/globalState";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -53,6 +51,12 @@ interface UserProps {
   email: string;
 }
 
+const useDeleteUserMutation = mutationHook(api.users.deleteUser, {
+  refreshTokens: [api.users.listUsers, api.state.getState],
+});
+
+const useListUsersQuery = queryHook(api.users.listUsers);
+
 const User = ReactMemo(function User({
   id,
   isAdmin,
@@ -61,16 +65,11 @@ const User = ReactMemo(function User({
   let classes = useStyles();
   let user = useUser();
 
-  let [deleteUserMutation] = useDeleteUserMutation({
-    variables: {
-      id,
-    },
-    refetchQueries: [refetchListUsersQuery()],
-  });
+  let [deleteUserMutation] = useDeleteUserMutation();
 
   let deleteUser = useCallback(
-    () => deleteUserMutation(),
-    [deleteUserMutation],
+    () => deleteUserMutation({ id }),
+    [deleteUserMutation, id],
   );
 
   return (
@@ -93,8 +92,7 @@ const User = ReactMemo(function User({
 export default ReactMemo(function AdminPage(): ReactResult {
   let classes = useStyles();
 
-  let { data } = useListUsersQuery();
-  let users = data?.users ?? [];
+  let [users] = useListUsersQuery();
 
   let [createUserDialogOpen, openCreateUserDialog, closeCreateUserDialog] =
     useBoolState();
@@ -121,7 +119,7 @@ export default ReactMemo(function AdminPage(): ReactResult {
           </>
         }
       >
-        {users.map((user: UserProps) => (
+        {users?.map((user: UserProps) => (
           <User key={user.id} {...user} />
         ))}
       </SettingsListSection>

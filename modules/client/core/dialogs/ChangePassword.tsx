@@ -7,12 +7,15 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
+  mutationHook,
+  api,
 } from "../../utils";
-import { useChangePasswordMutation } from "../schema";
 
 interface ChangePasswordProps {
   onClosed: () => void;
 }
+
+const useChangePasswordMutation = mutationHook(api.users.editUser);
 
 export default ReactMemo(function ChangePasswordDialog({
   onClosed,
@@ -25,19 +28,18 @@ export default ReactMemo(function ChangePasswordDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [changePasswordMutation, { loading, error }] = useChangePasswordMutation({
-    variables: {
-      currentPassword: state.currentPassword,
-      newPassword: state.newPassword,
-    },
-  });
+  let [changePasswordMutation, { loading, error }] =
+    useChangePasswordMutation();
 
   let changePassword = useCallback(async () => {
     if (state.newPassword != state.newPasswordAgain) {
       return;
     }
 
-    await changePasswordMutation();
+    await changePasswordMutation({
+      password: state.newPassword,
+      currentPassword: state.currentPassword,
+    });
     onClosed();
   }, [changePasswordMutation, onClosed, state]);
 

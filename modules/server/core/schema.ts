@@ -6,9 +6,6 @@ import type {
 } from "graphql";
 import type { User } from "./implementations";
 import * as Schema from "../../schema";
-export type RequireFields<T, K extends keyof T> = {
-  [X in Exclude<keyof T, K>]?: T[X];
-} & { [P in K]-?: NonNullable<T[P]> };
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -121,7 +118,6 @@ export type ResolversTypes = {
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
-  Mutation: ResolverTypeWrapper<Schema.Root>;
   Query: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
@@ -134,7 +130,6 @@ export type ResolversParentTypes = {
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   ID: Schema.Scalars["ID"];
-  Mutation: Schema.Root;
   Query: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
@@ -151,43 +146,11 @@ export interface DateTimeOffsetScalarConfig
   name: "DateTimeOffset";
 }
 
-export type MutationResolvers<
-  ContextType = any,
-  ParentType extends ResolversParentTypes["Mutation"] = ResolversParentTypes["Mutation"],
-> = {
-  changePassword: Resolver<
-    Schema.Maybe<ResolversTypes["User"]>,
-    ParentType,
-    ContextType,
-    RequireFields<
-      Schema.MutationChangePasswordArgs,
-      "currentPassword" | "newPassword"
-    >
-  >;
-  createUser: Resolver<
-    ResolversTypes["User"],
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationCreateUserArgs, "email" | "password">
-  >;
-  deleteUser: Resolver<
-    Schema.Maybe<ResolversTypes["Boolean"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationDeleteUserArgs, never>
-  >;
-};
-
 export type QueryResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["Query"] = ResolversParentTypes["Query"],
 > = {
   user: Resolver<Schema.Maybe<ResolversTypes["User"]>, ParentType, ContextType>;
-  users: Resolver<
-    ReadonlyArray<ResolversTypes["User"]>,
-    ParentType,
-    ContextType
-  >;
 };
 
 export interface RelativeDateTimeScalarConfig
@@ -208,7 +171,6 @@ export type UserResolvers<
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
   DateTimeOffset: GraphQLScalarType;
-  Mutation: MutationResolvers<ContextType>;
   Query: QueryResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
   User: UserResolvers<ContextType>;

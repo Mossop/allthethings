@@ -67,6 +67,47 @@
         "type": "object",
         "additionalProperties": false
       },
+      "Pick_UserEntity.Exclude_keyofUserEntity.id__": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "password",
+          "email",
+          "isAdmin"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_UserEntity.id_": {
+        "$ref": "#/components/schemas/Pick_UserEntity.Exclude_keyofUserEntity.id__"
+      },
+      "UserParams": {
+        "$ref": "#/components/schemas/Omit_UserEntity.id_"
+      },
+      "Partial_UserParams_": {
+        "properties": {
+          "password": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "isAdmin": {
+            "type": "boolean"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
       "Pick_ContextEntity.Exclude_keyofContextEntity.id-or-userId-or-stub__": {
         "properties": {
           "name": {
@@ -1096,6 +1137,122 @@
         },
         "security": [],
         "parameters": []
+      }
+    },
+    "/api/users": {
+      "get": {
+        "operationId": "ListUsers",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      },
+      "put": {
+        "operationId": "CreateUser",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UserParams"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditUser",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "allOf": [
+                  {
+                    "$ref": "#/components/schemas/Partial_UserParams_"
+                  },
+                  {
+                    "properties": {
+                      "currentPassword": {
+                        "type": "string"
+                      },
+                      "id": {
+                        "type": "string"
+                      }
+                    },
+                    "type": "object"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteUser",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "type": "object"
+              }
+            }
+          }
+        }
       }
     },
     "/api/state": {

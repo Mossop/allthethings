@@ -7,12 +7,17 @@ import {
   Dialog,
   TextFieldInput,
   BooleanCheckboxInput,
+  mutationHook,
+  api,
 } from "../../utils";
-import { useCreateUserMutation, refetchListUsersQuery } from "../schema";
 
 interface CreateUserProps {
   onClosed: () => void;
 }
+
+const useCreateUserMutation = mutationHook(api.users.createUser, {
+  refreshTokens: [api.users.listUsers],
+});
 
 export default ReactMemo(function CreateUserDialog({
   onClosed,
@@ -25,15 +30,12 @@ export default ReactMemo(function CreateUserDialog({
 
   let [isOpen, , close] = useBoolState(true);
 
-  let [createUserMutation, { error }] = useCreateUserMutation({
-    variables: state,
-    refetchQueries: [refetchListUsersQuery()],
-  });
+  let [createUserMutation, { error }] = useCreateUserMutation();
 
   let createUser = useCallback(async () => {
-    await createUserMutation();
+    await createUserMutation(state);
     onClosed();
-  }, [createUserMutation, onClosed]);
+  }, [createUserMutation, onClosed, state]);
 
   return (
     <Dialog

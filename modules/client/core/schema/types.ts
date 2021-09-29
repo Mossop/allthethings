@@ -134,7 +134,6 @@ export type JiraSearchFieldPolicy = {
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type MutationKeySpecifier = (
-  | "changePassword"
   | "createBugzillaAccount"
   | "createBugzillaSearch"
   | "createGithubSearch"
@@ -142,7 +141,6 @@ export type MutationKeySpecifier = (
   | "createJiraAccount"
   | "createJiraSearch"
   | "createPhabricatorAccount"
-  | "createUser"
   | "deleteBugzillaAccount"
   | "deleteBugzillaSearch"
   | "deleteGithubSearch"
@@ -150,7 +148,6 @@ export type MutationKeySpecifier = (
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
-  | "deleteUser"
   | "editBugzillaSearch"
   | "editGithubSearch"
   | "editGoogleMailSearch"
@@ -159,7 +156,6 @@ export type MutationKeySpecifier = (
   | MutationKeySpecifier
 )[];
 export type MutationFieldPolicy = {
-  changePassword?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -167,7 +163,6 @@ export type MutationFieldPolicy = {
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  createUser?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -175,7 +170,6 @@ export type MutationFieldPolicy = {
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteUser?: FieldPolicy<any> | FieldReadFunction<any>;
   editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -215,7 +209,6 @@ export type QueryKeySpecifier = (
   | "googleLoginUrl"
   | "schemaVersion"
   | "user"
-  | "users"
   | QueryKeySpecifier
 )[];
 export type QueryFieldPolicy = {
@@ -223,7 +216,6 @@ export type QueryFieldPolicy = {
   googleLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>;
   user?: FieldPolicy<any> | FieldReadFunction<any>;
-  users?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type UserKeySpecifier = (
   | "bugzillaAccounts"

@@ -134,17 +134,6 @@ module.exports = {
       },
     },
 
-    [path.join(rootDir, "client", "core", "schema", "operations.ts")]: {
-      schema: [
-        path.join(rootDir, "schema", "scalars.graphql"),
-        path.join(rootDir, "server", "init", "schema.graphql"),
-        path.join(rootDir, "server", "core", "schema.graphql"),
-      ],
-
-      documents: path.join(rootDir, "client", "core", "schema", "*.gql"),
-      plugins: clientOperationPlugins,
-    },
-
     [path.join(rootDir, "server", "init", "schema.ts")]: {
       schema: [
         path.join(rootDir, "schema", "scalars.graphql"),

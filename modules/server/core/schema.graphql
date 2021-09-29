@@ -6,11 +6,4 @@ type User {
 
 type Query {
   user: User
-  users: [User!]!
-}
-
-type Mutation {
-  createUser(email: String!, password: String!, isAdmin: Boolean): User!
-  deleteUser(id: ID): Boolean
-  changePassword(currentPassword: String!, newPassword: String!): User
 }

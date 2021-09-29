@@ -28,6 +28,7 @@ import {
 } from "../../utils";
 import type { Problem, Transaction } from "../utils";
 import {
+  NotAuthenticatedError,
   ref,
   TaskController,
   bestIcon,
@@ -50,6 +51,7 @@ import type {
   ItemState,
   LinkDetailParams,
   ItemFilter,
+  UserParams,
 } from "./implementations";
 import {
   ServiceListItem,
@@ -64,7 +66,7 @@ import {
   Context,
 } from "./implementations";
 import { ServiceManager } from "./services";
-import { Authenticated, CoreController } from "./utils";
+import { Administrator, Authenticated, CoreController } from "./utils";
 
 const pageRoot = path.normalize(
   path.join(__dirname, "..", "..", "..", "static", "pages"),
@@ -191,6 +193,96 @@ export class MainController extends CoreController {
   }
 }
 
+@Route("/users")
+export class UserController extends CoreController {
+  @Administrator(false)
+  @Get()
+  public async listUsers(@Inject() tx: Transaction): Promise<UserState[]> {
+    return map(User.store(tx).find(), (user: User) => user.state);
+  }
+
+  @Administrator(true)
+  @Put()
+  public async createUser(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    params: UserParams,
+  ): Promise<UserState> {
+    let newUser = await User.create(tx, params);
+
+    return newUser.state;
+  }
+
+  @Authenticated(true)
+  @Patch()
+  public async editUser(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      currentPassword,
+      ...params
+    }: Partial<UserParams> & {
+      id?: string;
+      currentPassword?: string;
+    },
+  ): Promise<UserState> {
+    let { isAdmin } = user;
+
+    if (id && id != user.id) {
+      if (!isAdmin) {
+        throw new NotAuthenticatedError();
+      }
+
+      user = await User.store(tx).get(id);
+    }
+
+    if (params.isAdmin && !user.isAdmin && !isAdmin) {
+      throw new NotAuthenticatedError();
+    }
+
+    if (params.password !== undefined) {
+      if (!isAdmin && !(await user.verifyUser(currentPassword ?? ""))) {
+        throw new NotAuthenticatedError();
+      }
+    }
+
+    await user.update(params);
+
+    return user.state;
+  }
+
+  @Authenticated(true)
+  @Delete()
+  public async deleteUser(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+    }: {
+      id?: string;
+    },
+  ): Promise<void> {
+    if (id && id != user.id) {
+      if (!user.isAdmin) {
+        throw new NotAuthenticatedError();
+      }
+
+      user = await User.store(tx).get(id);
+    }
+
+    await user.delete();
+
+    if (this.context.session?.userId == user.id) {
+      this.context.session.userId = null;
+      this.context.session.save();
+    }
+  }
+}
+
 type ServerProjectState = ProjectState & {
   dueTasks: number;
 };
@@ -231,10 +323,6 @@ export class StateController extends CoreController {
     let tx = await this.startTransaction(false);
 
     let user: ServerUserState | null = null;
-    this.segment.info("getState", {
-      session: this.context.session,
-      userId: this.userId,
-    });
 
     if (this.userId) {
       let filters = intoItemFilters(itemFilter);

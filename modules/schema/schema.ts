@@ -145,7 +145,6 @@ export type JiraSearchParams = {
 
 export type Mutation = {
   readonly __typename: "Mutation";
-  readonly changePassword?: Maybe<User>;
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
   readonly createGithubSearch: GithubSearch;
@@ -153,7 +152,6 @@ export type Mutation = {
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
   readonly createPhabricatorAccount: PhabricatorAccount;
-  readonly createUser: User;
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
   readonly deleteGithubSearch: Scalars["Boolean"];
@@ -161,17 +159,11 @@ export type Mutation = {
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
-  readonly deleteUser?: Maybe<Scalars["Boolean"]>;
   readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
-};
-
-export type MutationChangePasswordArgs = {
-  currentPassword: Scalars["String"];
-  newPassword: Scalars["String"];
 };
 
 export type MutationCreateBugzillaAccountArgs = {
@@ -206,12 +198,6 @@ export type MutationCreatePhabricatorAccountArgs = {
   params: CreatePhabricatorAccountParams;
 };
 
-export type MutationCreateUserArgs = {
-  email: Scalars["String"];
-  isAdmin?: Maybe<Scalars["Boolean"]>;
-  password: Scalars["String"];
-};
-
 export type MutationDeleteBugzillaAccountArgs = {
   account: Scalars["ID"];
 };
@@ -238,10 +224,6 @@ export type MutationDeleteJiraSearchArgs = {
 
 export type MutationDeletePhabricatorAccountArgs = {
   account: Scalars["ID"];
-};
-
-export type MutationDeleteUserArgs = {
-  id?: Maybe<Scalars["ID"]>;
 };
 
 export type MutationEditBugzillaSearchArgs = {
@@ -292,7 +274,6 @@ export type Query = {
   readonly googleLoginUrl: Scalars["String"];
   readonly schemaVersion: Scalars["String"];
   readonly user?: Maybe<User>;
-  readonly users: ReadonlyArray<User>;
 };
 
 export type UpdatePhabricatorAccountParams = {
