@@ -41,7 +41,9 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-let useLogout = mutationHook(api.logout.logout);
+let useLogout = mutationHook(api.logout.logout, {
+  refreshTokens: [api.state.getState],
+});
 
 export default ReactMemo(function UserMenu(): ReactResult {
   let user = useUser();

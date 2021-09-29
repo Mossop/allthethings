@@ -59,8 +59,6 @@ export abstract class Segment implements Logger {
     public readonly name: string,
     meta: Meta,
   ) {
-    this.trace("Entering segment");
-
     let tree: string[] = [];
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     let segment: Segment = this;
@@ -77,6 +75,8 @@ export abstract class Segment implements Logger {
     if (tree.length) {
       this.meta.tree = tree;
     }
+
+    this.trace("Entering segment");
   }
 
   public readonly error = logMethod("error");

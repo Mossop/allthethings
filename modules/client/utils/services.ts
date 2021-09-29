@@ -1,12 +1,11 @@
 import { useMemo, useEffect, useState } from "react";
 
-import type { ReactResult, RefetchQueries } from "./types";
+import type { ReactResult } from "./types";
 
-export type ServiceFields = string;
+export type ServiceFields = unknown;
 
 export interface ServiceItemProps {
   fields: ServiceFields;
-  refetchQueries: () => RefetchQueries;
 }
 
 export interface ClientService {

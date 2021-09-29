@@ -5,34 +5,3 @@ query ListUsers {
     isAdmin
   }
 }
-
-query ListInbox {
-  user {
-    inbox {
-      items {
-        ...clientItemFields
-      }
-    }
-  }
-}
-
-query ListTaskList($taskList: ID!) {
-  taskList(id: $taskList) {
-    items {
-      items {
-        ...clientItemFields
-      }
-    }
-
-    sections {
-      id
-      name
-
-      items {
-        items {
-          ...clientItemFields
-        }
-      }
-    }
-  }
-}

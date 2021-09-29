@@ -89,47 +89,21 @@ export interface ServerState {
 }
 
 /**
- * Make all properties in T optional
- */
-export interface PartialProjectParams {
-  name?: string;
-}
-
-/**
- * Make all properties in T optional
- */
-export interface PartialContextParams {
-  name?: string;
-}
-
-/**
  * From T, pick a set of properties whose keys are in the union K
  */
-export interface PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub {
-  name: string;
+export interface PickApiItemFilterExcludeKeysItemHolderId {
+  isTask?: boolean;
+  dueBefore?: string;
+  dueAfter?: string;
+  doneBefore?: string;
+  doneAfter?: string;
+  isDue?: boolean;
+  isDone?: boolean;
+  isSnoozed?: boolean;
+  isArchived?: boolean;
 }
 
-export type OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub =
-  PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub;
-
-export type SectionParams = OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub;
-
-/**
- * From T, pick a set of properties whose keys are in the union K
- */
-export interface PickSectionEntityIdOrStub {
-  id: string;
-  stub: string;
-}
-
-export type SectionState = SectionParams & PickSectionEntityIdOrStub & { __typename: "Section" };
-
-/**
- * Make all properties in T optional
- */
-export interface PartialSectionParams {
-  name?: string;
-}
+export type OmitApiItemFilterItemHolderId = PickApiItemFilterExcludeKeysItemHolderId;
 
 /**
 * A DateTime is an immutable data structure representing a specific date and time and accompanying methods.
@@ -263,15 +237,27 @@ export type NoteDetailState = NoteDetailParams & { __typename: "NoteDetail" };
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
-export interface PickServiceDetailEntityExcludeKeysIdOrHasTaskStateOrTaskDueOrTaskDone {
+export interface PickServiceDetailEntityExcludeKeysIdOrTaskDueOrTaskDone {
   serviceId: string;
+  hasTaskState: boolean;
 }
 
-export type OmitServiceDetailEntityIdOrHasTaskStateOrTaskDueOrTaskDone =
-  PickServiceDetailEntityExcludeKeysIdOrHasTaskStateOrTaskDueOrTaskDone;
+export type OmitServiceDetailEntityIdOrTaskDueOrTaskDone = PickServiceDetailEntityExcludeKeysIdOrTaskDueOrTaskDone;
 
-export type ServiceDetailState = OmitServiceDetailEntityIdOrHasTaskStateOrTaskDueOrTaskDone & {
+export interface ServiceListEntity {
+  id: string;
+  serviceId: string;
+  name: string;
+  url: string | null;
+}
+
+export type ServiceListState = ServiceListEntity & { __typename: "ServiceList" };
+
+export type ServiceDetailState = OmitServiceDetailEntityIdOrTaskDueOrTaskDone & {
+  lists: ServiceListState[];
   fields: any;
+  isCurrentlyListed: boolean;
+  wasEverListed: boolean;
   __typename: "ServiceDetail";
 };
 
@@ -306,6 +292,68 @@ export type ItemDetailState =
 
 export type ItemState = ItemParams &
   PickItemEntityIdOrCreated & { detail: ItemDetailState | null; taskInfo: TaskInfoState | null; __typename: "Item" };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub {
+  name: string;
+}
+
+export type OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub =
+  PickSectionEntityExcludeKeysIdOrUserIdOrProjectIdOrIndexOrStub;
+
+export type SectionParams = OmitSectionEntityIdOrUserIdOrProjectIdOrIndexOrStub;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickSectionEntityIdOrStub {
+  id: string;
+  stub: string;
+}
+
+export type SectionState = SectionParams & PickSectionEntityIdOrStub & { __typename: "Section" };
+
+export type SectionContents = SectionState & { items: ItemState[] };
+
+export type ProjectContents = ProjectState & { sections: SectionContents[]; items: ItemState[] };
+
+export type ContextContents = ContextState & { sections: SectionContents[]; items: ItemState[] };
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialProjectParams {
+  name?: string;
+}
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialContextParams {
+  name?: string;
+}
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialSectionParams {
+  name?: string;
+}
+
+export interface ApiItemFilter {
+  itemHolderId?: string | null;
+  isTask?: boolean;
+  dueBefore?: string;
+  dueAfter?: string;
+  doneBefore?: string;
+  doneAfter?: string;
+  isDue?: boolean;
+  isDone?: boolean;
+  isSnoozed?: boolean;
+  isArchived?: boolean;
+}
 
 /**
  * Make all properties in T optional
@@ -591,14 +639,23 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
      * No description
      *
      * @name GetState
-     * @request GET:/api/state
+     * @request POST:/api/state
      * @response `200` `ServerState` Ok
      */
-    getState: (query: { dueBefore: string }, params: RequestParams = {}) =>
+    getState: (
+      data: {
+        itemFilter:
+          | OmitApiItemFilterItemHolderId
+          | OmitApiItemFilterItemHolderId[]
+          | (OmitApiItemFilterItemHolderId & OmitApiItemFilterItemHolderId[]);
+      },
+      params: RequestParams = {},
+    ) =>
       this.request<ServerState, any>({
         path: `/api/state`,
-        method: "GET",
-        query: query,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
         format: "json",
         ...params,
       }),
@@ -651,6 +708,32 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
         method: "DELETE",
         body: data,
         type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name ListContents
+     * @request POST:/api/project/contents
+     * @response `200` `(ProjectContents | ContextContents | (ProjectContents & ContextContents))` Ok
+     */
+    listContents: (
+      data: {
+        itemFilter?:
+          | OmitApiItemFilterItemHolderId
+          | OmitApiItemFilterItemHolderId[]
+          | (OmitApiItemFilterItemHolderId & OmitApiItemFilterItemHolderId[]);
+        id: string;
+      },
+      params: RequestParams = {},
+    ) =>
+      this.request<ProjectContents | ContextContents | (ProjectContents & ContextContents), any>({
+        path: `/api/project/contents`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
         ...params,
       }),
 
@@ -777,6 +860,26 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
       }),
   };
   item = {
+    /**
+     * No description
+     *
+     * @name ListItems
+     * @request POST:/api/item/list
+     * @response `200` `(ItemState)[]` Ok
+     */
+    listItems: (
+      data: { itemFilter: ApiItemFilter | ApiItemFilter[] | (ApiItemFilter & ApiItemFilter[]) },
+      params: RequestParams = {},
+    ) =>
+      this.request<ItemState[], any>({
+        path: `/api/item/list`,
+        method: "POST",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
     /**
      * No description
      *

@@ -20,7 +20,7 @@ class JiraService implements ClientService {
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
-    return <Issue issue={JSON.parse(itemProps.fields) as IssueFields} />;
+    return <Issue issue={itemProps.fields as IssueFields} />;
   }
 }
 

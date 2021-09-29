@@ -305,91 +305,41 @@
         "type": "object",
         "additionalProperties": false
       },
-      "Partial_ProjectParams_": {
+      "Pick_ApiItemFilter.Exclude_keyofApiItemFilter.itemHolderId__": {
         "properties": {
-          "name": {
+          "isTask": {
+            "type": "boolean"
+          },
+          "dueBefore": {
             "type": "string"
+          },
+          "dueAfter": {
+            "type": "string"
+          },
+          "doneBefore": {
+            "type": "string"
+          },
+          "doneAfter": {
+            "type": "string"
+          },
+          "isDue": {
+            "type": "boolean"
+          },
+          "isDone": {
+            "type": "boolean"
+          },
+          "isSnoozed": {
+            "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
           }
         },
-        "type": "object",
-        "description": "Make all properties in T optional"
-      },
-      "Partial_ContextParams_": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "description": "Make all properties in T optional"
-      },
-      "Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "name"
-        ],
         "type": "object",
         "description": "From T, pick a set of properties whose keys are in the union K"
       },
-      "Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_": {
-        "$ref": "#/components/schemas/Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__"
-      },
-      "SectionParams": {
-        "$ref": "#/components/schemas/Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_"
-      },
-      "Pick_SectionEntity.id-or-stub_": {
-        "properties": {
-          "id": {
-            "type": "string"
-          },
-          "stub": {
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "stub"
-        ],
-        "type": "object",
-        "description": "From T, pick a set of properties whose keys are in the union K"
-      },
-      "SectionState": {
-        "allOf": [
-          {
-            "$ref": "#/components/schemas/SectionParams"
-          },
-          {
-            "$ref": "#/components/schemas/Pick_SectionEntity.id-or-stub_"
-          },
-          {
-            "properties": {
-              "__typename": {
-                "type": "string",
-                "enum": [
-                  "Section"
-                ],
-                "nullable": false
-              }
-            },
-            "required": [
-              "__typename"
-            ],
-            "type": "object"
-          }
-        ]
-      },
-      "Partial_SectionParams_": {
-        "properties": {
-          "name": {
-            "type": "string"
-          }
-        },
-        "type": "object",
-        "description": "Make all properties in T optional"
+      "Omit_ApiItemFilter.itemHolderId_": {
+        "$ref": "#/components/schemas/Pick_ApiItemFilter.Exclude_keyofApiItemFilter.itemHolderId__"
       },
       "DateTime": {
         "type": "string",
@@ -608,29 +558,92 @@
           }
         ]
       },
-      "Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__": {
+      "Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-taskDue-or-taskDone__": {
         "properties": {
           "serviceId": {
             "type": "string"
+          },
+          "hasTaskState": {
+            "type": "boolean"
           }
         },
         "required": [
-          "serviceId"
+          "serviceId",
+          "hasTaskState"
         ],
         "type": "object",
         "description": "From T, pick a set of properties whose keys are in the union K"
       },
-      "Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_": {
-        "$ref": "#/components/schemas/Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone__"
+      "Omit_ServiceDetailEntity.id-or-taskDue-or-taskDone_": {
+        "$ref": "#/components/schemas/Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-taskDue-or-taskDone__"
+      },
+      "ServiceListEntity": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "serviceId": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "serviceId",
+          "name",
+          "url"
+        ],
+        "type": "object",
+        "additionalProperties": false
+      },
+      "ServiceListState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ServiceListEntity"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "ServiceList"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
       },
       "ServiceDetailState": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/Omit_ServiceDetailEntity.id-or-hasTaskState-or-taskDue-or-taskDone_"
+            "$ref": "#/components/schemas/Omit_ServiceDetailEntity.id-or-taskDue-or-taskDone_"
           },
           {
             "properties": {
+              "lists": {
+                "items": {
+                  "$ref": "#/components/schemas/ServiceListState"
+                },
+                "type": "array"
+              },
               "fields": {},
+              "isCurrentlyListed": {
+                "type": "boolean"
+              },
+              "wasEverListed": {
+                "type": "boolean"
+              },
               "__typename": {
                 "type": "string",
                 "enum": [
@@ -640,7 +653,10 @@
               }
             },
             "required": [
+              "lists",
               "fields",
+              "isCurrentlyListed",
+              "wasEverListed",
               "__typename"
             ],
             "type": "object"
@@ -766,6 +782,206 @@
           }
         ]
       },
+      "Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_": {
+        "$ref": "#/components/schemas/Pick_SectionEntity.Exclude_keyofSectionEntity.id-or-userId-or-projectId-or-index-or-stub__"
+      },
+      "SectionParams": {
+        "$ref": "#/components/schemas/Omit_SectionEntity.id-or-userId-or-projectId-or-index-or-stub_"
+      },
+      "Pick_SectionEntity.id-or-stub_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "stub": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "stub"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "SectionState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SectionParams"
+          },
+          {
+            "$ref": "#/components/schemas/Pick_SectionEntity.id-or-stub_"
+          },
+          {
+            "properties": {
+              "__typename": {
+                "type": "string",
+                "enum": [
+                  "Section"
+                ],
+                "nullable": false
+              }
+            },
+            "required": [
+              "__typename"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "SectionContents": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/SectionState"
+          },
+          {
+            "properties": {
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/ItemState"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "items"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ProjectContents": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ProjectState"
+          },
+          {
+            "properties": {
+              "sections": {
+                "items": {
+                  "$ref": "#/components/schemas/SectionContents"
+                },
+                "type": "array"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/ItemState"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "sections",
+              "items"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "ContextContents": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/ContextState"
+          },
+          {
+            "properties": {
+              "sections": {
+                "items": {
+                  "$ref": "#/components/schemas/SectionContents"
+                },
+                "type": "array"
+              },
+              "items": {
+                "items": {
+                  "$ref": "#/components/schemas/ItemState"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "sections",
+              "items"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Partial_ProjectParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "Partial_ContextParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "Partial_SectionParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "ApiItemFilter": {
+        "properties": {
+          "itemHolderId": {
+            "type": "string",
+            "nullable": true
+          },
+          "isTask": {
+            "type": "boolean"
+          },
+          "dueBefore": {
+            "type": "string"
+          },
+          "dueAfter": {
+            "type": "string"
+          },
+          "doneBefore": {
+            "type": "string"
+          },
+          "doneAfter": {
+            "type": "string"
+          },
+          "isDue": {
+            "type": "boolean"
+          },
+          "isDone": {
+            "type": "boolean"
+          },
+          "isSnoozed": {
+            "type": "boolean"
+          },
+          "isArchived": {
+            "type": "boolean"
+          }
+        },
+        "type": "object",
+        "additionalProperties": false
+      },
       "Partial__due-string-or-null--done-string-or-null--__": {
         "properties": {
           "due": {
@@ -883,7 +1099,7 @@
       }
     },
     "/api/state": {
-      "get": {
+      "post": {
         "operationId": "GetState",
         "responses": {
           "200": {
@@ -898,16 +1114,35 @@
           }
         },
         "security": [],
-        "parameters": [
-          {
-            "in": "query",
-            "name": "dueBefore",
-            "required": true,
-            "schema": {
-              "type": "string"
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "itemFilter": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/Omit_ApiItemFilter.itemHolderId_"
+                      },
+                      {
+                        "items": {
+                          "$ref": "#/components/schemas/Omit_ApiItemFilter.itemHolderId_"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "itemFilter"
+                ],
+                "type": "object"
+              }
             }
           }
-        ]
+        }
       }
     },
     "/api/project": {
@@ -1004,6 +1239,63 @@
             "application/json": {
               "schema": {
                 "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/project/contents": {
+      "post": {
+        "operationId": "ListContents",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "anyOf": [
+                    {
+                      "$ref": "#/components/schemas/ProjectContents"
+                    },
+                    {
+                      "$ref": "#/components/schemas/ContextContents"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "itemFilter": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/Omit_ApiItemFilter.itemHolderId_"
+                      },
+                      {
+                        "items": {
+                          "$ref": "#/components/schemas/Omit_ApiItemFilter.itemHolderId_"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  },
                   "id": {
                     "type": "string"
                   }
@@ -1267,6 +1559,56 @@
                 },
                 "required": [
                   "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item/list": {
+      "post": {
+        "operationId": "ListItems",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/ItemState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "itemFilter": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/components/schemas/ApiItemFilter"
+                      },
+                      {
+                        "items": {
+                          "$ref": "#/components/schemas/ApiItemFilter"
+                        },
+                        "type": "array"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "itemFilter"
                 ],
                 "type": "object"
               }

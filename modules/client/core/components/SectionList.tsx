@@ -18,6 +18,7 @@ import {
   TextStyles,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import type { Item, Section } from "../schema";
@@ -83,8 +84,7 @@ interface SectionListProps {
 }
 
 const useEditSectionMutation = mutationHook(api.section.editSection, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export default ReactMemo(function SectionList({

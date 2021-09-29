@@ -128,7 +128,6 @@ export type ResolversTypes = {
   PhabricatorQuery: ResolverTypeWrapper<QueryClass>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
-  TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "phabricatorAccounts" | "phabricatorQueries"> & {
@@ -150,7 +149,6 @@ export type ResolversParentTypes = {
   PhabricatorQuery: QueryClass;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
-  TaskController: Schema.Scalars["TaskController"];
   UpdatePhabricatorAccountParams: Schema.UpdatePhabricatorAccountParams;
   User: Omit<Schema.User, "phabricatorAccounts" | "phabricatorQueries"> & {
     phabricatorAccounts: ReadonlyArray<
@@ -226,11 +224,6 @@ export interface RelativeDateTimeScalarConfig
   name: "RelativeDateTime";
 }
 
-export interface TaskControllerScalarConfig
-  extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
-  name: "TaskController";
-}
-
 export type UserResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["User"] = ResolversParentTypes["User"],
@@ -255,6 +248,5 @@ export type Resolvers<ContextType = any> = {
   PhabricatorAccount: PhabricatorAccountResolvers<ContextType>;
   PhabricatorQuery: PhabricatorQueryResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
-  TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };

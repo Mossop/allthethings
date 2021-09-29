@@ -1,9 +1,7 @@
-import type { QueryTaskListArgs } from "../../schema";
 import type { GraphQLCtx, Transaction, TypeResolver } from "../utils";
-import type { TaskList } from "./implementations";
-import { User, TaskListBase } from "./implementations";
+import { User } from "./implementations";
 import type { QueryResolvers } from "./schema";
-import { ensureAdmin, ensureAuthed } from "./utils";
+import { ensureAdmin } from "./utils";
 
 const queryResolvers: TypeResolver<QueryResolvers, GraphQLCtx> = {
   async user(ctx: GraphQLCtx): Promise<User | null> {
@@ -17,16 +15,6 @@ const queryResolvers: TypeResolver<QueryResolvers, GraphQLCtx> = {
   users: ensureAdmin(async (tx: Transaction): Promise<User[]> => {
     return User.store(tx).find();
   }),
-
-  taskList: ensureAuthed(
-    async (
-      tx: Transaction,
-      user: User,
-      { id }: QueryTaskListArgs,
-    ): Promise<TaskList | null> => {
-      return TaskListBase.getTaskList(tx, id);
-    },
-  ),
 };
 
 export default queryResolvers;

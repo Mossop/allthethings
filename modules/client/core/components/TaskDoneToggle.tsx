@@ -7,6 +7,7 @@ import { useCallback } from "react";
 import {
   api,
   Icons,
+  itemRefreshTokens,
   mutationHook,
   ReactMemo,
   TaskController,
@@ -29,8 +30,7 @@ export interface TaskDoneToggleProps {
 }
 
 const useEditTaskMutation = mutationHook(api.item.editTask, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({

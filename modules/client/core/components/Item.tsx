@@ -15,6 +15,7 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import type { ReactResult, ReactRef } from "../../utils";
 import {
+  itemRefreshTokens,
   mutationHook,
   api,
   Icons,
@@ -138,8 +139,7 @@ interface TypeMenuItemProps {
 }
 
 const useEditTaskController = mutationHook(api.item.editTaskController, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 const TypeMenuItem = ReactMemo(
@@ -186,8 +186,7 @@ export type ItemRenderProps = Pick<ItemProps, "item"> & {
 };
 
 const useEditItemMutation = mutationHook(api.item.editItem, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export default ReactMemo(function ItemDisplay({

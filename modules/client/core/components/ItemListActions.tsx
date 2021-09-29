@@ -12,6 +12,7 @@ import { useMemo } from "react";
 
 import type { ReactResult } from "../../utils";
 import {
+  itemRefreshTokens,
   api,
   mutationHook,
   Icons,
@@ -53,8 +54,7 @@ const useDeleteProjectMutation = mutationHook(api.project.deleteProject, {
 });
 
 const useDeleteSectionMutation = mutationHook(api.section.deleteSection, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export default ReactMemo(function ItemListActions({

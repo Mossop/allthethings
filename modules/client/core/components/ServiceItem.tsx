@@ -1,9 +1,6 @@
-import { useCallback } from "react";
-
 import type { Overwrite } from "../../../utils";
 import type { ReactResult } from "../../utils";
 import { ItemPill, useService, ReactMemo } from "../../utils";
-import { refetchQueriesForItem } from "../schema";
 import type { ServiceItem, ServiceList as ServiceListSchema } from "../schema";
 import type { ItemRenderProps } from "./Item";
 
@@ -19,8 +16,6 @@ export default ReactMemo(function ServiceItem({
 }: ServiceItemProps): ReactResult {
   let service = useService(item.detail.serviceId);
 
-  let refetchQueries = useCallback(() => refetchQueriesForItem(item), [item]);
-
   if (!service) {
     return <div>Unknown service</div>;
   }
@@ -29,7 +24,6 @@ export default ReactMemo(function ServiceItem({
     <>
       {service.renderItem({
         fields: item.detail.fields,
-        refetchQueries,
       })}
       {item.detail.lists.map((list: ServiceListSchema) => (
         <ItemPill key={list.id} url={list.url}>

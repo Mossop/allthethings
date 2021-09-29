@@ -119,7 +119,6 @@ export type ResolversTypes = {
   Query: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
-  TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
 };
 
 /** Mapping between all available schema types and the resolvers parents */
@@ -130,7 +129,6 @@ export type ResolversParentTypes = {
   Query: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
-  TaskController: Schema.Scalars["TaskController"];
 };
 
 export interface DateTimeScalarConfig
@@ -155,15 +153,9 @@ export interface RelativeDateTimeScalarConfig
   name: "RelativeDateTime";
 }
 
-export interface TaskControllerScalarConfig
-  extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
-  name: "TaskController";
-}
-
 export type Resolvers<ContextType = any> = {
   DateTime: GraphQLScalarType;
   DateTimeOffset: GraphQLScalarType;
   Query: QueryResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
-  TaskController: GraphQLScalarType;
 };

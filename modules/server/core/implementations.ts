@@ -1,24 +1,18 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import { DateTime } from "luxon";
 
-import type { Sql, WhereConditions } from "../../db";
+import type { Sql } from "../../db";
 import {
+  any,
+  all,
   In,
   IsNull,
-  LessThanOrEqual,
-  MoreThan,
   MoreThanOrEqual,
   Not,
   sql,
   where,
 } from "../../db";
-import type {
-  ContextItemsArgs,
-  ContextProjectByIdArgs,
-  TaskListItemsArgs,
-  UserInboxArgs,
-  ItemFilter,
-} from "../../schema";
 import type { Awaitable, RelativeDateTime } from "../../utils";
 import { addOffset, call, memoized, waitFor } from "../../utils";
 import type { ItemList, ResolverImpl, Transaction, Store } from "../utils";
@@ -48,20 +42,7 @@ import type {
   UserEntity,
 } from "./entities";
 import { ItemType } from "./entities";
-import type {
-  ContextResolvers,
-  FileDetailResolvers,
-  ItemResolvers,
-  ItemSetResolvers,
-  LinkDetailResolvers,
-  NoteDetailResolvers,
-  ServiceDetailResolvers,
-  ServiceListResolvers,
-  ProjectResolvers,
-  SectionResolvers,
-  TaskInfoResolvers,
-  UserResolvers,
-} from "./schema";
+import type { UserResolvers } from "./schema";
 import { ServiceManager } from "./services";
 import { buildServiceTransaction } from "./transaction";
 
@@ -69,90 +50,87 @@ export type TaskList = Project | Context;
 export type ItemHolder = TaskList | Section;
 export type ItemDetail = NoteDetail | LinkDetail | ServiceDetail | FileDetail;
 
-function isSet(val: unknown): boolean {
-  return val !== undefined && val !== null;
-}
-
 function todo(): never {
   throw new Error("Not yet implemented");
 }
 
-type ItemSetParams = {
-  [K in keyof ItemEntity as `Item.${K}`]: ItemEntity[K];
-} & {
-  [K in keyof TaskInfoEntity as `TaskInfo.${K}`]: TaskInfoEntity[K];
-};
+export interface ItemFilter {
+  itemHolderId?: string | null;
+  isTask?: boolean;
+  dueBefore?: DateTime;
+  dueAfter?: DateTime;
+  doneBefore?: DateTime;
+  doneAfter?: DateTime;
+  isDue?: boolean;
+  isDone?: boolean;
+  isSnoozed?: boolean;
+  isArchived?: boolean;
+}
 
-export class ItemSet implements ResolverImpl<ItemSetResolvers> {
-  private readonly query: Sql;
+function filterToSql(filter: ItemFilter): Sql {
+  let conditions: Sql[] = [];
 
-  public constructor(
-    protected readonly tx: Transaction,
-    conditions: WhereConditions<ItemSetParams>,
-    private readonly order: Sql,
-    filter: ItemFilter | null = null,
-  ) {
-    let tables = sql`
-      ${ref(Item)} AS "Item"
-      LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
-    `;
-
-    if (filter) {
-      if (
-        isSet(filter.isTask) ||
-        filter.dueAfter ||
-        filter.dueBefore ||
-        filter.isPending === false
-      ) {
-        if (filter.dueBefore || filter.dueAfter) {
-          conditions["TaskInfo.due"] = Not(IsNull());
-
-          let now = DateTime.now();
-          if (filter.dueBefore) {
-            let dueBefore = DateTime.isDateTime(filter.dueBefore)
-              ? filter.dueBefore
-              : addOffset(now, filter.dueBefore);
-            conditions["TaskInfo.due"] = LessThanOrEqual(dueBefore);
-          }
-          if (filter.dueAfter) {
-            let dueAfter = DateTime.isDateTime(filter.dueAfter)
-              ? filter.dueAfter
-              : addOffset(now, filter.dueAfter);
-            conditions["TaskInfo.due"] = MoreThan(dueAfter);
-          }
-        }
-        if (filter.isPending === false) {
-          conditions["TaskInfo.done"] = Not(IsNull());
-        }
-      } else if (filter.isPending) {
-        conditions["TaskInfo.done"] = IsNull();
-      }
-      if (filter.isSnoozed === true) {
-        conditions["Item.snoozed"] = Not(IsNull());
-      } else if (filter.isSnoozed === false) {
-        conditions["Item.snoozed"] = IsNull();
-      }
-      if (filter.isArchived === true) {
-        conditions["Item.archived"] = Not(IsNull());
-      } else if (filter.isArchived === false) {
-        conditions["Item.archived"] = IsNull();
-      }
-    }
-
-    this.query = sql`${tables} WHERE ${where(conditions)}`;
+  if (filter.itemHolderId) {
+    conditions.push(sql`"Item"."sectionId" = ${filter.itemHolderId}`);
+  } else if (filter.itemHolderId === null) {
+    conditions.push(sql`"Item"."sectionId" IS NULL`);
   }
 
-  public async count(): Promise<number> {
-    return this.tx.db.value<number>(
-      sql`SELECT COUNT(*)::integer FROM ${this.query}`,
+  if (filter.isTask) {
+    conditions.push(sql`"TaskInfo"."id" IS NOT NULL`);
+  } else if (filter.isTask === false) {
+    conditions.push(sql`"TaskInfo"."id" IS NULL`);
+  }
+
+  if (filter.dueBefore) {
+    conditions.push(sql`"TaskInfo"."due" < ${filter.dueBefore}`);
+  }
+  if (filter.dueAfter) {
+    conditions.push(sql`"TaskInfo"."due" > ${filter.dueAfter}`);
+  }
+
+  if (filter.doneBefore) {
+    conditions.push(sql`"TaskInfo"."done" < ${filter.doneBefore}`);
+  }
+  if (filter.doneAfter) {
+    conditions.push(sql`"TaskInfo"."done" > ${filter.doneAfter}`);
+  }
+
+  if (filter.isDone) {
+    conditions.push(sql`"TaskInfo"."done" IS NOT NULL`);
+  } else if (filter.isDone === false) {
+    conditions.push(sql`"TaskInfo"."done" IS NULL`);
+  }
+
+  if (filter.isDue) {
+    conditions.push(sql`"TaskInfo"."due" IS NOT NULL`);
+  } else if (filter.isDue === false) {
+    conditions.push(sql`"TaskInfo"."due" IS NULL`);
+  }
+
+  if (filter.isSnoozed) {
+    conditions.push(sql`"Item"."snoozed" > ${DateTime.now()}`);
+  } else if (filter.isSnoozed === false) {
+    conditions.push(
+      sql`("Item"."snoozed" <= ${DateTime.now()} OR "Item"."snoozed" IS NULL)`,
     );
   }
 
-  public async items(): Promise<Item[]> {
-    return Item.store(this.tx).list(
-      sql`SELECT "Item".* FROM ${this.query} ORDER BY ${this.order}`,
-    );
+  if (filter.isArchived) {
+    conditions.push(sql`"Item"."archived" IS NOT NULL`);
+  } else if (filter.isArchived === false) {
+    conditions.push(sql`"Item"."archived" IS NULL`);
   }
+
+  return all(conditions);
+}
+
+function filtersToSql(filters: ItemFilter | ItemFilter[]): Sql {
+  if (!Array.isArray(filters)) {
+    return filterToSql(filters);
+  }
+
+  return any(filters.map(filterToSql));
 }
 
 export type UserState = Omit<UserEntity, "password"> & {
@@ -212,18 +190,6 @@ export class User
   public async contexts(): Promise<Context[]> {
     return Context.store(this.tx).find({ userId: this.id });
   }
-
-  public async inbox({ filter }: UserInboxArgs): Promise<ItemSet> {
-    return new ItemSet(
-      this.tx,
-      {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "Item.sectionId": IsNull(),
-      },
-      sql`"Item"."created" DESC`,
-      filter,
-    );
-  }
 }
 
 export abstract class ItemHolderBase<
@@ -248,11 +214,6 @@ export abstract class ItemHolderBase<
 
   public async section(): Promise<Section> {
     return Section.store(this.tx).get(this.id);
-  }
-
-  public async items({ filter }: TaskListItemsArgs): Promise<ItemSet> {
-    let section = await this.section();
-    return section.items({ filter });
   }
 }
 
@@ -300,10 +261,7 @@ export type ContextState = ContextParams &
     __typename: "Context";
   };
 
-export class Context
-  extends TaskListBase<ContextEntity>
-  implements ResolverImpl<ContextResolvers>
-{
+export class Context extends TaskListBase<ContextEntity> {
   public static readonly store = storeBuilder(Context, "core.Context");
 
   public static async create(
@@ -363,14 +321,6 @@ export class Context
       parentId: Not(IsNull()),
     });
   }
-
-  public projectById({ id }: ContextProjectByIdArgs): Promise<Project | null> {
-    return Project.store(this.tx).findOne({
-      contextId: this.id,
-      parentId: Not(IsNull()),
-      id,
-    });
-  }
 }
 
 export type ProjectParams = Omit<
@@ -383,10 +333,7 @@ export type ProjectState = ProjectParams &
     __typename: "Project";
   };
 
-export class Project
-  extends TaskListBase<ProjectEntity>
-  implements ResolverImpl<ProjectResolvers>
-{
+export class Project extends TaskListBase<ProjectEntity> {
   public static readonly store = storeBuilder(Project, "core.Project");
 
   public static async create(
@@ -468,10 +415,7 @@ export type SectionState = SectionParams &
     __typename: "Section";
   };
 
-export class Section
-  extends ItemHolderBase<SectionEntity>
-  implements ResolverImpl<SectionResolvers>
-{
+export class Section extends ItemHolderBase<SectionEntity> {
   public static readonly store = storeBuilder(Section, "core.Section");
 
   public static async create(
@@ -535,18 +479,6 @@ export class Section
   ): Promise<void> {
     todo();
   }
-
-  public override async items({ filter }: ContextItemsArgs): Promise<ItemSet> {
-    return new ItemSet(
-      this.tx,
-      {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        "Item.sectionId": this.id,
-      },
-      sql`"Item"."sectionIndex" ASC`,
-      filter,
-    );
-  }
 }
 
 export type ItemParams = Omit<
@@ -561,10 +493,7 @@ export type ItemState = ItemParams &
     detail: ItemDetailState | null;
   };
 
-export class Item
-  extends IdentifiedEntityImpl<ItemEntity>
-  implements ResolverImpl<ItemResolvers>
-{
+export class Item extends IdentifiedEntityImpl<ItemEntity> {
   public static readonly store = storeBuilder(Item, "core.Item");
 
   public static async create(
@@ -612,6 +541,40 @@ export class Item
         sql`DELETE FROM ${ref(Item)} WHERE "id" IN (${items})`,
       );
     });
+  }
+
+  private static listQuery(
+    filters: ItemFilter | ItemFilter[] | null | undefined,
+  ): Sql {
+    let tables = sql`
+      FROM ${ref(Item)} AS "Item"
+        LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
+    `;
+
+    if (filters) {
+      return sql`${tables} WHERE ${filtersToSql(filters)}`;
+    }
+
+    return tables;
+  }
+
+  public static count(
+    tx: Transaction,
+    filters?: ItemFilter | ItemFilter[] | null,
+  ): Promise<number> {
+    return tx.db.value(
+      sql`SELECT COUNT(*)::integer ${Item.listQuery(filters)}`,
+    );
+  }
+
+  public static list(
+    tx: Transaction,
+    filters?: ItemFilter | ItemFilter[] | null,
+  ): Promise<Item[]> {
+    return Item.store(tx).list(sql`
+      SELECT "Item".* ${Item.listQuery(filters)}
+      ORDER BY "Item"."sectionIndex" ASC, "Item"."created" DESC
+    `);
   }
 
   public get type(): ItemType | null {
@@ -741,10 +704,7 @@ export type TaskInfoState = Pick<
   __typename: "TaskInfo";
 };
 
-export class TaskInfo
-  extends ItemProperty<TaskInfoEntity>
-  implements ResolverImpl<TaskInfoResolvers>
-{
+export class TaskInfo extends ItemProperty<TaskInfoEntity> {
   public static readonly store = storeBuilder(TaskInfo, "core.TaskInfo");
 
   public static async updateTaskDetails(
@@ -917,10 +877,7 @@ export type LinkDetailState = LinkDetailParams &
     __typename: "LinkDetail";
   };
 
-export class LinkDetail
-  extends ItemDetailImpl<LinkDetailEntity>
-  implements ResolverImpl<LinkDetailResolvers>
-{
+export class LinkDetail extends ItemDetailImpl<LinkDetailEntity> {
   public static readonly store = storeBuilder(LinkDetail, "core.LinkDetail");
 
   public static create(
@@ -963,10 +920,7 @@ export type FileDetailState = FileDetailParams &
     __typename: "FileDetail";
   };
 
-export class FileDetail
-  extends ItemDetailImpl<FileDetailEntity>
-  implements ResolverImpl<FileDetailResolvers>
-{
+export class FileDetail extends ItemDetailImpl<FileDetailEntity> {
   public static readonly store = storeBuilder(FileDetail, "core.FileDetail");
 
   public static create(
@@ -1010,10 +964,7 @@ export type NoteDetailState = NoteDetailParams & {
   __typename: "NoteDetail";
 };
 
-export class NoteDetail
-  extends ItemDetailImpl<NoteDetailEntity>
-  implements ResolverImpl<NoteDetailResolvers>
-{
+export class NoteDetail extends ItemDetailImpl<NoteDetailEntity> {
   public static readonly store = storeBuilder(NoteDetail, "core.NoteDetail");
 
   public static create(
@@ -1043,16 +994,16 @@ export class NoteDetail
 
 export type ServiceDetailState = Omit<
   ServiceDetailEntity,
-  "id" | "hasTaskState" | "taskDue" | "taskDone"
+  "id" | "taskDue" | "taskDone"
 > & {
   __typename: "ServiceDetail";
+  wasEverListed: boolean;
+  isCurrentlyListed: boolean;
   fields: unknown;
+  lists: ServiceListState[];
 };
 
-export class ServiceDetail
-  extends ItemDetailImpl<ServiceDetailEntity>
-  implements ResolverImpl<ServiceDetailResolvers>
-{
+export class ServiceDetail extends ItemDetailImpl<ServiceDetailEntity> {
   public static readonly store = storeBuilder(
     ServiceDetail,
     "core.ServiceDetail",
@@ -1088,11 +1039,19 @@ export class ServiceDetail
   }
 
   public get state(): Promise<ServiceDetailState> {
-    return (async (): Promise<ServiceDetailState> => ({
-      __typename: "ServiceDetail",
-      serviceId: this.serviceId,
-      fields: JSON.parse(await this.fields()),
-    }))();
+    return (async (): Promise<ServiceDetailState> => {
+      let lists = await this.lists();
+
+      return {
+        __typename: "ServiceDetail",
+        serviceId: this.serviceId,
+        hasTaskState: this.hasTaskState,
+        wasEverListed: await this.wasEverListed(),
+        isCurrentlyListed: lists.length > 0,
+        lists: lists.map((list: ServiceList): ServiceListState => list.state),
+        fields: JSON.parse(await this.fields()),
+      };
+    })();
   }
 
   public async fields(): Promise<string> {
@@ -1146,10 +1105,11 @@ function calcDue(
   return addOffset(now, offset);
 }
 
-export class ServiceList
-  extends IdentifiedEntityImpl<ServiceListEntity>
-  implements ResolverImpl<ServiceListResolvers>
-{
+export type ServiceListState = ServiceListEntity & {
+  __typename: "ServiceList";
+};
+
+export class ServiceList extends IdentifiedEntityImpl<ServiceListEntity> {
   public static readonly store = storeBuilder(ServiceList, "core.ServiceList");
 
   public static async create(
@@ -1180,6 +1140,13 @@ export class ServiceList
 
   public get url(): string | null {
     return this.entity.url;
+  }
+
+  public get state(): ServiceListState {
+    return {
+      __typename: "ServiceList",
+      ...this.entity,
+    };
   }
 
   protected async setItems(

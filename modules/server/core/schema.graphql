@@ -1,126 +1,12 @@
-type TaskInfo {
-  due: DateTime
-  done: DateTime
-  controller: TaskController!
-}
-
-type ServiceDetail {
-  serviceId: String!
-  hasTaskState: Boolean!
-  wasEverListed: Boolean!
-  isCurrentlyListed: Boolean!
-  fields: String!
-  lists: [ServiceList!]!
-}
-
-type FileDetail {
-  filename: String!
-  mimetype: String!
-  size: Int!
-}
-
-type NoteDetail {
-  note: String!
-}
-
-type LinkDetail {
-  icon: String
-  url: String!
-}
-
-union ItemDetail = ServiceDetail | LinkDetail | NoteDetail | FileDetail
-
-type ServiceList {
-  id: ID!
-  serviceId: String!
-  name: String!
-  url: String
-}
-
-type Item {
-  id: ID!
-  summary: String!
-  created: DateTime!
-  archived: DateTime
-  snoozed: DateTime
-
-  taskInfo: TaskInfo
-  detail: ItemDetail
-}
-
-input ItemFilter {
-  # True includes only items that are snoozed. False includes only items that are not snoozed.
-  isSnoozed: Boolean
-  # True includes only items that are archived. False includes only items that are not archived.
-  isArchived: Boolean
-  # Includes only tasks that are due before the given time (tasks with no due date are not included).
-  dueBefore: RelativeDateTime
-  # Includes only tasks that are due after the given time (tasks with no due date are not included).
-  dueAfter: RelativeDateTime
-  # Includes only items that are tasks.
-  isTask: Boolean
-  # True includes only items that are not tasks or are tasks that are not yet complete. False includes
-  # only items that are tasks and complete.
-  isPending: Boolean
-}
-
-type ItemSet {
-  count: Int!
-  items: [Item!]!
-}
-
-interface TaskList {
-  subprojects: [Project!]!
-  sections: [Section!]!
-  items(filter: ItemFilter): ItemSet!
-}
-
 type User {
   id: ID!
   email: String!
-  contexts: [Context!]!
-  inbox(filter: ItemFilter): ItemSet!
   isAdmin: Boolean!
-}
-
-type Context implements TaskList {
-  # TaskList
-  subprojects: [Project!]!
-  sections: [Section!]!
-  items(filter: ItemFilter): ItemSet!
-
-  id: ID!
-  user: User!
-  stub: String!
-  name: String!
-
-  projects: [Project!]!
-  projectById(id: ID!): Project
-}
-
-type Project implements TaskList {
-  # TaskList
-  subprojects: [Project!]!
-  sections: [Section!]!
-  items(filter: ItemFilter): ItemSet!
-
-  id: ID!
-  stub: String!
-  name: String!
-  taskList: TaskList!
-}
-
-type Section {
-  items(filter: ItemFilter): ItemSet!
-
-  id: ID!
-  name: String!
 }
 
 type Query {
   user: User
   users: [User!]!
-  taskList(id: ID!): TaskList
 }
 
 type Mutation {

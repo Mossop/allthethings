@@ -2,7 +2,6 @@
 import type { DateTime } from "luxon";
 import type { DateTimeOffset } from "./types";
 import type { RelativeDateTime } from "./types";
-import type { TaskController } from "./types";
 export type Maybe<T> = T | null;
 export type Exact<T extends { [key: string]: unknown }> = {
   [K in keyof T]: T[K];
@@ -23,7 +22,6 @@ export type Scalars = {
   DateTime: DateTime;
   DateTimeOffset: DateTimeOffset;
   RelativeDateTime: RelativeDateTime;
-  TaskController: TaskController;
 };
 
 export type BugzillaAccount = {
@@ -59,38 +57,10 @@ export type BugzillaSearchParams = {
   readonly query: Scalars["String"];
 };
 
-export type Context = TaskList & {
-  readonly __typename: "Context";
-  readonly id: Scalars["ID"];
-  readonly items: ItemSet;
-  readonly name: Scalars["String"];
-  readonly projectById?: Maybe<Project>;
-  readonly projects: ReadonlyArray<Project>;
-  readonly sections: ReadonlyArray<Section>;
-  readonly stub: Scalars["String"];
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly user: User;
-};
-
-export type ContextItemsArgs = {
-  filter?: Maybe<ItemFilter>;
-};
-
-export type ContextProjectByIdArgs = {
-  id: Scalars["ID"];
-};
-
 export type CreatePhabricatorAccountParams = {
   readonly apiKey: Scalars["String"];
   readonly queries: ReadonlyArray<Scalars["ID"]>;
   readonly url: Scalars["String"];
-};
-
-export type FileDetail = {
-  readonly __typename: "FileDetail";
-  readonly filename: Scalars["String"];
-  readonly mimetype: Scalars["String"];
-  readonly size: Scalars["Int"];
 };
 
 export type GithubAccount = {
@@ -141,34 +111,6 @@ export type GoogleMailSearchParams = {
   readonly query: Scalars["String"];
 };
 
-export type Item = {
-  readonly __typename: "Item";
-  readonly archived?: Maybe<Scalars["DateTime"]>;
-  readonly created: Scalars["DateTime"];
-  readonly detail?: Maybe<ItemDetail>;
-  readonly id: Scalars["ID"];
-  readonly snoozed?: Maybe<Scalars["DateTime"]>;
-  readonly summary: Scalars["String"];
-  readonly taskInfo?: Maybe<TaskInfo>;
-};
-
-export type ItemDetail = FileDetail | LinkDetail | NoteDetail | ServiceDetail;
-
-export type ItemFilter = {
-  readonly dueAfter?: Maybe<Scalars["RelativeDateTime"]>;
-  readonly dueBefore?: Maybe<Scalars["RelativeDateTime"]>;
-  readonly isArchived?: Maybe<Scalars["Boolean"]>;
-  readonly isPending?: Maybe<Scalars["Boolean"]>;
-  readonly isSnoozed?: Maybe<Scalars["Boolean"]>;
-  readonly isTask?: Maybe<Scalars["Boolean"]>;
-};
-
-export type ItemSet = {
-  readonly __typename: "ItemSet";
-  readonly count: Scalars["Int"];
-  readonly items: ReadonlyArray<Item>;
-};
-
 export type JiraAccount = {
   readonly __typename: "JiraAccount";
   readonly apiToken: Scalars["String"];
@@ -199,12 +141,6 @@ export type JiraSearchParams = {
   readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
   readonly name: Scalars["String"];
   readonly query: Scalars["String"];
-};
-
-export type LinkDetail = {
-  readonly __typename: "LinkDetail";
-  readonly icon?: Maybe<Scalars["String"]>;
-  readonly url: Scalars["String"];
 };
 
 export type Mutation = {
@@ -333,11 +269,6 @@ export type MutationUpdatePhabricatorAccountArgs = {
   params: UpdatePhabricatorAccountParams;
 };
 
-export type NoteDetail = {
-  readonly __typename: "NoteDetail";
-  readonly note: Scalars["String"];
-};
-
 export type PhabricatorAccount = {
   readonly __typename: "PhabricatorAccount";
   readonly apiKey: Scalars["String"];
@@ -355,79 +286,13 @@ export type PhabricatorQuery = {
   readonly queryId: Scalars["ID"];
 };
 
-export type Project = TaskList & {
-  readonly __typename: "Project";
-  readonly id: Scalars["ID"];
-  readonly items: ItemSet;
-  readonly name: Scalars["String"];
-  readonly sections: ReadonlyArray<Section>;
-  readonly stub: Scalars["String"];
-  readonly subprojects: ReadonlyArray<Project>;
-  readonly taskList: Context | Project;
-};
-
-export type ProjectItemsArgs = {
-  filter?: Maybe<ItemFilter>;
-};
-
 export type Query = {
   readonly __typename: "Query";
   readonly githubLoginUrl: Scalars["String"];
   readonly googleLoginUrl: Scalars["String"];
   readonly schemaVersion: Scalars["String"];
-  readonly taskList?: Maybe<Context | Project>;
   readonly user?: Maybe<User>;
   readonly users: ReadonlyArray<User>;
-};
-
-export type QueryTaskListArgs = {
-  id: Scalars["ID"];
-};
-
-export type Section = {
-  readonly __typename: "Section";
-  readonly id: Scalars["ID"];
-  readonly items: ItemSet;
-  readonly name: Scalars["String"];
-};
-
-export type SectionItemsArgs = {
-  filter?: Maybe<ItemFilter>;
-};
-
-export type ServiceDetail = {
-  readonly __typename: "ServiceDetail";
-  readonly fields: Scalars["String"];
-  readonly hasTaskState: Scalars["Boolean"];
-  readonly isCurrentlyListed: Scalars["Boolean"];
-  readonly lists: ReadonlyArray<ServiceList>;
-  readonly serviceId: Scalars["String"];
-  readonly wasEverListed: Scalars["Boolean"];
-};
-
-export type ServiceList = {
-  readonly __typename: "ServiceList";
-  readonly id: Scalars["ID"];
-  readonly name: Scalars["String"];
-  readonly serviceId: Scalars["String"];
-  readonly url?: Maybe<Scalars["String"]>;
-};
-
-export type TaskInfo = {
-  readonly __typename: "TaskInfo";
-  readonly controller: Scalars["TaskController"];
-  readonly done?: Maybe<Scalars["DateTime"]>;
-  readonly due?: Maybe<Scalars["DateTime"]>;
-};
-
-export type TaskList = {
-  readonly items: ItemSet;
-  readonly sections: ReadonlyArray<Section>;
-  readonly subprojects: ReadonlyArray<Project>;
-};
-
-export type TaskListItemsArgs = {
-  filter?: Maybe<ItemFilter>;
 };
 
 export type UpdatePhabricatorAccountParams = {
@@ -439,18 +304,12 @@ export type UpdatePhabricatorAccountParams = {
 export type User = {
   readonly __typename: "User";
   readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
-  readonly contexts: ReadonlyArray<Context>;
   readonly email: Scalars["String"];
   readonly githubAccounts: ReadonlyArray<GithubAccount>;
   readonly googleAccounts: ReadonlyArray<GoogleAccount>;
   readonly id: Scalars["ID"];
-  readonly inbox: ItemSet;
   readonly isAdmin: Scalars["Boolean"];
   readonly jiraAccounts: ReadonlyArray<JiraAccount>;
   readonly phabricatorAccounts: ReadonlyArray<PhabricatorAccount>;
   readonly phabricatorQueries: ReadonlyArray<PhabricatorQuery>;
-};
-
-export type UserInboxArgs = {
-  filter?: Maybe<ItemFilter>;
 };

@@ -321,3 +321,9 @@ let url = new URL(document.URL);
 let port = url.port ? parseInt(url.port) : 80;
 let baseUrl = `http://${url.hostname}:${port + 10}`;
 export const api = new Api({ baseUrl });
+
+export const itemRefreshTokens: Token[] = [
+  api.state.getState,
+  api.project.listContents,
+  api.item.listItems,
+];

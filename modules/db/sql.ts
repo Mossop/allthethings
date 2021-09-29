@@ -50,6 +50,10 @@ export interface Sql {
   readonly parameters: readonly unknown[];
 }
 
+export function isSql(val: unknown): val is Sql {
+  return val instanceof RawSql;
+}
+
 class RawSql implements Sql {
   public constructor(
     public readonly parts: readonly string[],

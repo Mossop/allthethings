@@ -129,7 +129,6 @@ export type ResolversTypes = {
   Mutation: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
-  TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
   User: ResolverTypeWrapper<
     Omit<Schema.User, "bugzillaAccounts"> & {
       bugzillaAccounts: ReadonlyArray<ResolversTypes["BugzillaAccount"]>;
@@ -150,7 +149,6 @@ export type ResolversParentTypes = {
   Mutation: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
-  TaskController: Schema.Scalars["TaskController"];
   User: Omit<Schema.User, "bugzillaAccounts"> & {
     bugzillaAccounts: ReadonlyArray<ResolversParentTypes["BugzillaAccount"]>;
   };
@@ -249,11 +247,6 @@ export interface RelativeDateTimeScalarConfig
   name: "RelativeDateTime";
 }
 
-export interface TaskControllerScalarConfig
-  extends GraphQLScalarTypeConfig<ResolversTypes["TaskController"], any> {
-  name: "TaskController";
-}
-
 export type UserResolvers<
   ContextType = any,
   ParentType extends ResolversParentTypes["User"] = ResolversParentTypes["User"],
@@ -273,6 +266,5 @@ export type Resolvers<ContextType = any> = {
   DateTimeOffset: GraphQLScalarType;
   Mutation: MutationResolvers<ContextType>;
   RelativeDateTime: GraphQLScalarType;
-  TaskController: GraphQLScalarType;
   User: UserResolvers<ContextType>;
 };

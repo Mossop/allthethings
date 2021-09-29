@@ -5,7 +5,6 @@ import { DateTime } from "luxon";
 
 import type { DateTimeOffset, RelativeDateTime } from "../../utils";
 import { offsetFromJson, relativeDateTimeFromJson } from "../../utils";
-import type { TaskController } from "../utils";
 import { rootResolvers } from "../utils";
 import type { Resolvers } from "./schema";
 
@@ -48,12 +47,6 @@ export default rootResolvers<Resolvers>({
     (value: RelativeDateTime): string => JSON.stringify(value),
     (value: string): RelativeDateTime =>
       relativeDateTimeFromJson(JSON.parse(value)),
-  ),
-
-  TaskController: scalarType<TaskController>(
-    "TaskController",
-    (value: TaskController): string => value,
-    (value: string): TaskController => value as TaskController,
   ),
 
   Query: {

@@ -129,9 +129,15 @@ export function map<T, R>(
   mapper: (val: T) => Awaitable<R>,
 ): R[] | Promise<R[]> {
   if (isPromise(values)) {
-    return values.then(
-      (values: T[]): Promise<R[]> => Promise.all(values.map(mapper)),
-    );
+    return values.then(async (values: T[]): Promise<R[]> => {
+      let results: R[] = [];
+
+      for (let value of values) {
+        results.push(await mapper(value));
+      }
+
+      return results;
+    });
   }
 
   // @ts-ignore

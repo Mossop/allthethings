@@ -18,8 +18,7 @@ interface CreateSectionProps {
 }
 
 const useCreateSectionMutation = mutationHook(api.section.createSection, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: [api.project.listContents],
 });
 
 export default ReactMemo(function CreateSectionDialog({

@@ -10,6 +10,7 @@ import {
   FormState,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
@@ -22,8 +23,7 @@ interface LinkDialogProps {
 }
 
 const useCreateLinkMutation = mutationHook(api.item.createLink, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export default ReactMemo(function LinkDialog({

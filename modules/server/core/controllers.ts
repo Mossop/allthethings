@@ -14,15 +14,21 @@ import {
   Patch,
   Delete,
 } from "@tsoa/runtime";
-import type { DateTime } from "luxon";
+import { DateTime } from "luxon";
 
 import { ItemHolderBase } from ".";
 import { sql } from "../../db";
 // eslint-disable-next-line import/extensions
 import schema from "../../schema/openapi.json";
-import { decodeDateTime, decodeRelativeDateTime, map } from "../../utils";
+import {
+  addOffset,
+  decodeDateTime,
+  decodeRelativeDateTime,
+  map,
+} from "../../utils";
 import type { Problem, Transaction } from "../utils";
 import {
+  ref,
   TaskController,
   bestIcon,
   loadPageInfo,
@@ -43,6 +49,7 @@ import type {
   ItemHolder,
   ItemState,
   LinkDetailParams,
+  ItemFilter,
 } from "./implementations";
 import {
   ServiceListItem,
@@ -82,6 +89,52 @@ interface LoginParams {
 let hasher = createHash("sha256");
 hasher.update(JSON.stringify(schema));
 let schemaVersion = hasher.digest("hex");
+
+export interface ApiItemFilter {
+  itemHolderId?: string | null;
+  isTask?: boolean;
+  dueBefore?: string;
+  dueAfter?: string;
+  doneBefore?: string;
+  doneAfter?: string;
+  isDue?: boolean;
+  isDone?: boolean;
+  isSnoozed?: boolean;
+  isArchived?: boolean;
+}
+
+function intoItemFilter(filter: ApiItemFilter): ItemFilter {
+  let makeDate = (val: string | undefined): DateTime | undefined => {
+    if (!val) {
+      return undefined;
+    }
+
+    let relative = decodeRelativeDateTime(val);
+    if (DateTime.isDateTime(relative)) {
+      return relative;
+    }
+
+    return addOffset(DateTime.now(), relative);
+  };
+
+  return {
+    ...filter,
+    dueBefore: makeDate(filter.dueBefore),
+    dueAfter: makeDate(filter.dueAfter),
+    doneBefore: makeDate(filter.doneBefore),
+    doneAfter: makeDate(filter.doneAfter),
+  };
+}
+
+function intoItemFilters(
+  filters: ApiItemFilter | ApiItemFilter[],
+): ItemFilter[] {
+  if (!Array.isArray(filters)) {
+    return [intoItemFilter(filters)];
+  }
+
+  return filters.map(intoItemFilter);
+}
 
 @Route()
 export class MainController extends CoreController {
@@ -164,8 +217,17 @@ export interface ServerState {
 
 @Route("/state")
 export class StateController extends CoreController {
-  @Get()
-  public async getState(@Query() dueBefore: string): Promise<ServerState> {
+  @Post()
+  public async getState(
+    @Body()
+    {
+      itemFilter,
+    }: {
+      itemFilter:
+        | Omit<ApiItemFilter, "itemHolderId">
+        | Omit<ApiItemFilter, "itemHolderId">[];
+    },
+  ): Promise<ServerState> {
     let tx = await this.startTransaction(false);
 
     let user: ServerUserState | null = null;
@@ -175,47 +237,42 @@ export class StateController extends CoreController {
     });
 
     if (this.userId) {
+      let filters = intoItemFilters(itemFilter);
       let userImpl = await User.store(tx).findOne({ id: this.userId });
 
-      if (userImpl) {
-        let before = decodeRelativeDateTime(dueBefore);
+      let withItemHolderId = (id: string): ItemFilter[] => {
+        return filters.map(
+          (filter: ItemFilter): ItemFilter => ({
+            ...filter,
+            itemHolderId: id,
+          }),
+        );
+      };
 
-        let inbox = await userImpl.inbox({
-          filter: { isArchived: false, isSnoozed: false, isPending: true },
+      if (userImpl) {
+        let inboxItems = await Item.count(tx, {
+          itemHolderId: null,
+          isArchived: false,
+          isSnoozed: false,
+          isDone: false,
         });
 
         let contexts = await map(
           userImpl.contexts(),
           async (context: Context): Promise<ServerContextState> => {
-            let tasks = await context.items({
-              filter: {
-                isArchived: false,
-                isSnoozed: false,
-                dueBefore: before,
-              },
-            });
-
             let projects = await map(
               context.projects(),
               async (project: Project): Promise<ServerProjectState> => {
-                let tasks = await context.items({
-                  filter: {
-                    isArchived: false,
-                    isSnoozed: false,
-                    dueBefore: before,
-                  },
-                });
-
                 return {
                   ...project.state,
-                  dueTasks: await tasks.count(),
+                  dueTasks: await Item.count(tx, withItemHolderId(project.id)),
                 };
               },
             );
 
             return {
               ...context.state,
-              dueTasks: await tasks.count(),
+              dueTasks: await Item.count(tx, withItemHolderId(context.id)),
               projects,
             };
           },
@@ -223,7 +280,7 @@ export class StateController extends CoreController {
 
         user = {
           ...userImpl.state,
-          inbox: await inbox.count(),
+          inbox: inboxItems,
           contexts,
         };
       }
@@ -236,6 +293,22 @@ export class StateController extends CoreController {
     };
   }
 }
+
+export type SectionContents = SectionState & {
+  items: ItemState[];
+};
+
+export type ProjectContents = ProjectState & {
+  items: ItemState[];
+
+  sections: SectionContents[];
+};
+
+export type ContextContents = ContextState & {
+  items: ItemState[];
+
+  sections: SectionContents[];
+};
 
 @Route("/project")
 export class ProjectController extends CoreController {
@@ -254,6 +327,71 @@ export class ProjectController extends CoreController {
 
     let project = await Project.create(tx, taskList, params);
     return project.state;
+  }
+
+  @Authenticated(false)
+  @Post("/contents")
+  public async listContents(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      itemFilter,
+    }: {
+      id: string;
+      itemFilter?:
+        | Omit<ApiItemFilter, "itemHolderId">
+        | Omit<ApiItemFilter, "itemHolderId">[];
+    },
+  ): Promise<ProjectContents | ContextContents> {
+    let taskList = await TaskListBase.getTaskList(tx, id);
+    if (!taskList) {
+      throw new NotFoundError();
+    }
+
+    let filters = itemFilter ? intoItemFilters(itemFilter) : null;
+
+    let withItemHolderId = (id: string): ItemFilter[] => {
+      if (!filters) {
+        return [
+          {
+            itemHolderId: id,
+          },
+        ];
+      }
+
+      return filters.map(
+        (filter: ItemFilter): ItemFilter => ({
+          ...filter,
+          itemHolderId: id,
+        }),
+      );
+    };
+
+    let sections = await map(
+      taskList.sections(),
+      async (section: Section): Promise<SectionContents> => {
+        let items = Item.list(tx, withItemHolderId(section.id));
+
+        return {
+          ...section.state,
+
+          items: await map(
+            items,
+            (item: Item): Promise<ItemState> => item.state,
+          ),
+        };
+      },
+    );
+
+    let items = Item.list(tx, withItemHolderId(taskList.id));
+
+    return {
+      ...taskList.state,
+      items: await map(items, (item: Item): Promise<ItemState> => item.state),
+      sections,
+    };
   }
 
   @Authenticated(true)
@@ -413,6 +551,25 @@ export class SectionController extends CoreController {
 
 @Route("/item")
 export class ItemController extends CoreController {
+  @Authenticated(false)
+  @Post("/list")
+  public async listItems(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      itemFilter,
+    }: {
+      itemFilter: ApiItemFilter | ApiItemFilter[];
+    },
+  ): Promise<ItemState[]> {
+    let filters = intoItemFilters(itemFilter);
+    return map(
+      Item.list(tx, filters),
+      (item: Item): Promise<ItemState> => item.state,
+    );
+  }
+
   @Authenticated(true)
   @Put("/task")
   public async createTask(
@@ -609,7 +766,7 @@ export class ItemController extends CoreController {
               MIN("due") AS "due",
               MAX("done") AS "done",
               COUNT("done")::integer AS "doneCount"
-            FROM ${sql.ref(ServiceListItem.store.table)}
+            FROM ${ref(ServiceListItem)}
             WHERE "itemId" = ${id}
           `,
         ))!;

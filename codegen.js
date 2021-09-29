@@ -165,18 +165,6 @@ module.exports = {
       plugins: {
         ...resolverPlugins("../../schema", {
           User: "./implementations#User",
-          Context: "./implementations#Context",
-          Project: "./implementations#Project",
-          Section: "./implementations#Section",
-          TaskList: "./implementations#TaskList",
-          Item: "./implementations#Item",
-          TaskInfo: "./implementations#TaskInfo",
-          LinkDetail: "./implementations#LinkDetail",
-          FileDetail: "./implementations#FileDetail",
-          NoteDetail: "./implementations#NoteDetail",
-          ServiceDetail: "./implementations#ServiceDetail",
-          ServiceList: "./implementations#ServiceList",
-          ItemSet: "./implementations#ItemSet",
         }),
       },
     },

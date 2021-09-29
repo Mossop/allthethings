@@ -67,8 +67,6 @@ async function init(): Promise<void> {
         });
       });
 
-      await ServiceManager.initServices(connection, config);
-
       await withTransaction(
         connection,
         segment,
@@ -91,6 +89,8 @@ async function init(): Promise<void> {
           await TaskInfo.updateTaskDetails(tx);
         },
       );
+
+      await ServiceManager.initServices(connection, config);
 
       let gqlServer = await createGqlServer();
       await createWebServer(config, connection, gqlServer);

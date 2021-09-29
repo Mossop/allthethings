@@ -43,7 +43,7 @@ export default ReactMemo(function Revision({
 }: ServiceItemProps): ReactResult {
   let classes = useStyles();
 
-  let revision = JSON.parse(fields) as RevisionFields;
+  let revision = fields as RevisionFields;
 
   return (
     <a

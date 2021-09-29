@@ -16,7 +16,9 @@ interface LoginDialogProps {
   onClosed: () => void;
 }
 
-let useLogin = mutationHook(api.login.login);
+let useLogin = mutationHook(api.login.login, {
+  refreshTokens: [api.state.getState],
+});
 
 export default ReactMemo(function LoginDialog({
   onClosed,

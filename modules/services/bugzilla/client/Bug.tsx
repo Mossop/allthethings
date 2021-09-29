@@ -32,7 +32,7 @@ export default ReactMemo(function Bug({
 }: ServiceItemProps): ReactResult {
   let classes = useStyles();
 
-  let bug = JSON.parse(fields) as BugFields;
+  let bug = fields as BugFields;
 
   return (
     <a className={classes.link} rel="noreferrer" target="_blank" href={bug.url}>

@@ -21,7 +21,7 @@ class GoogleService implements ClientService {
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
-    let fields: GoogleFields = JSON.parse(itemProps.fields);
+    let fields: GoogleFields = itemProps.fields as GoogleFields;
     if (fields.type == "file") {
       return <File file={fields} />;
     }

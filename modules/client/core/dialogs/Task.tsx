@@ -10,6 +10,7 @@ import {
   FormState,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section, TaskItem } from "../schema";
@@ -25,13 +26,11 @@ type CreateTaskProps =
     };
 
 const useCreateTaskMutation = mutationHook(api.item.createTask, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 const useEditItemMutation = mutationHook(api.item.editItem, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export default ReactMemo(function TaskDialog({

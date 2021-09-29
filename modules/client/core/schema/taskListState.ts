@@ -1,44 +1,42 @@
+import type { DateTime } from "luxon";
+
 import type { GraphQLType } from ".";
-import type * as Schema from "../../../schema";
-import type { Overwrite, ArrayContents } from "../../../utils";
+import type { Overwrite } from "../../../utils";
+import { decodeDateTime } from "../../../utils";
+import type {
+  FileDetailState,
+  ItemState,
+  LinkDetailState,
+  NoteDetailState,
+  SectionContents,
+  ServiceDetailState,
+  ServiceListState,
+  TaskInfoState,
+} from "../../utils";
+import { api, queryHook } from "../../utils";
 import type { Inbox, TaskList } from "./contextState";
-import type { ClientItemFieldsFragment, ListTaskListQuery } from "./operations";
-import { useListTaskListQuery } from "./operations";
 
-type StateQuery = ListTaskListQuery;
-type StateQuery$TaskList = NonNullable<StateQuery["taskList"]>;
-type StateQuery$TaskList$Section = ArrayContents<
-  StateQuery$TaskList["sections"]
->;
-type StateQuery$TaskList$Item$TaskInfo = NonNullable<
-  ClientItemFieldsFragment["taskInfo"]
->;
+export type ServiceList = ServiceListState;
 
-export type ServiceList = Schema.ServiceList;
-
-export type LinkDetail = Schema.LinkDetail;
-export type NoteDetail = Schema.NoteDetail;
-export type ServiceDetail = Overwrite<
-  Schema.ServiceDetail,
-  {
-    lists: ServiceList[];
-  }
->;
-export type FileDetail = Schema.FileDetail;
+export type LinkDetail = LinkDetailState;
+export type NoteDetail = NoteDetailState;
+export type ServiceDetail = ServiceDetailState;
+export type FileDetail = FileDetailState;
 export type Detail = LinkDetail | NoteDetail | ServiceDetail | FileDetail;
 
 export type TaskInfo = Overwrite<
-  StateQuery$TaskList$Item$TaskInfo,
+  TaskInfoState,
   {
-    controller: Schema.TaskController;
+    due: DateTime | null;
+    done: DateTime | null;
   }
 >;
 
 export type Section = Overwrite<
-  StateQuery$TaskList$Section,
+  SectionContents,
   {
-    items: Item[];
     taskList: TaskList;
+    items: Item[];
   }
 >;
 
@@ -49,11 +47,13 @@ export interface TaskListContents {
 }
 
 type BaseItem = Overwrite<
-  ClientItemFieldsFragment,
+  ItemState,
   {
     parent: Section | TaskList | Inbox;
-    taskInfo: TaskInfo | null;
     detail: Detail | null;
+    snoozed: DateTime | null;
+    archived: DateTime | null;
+    taskInfo: TaskInfo | null;
   }
 >;
 
@@ -144,40 +144,49 @@ export function itemTaskList(item: Item): Inbox | TaskList {
   return sectionTaskList(item.parent);
 }
 
+function buildTaskInfo(taskInfo: TaskInfoState): TaskInfo {
+  return {
+    ...taskInfo,
+    due: decodeDateTime(taskInfo.due),
+    done: decodeDateTime(taskInfo.done),
+  };
+}
+
 export function buildItem(
   parent: TaskList | Section | Inbox,
-  queryResult: ClientItemFieldsFragment,
+  item: ItemState,
 ): Item {
   // TODO: Type correctly.
   return {
-    ...queryResult,
+    ...item,
     parent,
+    snoozed: decodeDateTime(item.snoozed),
+    archived: decodeDateTime(item.archived),
+    taskInfo: item.taskInfo ? buildTaskInfo(item.taskInfo) : null,
   } as Item;
 }
 
-function buildSection(
-  taskList: TaskList,
-  queryResult: StateQuery$TaskList$Section,
-): Section {
+function buildSection(taskList: TaskList, contents: SectionContents): Section {
   let section: Section = {
-    ...queryResult,
+    ...contents,
     taskList,
     items: [],
   };
 
-  section.items = queryResult.items.items.map(buildItem.bind(null, section));
+  section.items = contents.items.map(buildItem.bind(null, section));
   return section;
 }
 
+const useItemList = queryHook(api.project.listContents, {
+  pollInterval: 60000,
+});
+
 export function useTaskListContents(taskList: TaskList): TaskListContents {
-  let { data } = useListTaskListQuery({
-    variables: {
-      taskList: taskList.id,
-    },
-    pollInterval: 5000,
+  let [data] = useItemList({
+    id: taskList.id,
   });
 
-  if (!data?.taskList) {
+  if (!data) {
     return {
       taskList,
       items: [],
@@ -187,7 +196,7 @@ export function useTaskListContents(taskList: TaskList): TaskListContents {
 
   return {
     taskList,
-    items: data.taskList.items.items.map(buildItem.bind(null, taskList)),
-    sections: data.taskList.sections.map(buildSection.bind(null, taskList)),
+    items: data.items.map(buildItem.bind(null, taskList)),
+    sections: data.sections.map(buildSection.bind(null, taskList)),
   };
 }

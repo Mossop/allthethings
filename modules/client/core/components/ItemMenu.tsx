@@ -16,6 +16,7 @@ import {
   Menu,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import TaskDialog from "../dialogs/Task";
@@ -45,8 +46,7 @@ interface ItemMenuProps {
 }
 
 const useDeleteItemMutation = mutationHook(api.item.deleteItem, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 const ItemMenu = ReactMemo(function ItemMenu({

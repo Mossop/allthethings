@@ -20,7 +20,7 @@ class GithubService implements ClientService {
   }
 
   public renderItem(itemProps: ServiceItemProps): ReactResult {
-    let fields: IssueLikeFields = JSON.parse(itemProps.fields);
+    let fields: IssueLikeFields = itemProps.fields as IssueLikeFields;
     return <IssueLike issueLike={fields} />;
   }
 }

@@ -21,6 +21,7 @@ import {
   Menu,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import type { ReactRef, ReactResult } from "../../utils";
 import type { Item } from "../schema";
@@ -41,8 +42,7 @@ interface SnoozeMenuProps {
 }
 
 const useEditItemMutation = mutationHook(api.item.editItem, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export const WakeUpItems = ReactMemo(

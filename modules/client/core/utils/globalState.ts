@@ -30,7 +30,7 @@ export type AppState = Omit<State, "problems"> & {
 class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
   public readonly problems = new SharedState<readonly Problem[]>([]);
-  private query: Query<[{ dueBefore: string }], ServerState>;
+  private query: Query<any, ServerState>;
   private lastError: Error | null = null;
 
   public constructor() {
@@ -47,7 +47,14 @@ class GlobalStateManager {
 
     this.query = new Query(
       api.state.getState,
-      [{ dueBefore: encodeRelativeDateTime(dueBefore) }],
+      [
+        {
+          itemFilter: {
+            dueBefore: encodeRelativeDateTime(dueBefore),
+            isDone: false,
+          },
+        },
+      ],
       { pollInterval: POLL_INTERVAL },
     );
 

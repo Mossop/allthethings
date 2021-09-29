@@ -2,7 +2,6 @@ export * from "./operations";
 export * from "./contextState";
 export * from "./inboxState";
 export * from "./taskListState";
-export * from "./refetch";
 export * from "./client";
 
 export interface GraphQLType {

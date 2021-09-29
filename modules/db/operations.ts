@@ -1,5 +1,5 @@
 import type { Sql } from "./sql";
-import { sql } from "./sql";
+import { isSql, sql } from "./sql";
 
 class WhereClause<T> {
   private dummy: T | undefined = undefined;
@@ -148,11 +148,51 @@ export function update<T>(
   }
 }
 
-export function where<T>(values: WhereConditions<T>): Sql {
+export function where<T>(conditions: WhereConditions<T>): Sql {
   let clauses: Sql[] = [];
-  for (let [column, value] of Object.entries(values)) {
+  for (let [column, value] of Object.entries(conditions)) {
     clauses.push(clause(value).toSql(column, false));
   }
 
-  return sql`(${sql.join(clauses, " AND ")})`;
+  if (clauses.length == 0) {
+    throw new Error("No clauses included.");
+  } else if (clauses.length > 1) {
+    return sql`(${sql.join(clauses, " AND ")})`;
+  } else {
+    return clauses[0];
+  }
+}
+
+export function all<T>(conditions: (Sql | WhereConditions<T>)[]): Sql {
+  let clauses = conditions.map((condition: Sql | WhereConditions<T>): Sql => {
+    if (isSql(condition)) {
+      return condition;
+    }
+    return where(condition);
+  });
+
+  if (clauses.length == 0) {
+    throw new Error("No clauses included.");
+  } else if (clauses.length > 1) {
+    return sql`(${sql.join(clauses, " AND ")})`;
+  } else {
+    return clauses[0];
+  }
+}
+
+export function any<T>(conditions: (Sql | WhereConditions<T>)[]): Sql {
+  let clauses = conditions.map((condition: Sql | WhereConditions<T>): Sql => {
+    if (isSql(condition)) {
+      return condition;
+    }
+    return where(condition);
+  });
+
+  if (clauses.length == 0) {
+    throw new Error("No clauses included.");
+  } else if (clauses.length > 1) {
+    return sql`(${sql.join(clauses, " OR ")})`;
+  } else {
+    return clauses[0];
+  }
 }

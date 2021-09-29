@@ -21,6 +21,7 @@ import {
   Menu,
   mutationHook,
   api,
+  itemRefreshTokens,
 } from "../../utils";
 import type { ReactRef, ReactResult } from "../../utils";
 import type { Item } from "../schema";
@@ -47,8 +48,7 @@ interface DueMenuProps {
 }
 
 const useEditTaskMutation = mutationHook(api.item.editTask, {
-  // TODO
-  refreshTokens: [],
+  refreshTokens: itemRefreshTokens,
 });
 
 export const DueItemItems = ReactMemo(

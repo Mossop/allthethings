@@ -1,5 +1,5 @@
+import { api, queryHook } from "../../utils";
 import { useUser } from "../utils/globalState";
-import { useListInboxQuery } from "./operations";
 import type { Item } from "./taskListState";
 import { buildItem } from "./taskListState";
 
@@ -7,20 +7,26 @@ export interface InboxContents {
   items: Item[];
 }
 
+const useListItems = queryHook(api.item.listItems, {
+  pollInterval: 60000,
+});
+
 export function useInboxContents(): InboxContents {
-  let { data } = useListInboxQuery({
-    pollInterval: 5000,
+  let [items] = useListItems({
+    itemFilter: {
+      itemHolderId: null,
+    },
   });
 
   let user = useUser();
 
-  if (!data?.user) {
+  if (!items) {
     return {
       items: [],
     };
   }
 
   return {
-    items: data.user.inbox.items.map(buildItem.bind(null, user.inbox)),
+    items: items.map(buildItem.bind(null, user.inbox)),
   };
 }
