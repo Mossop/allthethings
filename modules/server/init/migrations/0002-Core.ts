@@ -1,5 +1,5 @@
-import { sql } from "#db";
-import type { Database, Migration } from "#db";
+import { sql } from "../../../db";
+import type { Database, Migration } from "../../../db";
 
 export class Migration0002Core implements Migration {
   public name = "0002-Core";

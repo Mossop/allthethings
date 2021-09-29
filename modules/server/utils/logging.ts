@@ -6,8 +6,7 @@ import { format } from "logform";
 import { MESSAGE } from "triple-beam";
 import { createLogger, transports } from "winston";
 
-import type { Logger, LogMethod, Meta } from "#utils";
-
+import type { Logger, LogMethod, Meta } from "../../utils";
 import { segmentEntry } from "./segment";
 
 export type { Logger, LogMethod };

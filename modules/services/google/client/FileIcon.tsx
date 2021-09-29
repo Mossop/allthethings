@@ -1,6 +1,5 @@
-import type { ReactResult } from "#client/utils";
-import { ReactMemo } from "#client/utils";
-
+import type { ReactResult } from "../../../client/utils";
+import { ReactMemo } from "../../../client/utils";
 import DocsIcon from "./logos/Docs";
 import DriveIcon from "./logos/Drive";
 import SheetsIcon from "./logos/Sheets";

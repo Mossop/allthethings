@@ -18,9 +18,8 @@ import {
   TextStyles,
   mutationHook,
   api,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+} from "../../utils";
+import type { ReactResult } from "../../utils";
 import type { Item, Section } from "../schema";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";

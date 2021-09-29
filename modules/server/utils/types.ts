@@ -1,5 +1,16 @@
 import type { GraphQLResolveInfo } from "graphql";
 
+export enum TaskController {
+  Manual = "manual",
+  ServiceList = "list",
+  Service = "service",
+}
+
+export interface Problem {
+  url: string;
+  description: string;
+}
+
 type ResolverFn<TResult, TParent, TContext, TArgs> = (
   parent: TParent,
   args: TArgs,

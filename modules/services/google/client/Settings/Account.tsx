@@ -6,7 +6,7 @@ import SearchIcon from "@material-ui/icons/Search";
 import { DateTime } from "luxon";
 import { useCallback, useMemo } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../../../client/utils";
 import {
   useResetStore,
   Icons,
@@ -18,10 +18,9 @@ import {
   Styles,
   SubHeading,
   useBoolState,
-} from "#client/utils";
-import { addOffset } from "#utils";
-
+} from "../../../../client/utils";
 import type { GoogleAccount, GoogleMailSearch } from "../../../../schema";
+import { addOffset } from "../../../../utils";
 import Google from "../logos/Google";
 import { useDeleteGoogleMailSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";

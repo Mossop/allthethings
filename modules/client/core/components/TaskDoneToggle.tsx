@@ -4,11 +4,14 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
-import { Icons, ReactMemo } from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
-import { TaskController } from "../../../schema";
-import { refetchQueriesForItem, useMarkTaskDoneMutation } from "../schema";
+import {
+  api,
+  Icons,
+  mutationHook,
+  ReactMemo,
+  TaskController,
+} from "../../utils";
+import type { ReactResult } from "../../utils";
 import type { Item } from "../schema";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -25,28 +28,31 @@ export interface TaskDoneToggleProps {
   disabled?: boolean;
 }
 
+const useEditTaskMutation = mutationHook(api.item.editTask, {
+  // TODO
+  refreshTokens: [],
+});
+
 export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
   item,
   disabled = false,
 }: TaskDoneToggleProps): ReactResult {
   let classes = useStyles();
 
-  let [toggleDone] = useMarkTaskDoneMutation({
-    refetchQueries: refetchQueriesForItem(item),
-  });
+  let [editTask] = useEditTaskMutation();
 
   let toggle = useCallback(() => {
     if (!item.taskInfo) {
       return;
     }
 
-    void toggleDone({
-      variables: {
-        id: item.id,
-        done: item.taskInfo.done ? null : DateTime.utc(),
+    void editTask({
+      id: item.id,
+      params: {
+        done: item.taskInfo.done ? null : DateTime.utc().toISO(),
       },
     });
-  }, [item, toggleDone]);
+  }, [item, editTask]);
 
   if (!item.taskInfo) {
     return <div className={classes.noTask} />;

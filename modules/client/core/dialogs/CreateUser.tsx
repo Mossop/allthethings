@@ -7,8 +7,7 @@ import {
   Dialog,
   TextFieldInput,
   BooleanCheckboxInput,
-} from "#client/utils";
-
+} from "../../utils";
 import { useCreateUserMutation, refetchListUsersQuery } from "../schema";
 
 interface CreateUserProps {

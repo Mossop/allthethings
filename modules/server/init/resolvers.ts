@@ -3,11 +3,10 @@ import type { ValueNode } from "graphql";
 import { GraphQLScalarType, Kind } from "graphql";
 import { DateTime } from "luxon";
 
-import { rootResolvers } from "#server/utils";
-import type { RelativeDateTime } from "#utils";
-import { offsetFromJson, relativeDateTimeFromJson } from "#utils";
-
-import type { DateTimeOffset, TaskController } from "../../schema";
+import type { DateTimeOffset, RelativeDateTime } from "../../utils";
+import { offsetFromJson, relativeDateTimeFromJson } from "../../utils";
+import type { TaskController } from "../utils";
+import { rootResolvers } from "../utils";
 import type { Resolvers } from "./schema";
 
 function scalarType<T>(

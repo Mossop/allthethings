@@ -222,9 +222,6 @@ export type MutationKeySpecifier = (
   | "editGithubSearch"
   | "editGoogleMailSearch"
   | "editJiraSearch"
-  | "markTaskDone"
-  | "markTaskDue"
-  | "setTaskController"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
 )[];
@@ -250,9 +247,6 @@ export type MutationFieldPolicy = {
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  markTaskDone?: FieldPolicy<any> | FieldReadFunction<any>;
-  markTaskDue?: FieldPolicy<any> | FieldReadFunction<any>;
-  setTaskController?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type NoteDetailKeySpecifier = ("note" | NoteDetailKeySpecifier)[];

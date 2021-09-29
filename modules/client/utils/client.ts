@@ -77,14 +77,14 @@ export type ServerContextState = ContextState & { projects: ServerProjectState[]
 
 export type ServerUserState = UserState & { contexts: ServerContextState[]; inbox: number };
 
-export interface ServerProblem {
+export interface Problem {
   url: string;
   description: string;
 }
 
 export interface ServerState {
   user: ServerUserState | null;
-  problems: ServerProblem[];
+  problems: Problem[];
   schemaVersion: string;
 }
 
@@ -210,30 +210,22 @@ export interface PickItemEntityIdOrCreated {
   created: DateTime;
 }
 
-/**
- * From T, pick a set of properties whose keys are in the union K
- */
-export interface PickTaskInfoEntityDueOrDone {
-  due: DateTime | null;
-  done: DateTime | null;
-}
-
-export type TaskInfoParams = PickTaskInfoEntityDueOrDone;
-
 export enum TaskController {
   Manual = "manual",
-  List = "list",
+  ServiceList = "list",
   Service = "service",
 }
 
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
-export interface PickTaskInfoEntityController {
+export interface PickTaskInfoEntityDueOrDoneOrController {
+  due: DateTime | null;
+  done: DateTime | null;
   controller: TaskController;
 }
 
-export type TaskInfoState = TaskInfoParams & PickTaskInfoEntityController & { __typename: "TaskInfo" };
+export type TaskInfoState = PickTaskInfoEntityDueOrDoneOrController & { __typename: "TaskInfo" };
 
 /**
  * From T, pick a set of properties whose keys are in the union K
@@ -314,6 +306,14 @@ export type ItemDetailState =
 
 export type ItemState = ItemParams &
   PickItemEntityIdOrCreated & { detail: ItemDetailState | null; taskInfo: TaskInfoState | null; __typename: "Item" };
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialDueStringOrNullDoneStringOrNull {
+  due?: string | null;
+  done?: string | null;
+}
 
 /**
  * Make all properties in T optional
@@ -785,12 +785,51 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
      * @response `200` `ItemState` Ok
      */
     createTask: (
-      data: { task?: TaskInfoParams | null; item: ItemParams; beforeId?: string | null; itemHolderId?: string | null },
+      data: {
+        task?: { done?: string | null; due?: string | null };
+        item: ItemParams;
+        beforeId?: string | null;
+        itemHolderId?: string | null;
+      },
       params: RequestParams = {},
     ) =>
       this.request<ItemState, any>({
         path: `/api/item/task`,
         method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditTask
+     * @request PATCH:/api/item/task
+     * @response `200` `ItemState` Ok
+     */
+    editTask: (data: { params: PartialDueStringOrNullDoneStringOrNull; id: string }, params: RequestParams = {}) =>
+      this.request<ItemState, any>({
+        path: `/api/item/task`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditTaskController
+     * @request PATCH:/api/item/task/controller
+     * @response `200` `ItemState` Ok
+     */
+    editTaskController: (data: { controller: TaskController | null; id: string }, params: RequestParams = {}) =>
+      this.request<ItemState, any>({
+        path: `/api/item/task/controller`,
+        method: "PATCH",
         body: data,
         type: ContentType.Json,
         format: "json",

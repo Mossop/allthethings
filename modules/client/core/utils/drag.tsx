@@ -8,9 +8,8 @@ import {
   useContext,
 } from "react";
 
-import type { ReactResult, ReactChildren } from "#client/utils";
-import { refresh, api, log, ReactMemo } from "#client/utils";
-
+import type { ReactResult, ReactChildren } from "../../utils";
+import { refresh, api, log, ReactMemo } from "../../utils";
 import type {
   GraphQLType,
   Project,

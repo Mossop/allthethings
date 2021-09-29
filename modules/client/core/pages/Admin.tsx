@@ -16,9 +16,8 @@ import {
   Heading,
   ReactMemo,
   SettingsPage,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+} from "../../utils";
+import type { ReactResult } from "../../utils";
 import CreateUserDialog from "../dialogs/CreateUser";
 import {
   useDeleteUserMutation,

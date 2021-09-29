@@ -5,7 +5,7 @@ import LoopIcon from "@material-ui/icons/Loop";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../../../client/utils";
 import {
   Icons,
   useResetStore,
@@ -17,8 +17,7 @@ import {
   Styles,
   SubHeading,
   useBoolState,
-} from "#client/utils";
-
+} from "../../../../client/utils";
 import type { GithubAccount, GithubSearch } from "../../../../schema";
 import GitHub from "../logos/GitHub";
 import { useDeleteGithubSearchMutation } from "../operations";

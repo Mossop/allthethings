@@ -2,9 +2,8 @@ import type {
   ClientService,
   ServiceItemProps,
   ReactResult,
-} from "#client/utils";
-import type { IssueLikeFields } from "#services/github/schema";
-
+} from "../../../client/utils";
+import type { IssueLikeFields } from "../schema";
 import IssueLike from "./IssueLike";
 import { SettingsPage, SettingsPages } from "./Settings";
 

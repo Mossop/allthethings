@@ -9,8 +9,7 @@ import {
   FormState,
   mutationHook,
   api,
-} from "#client/utils";
-
+} from "../../utils";
 import GlobalState from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
@@ -36,7 +35,7 @@ export default ReactMemo(function CreateContextDialog({
   let createContext = useCallback(async () => {
     let data = await createContextMutation({ params: state });
     let user = GlobalState.user;
-    if (!data || !user) {
+    if (!user) {
       throw new Error("Invalid state.");
     }
 

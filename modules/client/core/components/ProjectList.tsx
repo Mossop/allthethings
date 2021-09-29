@@ -11,15 +11,14 @@ import type { ReactElement } from "react";
 import { useMemo, forwardRef } from "react";
 import mergeRefs from "react-merge-refs";
 
-import type { ReactResult, ReactRef } from "#client/utils";
+import type { ReactResult, ReactRef } from "../../utils";
 import {
   Icons,
   SelectableListItem,
   useBoolState,
   ReactMemo,
   Styles,
-} from "#client/utils";
-
+} from "../../utils";
 import CreateProjectDialog from "../dialogs/CreateProject";
 import type { Project, TaskList } from "../schema";
 import { nameSorted } from "../utils/collections";

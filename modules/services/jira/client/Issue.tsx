@@ -1,10 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, Tooltip } from "@material-ui/core";
 
-import type { ReactResult } from "#client/utils";
-import { ItemPill, ImageIcon, Styles, ReactMemo } from "#client/utils";
-import type { IssueFields } from "#services/jira/schema";
-
+import type { ReactResult } from "../../../client/utils";
+import { ItemPill, ImageIcon, Styles, ReactMemo } from "../../../client/utils";
+import type { IssueFields } from "../schema";
 import Icon from "./Icon";
 
 const useStyles = makeStyles((theme: Theme) =>

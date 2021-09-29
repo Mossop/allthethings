@@ -16,9 +16,8 @@ import {
   Menu,
   mutationHook,
   api,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+} from "../../utils";
+import type { ReactResult } from "../../utils";
 import TaskDialog from "../dialogs/Task";
 import type { Item } from "../schema";
 import { isNoteItem, isFileItem, isLinkItem, isServiceItem } from "../schema";

@@ -6,9 +6,8 @@ import type { drive_v3, gmail_v1, people_v1 } from "googleapis";
 import { google, Auth } from "googleapis";
 import { GaxiosError } from "googleapis-common";
 
-import type { ServiceTransaction } from "#server/utils";
-
 import { GoogleService } from ".";
+import type { ServiceTransaction } from "../../../server/utils";
 import type { GoogleAccountEntity } from "./entities";
 import type { Account } from "./implementations";
 
@@ -44,10 +43,9 @@ function isLabel(label: gmail_v1.Schema$Label): label is GoogleAPILabel {
   return label.type == "user";
 }
 
-type Present<T, F extends keyof T> = Omit<T, F> &
-  {
-    [K in F]-?: NonNullable<T[K]>;
-  };
+type Present<T, F extends keyof T> = Omit<T, F> & {
+  [K in F]-?: NonNullable<T[K]>;
+};
 
 export type GoogleAPIFile = Present<
   Pick<

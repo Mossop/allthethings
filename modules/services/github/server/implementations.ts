@@ -2,9 +2,9 @@ import { URL } from "url";
 
 import { DateTime } from "luxon";
 
-import { In, Not, sql } from "#db";
-import { TaskController } from "../../../schema";
+import { In, Not, sql } from "../../../db";
 import {
+  TaskController,
   BaseAccount,
   BaseItem,
   BaseList,
@@ -13,20 +13,15 @@ import {
   IdentifiedEntityImpl,
   ref,
   storeBuilder,
-} from "#server/utils";
+} from "../../../server/utils";
 import type {
   ResolverImpl,
   ServiceItem,
   ServiceTransaction,
-} from "#server/utils";
-import type {
-  IssueLikeFields,
-  LabelFields,
-  RepositoryFields,
-} from "#services/github/schema";
-import type { DateTimeOffset } from "#utils";
-import { offsetFromJson } from "#utils";
-
+} from "../../../server/utils";
+import type { DateTimeOffset } from "../../../utils";
+import { offsetFromJson } from "../../../utils";
+import type { IssueLikeFields, LabelFields, RepositoryFields } from "../schema";
 import { GitHubApi, UserInfo } from "./api";
 import type {
   GithubAccountEntity,

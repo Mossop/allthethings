@@ -5,6 +5,7 @@ import { DateTime, SystemZone } from "luxon";
 import type { ReactElement } from "react";
 import { useMemo, useCallback, useState } from "react";
 
+import { Icons, Styles } from ".";
 import type {
   AbsoluteOffset,
   DateTimeOffset,
@@ -13,10 +14,8 @@ import type {
   RelativeOffset,
   StartOfOffset,
   ZonePart,
-} from "#utils";
-import { addOffset, DateTimeUnit } from "#utils";
-
-import { Icons, Styles } from ".";
+} from "../../utils";
+import { addOffset, DateTimeUnit } from "../../utils";
 import { Dialog } from "./Dialog";
 import { Select, TextField, NumberField } from "./Forms";
 import { useBoolState } from "./hooks";

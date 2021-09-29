@@ -1,6 +1,5 @@
-import type { GraphQLCtx, Transaction } from "#server/utils";
-import { NotAuthenticatedError, RequestController } from "#server/utils";
-
+import type { GraphQLCtx, Transaction } from "../utils";
+import { NotAuthenticatedError, RequestController } from "../utils";
 import { User } from "./implementations";
 
 type ResolverFn<A extends unknown[], R> = (

@@ -5,13 +5,11 @@ import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
-import type { Awaitable, MaybeCallable, RelativeDateTime } from "#utils";
-
-import type { TaskController } from "../../schema";
+import type { Awaitable, MaybeCallable, RelativeDateTime } from "../../utils";
 import { RequestController } from "./controllers";
-import type { Problem } from "./schema";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
+import type { Problem, TaskController } from "./types";
 
 export interface ItemList {
   name: string;

@@ -1,4 +1,4 @@
-import type { Overwrite } from "#utils";
+import type { Overwrite } from "../../../utils";
 
 /** The possible states of an issue. */
 export enum IssueState {

@@ -15,9 +15,8 @@ import {
   coreResolvers,
   ServiceManager,
   ServiceOwner,
-} from "#server/core";
-import type { ContextBuilder, GraphQLCtx } from "#server/utils";
-
+} from "../core";
+import type { ContextBuilder, GraphQLCtx } from "../utils";
 import initResolvers from "./resolvers";
 import type { WebServerContext } from "./webserver";
 
@@ -95,7 +94,7 @@ export async function buildResolverContext({
 
 export async function createGqlServer(): Promise<ApolloServer> {
   let baseSchema = await fs.readFile(
-    require.resolve("#schema/schema.graphql"),
+    require.resolve("../../schema/schema.graphql"),
     {
       encoding: "utf8",
     },

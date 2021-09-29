@@ -6,9 +6,8 @@ import type {
   ReactChildren,
   ReactResult,
   bindTrigger,
-} from "#client/utils";
-import { useMenuState, ReactMemo } from "#client/utils";
-
+} from "../../utils";
+import { useMenuState, ReactMemo } from "../../utils";
 import type { Item } from "../schema";
 
 export type ItemPopupBinder = (item: Item) => ReturnType<typeof bindTrigger>;

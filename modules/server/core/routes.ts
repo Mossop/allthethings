@@ -14,7 +14,7 @@ import { ContextController } from './controllers';
 import { SectionController } from './controllers';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { ItemController } from './controllers';
-import { iocContainer } from '#server/utils';
+import { iocContainer } from './../utils';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import * as KoaRouter from '@koa/router';
 
@@ -110,7 +110,7 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"intersection","subSchemas":[{"ref":"UserState"},{"dataType":"nestedObjectLiteral","nestedProperties":{"contexts":{"dataType":"array","array":{"dataType":"refAlias","ref":"ServerContextState"},"required":true},"inbox":{"dataType":"double","required":true}}}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "ServerProblem": {
+    "Problem": {
         "dataType": "refObject",
         "properties": {
             "url": {"dataType":"string","required":true},
@@ -123,7 +123,7 @@ const models: TsoaRoute.Models = {
         "dataType": "refObject",
         "properties": {
             "user": {"dataType":"union","subSchemas":[{"ref":"ServerUserState"},{"dataType":"enum","enums":[null]}],"required":true},
-            "problems": {"dataType":"array","array":{"dataType":"refObject","ref":"ServerProblem"},"required":true},
+            "problems": {"dataType":"array","array":{"dataType":"refObject","ref":"Problem"},"required":true},
             "schemaVersion": {"dataType":"string","required":true},
         },
         "additionalProperties": false,
@@ -194,29 +194,19 @@ const models: TsoaRoute.Models = {
         "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true},"created":{"ref":"DateTime","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_TaskInfoEntity.due-or-done_": {
-        "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"due":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"done":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "TaskInfoParams": {
-        "dataType": "refAlias",
-        "type": {"ref":"Pick_TaskInfoEntity.due-or-done_","validators":{}},
-    },
-    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TaskController": {
         "dataType": "refEnum",
         "enums": ["manual","list","service"],
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
-    "Pick_TaskInfoEntity.controller_": {
+    "Pick_TaskInfoEntity.due-or-done-or-controller_": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"controller":{"ref":"TaskController","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"due":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"done":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"controller":{"ref":"TaskController","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "TaskInfoState": {
         "dataType": "refAlias",
-        "type": {"dataType":"intersection","subSchemas":[{"ref":"TaskInfoParams"},{"ref":"Pick_TaskInfoEntity.controller_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["TaskInfo"],"required":true}}}],"validators":{}},
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"Pick_TaskInfoEntity.due-or-done-or-controller_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["TaskInfo"],"required":true}}}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_LinkDetailEntity.Exclude_keyofLinkDetailEntity.id-or-icon__": {
@@ -312,6 +302,11 @@ const models: TsoaRoute.Models = {
     "ItemState": {
         "dataType": "refAlias",
         "type": {"dataType":"intersection","subSchemas":[{"ref":"ItemParams"},{"ref":"Pick_ItemEntity.id-or-created_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"detail":{"dataType":"union","subSchemas":[{"ref":"ItemDetailState"},{"dataType":"enum","enums":[null]}],"required":true},"taskInfo":{"dataType":"union","subSchemas":[{"ref":"TaskInfoState"},{"dataType":"enum","enums":[null]}],"required":true},"__typename":{"dataType":"enum","enums":["Item"],"required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Partial__due-string-or-null--done-string-or-null--__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"due":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"done":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Partial_ItemParams_": {
@@ -695,7 +690,7 @@ export function RegisterRoutes(router: KoaRouter) {
         router.put('/item/task',
             async function ItemController_createTask(context: any, next: any) {
             const args = {
-                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"task":{"dataType":"union","subSchemas":[{"ref":"TaskInfoParams"},{"dataType":"enum","enums":[null]}]},"item":{"ref":"ItemParams","required":true},"beforeId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"itemHolderId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}}},
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"task":{"dataType":"nestedObjectLiteral","nestedProperties":{"done":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"due":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}}},"item":{"ref":"ItemParams","required":true},"beforeId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]},"itemHolderId":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}}},
             };
 
             let validatedArgs: any[] = [];
@@ -715,6 +710,58 @@ export function RegisterRoutes(router: KoaRouter) {
             }
 
             const promise = controller.createTask.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/item/task',
+            async function ItemController_editTask(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"Partial__due-string-or-null--done-string-or-null--__","required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.editTask.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/item/task/controller',
+            async function ItemController_editTaskController(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"controller":{"dataType":"union","subSchemas":[{"ref":"TaskController"},{"dataType":"enum","enums":[null]}],"required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<ItemController>(ItemController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.editTaskController.apply(controller, validatedArgs as any);
             return promiseHandler(controller, promise, context, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

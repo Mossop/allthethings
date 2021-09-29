@@ -1,9 +1,8 @@
 import { useCallback } from "react";
 
-import type { ReactResult } from "#client/utils";
-import { ItemPill, useService, ReactMemo } from "#client/utils";
-import type { Overwrite } from "#utils";
-
+import type { Overwrite } from "../../../utils";
+import type { ReactResult } from "../../utils";
+import { ItemPill, useService, ReactMemo } from "../../utils";
 import { refetchQueriesForItem } from "../schema";
 import type { ServiceItem, ServiceList as ServiceListSchema } from "../schema";
 import type { ItemRenderProps } from "./Item";

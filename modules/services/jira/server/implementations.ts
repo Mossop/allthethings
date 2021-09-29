@@ -4,24 +4,23 @@ import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
 
-import { TaskController } from "../../../schema";
 import type { JiraAccountParams } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,
   ServiceTransaction,
-} from "#server/utils";
+} from "../../../server/utils";
 import {
+  TaskController,
   id,
   storeBuilder,
   BaseList,
   BaseItem,
   BaseAccount,
-} from "#server/utils";
-import type { IssueFields } from "#services/jira/schema";
-import type { DateTimeOffset } from "#utils";
-import { offsetFromJson } from "#utils";
-
+} from "../../../server/utils";
+import type { DateTimeOffset } from "../../../utils";
+import { offsetFromJson } from "../../../utils";
+import type { IssueFields } from "../schema";
 import type {
   JiraAccountEntity,
   JiraIssueEntity,

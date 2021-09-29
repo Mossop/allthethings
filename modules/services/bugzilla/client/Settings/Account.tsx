@@ -4,7 +4,7 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../../../client/utils";
 import {
   Heading,
   ImageIcon,
@@ -16,8 +16,7 @@ import {
   useBoolState,
   Icons,
   useResetStore,
-} from "#client/utils";
-
+} from "../../../../client/utils";
 import type { BugzillaAccount, BugzillaSearch } from "../../../../schema";
 import Icon from "../Icon";
 import {

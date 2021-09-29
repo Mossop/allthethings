@@ -2,10 +2,9 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 import UnreadMailIcon from "@material-ui/icons/Mail";
 
-import type { ReactResult } from "#client/utils";
-import { ItemPill, Styles, ReactMemo } from "#client/utils";
-import type { ThreadFields } from "#services/google/schema";
-
+import type { ReactResult } from "../../../client/utils";
+import { ItemPill, Styles, ReactMemo } from "../../../client/utils";
+import type { ThreadFields } from "../schema";
 import GmailIcon from "./logos/Gmail";
 
 const useStyles = makeStyles((theme: Theme) =>

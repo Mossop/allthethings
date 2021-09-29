@@ -1,6 +1,6 @@
 import { performance } from "perf_hooks";
 
-import type { Logger, LogMethod, Meta } from "#utils";
+import type { Logger, LogMethod, Meta } from "../../utils";
 
 const MAX_SEGMENT_LENGTH = 1000;
 

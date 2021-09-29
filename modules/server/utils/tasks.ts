@@ -1,7 +1,7 @@
 import { setTimeout, clearTimeout } from "timers";
 
-import type { Awaitable } from "#utils";
-import { waitFor } from "#utils";
+import type { Awaitable } from "../../utils";
+import { waitFor } from "../../utils";
 
 type Task<R = void> = () => Awaitable<R>;
 

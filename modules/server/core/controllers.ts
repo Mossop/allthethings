@@ -14,18 +14,22 @@ import {
   Patch,
   Delete,
 } from "@tsoa/runtime";
+import type { DateTime } from "luxon";
 
-import type { Problem, Transaction } from "#server/utils";
+import { ItemHolderBase } from ".";
+import { sql } from "../../db";
+// eslint-disable-next-line import/extensions
+import schema from "../../schema/openapi.json";
+import { decodeDateTime, decodeRelativeDateTime, map } from "../../utils";
+import type { Problem, Transaction } from "../utils";
 import {
+  TaskController,
   bestIcon,
   loadPageInfo,
   HttpError,
   NotFoundError,
-} from "#server/utils";
-import { decodeRelativeDateTime, map } from "#utils";
-
-import { ItemHolderBase } from ".";
-import schema from "../../schema/openapi.json";
+} from "../utils";
+import type { TaskInfoEntity } from "./entities";
 import { ItemType } from "./entities";
 import type {
   ContextState,
@@ -36,12 +40,14 @@ import type {
   SectionParams,
   SectionState,
   ItemParams,
-  TaskInfoParams,
   ItemHolder,
   ItemState,
   LinkDetailParams,
 } from "./implementations";
 import {
+  ServiceListItem,
+  ServiceDetail,
+  TaskInfo,
   LinkDetail,
   Item,
   Section,
@@ -422,7 +428,7 @@ export class ItemController extends CoreController {
       itemHolderId?: string | null;
       beforeId?: string | null;
       item: ItemParams;
-      task?: TaskInfoParams | null;
+      task?: { due?: string | null; done?: string | null };
     },
   ): Promise<ItemState> {
     let itemHolder: ItemHolder | null = null;
@@ -438,16 +444,201 @@ export class ItemController extends CoreController {
       }
     }
 
-    let item = await Item.create(
-      tx,
-      user,
-      null,
-      itemParams,
-      taskParams ?? { due: null, done: null },
-    );
+    let item = await Item.create(tx, user, null, itemParams);
+
+    let due = decodeDateTime(taskParams?.due);
+    let done = decodeDateTime(taskParams?.done);
+
+    await TaskInfo.store(tx).create({
+      id: item.id,
+      due,
+      done,
+      manualDue: due,
+      manualDone: done,
+      controller: TaskController.Manual,
+    });
 
     if (itemHolder) {
       await item.move(itemHolder, before);
+    }
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Patch("/task")
+  public async editTask(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      params,
+    }: {
+      id: string;
+      params: Partial<{
+        due: string | null;
+        done: string | null;
+      }>;
+    },
+  ): Promise<ItemState> {
+    let item = await Item.store(tx).get(id);
+
+    let taskInfo = await item.taskInfo;
+    if (!taskInfo) {
+      let due = decodeDateTime(params.due);
+      let done = decodeDateTime(params.done);
+
+      await TaskInfo.store(tx).create({
+        id,
+        due,
+        done,
+        manualDue: due,
+        manualDone: done,
+        controller: TaskController.Manual,
+      });
+    } else {
+      let updates: Partial<TaskInfoEntity> = {
+        controller: TaskController.Manual,
+      };
+
+      if (params.due !== undefined) {
+        updates.manualDue = decodeDateTime(params.due);
+      } else {
+        updates.manualDue = taskInfo.manualDue;
+      }
+
+      if (params.done !== undefined) {
+        updates.manualDone = decodeDateTime(params.done);
+      } else {
+        updates.manualDone = taskInfo.manualDone;
+      }
+
+      updates.due = updates.manualDue;
+      updates.done = updates.manualDone;
+
+      await taskInfo.update(updates);
+    }
+
+    return item.state;
+  }
+
+  @Authenticated(true)
+  @Patch("/task/controller")
+  public async editTaskController(
+    @Inject() tx: Transaction,
+    @Inject() user: User,
+    @Body()
+    {
+      id,
+      controller,
+    }: {
+      id: string;
+      controller: TaskController | null;
+    },
+  ): Promise<ItemState> {
+    let item = await Item.store(tx).get(id);
+
+    let taskInfo = await item.taskInfo;
+    if (!controller) {
+      if (taskInfo) {
+        await taskInfo.delete();
+      }
+
+      return item.state;
+    }
+
+    if (taskInfo && taskInfo.controller == controller) {
+      return item.state;
+    }
+
+    if (controller == TaskController.Manual) {
+      if (taskInfo) {
+        await taskInfo.update({
+          due: taskInfo.manualDue,
+          done: taskInfo.manualDone,
+          controller,
+        });
+      } else {
+        await TaskInfo.store(tx).create({
+          id,
+          due: null,
+          done: null,
+          manualDue: null,
+          manualDone: null,
+          controller,
+        });
+      }
+    } else {
+      let detail = await item.detail;
+      if (!detail || !(detail instanceof ServiceDetail)) {
+        throw new Error("This item is not a service item.");
+      }
+
+      if (controller == TaskController.Service) {
+        if (!detail.hasTaskState) {
+          throw new Error("This service does not supply task information");
+        }
+
+        if (taskInfo) {
+          await taskInfo.update({
+            due: detail.taskDue,
+            done: detail.taskDone,
+            controller,
+          });
+        } else {
+          await TaskInfo.store(tx).create({
+            id,
+            due: detail.taskDue,
+            done: detail.taskDone,
+            manualDue: null,
+            manualDone: null,
+            controller,
+          });
+        }
+      } else {
+        let { count, due, done, doneCount } = (await tx.db.first<{
+          count: number;
+          due: DateTime | null;
+          done: DateTime | null;
+          doneCount: number;
+        }>(
+          sql`
+            SELECT
+              COUNT(*)::integer AS count,
+              MIN("due") AS "due",
+              MAX("done") AS "done",
+              COUNT("done")::integer AS "doneCount"
+            FROM ${sql.ref(ServiceListItem.store.table)}
+            WHERE "itemId" = ${id}
+          `,
+        ))!;
+
+        if (count == 0) {
+          throw new Error("This item has never been in any service lists");
+        }
+
+        if (doneCount < count) {
+          done = null;
+        }
+
+        if (taskInfo) {
+          await taskInfo.update({
+            due,
+            done,
+            controller,
+          });
+        } else {
+          await TaskInfo.store(tx).create({
+            id,
+            due,
+            done,
+            manualDue: null,
+            manualDone: null,
+            controller,
+          });
+        }
+      }
     }
 
     return item.state;
@@ -515,16 +706,21 @@ export class ItemController extends CoreController {
       summary = pageInfo.title ?? targetUrl.toString();
     }
 
-    let item = await Item.create(
-      tx,
-      user,
-      ItemType.Link,
-      {
-        ...itemParams,
-        summary,
-      },
-      isTask ? { due: null, done: null } : null,
-    );
+    let item = await Item.create(tx, user, ItemType.Link, {
+      ...itemParams,
+      summary,
+    });
+
+    if (isTask) {
+      await TaskInfo.store(tx).create({
+        id: item.id,
+        due: null,
+        done: null,
+        manualDue: null,
+        manualDone: null,
+        controller: TaskController.Manual,
+      });
+    }
 
     let icons = [...pageInfo.icons];
     let icon: string | null = bestIcon(icons, 32)?.url.toString() ?? null;

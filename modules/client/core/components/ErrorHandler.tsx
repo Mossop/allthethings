@@ -3,9 +3,8 @@ import { makeStyles, createStyles } from "@material-ui/core";
 import type { ReactNode } from "react";
 import { PureComponent } from "react";
 
-import { Heading } from "#client/utils";
-import type { ReactChildren, ReactResult } from "#client/utils";
-
+import { Heading } from "../../utils";
+import type { ReactChildren, ReactResult } from "../../utils";
 import Page from "./Page";
 
 const useStyles = makeStyles((theme: Theme) =>

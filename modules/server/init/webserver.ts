@@ -9,24 +9,24 @@ import koaMount from "koa-mount";
 import koaSession from "koa-session";
 import koaStatic from "koa-static";
 
-import type { Database } from "#db";
-import type { ServerConfig } from "#server/core";
+import type { Database } from "../../db";
+import type { DescriptorsFor } from "../../utils";
+import { defer } from "../../utils";
+import type { ServerConfig } from "../core";
 import {
   User,
   buildServiceTransaction,
   ServiceManager,
   withTransaction,
-} from "#server/core";
+} from "../core";
 import type {
   Service,
   ServiceWebContext,
   ServiceWebContextExtras,
   Transaction,
   Segment,
-} from "#server/utils";
-import { RootSegment, log } from "#server/utils";
-import type { DescriptorsFor } from "#utils";
-import { defer } from "#utils";
+} from "../utils";
+import { RootSegment, log } from "../utils";
 
 interface ExtraContext {
   readonly userId: string | null;

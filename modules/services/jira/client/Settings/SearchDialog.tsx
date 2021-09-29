@@ -13,14 +13,13 @@ import {
   DateTimeOffsetDialog,
   Icons,
   Styles,
-} from "#client/utils";
-import { addOffset } from "#utils";
-
+} from "../../../../client/utils";
 import type {
   DateTimeOffset,
   JiraAccount,
   JiraSearch,
 } from "../../../../schema";
+import { addOffset } from "../../../../utils";
 import {
   useCreateJiraSearchMutation,
   useEditJiraSearchMutation,

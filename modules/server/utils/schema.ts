@@ -1,19 +1,11 @@
 import { GraphQLScalarType } from "graphql";
 import type { GraphQLResolveInfo } from "graphql";
 
-import { isPromise, waitFor } from "#utils";
-import type { Awaitable, MaybeCallable, Overwrite } from "#utils";
-
-import type { Problem as SchemaProblem } from "../../schema";
+import { isPromise, waitFor } from "../../utils";
+import type { Awaitable, MaybeCallable, Overwrite } from "../../utils";
 import type { ServiceTransaction } from "./services";
 import type { Transaction } from "./transaction";
 import type { Resolver } from "./types";
-
-export interface Root {
-  dummy: "Root";
-}
-
-export type Problem = Omit<SchemaProblem, "__typename">;
 
 export interface ContextBuilder {
   buildContext(

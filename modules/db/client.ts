@@ -1,9 +1,8 @@
 import type { ClientBase, QueryResult } from "pg";
 import { Pool } from "pg";
 
-import type { Events, Payload } from "#utils";
-import { TypedEmitter } from "#utils";
-
+import type { Events, Payload } from "../utils";
+import { TypedEmitter } from "../utils";
 import type { Sql } from "./sql";
 
 export interface DatabaseConfig {

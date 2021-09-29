@@ -2,7 +2,10 @@ import { URL } from "url";
 
 import { DateTime } from "luxon";
 
-import type { Database, QueryInstance } from "#db";
+import type { Database, QueryInstance } from "../../db";
+import type { DescriptorsFor, Logger } from "../../utils";
+import { memoized, waitFor } from "../../utils";
+import { TaskController } from "../utils";
 import type {
   Service,
   ServiceTransaction,
@@ -10,11 +13,7 @@ import type {
   CreateItemParams,
   ItemList,
   Segment,
-} from "#server/utils";
-import type { DescriptorsFor, Logger } from "#utils";
-import { memoized, waitFor } from "#utils";
-
-import { TaskController } from "../../schema";
+} from "../utils";
 import { ItemType } from "./entities";
 import {
   Item,
@@ -99,7 +98,10 @@ export const buildServiceTransaction = memoized(
           });
 
           if (done !== undefined && controller) {
-            await TaskInfo.create(tx, itemImpl, {
+            await TaskInfo.store(tx).create({
+              id: itemImpl.id,
+              due: due ?? null,
+              done: done ?? null,
               manualDue: null,
               manualDone: null,
               controller,

@@ -1,6 +1,5 @@
-import type { Database } from "#db";
-import type { DescriptorsFor } from "#utils";
-
+import type { Database } from "../../db";
+import type { DescriptorsFor } from "../../utils";
 import type { Logger } from "./logging";
 import type { Segment } from "./segment";
 

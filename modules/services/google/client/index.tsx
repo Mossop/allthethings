@@ -2,9 +2,8 @@ import type {
   ClientService,
   ServiceItemProps,
   ReactResult,
-} from "#client/utils";
-import type { GoogleFields } from "#services/google/schema";
-
+} from "../../../client/utils";
+import type { GoogleFields } from "../schema";
 import File from "./File";
 import { SettingsPage, SettingsPages } from "./Settings";
 import Thread from "./Thread";

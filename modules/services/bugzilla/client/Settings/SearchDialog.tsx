@@ -13,14 +13,13 @@ import {
   DateTimeOffsetDialog,
   Icons,
   Styles,
-} from "#client/utils";
-import { addOffset } from "#utils";
-
+} from "../../../../client/utils";
 import type {
   BugzillaAccount,
   BugzillaSearch,
   DateTimeOffset,
 } from "../../../../schema";
+import { addOffset } from "../../../../utils";
 import {
   useCreateBugzillaSearchMutation,
   useEditBugzillaSearchMutation,

@@ -10,7 +10,7 @@ import {
   useBoolState,
   useResetStore,
   mutationHook,
-} from "#client/utils";
+} from "../../utils";
 
 interface LoginDialogProps {
   onClosed: () => void;

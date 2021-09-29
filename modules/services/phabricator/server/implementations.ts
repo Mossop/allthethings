@@ -10,14 +10,14 @@ import type {
 import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
 
-import { TaskController } from "../../../schema";
 import type { CreatePhabricatorAccountParams } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,
   ServiceTransaction,
-} from "#server/utils";
+} from "../../../server/utils";
 import {
+  TaskController,
   id,
   storeBuilder,
   storeImplBuilder,
@@ -26,9 +26,8 @@ import {
   BaseItem,
   BaseList,
   BaseAccount,
-} from "#server/utils";
-import type { RevisionFields } from "#services/phabricator/schema";
-
+} from "../../../server/utils";
+import type { RevisionFields } from "../schema";
 import type {
   PhabricatorAccountEntity,
   PhabricatorQueryEntity,

@@ -6,9 +6,11 @@ import type {
   MutationDeleteJiraSearchArgs,
   MutationEditJiraSearchArgs,
 } from "../../../schema";
-import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
-import { rootResolvers } from "#server/utils";
-
+import type {
+  AuthedGraphQLCtx,
+  ServiceTransaction,
+} from "../../../server/utils";
+import { rootResolvers } from "../../../server/utils";
 import { Account, Search } from "./implementations";
 import type { Resolvers } from "./schema";
 

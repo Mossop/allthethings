@@ -1,4 +1,4 @@
-import type { Database, Migration } from "#db";
+import type { Database, Migration } from "../../../db";
 
 export class Migration0004Github implements Migration {
   public name = "0004-Github";

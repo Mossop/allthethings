@@ -1,12 +1,11 @@
 import { useCallback } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../../../client/utils";
 import {
   useBoolState,
   useSetSettingsPage,
   SettingsPageItem,
-} from "#client/utils";
-
+} from "../../../../client/utils";
 import type { JiraAccount } from "../../../../schema";
 import Icon from "../Icon";
 import { useListJiraAccountsQuery } from "../operations";

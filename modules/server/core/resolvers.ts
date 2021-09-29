@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import type { GraphQLCtx } from "#server/utils";
-import { rootResolvers } from "#server/utils";
-
+import type { GraphQLCtx } from "../utils";
+import { rootResolvers } from "../utils";
 import type { ItemDetail } from "./implementations";
 import {
   FileDetail,

@@ -2,10 +2,9 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 import { RevisionStatus } from "conduit-api";
 
-import type { ServiceItemProps, ReactResult } from "#client/utils";
-import { ItemPill, ImageIcon, Styles, ReactMemo } from "#client/utils";
-import type { RevisionFields } from "#services/phabricator/schema";
-
+import type { ServiceItemProps, ReactResult } from "../../../client/utils";
+import { ItemPill, ImageIcon, Styles, ReactMemo } from "../../../client/utils";
+import type { RevisionFields } from "../schema";
 import Icon from "./Icon";
 
 const useStyles = makeStyles((theme: Theme) =>

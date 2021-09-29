@@ -1,4 +1,4 @@
-import type { Logger, LogLevel, LogMethod, Meta } from "#utils";
+import type { Logger, LogLevel, LogMethod, Meta } from "../../utils";
 
 function logMethod(level: LogLevel): LogMethod {
   return (message: string | Error, meta: Meta = {}): void => {

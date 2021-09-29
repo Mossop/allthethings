@@ -2,8 +2,7 @@ import type {
   ClientService,
   ServiceItemProps,
   ReactResult,
-} from "#client/utils";
-
+} from "../../../client/utils";
 import Bug from "./Bug";
 import { SettingsPages, SettingsPage } from "./Settings";
 

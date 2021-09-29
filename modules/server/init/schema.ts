@@ -5,7 +5,6 @@ import type {
   GraphQLScalarTypeConfig,
 } from "graphql";
 import * as Schema from "../../schema";
-import { Root } from "#server/utils";
 
 export type ResolverTypeWrapper<T> = Promise<T> | T;
 
@@ -117,7 +116,7 @@ export type ResolversTypes = {
   Boolean: ResolverTypeWrapper<Schema.Scalars["Boolean"]>;
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
-  Query: ResolverTypeWrapper<Root>;
+  Query: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
@@ -128,7 +127,7 @@ export type ResolversParentTypes = {
   Boolean: Schema.Scalars["Boolean"];
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
-  Query: Root;
+  Query: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];

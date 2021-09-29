@@ -1,7 +1,6 @@
-import type * as Schema from "../../../schema";
-import type { Overwrite, ArrayContents } from "#utils";
-
 import type { GraphQLType } from ".";
+import type * as Schema from "../../../schema";
+import type { Overwrite, ArrayContents } from "../../../utils";
 import type { Inbox, TaskList } from "./contextState";
 import type { ClientItemFieldsFragment, ListTaskListQuery } from "./operations";
 import { useListTaskListQuery } from "./operations";

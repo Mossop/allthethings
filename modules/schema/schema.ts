@@ -230,9 +230,6 @@ export type Mutation = {
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
-  readonly markTaskDone?: Maybe<Item>;
-  readonly markTaskDue?: Maybe<Item>;
-  readonly setTaskController?: Maybe<Item>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
 };
 
@@ -329,21 +326,6 @@ export type MutationEditGoogleMailSearchArgs = {
 export type MutationEditJiraSearchArgs = {
   params: JiraSearchParams;
   search: Scalars["ID"];
-};
-
-export type MutationMarkTaskDoneArgs = {
-  done?: Maybe<Scalars["DateTime"]>;
-  id: Scalars["ID"];
-};
-
-export type MutationMarkTaskDueArgs = {
-  due?: Maybe<Scalars["DateTime"]>;
-  id: Scalars["ID"];
-};
-
-export type MutationSetTaskControllerArgs = {
-  controller?: Maybe<Scalars["TaskController"]>;
-  id: Scalars["ID"];
 };
 
 export type MutationUpdatePhabricatorAccountArgs = {

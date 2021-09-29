@@ -124,10 +124,6 @@ type Query {
 }
 
 type Mutation {
-  markTaskDone(id: ID!, done: DateTime): Item
-  markTaskDue(id: ID!, due: DateTime): Item
-  setTaskController(id: ID!, controller: TaskController): Item
-
   createUser(email: String!, password: String!, isAdmin: Boolean): User!
   deleteUser(id: ID): Boolean
   changePassword(currentPassword: String!, newPassword: String!): User

@@ -2,7 +2,7 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import { useCallback, useMemo } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../../../client/utils";
 import {
   Heading,
   ImageIcon,
@@ -13,8 +13,7 @@ import {
   SettingsListSection,
   SubHeading,
   ReactMemo,
-} from "#client/utils";
-
+} from "../../../../client/utils";
 import type { PhabricatorAccount, PhabricatorQuery } from "../../../../schema";
 import {
   useUpdatePhabricatorAccountMutation,

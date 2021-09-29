@@ -6,7 +6,6 @@ import type {
 } from "graphql";
 import type { Account, Search } from "./implementations";
 import * as Schema from "../../../schema";
-import { Root } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
@@ -127,7 +126,7 @@ export type ResolversTypes = {
   DateTime: ResolverTypeWrapper<Schema.Scalars["DateTime"]>;
   DateTimeOffset: ResolverTypeWrapper<Schema.Scalars["DateTimeOffset"]>;
   ID: ResolverTypeWrapper<Schema.Scalars["ID"]>;
-  Mutation: ResolverTypeWrapper<Root>;
+  Mutation: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
@@ -148,7 +147,7 @@ export type ResolversParentTypes = {
   DateTime: Schema.Scalars["DateTime"];
   DateTimeOffset: Schema.Scalars["DateTimeOffset"];
   ID: Schema.Scalars["ID"];
-  Mutation: Root;
+  Mutation: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];

@@ -4,8 +4,7 @@ import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
 import { MuiPickersUtilsProvider } from "@material-ui/pickers";
 
-import type { ReactResult } from "#client/utils";
-
+import type { ReactResult } from "../utils";
 import ErrorHandler from "./components/ErrorHandler";
 import GlobalPopups from "./components/GlobalPopups";
 import Main from "./components/Main";

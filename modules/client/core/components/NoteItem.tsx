@@ -1,9 +1,8 @@
 import { createStyles, makeStyles } from "@material-ui/core";
 
-import type { ReactResult } from "#client/utils";
-import { ReactMemo } from "#client/utils";
-import type { Overwrite } from "#utils";
-
+import type { Overwrite } from "../../../utils";
+import type { ReactResult } from "../../utils";
+import { ReactMemo } from "../../utils";
 import type { NoteItem } from "../schema";
 import type { ItemRenderProps } from "./Item";
 

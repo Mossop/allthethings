@@ -4,9 +4,11 @@ import type {
   MutationUpdatePhabricatorAccountArgs,
   MutationDeletePhabricatorAccountArgs,
 } from "../../../schema";
-import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
-import { rootResolvers } from "#server/utils";
-
+import type {
+  AuthedGraphQLCtx,
+  ServiceTransaction,
+} from "../../../server/utils";
+import { rootResolvers } from "../../../server/utils";
 import type { QueryClass } from "./implementations";
 import { Account, Query } from "./implementations";
 import type { Resolvers } from "./schema";

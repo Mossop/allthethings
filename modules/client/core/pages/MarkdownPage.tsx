@@ -2,16 +2,8 @@ import type { Theme } from "@material-ui/core";
 import { Divider, makeStyles, createStyles } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 
-import {
-  Styles,
-  Loading,
-  ReactMemo,
-  Link,
-  queryHook,
-  api,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+import { Styles, Loading, ReactMemo, Link, queryHook, api } from "../../utils";
+import type { ReactResult } from "../../utils";
 import Page from "../components/Page";
 import { useUrl, ViewType } from "../utils/view";
 import NotFound from "./NotFound";

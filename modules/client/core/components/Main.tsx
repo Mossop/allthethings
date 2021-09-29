@@ -2,9 +2,8 @@ import { createStyles, makeStyles } from "@material-ui/core";
 import clsx from "clsx";
 import { Suspense } from "react";
 
-import type { ReactResult } from "#client/utils";
-import { Loading, Styles } from "#client/utils";
-
+import type { ReactResult } from "../../utils";
+import { Loading, Styles } from "../../utils";
 import Inbox from "../pages/Inbox";
 import MarkdownPage from "../pages/MarkdownPage";
 import Settings from "../pages/Settings";

@@ -2,19 +2,18 @@
 import { URL } from "url";
 
 import type {
-  AuthedGraphQLCtx,
-  GraphQLCtx,
-  ServiceTransaction,
-} from "#server/utils";
-import { rootResolvers, bestIcon, loadPageInfo } from "#server/utils";
-
-import type {
   MutationCreateBugzillaAccountArgs,
   MutationCreateBugzillaSearchArgs,
   MutationDeleteBugzillaAccountArgs,
   MutationDeleteBugzillaSearchArgs,
   MutationEditBugzillaSearchArgs,
 } from "../../../schema";
+import type {
+  AuthedGraphQLCtx,
+  GraphQLCtx,
+  ServiceTransaction,
+} from "../../../server/utils";
+import { rootResolvers, bestIcon, loadPageInfo } from "../../../server/utils";
 import type { BugzillaAccountEntity } from "./entities";
 import { Search, Account } from "./implementations";
 import type { Resolvers } from "./schema";

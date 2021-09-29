@@ -29,8 +29,7 @@ import type {
 } from "react";
 import { useMemo, useCallback, createContext, useContext } from "react";
 
-import type { Overwrite } from "#utils";
-
+import type { Overwrite } from "../../utils";
 import { flexCentered } from "./styles";
 import type { ReactChildren, ReactResult } from "./types";
 import { ReactMemo } from "./types";

@@ -1,5 +1,4 @@
-import { pushUrl, replaceUrl } from "#client/utils";
-
+import { pushUrl, replaceUrl } from "../../utils";
 import type { Context, Project, TaskList, User } from "../schema";
 import { isProject } from "../schema";
 import GlobalState from "./globalState";

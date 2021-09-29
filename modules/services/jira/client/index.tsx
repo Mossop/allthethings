@@ -2,9 +2,8 @@ import type {
   ClientService,
   ReactResult,
   ServiceItemProps,
-} from "#client/utils";
-import type { IssueFields } from "#services/jira/schema";
-
+} from "../../../client/utils";
+import type { IssueFields } from "../schema";
 import Issue from "./Issue";
 import { SettingsPage, SettingsPages } from "./Settings";
 

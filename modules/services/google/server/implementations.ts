@@ -3,14 +3,15 @@ import { URL } from "url";
 import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
-import { In, Not, sql } from "#db";
-import { TaskController } from "../../../schema";
+import { GoogleService } from ".";
+import { In, Not, sql } from "../../../db";
 import type {
   ResolverImpl,
   ServiceItem,
   ServiceTransaction,
-} from "#server/utils";
+} from "../../../server/utils";
 import {
+  TaskController,
   EntityImpl,
   id,
   IdentifiedEntityImpl,
@@ -19,12 +20,10 @@ import {
   BaseAccount,
   BaseItem,
   BaseList,
-} from "#server/utils";
-import type { FileFields, ThreadFields } from "#services/google/schema";
-import type { DateTimeOffset } from "#utils";
-import { offsetFromJson } from "#utils";
-
-import { GoogleService } from ".";
+} from "../../../server/utils";
+import type { DateTimeOffset } from "../../../utils";
+import { offsetFromJson } from "../../../utils";
+import type { FileFields, ThreadFields } from "../schema";
 import type { GoogleAPIFile, GoogleAPILabel } from "./api";
 import { encodeWebId, getAccountInfo, decodeWebId, GoogleApi } from "./api";
 import type {

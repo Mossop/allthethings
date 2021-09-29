@@ -1,10 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
-import type { ReactResult } from "#client/utils";
-import { ItemPill, Styles, ReactMemo } from "#client/utils";
-import type { IssueLikeFields, LabelFields } from "#services/github/schema";
-
+import type { ReactResult } from "../../../client/utils";
+import { ItemPill, Styles, ReactMemo } from "../../../client/utils";
+import type { IssueLikeFields, LabelFields } from "../schema";
 import IssueIcon from "./logos/Issue";
 import PullRequestIcon from "./logos/PullRequest";
 

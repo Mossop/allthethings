@@ -12,15 +12,8 @@ import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";
 
-import {
-  useMenuState,
-  bindTrigger,
-  Icons,
-  ReactMemo,
-  Menu,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+import { useMenuState, bindTrigger, Icons, ReactMemo, Menu } from "../../utils";
+import type { ReactResult } from "../../utils";
 import type { Inbox, TaskList } from "../schema";
 import { isInbox } from "../schema";
 import type { ListFilter } from "../utils/filter";

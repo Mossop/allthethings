@@ -261,7 +261,7 @@
           }
         ]
       },
-      "ServerProblem": {
+      "Problem": {
         "properties": {
           "url": {
             "type": "string"
@@ -289,7 +289,7 @@
           },
           "problems": {
             "items": {
-              "$ref": "#/components/schemas/ServerProblem"
+              "$ref": "#/components/schemas/Problem"
             },
             "type": "array"
           },
@@ -447,7 +447,20 @@
         "type": "object",
         "description": "From T, pick a set of properties whose keys are in the union K"
       },
-      "Pick_TaskInfoEntity.due-or-done_": {
+      "TaskController": {
+        "enum": [
+          "manual",
+          "list",
+          "service"
+        ],
+        "type": "string",
+        "x-enum-varnames": [
+          "Manual",
+          "ServiceList",
+          "Service"
+        ]
+      },
+      "Pick_TaskInfoEntity.due-or-done-or-controller_": {
         "properties": {
           "due": {
             "allOf": [
@@ -464,33 +477,14 @@
               }
             ],
             "nullable": true
-          }
-        },
-        "required": [
-          "due",
-          "done"
-        ],
-        "type": "object",
-        "description": "From T, pick a set of properties whose keys are in the union K"
-      },
-      "TaskInfoParams": {
-        "$ref": "#/components/schemas/Pick_TaskInfoEntity.due-or-done_"
-      },
-      "TaskController": {
-        "enum": [
-          "manual",
-          "list",
-          "service"
-        ],
-        "type": "string"
-      },
-      "Pick_TaskInfoEntity.controller_": {
-        "properties": {
+          },
           "controller": {
             "$ref": "#/components/schemas/TaskController"
           }
         },
         "required": [
+          "due",
+          "done",
           "controller"
         ],
         "type": "object",
@@ -499,10 +493,7 @@
       "TaskInfoState": {
         "allOf": [
           {
-            "$ref": "#/components/schemas/TaskInfoParams"
-          },
-          {
-            "$ref": "#/components/schemas/Pick_TaskInfoEntity.controller_"
+            "$ref": "#/components/schemas/Pick_TaskInfoEntity.due-or-done-or-controller_"
           },
           {
             "properties": {
@@ -774,6 +765,20 @@
             "type": "object"
           }
         ]
+      },
+      "Partial__due-string-or-null--done-string-or-null--__": {
+        "properties": {
+          "due": {
+            "type": "string",
+            "nullable": true
+          },
+          "done": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
       },
       "Partial_ItemParams_": {
         "properties": {
@@ -1294,12 +1299,17 @@
               "schema": {
                 "properties": {
                   "task": {
-                    "allOf": [
-                      {
-                        "$ref": "#/components/schemas/TaskInfoParams"
+                    "properties": {
+                      "done": {
+                        "type": "string",
+                        "nullable": true
+                      },
+                      "due": {
+                        "type": "string",
+                        "nullable": true
                       }
-                    ],
-                    "nullable": true
+                    },
+                    "type": "object"
                   },
                   "item": {
                     "$ref": "#/components/schemas/ItemParams"
@@ -1315,6 +1325,91 @@
                 },
                 "required": [
                   "item"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditTask",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial__due-string-or-null--done-string-or-null--__"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/item/task/controller": {
+      "patch": {
+        "operationId": "EditTaskController",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ItemState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "controller": {
+                    "allOf": [
+                      {
+                        "$ref": "#/components/schemas/TaskController"
+                      }
+                    ],
+                    "nullable": true
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "controller",
+                  "id"
                 ],
                 "type": "object"
               }

@@ -1,11 +1,10 @@
 import type { Update, Location } from "history";
 import { SystemZone } from "luxon";
 
-import type { ServerState } from "#client/utils";
-import { api, history, log, Query } from "#client/utils";
-import type { RelativeDateTime } from "#utils";
-import { DateTimeUnit, encodeRelativeDateTime } from "#utils";
-
+import type { RelativeDateTime } from "../../../utils";
+import { DateTimeUnit, encodeRelativeDateTime } from "../../../utils";
+import type { ServerState } from "../../utils";
+import { api, history, log, Query } from "../../utils";
 import type { Problem, State, User } from "../schema";
 import { buildState } from "../schema";
 import { SharedState, useSharedState } from "./sharedstate";

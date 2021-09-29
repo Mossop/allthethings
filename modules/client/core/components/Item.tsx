@@ -13,7 +13,7 @@ import clsx from "clsx";
 import { DateTime } from "luxon";
 import { forwardRef, useCallback, useMemo, useState } from "react";
 
-import type { ReactResult, ReactRef, RefetchQueries } from "#client/utils";
+import type { ReactResult, ReactRef } from "../../utils";
 import {
   mutationHook,
   api,
@@ -23,14 +23,11 @@ import {
   useMenuState,
   bindTrigger,
   Menu,
-} from "#client/utils";
-
-import { TaskController } from "../../../schema";
+  TaskController,
+} from "../../utils";
 import type { Item } from "../schema";
 import {
   isInbox,
-  useSetTaskControllerMutation,
-  refetchQueriesForItem,
   isNoteItem,
   isFileItem,
   isLinkItem,
@@ -136,31 +133,32 @@ function titleForType(type: TaskController | null): string {
 
 interface TypeMenuItemProps {
   item: Item;
-  refetchQueries: RefetchQueries;
   controller: TaskController | null;
   selectedController: TaskController | null;
 }
 
+const useEditTaskController = mutationHook(api.item.editTaskController, {
+  // TODO
+  refreshTokens: [],
+});
+
 const TypeMenuItem = ReactMemo(
   forwardRef(function TypeMenuItem(
-    { item, refetchQueries, controller, selectedController }: TypeMenuItemProps,
+    { item, controller, selectedController }: TypeMenuItemProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [mutate] = useSetTaskControllerMutation({
-      variables: {
-        id: item.id,
-        controller,
-      },
-      refetchQueries,
-    });
+    let [editTaskController] = useEditTaskController();
 
     let click = useCallback(() => {
       if (controller == selectedController) {
         return;
       }
 
-      void mutate();
-    }, [controller, selectedController, mutate]);
+      void editTaskController({
+        id: item.id,
+        controller,
+      });
+    }, [controller, selectedController, editTaskController, item.id]);
 
     return (
       <MenuItem
@@ -218,8 +216,6 @@ export default ReactMemo(function ItemDisplay({
     };
   }, [item]);
 
-  let refetchQueries = refetchQueriesForItem(item);
-
   let [editItemMutation] = useEditItemMutation();
 
   let archiveItem = useCallback(() => {
@@ -241,7 +237,6 @@ export default ReactMemo(function ItemDisplay({
   }, [item, editItemMutation]);
 
   let typeMenuItemProps: Omit<TypeMenuItemProps, "controller"> = {
-    refetchQueries,
     selectedController: taskController,
     item,
   };

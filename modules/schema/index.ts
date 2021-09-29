@@ -6,5 +6,5 @@ import introspection from "./introspection.json";
 const introspectionData = introspection as unknown as Schema;
 export { introspectionData };
 
-export * from "./types";
 export * from "./schema";
+export * from "./types";

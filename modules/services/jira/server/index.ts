@@ -1,6 +1,9 @@
-import type { Server, ServiceExport, ServiceTransaction } from "#server/utils";
-import { BaseService } from "#server/utils";
-
+import type {
+  Server,
+  ServiceExport,
+  ServiceTransaction,
+} from "../../../server/utils";
+import { BaseService } from "../../../server/utils";
 import { Account, Issue, Search } from "./implementations";
 import Resolvers from "./resolvers";
 

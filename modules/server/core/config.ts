@@ -3,7 +3,7 @@ import { URL } from "url";
 
 import { JsonDecoder } from "ts.data.json";
 
-import type { DatabaseConfig } from "#db";
+import type { DatabaseConfig } from "../../db";
 
 export interface ServerConfig {
   rootUrl: URL;

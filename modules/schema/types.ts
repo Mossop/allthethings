@@ -1,6 +1,5 @@
-export interface Problem {
-  url: string;
-  description: string;
+export interface Root {
+  dummy: "Root";
 }
 
 export enum TaskController {
@@ -9,4 +8,4 @@ export enum TaskController {
   Service = "service",
 }
 
-export { RelativeDateTime, DateTimeOffset } from "#utils";
+export { RelativeDateTime, DateTimeOffset } from "../utils";

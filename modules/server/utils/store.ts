@@ -1,9 +1,8 @@
 import { customAlphabet } from "nanoid/async";
 
-import type { Database, Query, Sql, Updates, WhereConditions } from "#db";
-import { insert, sql, update, upsert, where } from "#db";
-import { assert, memoized } from "#utils";
-
+import type { Database, Query, Sql, Updates, WhereConditions } from "../../db";
+import { insert, sql, update, upsert, where } from "../../db";
+import { assert, memoized } from "../../utils";
 import type { Transaction } from "./transaction";
 
 const ALPHABET =
@@ -40,15 +39,22 @@ export abstract class EntityImpl<Entity, Tx extends Transaction = Transaction> {
   }
 
   public async update(fields: Partial<Entity>): Promise<void> {
+    let hasUpdates = false;
     let updates: Partial<Entity> = {};
+
     for (let [k, v] of Object.entries(fields)) {
-      if (k in this.entity && this.entity[k] != v) {
+      if (k in this.entity && this.entity[k] !== v) {
         if (this.store.keys.includes(k)) {
           throw new Error("Cannot modify an entity's primary key.");
         }
 
         updates[k] = v;
+        hasUpdates = true;
       }
+    }
+
+    if (!hasUpdates) {
+      return;
     }
 
     await this.store.update(

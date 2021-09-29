@@ -1,21 +1,3 @@
-mutation MarkTaskDone($id: ID!, $done: DateTime) {
-  markTaskDone(id: $id, done: $done) {
-    ...clientItemFields
-  }
-}
-
-mutation SetTaskController($id: ID!, $controller: TaskController) {
-  setTaskController(id: $id, controller: $controller) {
-    ...clientItemFields
-  }
-}
-
-mutation MarkTaskDue($id: ID!, $due: DateTime) {
-  markTaskDue(id: $id, due: $due) {
-    ...clientItemFields
-  }
-}
-
 mutation CreateUser($email: String!, $password: String!, $isAdmin: Boolean) {
   createUser(email: $email, password: $password, isAdmin: $isAdmin) {
     id

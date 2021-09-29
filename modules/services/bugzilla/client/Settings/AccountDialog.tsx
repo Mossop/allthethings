@@ -7,8 +7,7 @@ import {
   Dialog,
   useBoolState,
   FormState,
-} from "#client/utils";
-
+} from "../../../../client/utils";
 import type { BugzillaAccount } from "../../../../schema";
 import {
   refetchListBugzillaAccountsQuery,

@@ -7,8 +7,7 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
-} from "#client/utils";
-
+} from "../../utils";
 import { useChangePasswordMutation } from "../schema";
 
 interface ChangePasswordProps {

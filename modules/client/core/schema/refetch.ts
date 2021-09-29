@@ -1,5 +1,4 @@
-import type { RefetchQueries } from "#client/utils";
-
+import type { RefetchQueries } from "../../utils";
 import type { Inbox, TaskList } from "./contextState";
 import { isInbox } from "./contextState";
 import { refetchListInboxQuery, refetchListTaskListQuery } from "./operations";

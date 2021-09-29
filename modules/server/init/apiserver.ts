@@ -9,13 +9,13 @@ import koaMount from "koa-mount";
 import koaSession from "koa-session";
 import koaStatic from "koa-static";
 
-import type { Database } from "#db";
-import type { ServerConfig } from "#server/core";
-import { addCoreRoutes, ServiceManager, withTransaction } from "#server/core";
-import type { Service, Transaction, WebContext, Segment } from "#server/utils";
-import { RootSegment, log } from "#server/utils";
-import type { DescriptorsFor } from "#utils";
-import { defer } from "#utils";
+import type { Database } from "../../db";
+import type { DescriptorsFor } from "../../utils";
+import { defer } from "../../utils";
+import type { ServerConfig } from "../core";
+import { addCoreRoutes, ServiceManager, withTransaction } from "../core";
+import type { Service, Transaction, WebContext, Segment } from "../utils";
+import { RootSegment, log } from "../utils";
 
 interface TransactionHolder {
   writable: boolean;

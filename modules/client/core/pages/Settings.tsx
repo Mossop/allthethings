@@ -19,9 +19,8 @@ import {
   Icons,
   Styles,
   Text,
-} from "#client/utils";
-import type { ClientService, ReactResult } from "#client/utils";
-
+} from "../../utils";
+import type { ClientService, ReactResult } from "../../utils";
 import Page from "../components/Page";
 import { useUser } from "../utils/globalState";
 import { pushView, useUrl, ViewType, useCurrentContext } from "../utils/view";

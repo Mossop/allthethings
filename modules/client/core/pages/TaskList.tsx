@@ -4,7 +4,7 @@ import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useState, forwardRef, useCallback } from "react";
 
-import type { ReactRef, ReactResult } from "#client/utils";
+import type { ReactRef, ReactResult } from "../../utils";
 import {
   api,
   mutationHook,
@@ -13,8 +13,7 @@ import {
   TextStyles,
   HiddenInput,
   ReactMemo,
-} from "#client/utils";
-
+} from "../../utils";
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";

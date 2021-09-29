@@ -2,7 +2,7 @@ import type Koa from "koa";
 import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
 
-import { BaseService } from "#server/utils";
+import { BaseService } from "../../../server/utils";
 import type {
   ServiceExport,
   Server,
@@ -10,8 +10,7 @@ import type {
   ServiceTransaction,
   ServiceWebMiddleware,
   ServiceWebContext,
-} from "#server/utils";
-
+} from "../../../server/utils";
 import { Account, IssueLike, Search } from "./implementations";
 import Resolvers from "./resolvers";
 import type { GithubServiceConfig } from "./types";

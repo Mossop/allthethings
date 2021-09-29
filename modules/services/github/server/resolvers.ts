@@ -4,9 +4,11 @@ import type {
   MutationDeleteGithubSearchArgs,
   MutationEditGithubSearchArgs,
 } from "../../../schema";
-import type { AuthedGraphQLCtx, ServiceTransaction } from "#server/utils";
-import { rootResolvers } from "#server/utils";
-
+import type {
+  AuthedGraphQLCtx,
+  ServiceTransaction,
+} from "../../../server/utils";
+import { rootResolvers } from "../../../server/utils";
 import { GitHubApi } from "./api";
 import { Account, Search } from "./implementations";
 import type { Resolvers } from "./schema";

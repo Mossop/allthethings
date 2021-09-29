@@ -246,3 +246,15 @@ export function encodeDateTime(dt: DateTime | undefined | null): string | null {
 
   return null;
 }
+
+export function decodeDateTime(val: string): DateTime;
+export function decodeDateTime(val: string | undefined | null): DateTime | null;
+export function decodeDateTime(
+  val: string | undefined | null,
+): DateTime | null {
+  if (val) {
+    return DateTime.fromISO(val);
+  }
+
+  return null;
+}

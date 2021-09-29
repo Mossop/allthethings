@@ -1,10 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
-import type { ReactResult } from "#client/utils";
-import { Styles, ReactMemo } from "#client/utils";
-import type { FileFields } from "#services/google/schema";
-
+import type { ReactResult } from "../../../client/utils";
+import { Styles, ReactMemo } from "../../../client/utils";
+import type { FileFields } from "../schema";
 import FileIcon from "./FileIcon";
 
 const useStyles = makeStyles((theme: Theme) =>

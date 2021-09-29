@@ -13,14 +13,13 @@ import {
   Icons,
   DateTimeOffsetDialog,
   Styles,
-} from "#client/utils";
-import { addOffset } from "#utils";
-
+} from "../../../../client/utils";
 import type {
   DateTimeOffset,
   GithubAccount,
   GithubSearch,
 } from "../../../../schema";
+import { addOffset } from "../../../../utils";
 import {
   useCreateGithubSearchMutation,
   useEditGithubSearchMutation,

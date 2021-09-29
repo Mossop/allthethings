@@ -1,6 +1,5 @@
 import type { GithubAccount, GithubSearch } from "../../../schema";
-import type { GraphQLType, Overwrite } from "#utils";
-
+import type { GraphQLType, Overwrite } from "../../../utils";
 import type { IssueState, PullRequestState } from "./operations";
 
 export type GithubAccountEntity = Omit<

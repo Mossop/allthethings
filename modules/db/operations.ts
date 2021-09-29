@@ -122,17 +122,13 @@ export function upsert(
   )}) DO UPDATE SET ${sql.join(updateColumns, ", ")}`;
 }
 
-export type WhereConditions<T> = Partial<
-  {
-    [K in keyof T]: T[K] | WhereClause<T[K]>;
-  }
->;
+export type WhereConditions<T> = Partial<{
+  [K in keyof T]: T[K] | WhereClause<T[K]>;
+}>;
 
-export type Updates<T> = Partial<
-  {
-    [K in keyof T]: T[K] | Sql;
-  }
->;
+export type Updates<T> = Partial<{
+  [K in keyof T]: T[K] | Sql;
+}>;
 
 export function update<T>(
   table: string,

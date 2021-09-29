@@ -1,13 +1,12 @@
+import type { GraphQLType } from ".";
+import type { Overwrite } from "../../../utils";
 import type {
   ServerContextState,
-  ServerProblem,
+  Problem as ServerProblem,
   ServerProjectState,
   ServerState,
   ServerUserState,
-} from "#client/utils";
-import type { Overwrite } from "#utils";
-
-import type { GraphQLType } from ".";
+} from "../../utils";
 
 export type Problem = Readonly<ServerProblem>;
 

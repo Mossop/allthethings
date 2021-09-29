@@ -24,6 +24,7 @@ function buildSpec(controller, pathPrefix, mergeWith = {}) {
         specVersion: 3,
         spec: mergeWith,
         specMerging: "recursive",
+        xEnumVarnames: true,
       });
 
       let spec = JSON.parse(
@@ -52,7 +53,7 @@ async function buildRoutes(controller) {
     noWriteIfUnchanged: true,
     routesDir: path.dirname(controller),
     routesFileName: "routes.ts",
-    iocModule: "#server/utils",
+    iocModule: "modules/server/utils",
   });
 
   let routes = path.join(path.dirname(controller), "routes.ts");

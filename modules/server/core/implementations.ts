@@ -1,7 +1,7 @@
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import { DateTime } from "luxon";
 
-import type { Sql, WhereConditions } from "#db";
+import type { Sql, WhereConditions } from "../../db";
 import {
   In,
   IsNull,
@@ -11,19 +11,7 @@ import {
   Not,
   sql,
   where,
-} from "#db";
-import type { ItemList, ResolverImpl, Transaction, Store } from "#server/utils";
-import {
-  id,
-  IdentifiedEntityImpl,
-  ref,
-  storeBuilder,
-  EntityImpl,
-} from "#server/utils";
-import type { Awaitable, RelativeDateTime } from "#utils";
-import { addOffset, call, memoized, waitFor } from "#utils";
-
-import { TaskController } from "../../schema";
+} from "../../db";
 import type {
   ContextItemsArgs,
   ContextProjectByIdArgs,
@@ -31,6 +19,17 @@ import type {
   UserInboxArgs,
   ItemFilter,
 } from "../../schema";
+import type { Awaitable, RelativeDateTime } from "../../utils";
+import { addOffset, call, memoized, waitFor } from "../../utils";
+import type { ItemList, ResolverImpl, Transaction, Store } from "../utils";
+import {
+  TaskController,
+  id,
+  IdentifiedEntityImpl,
+  ref,
+  storeBuilder,
+  EntityImpl,
+} from "../utils";
 import type {
   ContextEntity,
   FileDetailEntity,
@@ -573,7 +572,6 @@ export class Item
     user: User,
     type: ItemType | null,
     itemParams: ItemParams,
-    taskInfo?: TaskInfoParams | null,
   ): Promise<Item> {
     try {
       let item = await Item.store(tx).create({
@@ -584,15 +582,6 @@ export class Item
         userId: user.id,
         type,
       });
-
-      if (taskInfo) {
-        await TaskInfo.store(tx).create({
-          id: item.id,
-          manualDue: taskInfo.due,
-          manualDone: taskInfo.done,
-          controller: TaskController.Manual,
-        });
-      }
 
       return item;
     } catch (error) {
@@ -745,43 +734,18 @@ abstract class ItemProperty<
   });
 }
 
-export type TaskInfoParams = Pick<TaskInfoEntity, "due" | "done">;
-
-export type TaskInfoState = TaskInfoParams &
-  Pick<TaskInfoEntity, "controller"> & {
-    __typename: "TaskInfo";
-  };
+export type TaskInfoState = Pick<
+  TaskInfoEntity,
+  "due" | "done" | "controller"
+> & {
+  __typename: "TaskInfo";
+};
 
 export class TaskInfo
   extends ItemProperty<TaskInfoEntity>
   implements ResolverImpl<TaskInfoResolvers>
 {
   public static readonly store = storeBuilder(TaskInfo, "core.TaskInfo");
-
-  public static async create(
-    tx: Transaction,
-    item: Item,
-    taskInfo: Omit<TaskInfoEntity, "id" | "due" | "done">,
-  ): Promise<TaskInfo> {
-    let task = await TaskInfo.store(tx).create({
-      ...taskInfo,
-      due:
-        taskInfo.controller == TaskController.Manual
-          ? taskInfo.manualDue
-          : null,
-      done:
-        taskInfo.controller == TaskController.Manual
-          ? taskInfo.manualDone
-          : null,
-      id: item.id,
-    });
-
-    if (taskInfo.controller != TaskController.Manual) {
-      await TaskInfo.updateTaskDetails(tx, [item.id]);
-    }
-
-    return task;
-  }
 
   public static async updateTaskDetails(
     tx: Transaction,
@@ -1318,7 +1282,7 @@ export class ServiceList
   }
 }
 
-class ServiceListItem extends EntityImpl<ServiceListItemEntity> {
+export class ServiceListItem extends EntityImpl<ServiceListItemEntity> {
   public static readonly store = storeBuilder(
     ServiceListItem,
     "core.ServiceListItem",

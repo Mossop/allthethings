@@ -1,10 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
-import type { ReactResult } from "#client/utils";
-import { ItemPill, Styles, Icons, ReactMemo } from "#client/utils";
-import type { Overwrite } from "#utils";
-
+import type { Overwrite } from "../../../utils";
+import type { ReactResult } from "../../utils";
+import { ItemPill, Styles, Icons, ReactMemo } from "../../utils";
 import type { LinkItem } from "../schema";
 import type { ItemRenderProps } from "./Item";
 

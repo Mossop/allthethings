@@ -6,9 +6,8 @@ import type { RequestParameters } from "@octokit/types";
 import type { DocumentNode } from "graphql";
 import { print } from "graphql";
 
-import type { ServiceTransaction } from "#server/utils";
-
 import { GithubService } from ".";
+import type { ServiceTransaction } from "../../../server/utils";
 import type { Account } from "./implementations";
 import type { SearchQuery, UserInfoQuery } from "./operations";
 import { getSdk } from "./operations";

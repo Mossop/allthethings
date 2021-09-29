@@ -20,7 +20,6 @@ import type {
   ItemSet,
 } from "./implementations";
 import * as Schema from "../../schema";
-import { Root } from "#server/utils";
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
 } & { [P in K]-?: NonNullable<T[P]> };
@@ -148,10 +147,10 @@ export type ResolversTypes = {
   ItemFilter: Schema.ItemFilter;
   ItemSet: ResolverTypeWrapper<ItemSet>;
   LinkDetail: ResolverTypeWrapper<LinkDetail>;
-  Mutation: ResolverTypeWrapper<Root>;
+  Mutation: ResolverTypeWrapper<Schema.Root>;
   NoteDetail: ResolverTypeWrapper<NoteDetail>;
   Project: ResolverTypeWrapper<Project>;
-  Query: ResolverTypeWrapper<Root>;
+  Query: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   Section: ResolverTypeWrapper<Section>;
   ServiceDetail: ResolverTypeWrapper<ServiceDetail>;
@@ -181,10 +180,10 @@ export type ResolversParentTypes = {
   ItemFilter: Schema.ItemFilter;
   ItemSet: ItemSet;
   LinkDetail: LinkDetail;
-  Mutation: Root;
+  Mutation: Schema.Root;
   NoteDetail: NoteDetail;
   Project: Project;
-  Query: Root;
+  Query: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   Section: Section;
   ServiceDetail: ServiceDetail;
@@ -345,24 +344,6 @@ export type MutationResolvers<
     ParentType,
     ContextType,
     RequireFields<Schema.MutationDeleteUserArgs, never>
-  >;
-  markTaskDone: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMarkTaskDoneArgs, "id">
-  >;
-  markTaskDue: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationMarkTaskDueArgs, "id">
-  >;
-  setTaskController: Resolver<
-    Schema.Maybe<ResolversTypes["Item"]>,
-    ParentType,
-    ContextType,
-    RequireFields<Schema.MutationSetTaskControllerArgs, "id">
   >;
 };
 

@@ -6,7 +6,6 @@ import type {
 } from "graphql";
 import type { Account, Search } from "./implementations";
 import * as Schema from "../../../schema";
-import { Root } from "#server/utils";
 export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 export type RequireFields<T, K extends keyof T> = {
   [X in Exclude<keyof T, K>]?: T[X];
@@ -127,7 +126,7 @@ export type ResolversTypes = {
   JiraAccountParams: Schema.JiraAccountParams;
   JiraSearch: ResolverTypeWrapper<Search>;
   JiraSearchParams: Schema.JiraSearchParams;
-  Mutation: ResolverTypeWrapper<Root>;
+  Mutation: ResolverTypeWrapper<Schema.Root>;
   RelativeDateTime: ResolverTypeWrapper<Schema.Scalars["RelativeDateTime"]>;
   String: ResolverTypeWrapper<Schema.Scalars["String"]>;
   TaskController: ResolverTypeWrapper<Schema.Scalars["TaskController"]>;
@@ -148,7 +147,7 @@ export type ResolversParentTypes = {
   JiraAccountParams: Schema.JiraAccountParams;
   JiraSearch: Search;
   JiraSearchParams: Schema.JiraSearchParams;
-  Mutation: Root;
+  Mutation: Schema.Root;
   RelativeDateTime: Schema.Scalars["RelativeDateTime"];
   String: Schema.Scalars["String"];
   TaskController: Schema.Scalars["TaskController"];

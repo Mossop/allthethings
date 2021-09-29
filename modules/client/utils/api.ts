@@ -1,9 +1,8 @@
 import equal from "fast-deep-equal/es6";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { Deferred } from "#utils";
-import { defer, TypedEmitter } from "#utils";
-
+import type { Deferred } from "../../utils";
+import { defer, TypedEmitter } from "../../utils";
 import { Api } from "./client";
 import type { HttpResponse, RequestParams } from "./client";
 import { log } from "./logging";

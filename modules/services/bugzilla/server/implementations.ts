@@ -4,25 +4,24 @@ import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
+import type { BugzillaAccount, BugzillaAccountParams } from "../../../schema";
 import type {
   ResolverImpl,
   ServiceItem,
   ServiceTransaction,
-} from "#server/utils";
+} from "../../../server/utils";
 import {
+  TaskController,
   id,
   storeBuilder,
   BaseItem,
   BaseAccount,
   BaseList,
-} from "#server/utils";
-import { SearchType } from "#services/bugzilla/schema";
-import type { BugFields } from "#services/bugzilla/schema";
-import type { DateTimeOffset } from "#utils";
-import { offsetFromJson } from "#utils";
-
-import type { BugzillaAccount, BugzillaAccountParams } from "../../../schema";
-import { TaskController } from "../../../schema";
+} from "../../../server/utils";
+import type { DateTimeOffset } from "../../../utils";
+import { offsetFromJson } from "../../../utils";
+import { SearchType } from "../schema";
+import type { BugFields } from "../schema";
 import type {
   BugzillaAccountEntity,
   BugzillaBugEntity,

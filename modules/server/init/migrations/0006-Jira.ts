@@ -1,4 +1,4 @@
-import type { Database, Migration } from "#db";
+import type { Database, Migration } from "../../../db";
 
 export class Migration0006Jira implements Migration {
   public name = "0006-Jira";

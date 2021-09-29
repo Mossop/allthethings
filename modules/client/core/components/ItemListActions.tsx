@@ -10,7 +10,7 @@ import {
 import MenuIcon from "@material-ui/icons/MoreVert";
 import { useMemo } from "react";
 
-import type { ReactResult } from "#client/utils";
+import type { ReactResult } from "../../utils";
 import {
   api,
   mutationHook,
@@ -21,8 +21,7 @@ import {
   bindTrigger,
   useMenuState,
   Menu,
-} from "#client/utils";
-
+} from "../../utils";
 import CreateSectionDialog from "../dialogs/CreateSection";
 import LinkDialog from "../dialogs/Link";
 import TaskDialog from "../dialogs/Task";

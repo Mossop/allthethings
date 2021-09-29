@@ -10,11 +10,10 @@ import { withScalars } from "apollo-link-scalars";
 import { buildClientSchema } from "graphql";
 import { DateTime } from "luxon";
 
-import type { RelativeDateTime } from "#utils";
-import { offsetFromJson, relativeDateTimeFromJson } from "#utils";
-
 import type { DateTimeOffset } from "../../../schema";
 import { introspectionData } from "../../../schema";
+import type { RelativeDateTime } from "../../../utils";
+import { offsetFromJson, relativeDateTimeFromJson } from "../../../utils";
 import possibleTypes from "./types";
 import type { TypedTypePolicies } from "./types";
 

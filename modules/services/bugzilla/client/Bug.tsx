@@ -1,10 +1,9 @@
 import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles } from "@material-ui/core";
 
-import type { ServiceItemProps, ReactResult } from "#client/utils";
-import { ItemPill, ImageIcon, Styles, ReactMemo } from "#client/utils";
-import type { BugFields } from "#services/bugzilla/schema";
-
+import type { ServiceItemProps, ReactResult } from "../../../client/utils";
+import { ItemPill, ImageIcon, Styles, ReactMemo } from "../../../client/utils";
+import type { BugFields } from "../schema";
 import Icon from "./Icon";
 
 const useStyles = makeStyles((theme: Theme) =>

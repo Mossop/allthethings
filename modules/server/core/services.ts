@@ -1,6 +1,7 @@
 import { URL } from "url";
 
-import type { Database } from "#db";
+import type { Database } from "../../db";
+import { assert, memoized } from "../../utils";
 import type {
   Problem,
   Segment,
@@ -9,10 +10,8 @@ import type {
   ServiceExport,
   ServiceTransaction,
   Transaction,
-} from "#server/utils";
-import { inSegment } from "#server/utils";
-import { assert, memoized } from "#utils";
-
+} from "../utils";
+import { inSegment } from "../utils";
 import type { ServerConfig } from "./config";
 import TaskManager from "./tasks";
 import { buildServiceTransaction, withTransaction } from "./transaction";

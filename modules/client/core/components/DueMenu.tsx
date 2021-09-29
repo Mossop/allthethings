@@ -11,6 +11,7 @@ import {
 import { DateTime } from "luxon";
 import { forwardRef, useCallback, useMemo } from "react";
 
+import { encodeDateTime } from "../../../utils";
 import {
   useBoundCallback,
   useBoolState,
@@ -18,10 +19,10 @@ import {
   ReactMemo,
   DateTimeDialog,
   Menu,
-} from "#client/utils";
-import type { ReactRef, ReactResult } from "#client/utils";
-
-import { useMarkTaskDueMutation, refetchQueriesForItem } from "../schema";
+  mutationHook,
+  api,
+} from "../../utils";
+import type { ReactRef, ReactResult } from "../../utils";
 import type { Item } from "../schema";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
@@ -45,25 +46,28 @@ interface DueMenuProps {
   isInner?: boolean;
 }
 
+const useEditTaskMutation = mutationHook(api.item.editTask, {
+  // TODO
+  refreshTokens: [],
+});
+
 export const DueItemItems = ReactMemo(
   forwardRef(function DueItemItems(
     { item }: DueMenuProps,
     ref: ReactRef | null,
   ): ReactResult {
-    let [markTaskDueMutation] = useMarkTaskDueMutation({
-      refetchQueries: refetchQueriesForItem(item),
-    });
+    let [editTask] = useEditTaskMutation();
 
     let markDue = useCallback(
       (due: DateTime | null) => {
-        return markTaskDueMutation({
-          variables: {
-            id: item.id,
-            due,
+        return editTask({
+          id: item.id,
+          params: {
+            due: encodeDateTime(due),
           },
         });
       },
-      [item.id, markTaskDueMutation],
+      [item.id, editTask],
     );
 
     let notDue = useBoundCallback(markDue, null);
@@ -111,20 +115,18 @@ export const DueItems = ReactMemo(
     let classes = useStyles();
     let [pickerOpen, openPicker, closePicker] = useBoolState();
 
-    let [markTaskDueMutation] = useMarkTaskDueMutation({
-      refetchQueries: refetchQueriesForItem(item),
-    });
+    let [editTask] = useEditTaskMutation();
 
     let markTaskDue = useCallback(
       (due: DateTime | null) => {
-        return markTaskDueMutation({
-          variables: {
-            id: item.id,
-            due,
+        return editTask({
+          id: item.id,
+          params: {
+            due: encodeDateTime(due),
           },
         });
       },
-      [item.id, markTaskDueMutation],
+      [item.id, editTask],
     );
 
     let dueThisAfternoon = useMemo(() => {

@@ -1,12 +1,11 @@
 import { install } from "source-map-support";
 
-import type { Database } from "#db";
-import { connect, migrate, rollback } from "#db";
-import { parseConfig, User, withTransaction, TaskInfo } from "#server/core";
-import type { Transaction, Segment } from "#server/utils";
-import { inSegment } from "#server/utils";
-
+import type { Database } from "../../db";
+import { connect, migrate, rollback } from "../../db";
+import { parseConfig, User, withTransaction, TaskInfo } from "../core";
 import { ServiceManager } from "../core/services";
+import type { Transaction, Segment } from "../utils";
+import { inSegment } from "../utils";
 import { createApiServer } from "./apiserver";
 import { createGqlServer } from "./gqlserver";
 import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
@@ -32,19 +31,19 @@ async function init(): Promise<void> {
     let connection = await connect(config.database);
     try {
       ServiceManager.addService(
-        (await import("#services/bugzilla/server")).default,
+        (await import("../../services/bugzilla/server")).default,
       );
       ServiceManager.addService(
-        (await import("#services/github/server")).default,
+        (await import("../../services/github/server")).default,
       );
       ServiceManager.addService(
-        (await import("#services/google/server")).default,
+        (await import("../../services/google/server")).default,
       );
       ServiceManager.addService(
-        (await import("#services/jira/server")).default,
+        (await import("../../services/jira/server")).default,
       );
       ServiceManager.addService(
-        (await import("#services/phabricator/server")).default,
+        (await import("../../services/phabricator/server")).default,
       );
 
       await segment.inSegment("DB migrations", async () => {

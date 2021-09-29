@@ -1,7 +1,6 @@
 import type { URL } from "url";
 
-import type { Awaitable, RelativeDateTime } from "#utils";
-
+import type { Awaitable, RelativeDateTime } from "../../utils";
 import type { Service, ServiceTransaction, ServiceItem } from "./services";
 import type { IdentifiedEntity, StoreBuilder } from "./store";
 import { IdentifiedEntityImpl } from "./store";

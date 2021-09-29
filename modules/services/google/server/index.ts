@@ -2,7 +2,7 @@ import type Koa from "koa";
 import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
 
-import { BaseService } from "#server/utils";
+import { BaseService } from "../../../server/utils";
 import type {
   Problem,
   ServiceWebMiddleware,
@@ -10,8 +10,7 @@ import type {
   ServiceWebContext,
   ServiceExport,
   ServiceTransaction,
-} from "#server/utils";
-
+} from "../../../server/utils";
 import { Account, File, MailSearch, Thread } from "./implementations";
 import Resolvers from "./resolvers";
 import type { GoogleServiceConfig } from "./types";

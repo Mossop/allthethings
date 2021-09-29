@@ -8,3 +8,4 @@ export * from "./services";
 export * from "./store";
 export * from "./tasks";
 export * from "./transaction";
+export * from "./types";

@@ -46,7 +46,7 @@ const resolverPlugins = (schemaPath, mappers = {}) => ({
     immutableTypes: true,
     avoidOptionals: true,
     namespacedImportName: "Schema",
-    rootValueType: "Root",
+    rootValueType: "Schema.Root",
     mappers,
     noSchemaStitching: true,
   },
@@ -54,7 +54,6 @@ const resolverPlugins = (schemaPath, mappers = {}) => ({
     content: [
       "/* eslint-disable */",
       `import * as Schema from '${schemaPath}';`,
-      "import { Root } from '#server/utils';",
     ],
   },
 });

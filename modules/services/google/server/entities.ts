@@ -1,6 +1,6 @@
 import type { GoogleAccount, GoogleMailSearch } from "../../../schema";
-import type { FileFields, ThreadFields } from "#services/google/schema";
-import type { GraphQLType } from "#utils";
+import type { GraphQLType } from "../../../utils";
+import type { FileFields, ThreadFields } from "../schema";
 
 export type GoogleAccountEntity = Omit<
   GraphQLType<GoogleAccount>,

@@ -17,9 +17,8 @@ import {
   useResetStore,
   mutationHook,
   api,
-} from "#client/utils";
-import type { ReactResult } from "#client/utils";
-
+} from "../../utils";
+import type { ReactResult } from "../../utils";
 import ChangePasswordDialog from "../dialogs/ChangePassword";
 import { useUser } from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
