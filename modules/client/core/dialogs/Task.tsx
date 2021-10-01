@@ -8,12 +8,10 @@ import {
   useBoolState,
   Dialog,
   FormState,
-  mutationHook,
-  api,
-  itemRefreshTokens,
 } from "../../utils";
 import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section, TaskItem } from "../schema";
+import { useCreateTaskMutation, useEditItemMutation } from "../utils/api";
 
 type CreateTaskProps =
   | {
@@ -24,14 +22,6 @@ type CreateTaskProps =
       onClosed: () => void;
       task: TaskItem;
     };
-
-const useCreateTaskMutation = mutationHook(api.item.createTask, {
-  refreshTokens: itemRefreshTokens,
-});
-
-const useEditItemMutation = mutationHook(api.item.editItem, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export default ReactMemo(function TaskDialog({
   onClosed,

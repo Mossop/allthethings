@@ -4,16 +4,10 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
-import {
-  api,
-  Icons,
-  itemRefreshTokens,
-  mutationHook,
-  ReactMemo,
-  TaskController,
-} from "../../utils";
+import { Icons, ReactMemo, TaskController } from "../../utils";
 import type { ReactResult } from "../../utils";
 import type { Item } from "../schema";
+import { useEditTaskMutation } from "../utils/api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -28,10 +22,6 @@ export interface TaskDoneToggleProps {
   item: Item;
   disabled?: boolean;
 }
-
-const useEditTaskMutation = mutationHook(api.item.editTask, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export const TaskDoneToggle = ReactMemo(function TaskDoneToggle({
   item,

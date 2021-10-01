@@ -158,9 +158,7 @@ module.exports = {
       },
     }),
     new DefinePlugin({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       SCHEMA_VERSION: schemaVersion,
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG),
     }),
     new ForkTsCheckerWebpackPlugin({

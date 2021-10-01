@@ -108,7 +108,7 @@
     "eslint-config-prettier": "^8.3.0",
     "eslint-import-resolver-typescript": "^2.4.0",
     "eslint-plugin-import": "^2.24.0",
-    "eslint-plugin-mossop": "github:Mossop/eslint-plugin-mossop#1.0.13",
+    "eslint-plugin-mossop": "github:Mossop/eslint-plugin-mossop#1.0.14",
     "eslint-plugin-react": "^7.22.0",
     "eslint-plugin-react-hooks": "^4.2.0",
     "fast-deep-equal": "^3.1.3",

@@ -2,23 +2,18 @@ import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
 import {
-  api,
   TextFieldInput,
   ReactMemo,
   Dialog,
   FormState,
   useBoolState,
   useResetStore,
-  mutationHook,
 } from "../../utils";
+import { useLogin } from "../utils/api";
 
 interface LoginDialogProps {
   onClosed: () => void;
 }
-
-let useLogin = mutationHook(api.login.login, {
-  refreshTokens: [api.state.getState],
-});
 
 export default ReactMemo(function LoginDialog({
   onClosed,

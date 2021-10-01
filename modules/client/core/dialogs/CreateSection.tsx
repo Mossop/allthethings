@@ -7,19 +7,14 @@ import {
   ReactMemo,
   TextFieldInput,
   FormState,
-  mutationHook,
-  api,
 } from "../../utils";
 import type { TaskList } from "../schema";
+import { useCreateSectionMutation } from "../utils/api";
 
 interface CreateSectionProps {
   onClosed: () => void;
   taskList: TaskList;
 }
-
-const useCreateSectionMutation = mutationHook(api.section.createSection, {
-  refreshTokens: [api.project.listContents],
-});
 
 export default ReactMemo(function CreateSectionDialog({
   onClosed,

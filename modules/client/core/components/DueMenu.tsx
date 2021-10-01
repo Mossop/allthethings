@@ -19,12 +19,10 @@ import {
   ReactMemo,
   DateTimeDialog,
   Menu,
-  mutationHook,
-  api,
-  itemRefreshTokens,
 } from "../../utils";
 import type { ReactRef, ReactResult } from "../../utils";
 import type { Item } from "../schema";
+import { useEditTaskMutation } from "../utils/api";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
 
@@ -46,10 +44,6 @@ interface DueMenuProps {
   item: Item;
   isInner?: boolean;
 }
-
-const useEditTaskMutation = mutationHook(api.item.editTask, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export const DueItemItems = ReactMemo(
   forwardRef(function DueItemItems(

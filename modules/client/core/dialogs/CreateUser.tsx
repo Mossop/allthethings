@@ -7,17 +7,12 @@ import {
   Dialog,
   TextFieldInput,
   BooleanCheckboxInput,
-  mutationHook,
-  api,
 } from "../../utils";
+import { useCreateUserMutation } from "../utils/api";
 
 interface CreateUserProps {
   onClosed: () => void;
 }
-
-const useCreateUserMutation = mutationHook(api.users.createUser, {
-  refreshTokens: [api.users.listUsers],
-});
 
 export default ReactMemo(function CreateUserDialog({
   onClosed,

@@ -75,7 +75,6 @@ interface SettingsContextProps {
   serviceId?: string;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 export const SettingsContext = createContext<SettingsContextProps>({
   page: "general",
   setPage: () => {

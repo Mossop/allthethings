@@ -16,12 +16,10 @@ import {
   Heading,
   ReactMemo,
   SettingsPage,
-  mutationHook,
-  api,
-  queryHook,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import CreateUserDialog from "../dialogs/CreateUser";
+import { useDeleteUserMutation, useListUsersQuery } from "../utils/api";
 import { useUser } from "../utils/globalState";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -50,12 +48,6 @@ interface UserProps {
   isAdmin: boolean;
   email: string;
 }
-
-const useDeleteUserMutation = mutationHook(api.users.deleteUser, {
-  refreshTokens: [api.users.listUsers, api.state.getState],
-});
-
-const useListUsersQuery = queryHook(api.users.listUsers);
 
 const User = ReactMemo(function User({
   id,

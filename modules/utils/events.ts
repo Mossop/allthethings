@@ -11,9 +11,7 @@ export type Listener<M extends EventMap, E extends Events<M>> = (
   ...args: Payload<M, E>
 ) => void;
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const emitters = new WeakMap<TypedEmitter<any>, Base>();
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 function emitterFor(emitter: TypedEmitter<any>): Base {
   let base = emitters.get(emitter);
   if (base) {

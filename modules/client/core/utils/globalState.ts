@@ -11,7 +11,6 @@ import { SharedState, useSharedState } from "./sharedstate";
 import type { View } from "./view";
 import { urlToView } from "./view";
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
 declare let SCHEMA_VERSION: string;
 
 const POLL_INTERVAL = 60000;
@@ -30,7 +29,7 @@ export type AppState = Omit<State, "problems"> & {
 class GlobalStateManager {
   public readonly appState = new SharedState<AppState | undefined>(undefined);
   public readonly problems = new SharedState<readonly Problem[]>([]);
-  private query: Query<any, ServerState>;
+  private query: Query<ServerState>;
   private lastError: Error | null = null;
 
   public constructor() {
@@ -46,15 +45,13 @@ class GlobalStateManager {
     ];
 
     this.query = new Query(
-      api.state.getState,
-      [
-        {
+      () =>
+        api.state.getState({
           itemFilter: {
             dueBefore: encodeRelativeDateTime(dueBefore),
             isDone: false,
           },
-        },
-      ],
+        }),
       { pollInterval: POLL_INTERVAL },
     );
 

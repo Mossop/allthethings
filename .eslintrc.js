@@ -19,14 +19,6 @@ module.exports = {
 
   extends: ["plugin:mossop/typescript"],
 
-  rules: {
-    "import/named": "off",
-    "import/namespace": "off",
-    "import/default": "off",
-    "import/no-named-as-default-member": "off",
-    "import/no-unresolved": "off",
-  },
-
   overrides: [
     {
       files: ["modules/**/*"],
@@ -56,14 +48,6 @@ module.exports = {
       },
 
       extends: ["plugin:mossop/react"],
-
-      rules: {
-        "import/named": "off",
-        "import/namespace": "off",
-        "import/default": "off",
-        "import/no-named-as-default-member": "off",
-        "import/no-unresolved": "off",
-      },
 
       settings: {
         react: {

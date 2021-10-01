@@ -72,7 +72,6 @@ const GlobalPopup = ReactMemo(function GlobalPopup<P>({
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   let { component: Component, props } = component;
   return <Component state={state} {...props} />;
 });

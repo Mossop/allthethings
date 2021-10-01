@@ -19,12 +19,10 @@ import {
   ReactMemo,
   DateTimeDialog,
   Menu,
-  mutationHook,
-  api,
-  itemRefreshTokens,
 } from "../../utils";
 import type { ReactRef, ReactResult } from "../../utils";
 import type { Item } from "../schema";
+import { useEditItemMutation } from "../utils/api";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
 
@@ -40,10 +38,6 @@ interface SnoozeMenuProps {
   item: Item;
   isInner?: boolean;
 }
-
-const useEditItemMutation = mutationHook(api.item.editItem, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export const WakeUpItems = ReactMemo(
   forwardRef(function WakeUpItems(

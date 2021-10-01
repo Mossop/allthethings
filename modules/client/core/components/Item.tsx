@@ -15,9 +15,6 @@ import { forwardRef, useCallback, useMemo, useState } from "react";
 
 import type { ReactResult, ReactRef } from "../../utils";
 import {
-  itemRefreshTokens,
-  mutationHook,
-  api,
   Icons,
   Styles,
   ReactMemo,
@@ -35,6 +32,7 @@ import {
   isServiceItem,
   itemTaskList,
 } from "../schema";
+import { useEditItemMutation, useEditTaskController } from "../utils/api";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { isVisible } from "../utils/filter";
@@ -138,10 +136,6 @@ interface TypeMenuItemProps {
   selectedController: TaskController | null;
 }
 
-const useEditTaskController = mutationHook(api.item.editTaskController, {
-  refreshTokens: itemRefreshTokens,
-});
-
 const TypeMenuItem = ReactMemo(
   forwardRef(function TypeMenuItem(
     { item, controller, selectedController }: TypeMenuItemProps,
@@ -184,10 +178,6 @@ interface ItemProps {
 export type ItemRenderProps = Pick<ItemProps, "item"> & {
   isDragging: boolean;
 };
-
-const useEditItemMutation = mutationHook(api.item.editItem, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export default ReactMemo(function ItemDisplay({
   item,

@@ -32,7 +32,6 @@ function textBlock(
   defaultComponent: BoxProps["component"],
   textClass: Classes,
 ): (props: BoxProps) => ReactResult {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   let Element = (
     { className, ...boxProps }: BoxProps,
     ref: ReactRef | null,

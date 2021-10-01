@@ -330,7 +330,6 @@ export async function createApiServer(
         });
 
         // @ts-ignore
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return routes(ctx, next);
       });
 

@@ -9,9 +9,77 @@ import { log } from "./logging";
 import type { Token } from "./refresh";
 import { addRefreshable, refresh, removeRefreshable } from "./refresh";
 
-export type ApiMethod<A extends unknown[], D> = (
-  ...args: [...A, RequestParams | undefined]
-) => Promise<HttpResponse<D, Error | undefined | null>>;
+type VoidApiMethod<D> = (params?: RequestParams) => Promise<HttpResponse<D>>;
+type ApiMethod<A, D> = (
+  arg: A,
+  params?: RequestParams,
+) => Promise<HttpResponse<D>>;
+
+type Mapper<T, MT> = (val: T) => MT;
+
+interface ArgMap<A, MA> {
+  arg: Mapper<A, MA>;
+}
+
+interface ResultMap<D, MD> {
+  response: Mapper<D, MD>;
+}
+
+export function mapped<D, MD>(
+  method: VoidApiMethod<D>,
+  map: ResultMap<D, MD>,
+): VoidApiMethod<MD>;
+export function mapped<A, MA, D>(
+  method: ApiMethod<A, D>,
+  map: ArgMap<A, MA>,
+): ApiMethod<MA, D>;
+export function mapped<A, MA, D, MD>(
+  method: ApiMethod<A, D>,
+  map: ArgMap<A, MA> & ResultMap<D, MD>,
+): ApiMethod<MA, MD>;
+export function mapped(method: any, map: any): any {
+  return async (...args: any[]): Promise<any> => {
+    if ("arg" in map) {
+      args[0] = map.arg(args[0]);
+    }
+
+    let result = await method(...args);
+    if ("response" in map) {
+      result = map.response(result);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+    return result;
+  };
+}
+
+export function arrayMap<T, MT>(mapper: Mapper<T, MT>): Mapper<T[], MT[]> {
+  return (vals: T[]): MT[] => vals.map(mapper);
+}
+
+type Prop<T, M, K extends keyof T & keyof M> = M[K] extends (
+  val: T[K],
+) => infer R
+  ? R
+  : never;
+
+type Mapped<T, M> = {
+  [K in keyof T]: K extends keyof M ? Prop<T, M, K> : T[K];
+};
+
+export function objMap<M>(mapper: M): <T>(val: T) => Mapped<T, M> {
+  return <T>(val: T): Mapped<T, M> => {
+    // @ts-ignore
+    return Object.fromEntries(
+      Object.entries(val).map(([key, value]: [string, unknown]) => {
+        if (key in mapper) {
+          return [key, mapper[key](value)];
+        }
+        return [key, value];
+      }),
+    );
+  };
+}
 
 export type QueryOptions = Omit<
   RequestParams,
@@ -26,10 +94,7 @@ interface QueryEvents<D> {
   error: [error: Error];
 }
 
-export class Query<
-  A extends unknown[] = unknown[],
-  D = unknown,
-> extends TypedEmitter<QueryEvents<D>> {
+export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
   protected data: D | undefined = undefined;
   protected error: Error | undefined = undefined;
   protected cancelToken = Symbol();
@@ -40,8 +105,7 @@ export class Query<
   protected loading = false;
 
   public constructor(
-    protected readonly method: ApiMethod<A, D>,
-    protected readonly args: A,
+    protected readonly method: VoidApiMethod<D>,
     protected readonly options: QueryOptions = {},
     protected paused: boolean = false,
   ) {
@@ -160,14 +224,14 @@ export class Query<
     try {
       let credentials: RequestCredentials = "include";
 
-      let response = await this.method(...this.args, {
+      let response = await this.method({
         ...this.options,
         credentials,
         cancelToken: this.cancelToken,
       });
 
       if (response.error) {
-        this.setError(response.error);
+        this.setError(response.error as Error);
       } else {
         this.setData(response.data);
       }
@@ -205,6 +269,14 @@ export type QueryHook<A extends unknown[], D> = (
   ...args: A
 ) => QueryHookResult<D>;
 
+export function queryHook<D>(
+  method: VoidApiMethod<D>,
+  options?: QueryOptions,
+): QueryHook<[], D>;
+export function queryHook<A, D>(
+  method: ApiMethod<A, D>,
+  options?: QueryOptions,
+): QueryHook<[A], D>;
 export function queryHook<A extends unknown[], D>(
   method: ApiMethod<A, D>,
   options: QueryOptions = {},
@@ -232,12 +304,12 @@ export function queryHook<A extends unknown[], D>(
       [],
     );
 
-    let queryRef = useRef<Query<A, D>>();
+    let queryRef = useRef<Query<D>>();
     let previousArgs = useRef<A>(args);
 
-    let query: Query<A, D>;
+    let query: Query<D>;
     if (!queryRef.current || !equal(args, previousArgs.current)) {
-      queryRef.current = new Query(method, args, options, true);
+      queryRef.current = new Query(() => method(args), options, true);
       previousArgs.current = args;
     }
     query = queryRef.current;
@@ -269,11 +341,19 @@ export type MutationHook<A extends unknown[], D> = () => [
   state: RequestState,
 ];
 
-export function mutationHook<A extends unknown[], D>(
+export function mutationHook<D>(
+  method: VoidApiMethod<D>,
+  options?: MutationOptions,
+): MutationHook<[], D>;
+export function mutationHook<A, D>(
+  method: ApiMethod<A, D>,
+  options?: MutationOptions,
+): MutationHook<[A], D>;
+export function mutationHook<A, D>(
   method: ApiMethod<A, D>,
   options: MutationOptions = {},
-): MutationHook<A, D> {
-  return (): [mutation: Mutation<A, D>, state: RequestState] => {
+): MutationHook<[A], D> {
+  return (): [mutation: Mutation<[A], D>, state: RequestState] => {
     let cancelToken = useMemo(() => Symbol(), []);
     let [state, setState] = useState<RequestState>({
       loading: false,
@@ -285,17 +365,17 @@ export function mutationHook<A extends unknown[], D>(
     }, [cancelToken]);
 
     let mutation = useCallback(
-      async (...args: A): Promise<D> => {
+      async (arg: A): Promise<D> => {
         setState({ loading: true, error: undefined });
 
         let credentials: RequestCredentials = "include";
-        let response = await method(...args, {
+        let response = await method(arg, {
           ...options,
           cancelToken,
           credentials,
         });
         if (response.error) {
-          setState({ loading: false, error: response.error });
+          setState({ loading: false, error: response.error as Error });
           throw response.error;
         }
 
@@ -321,9 +401,3 @@ let url = new URL(document.URL);
 let port = url.port ? parseInt(url.port) : 80;
 let baseUrl = `http://${url.hostname}:${port + 10}`;
 export const api = new Api({ baseUrl });
-
-export const itemRefreshTokens: Token[] = [
-  api.state.getState,
-  api.project.listContents,
-  api.item.listItems,
-];

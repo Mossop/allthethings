@@ -7,19 +7,14 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
-  mutationHook,
-  api,
 } from "../../utils";
+import { useCreateContextMutation } from "../utils/api";
 import GlobalState from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
 interface CreateContextProps {
   onClosed: () => void;
 }
-
-const useCreateContextMutation = mutationHook(api.context.createContext, {
-  refreshTokens: [api.state.getState],
-});
 
 export default ReactMemo(function CreateContextDialog({
   onClosed,

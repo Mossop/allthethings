@@ -5045,9 +5045,9 @@ eslint-plugin-import@^2.24.0:
     resolve "^1.20.0"
     tsconfig-paths "^3.11.0"
 
-"eslint-plugin-mossop@github:Mossop/eslint-plugin-mossop#1.0.13":
-  version "1.0.13"
-  resolved "https://codeload.github.com/Mossop/eslint-plugin-mossop/tar.gz/7fb13ca425f9c9a0add8efd3e20e3db2fe773e11"
+"eslint-plugin-mossop@github:Mossop/eslint-plugin-mossop#1.0.14":
+  version "1.0.14"
+  resolved "https://codeload.github.com/Mossop/eslint-plugin-mossop/tar.gz/8363fba26e2ad61facb4a5754b5af2c719df2c93"
 
 eslint-plugin-react-hooks@^4.2.0:
   version "4.2.0"

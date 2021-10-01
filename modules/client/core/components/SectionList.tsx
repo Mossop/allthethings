@@ -10,18 +10,10 @@ import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
 
-import {
-  ReactMemo,
-  HiddenInput,
-  Icons,
-  Styles,
-  TextStyles,
-  mutationHook,
-  api,
-  itemRefreshTokens,
-} from "../../utils";
+import { ReactMemo, HiddenInput, Icons, Styles, TextStyles } from "../../utils";
 import type { ReactResult } from "../../utils";
 import type { Item, Section } from "../schema";
+import { useEditSectionMutation } from "../utils/api";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import ItemDisplay from "./Item";
@@ -82,10 +74,6 @@ interface SectionListProps {
   section: Section;
   filter: ListFilter;
 }
-
-const useEditSectionMutation = mutationHook(api.section.editSection, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export default ReactMemo(function SectionList({
   section,

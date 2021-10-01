@@ -41,7 +41,6 @@ export type Project = Overwrite<
 >;
 
 export interface Inbox {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   __typename: "Inbox";
   readonly itemCount: number;
 }
@@ -136,7 +135,6 @@ function buildUser(userState: ServerUserState): User {
   return {
     ...userState,
     inbox: {
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       __typename: "Inbox",
       itemCount: userState.inbox,
     },

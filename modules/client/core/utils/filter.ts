@@ -9,7 +9,6 @@ export interface ListFilter {
 }
 
 export const Filters: Record<string, ListFilter> = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   Normal: {
     snoozed: false,
     archived: false,

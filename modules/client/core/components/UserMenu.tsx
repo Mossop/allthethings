@@ -15,11 +15,10 @@ import {
   useMenuState,
   bindTrigger,
   useResetStore,
-  mutationHook,
-  api,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import ChangePasswordDialog from "../dialogs/ChangePassword";
+import { useLogout } from "../utils/api";
 import { useUser } from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
@@ -40,10 +39,6 @@ const useStyles = makeStyles(() =>
     },
   }),
 );
-
-let useLogout = mutationHook(api.logout.logout, {
-  refreshTokens: [api.state.getState],
-});
 
 export default ReactMemo(function UserMenu(): ReactResult {
   let user = useUser();

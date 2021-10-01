@@ -14,14 +14,12 @@ import {
   useBoundCallback,
   ReactMemo,
   Menu,
-  mutationHook,
-  api,
-  itemRefreshTokens,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import TaskDialog from "../dialogs/Task";
 import type { Item } from "../schema";
 import { isNoteItem, isFileItem, isLinkItem, isServiceItem } from "../schema";
+import { useDeleteItemMutation } from "../utils/api";
 import { DueItemItems, DueItems } from "./DueMenu";
 import type { PopupStateProps } from "./GlobalPopups";
 import { useGlobalMenuTrigger } from "./GlobalPopups";
@@ -44,10 +42,6 @@ enum OpenInnerMenu {
 interface ItemMenuProps {
   item: Item;
 }
-
-const useDeleteItemMutation = mutationHook(api.item.deleteItem, {
-  refreshTokens: itemRefreshTokens,
-});
 
 const ItemMenu = ReactMemo(function ItemMenu({
   item,

@@ -8,12 +8,10 @@ import {
   Dialog,
   BooleanCheckboxInput,
   FormState,
-  mutationHook,
-  api,
-  itemRefreshTokens,
 } from "../../utils";
 import { isInbox } from "../schema";
 import type { Inbox, TaskList, Section } from "../schema";
+import { useCreateLinkMutation } from "../utils/api";
 
 interface LinkDialogProps {
   onClosed: () => void;
@@ -21,10 +19,6 @@ interface LinkDialogProps {
   initialUrl?: string;
   title?: string | null;
 }
-
-const useCreateLinkMutation = mutationHook(api.item.createLink, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export default ReactMemo(function LinkDialog({
   onClosed,

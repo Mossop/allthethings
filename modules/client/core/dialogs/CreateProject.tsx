@@ -7,10 +7,9 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
-  api,
-  mutationHook,
 } from "../../utils";
 import type { Project, TaskList } from "../schema";
+import { useCreateProject } from "../utils/api";
 import GlobalState from "../utils/globalState";
 import { pushView, ViewType } from "../utils/view";
 
@@ -18,10 +17,6 @@ interface CreateProjectProps {
   onClosed: () => void;
   taskList: TaskList;
 }
-
-let useCreateProject = mutationHook(api.project.createProject, {
-  refreshTokens: [api.state.getState],
-});
 
 export default ReactMemo(function CreateProjectDialog({
   onClosed,

@@ -2,9 +2,10 @@ import type { Theme } from "@material-ui/core";
 import { Divider, makeStyles, createStyles } from "@material-ui/core";
 import ReactMarkdown from "react-markdown";
 
-import { Styles, Loading, ReactMemo, Link, queryHook, api } from "../../utils";
+import { Styles, Loading, ReactMemo, Link } from "../../utils";
 import type { ReactResult } from "../../utils";
 import Page from "../components/Page";
+import { usePageContentQuery } from "../utils/api";
 import { useUrl, ViewType } from "../utils/view";
 import NotFound from "./NotFound";
 
@@ -60,10 +61,6 @@ const useStyles = makeStyles((theme: Theme) =>
     },
   }),
 );
-
-const usePageContentQuery = queryHook(api.page.getPageContent, {
-  format: "text",
-});
 
 export interface MarkdownPageProps {
   path: string;

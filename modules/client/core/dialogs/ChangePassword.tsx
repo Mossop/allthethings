@@ -7,15 +7,12 @@ import {
   Dialog,
   TextFieldInput,
   FormState,
-  mutationHook,
-  api,
 } from "../../utils";
+import { useChangePasswordMutation } from "../utils/api";
 
 interface ChangePasswordProps {
   onClosed: () => void;
 }
-
-const useChangePasswordMutation = mutationHook(api.users.editUser);
 
 export default ReactMemo(function ChangePasswordDialog({
   onClosed,

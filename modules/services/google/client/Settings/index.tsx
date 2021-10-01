@@ -1,13 +1,8 @@
 import type { GoogleAccountState, ReactResult } from "../../../../client/utils";
-import { api, queryHook, SettingsPageItem } from "../../../../client/utils";
+import { SettingsPageItem } from "../../../../client/utils";
+import { useListGoogleAccountsQuery, useLoginUrlQuery } from "../api";
 import Google from "../logos/Google";
 import AccountSettings from "./Account";
-
-const useLoginUrlQuery = queryHook(api.google.getLoginUrl, {
-  format: "text",
-});
-
-const useListGoogleAccountsQuery = queryHook(api.google.listAccounts);
 
 export function SettingsPages(): ReactResult {
   let [loginUrl] = useLoginUrlQuery();

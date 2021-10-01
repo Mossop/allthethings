@@ -130,7 +130,6 @@ export class GoogleApi {
     let client = GoogleApi.createAuthClient(serviceUrl);
 
     return client.generateAuthUrl({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       access_type: "offline",
       scope: [
         "https://www.googleapis.com/auth/userinfo.profile",
@@ -144,7 +143,6 @@ export class GoogleApi {
 
   public generateAuthUrl(): string {
     return this.client.generateAuthUrl({
-      // eslint-disable-next-line @typescript-eslint/naming-convention
       access_type: "offline",
       scope: [
         "https://www.googleapis.com/auth/userinfo.profile",

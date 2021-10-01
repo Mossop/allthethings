@@ -12,9 +12,6 @@ import { useMemo } from "react";
 
 import type { ReactResult } from "../../utils";
 import {
-  itemRefreshTokens,
-  api,
-  mutationHook,
   Icons,
   Styles,
   ReactMemo,
@@ -28,6 +25,11 @@ import LinkDialog from "../dialogs/Link";
 import TaskDialog from "../dialogs/Task";
 import type { Inbox, TaskList, Section } from "../schema";
 import { isContext, isInbox, isProject, isTaskList } from "../schema";
+import {
+  useDeleteSectionMutation,
+  useDeleteProjectMutation,
+  useDeleteContextMutation,
+} from "../utils/api";
 import { useUser } from "../utils/globalState";
 import { ViewType, replaceView, useLoggedInView } from "../utils/view";
 
@@ -44,18 +46,6 @@ const useStyles = makeStyles(() =>
 interface ItemListActionsProps {
   list: Inbox | TaskList | Section;
 }
-
-const useDeleteContextMutation = mutationHook(api.context.deleteContext, {
-  refreshTokens: [api.state.getState],
-});
-
-const useDeleteProjectMutation = mutationHook(api.project.deleteProject, {
-  refreshTokens: [api.state.getState],
-});
-
-const useDeleteSectionMutation = mutationHook(api.section.deleteSection, {
-  refreshTokens: itemRefreshTokens,
-});
 
 export default ReactMemo(function ItemListActions({
   list,

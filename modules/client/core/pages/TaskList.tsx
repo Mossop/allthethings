@@ -5,21 +5,14 @@ import type { Dispatch, SetStateAction } from "react";
 import { useState, forwardRef, useCallback } from "react";
 
 import type { ReactRef, ReactResult } from "../../utils";
-import {
-  api,
-  mutationHook,
-  Icons,
-  Styles,
-  TextStyles,
-  HiddenInput,
-  ReactMemo,
-} from "../../utils";
+import { Icons, Styles, TextStyles, HiddenInput, ReactMemo } from "../../utils";
 import FilterMenu from "../components/FilterMenu";
 import ItemListActions from "../components/ItemListActions";
 import Page from "../components/Page";
 import SectionList, { ItemList } from "../components/SectionList";
 import type { Context, Project, Section } from "../schema";
 import { isProject, useTaskListContents } from "../schema";
+import { useEditContextMutation, useEditProjectMutation } from "../utils/api";
 import { useDragSource } from "../utils/drag";
 import type { ListFilter } from "../utils/filter";
 import { Filters } from "../utils/filter";
@@ -66,10 +59,6 @@ interface ContextHeaderProps {
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
 
-const useEditContextMutation = mutationHook(api.context.editContext, {
-  refreshTokens: [api.state.getState],
-});
-
 const ContextHeader = ReactMemo(
   forwardRef(function TasksHeader(
     { context, filter, setFilter }: ContextHeaderProps,
@@ -113,10 +102,6 @@ interface ProjectHeaderProps {
   filter: ListFilter;
   setFilter: Dispatch<SetStateAction<ListFilter>>;
 }
-
-const useEditProjectMutation = mutationHook(api.project.editProject, {
-  refreshTokens: [api.state.getState],
-});
 
 const ProjectHeader = ReactMemo(
   forwardRef(function ProjectHeader(
