@@ -4,6 +4,8 @@
   import { Controller, ValidationService, FieldErrors, ValidateError, TsoaRoute, HttpStatusCodeLiteral, TsoaResponse } from '@tsoa/runtime';
 // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 import { MainController } from './controllers';
+// WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+import { SearchController } from './controllers';
 import { iocContainer } from './../../../server/utils';
 import { IocContainer, IocContainerFactory } from '@tsoa/runtime';
 import * as KoaRouter from '@koa/router';
@@ -39,6 +41,26 @@ const models: TsoaRoute.Models = {
     "GoogleAccountState": {
         "dataType": "refAlias",
         "type": {"dataType":"intersection","subSchemas":[{"ref":"Omit_GoogleAccountEntity.userId-or-accessToken-or-refreshToken-or-expiry_"},{"dataType":"nestedObjectLiteral","nestedProperties":{"mailSearches":{"dataType":"array","array":{"dataType":"refAlias","ref":"GoogleMailSearchState"},"required":true},"loginUrl":{"dataType":"string","required":true}}}],"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_GoogleMailSearchState.Exclude_keyofGoogleMailSearchState.id-or-url-or-accountId__": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string","required":true},"query":{"dataType":"string","required":true},"dueOffset":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}],"required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Omit_GoogleMailSearchState.id-or-url-or-accountId_": {
+        "dataType": "refAlias",
+        "type": {"ref":"Pick_GoogleMailSearchState.Exclude_keyofGoogleMailSearchState.id-or-url-or-accountId__","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "GoogleMailSearchParams": {
+        "dataType": "refAlias",
+        "type": {"ref":"Omit_GoogleMailSearchState.id-or-url-or-accountId_","validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Partial_GoogleMailSearchParams_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"name":{"dataType":"string"},"query":{"dataType":"string"},"dueOffset":{"dataType":"union","subSchemas":[{"dataType":"string"},{"dataType":"enum","enums":[null]}]}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
 };
@@ -98,6 +120,84 @@ export function RegisterRoutes(router: KoaRouter) {
             }
 
             const promise = controller.listAccounts.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.put('/search',
+            async function SearchController_createSearch(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"GoogleMailSearchParams","required":true},"accountId":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<SearchController>(SearchController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.createSearch.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.patch('/search',
+            async function SearchController_editSearch(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"params":{"ref":"Partial_GoogleMailSearchParams_","required":true},"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<SearchController>(SearchController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.editSearch.apply(controller, validatedArgs as any);
+            return promiseHandler(controller, promise, context, undefined, next);
+        });
+        // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+        router.delete('/search',
+            async function SearchController_deleteSearch(context: any, next: any) {
+            const args = {
+                    undefined: {"in":"body","required":true,"dataType":"nestedObjectLiteral","nestedProperties":{"id":{"dataType":"string","required":true}}},
+            };
+
+            let validatedArgs: any[] = [];
+            try {
+              validatedArgs = getValidatedArgs(args, context, next);
+            } catch (err) {
+              const error = err as any;
+              context.status = error.status;
+              context.throw(error.status, JSON.stringify({ fields: error.fields }));
+            }
+
+            const container: IocContainer = typeof iocContainer === 'function' ? (iocContainer as IocContainerFactory)(context.request) : iocContainer;
+
+            const controller: any = await container.get<SearchController>(SearchController);
+            if (typeof controller['setStatus'] === 'function') {
+                controller.setStatus(undefined);
+            }
+
+            const promise = controller.deleteSearch.apply(controller, validatedArgs as any);
             return promiseHandler(controller, promise, context, undefined, next);
         });
         // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa

@@ -168,11 +168,6 @@ module.exports = {
       GithubSearch: "./implementations#Search",
     }),
 
-    ...serviceTargets("google", {
-      GoogleAccount: "./implementations#Account",
-      GoogleMailSearch: "./implementations#MailSearch",
-    }),
-
     ...serviceTargets("jira", {
       JiraAccount: "./implementations#Account",
       JiraSearch: "./implementations#Search",

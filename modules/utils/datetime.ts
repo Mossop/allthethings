@@ -220,7 +220,17 @@ export function relativeDateTimeFromJson(json: unknown): RelativeDateTime {
   return offsetFromJson(json);
 }
 
-export function encodeRelativeDateTime(rdt: RelativeDateTime): string {
+export function encodeRelativeDateTime(rdt: RelativeDateTime): string;
+export function encodeRelativeDateTime(
+  rdt: RelativeDateTime | null | undefined,
+): string | null;
+export function encodeRelativeDateTime(
+  rdt: RelativeDateTime | null | undefined,
+): string | null {
+  if (!rdt) {
+    return null;
+  }
+
   if (DateTime.isDateTime(rdt)) {
     return rdt.toISO();
   }
@@ -228,7 +238,17 @@ export function encodeRelativeDateTime(rdt: RelativeDateTime): string {
   return JSON.stringify(rdt);
 }
 
-export function decodeRelativeDateTime(value: string): RelativeDateTime {
+export function decodeRelativeDateTime(value: string): RelativeDateTime;
+export function decodeRelativeDateTime(
+  value: string | null | undefined,
+): RelativeDateTime | null;
+export function decodeRelativeDateTime(
+  value: string | null | undefined,
+): RelativeDateTime | null {
+  if (!value) {
+    return null;
+  }
+
   if (value.charAt(0) == "[" || value.charAt(0) == "{") {
     let json = JSON.parse(value);
     return offsetFromJson(json);

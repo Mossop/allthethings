@@ -34,7 +34,7 @@ export class JiraService extends BaseService {
     await super.update(tx);
   }
 
-  public get resolvers(): Record<string, unknown> {
+  public override get resolvers(): Record<string, unknown> {
     return Resolvers;
   }
 

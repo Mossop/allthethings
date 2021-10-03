@@ -69,36 +69,6 @@ export type GithubSearchFieldPolicy = {
   query?: FieldPolicy<any> | FieldReadFunction<any>;
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
-export type GoogleAccountKeySpecifier = (
-  | "avatar"
-  | "email"
-  | "id"
-  | "loginUrl"
-  | "mailSearches"
-  | GoogleAccountKeySpecifier
-)[];
-export type GoogleAccountFieldPolicy = {
-  avatar?: FieldPolicy<any> | FieldReadFunction<any>;
-  email?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  loginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
-  mailSearches?: FieldPolicy<any> | FieldReadFunction<any>;
-};
-export type GoogleMailSearchKeySpecifier = (
-  | "dueOffset"
-  | "id"
-  | "name"
-  | "query"
-  | "url"
-  | GoogleMailSearchKeySpecifier
-)[];
-export type GoogleMailSearchFieldPolicy = {
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
-  query?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-};
 export type JiraAccountKeySpecifier = (
   | "apiToken"
   | "email"
@@ -137,20 +107,17 @@ export type MutationKeySpecifier = (
   | "createBugzillaAccount"
   | "createBugzillaSearch"
   | "createGithubSearch"
-  | "createGoogleMailSearch"
   | "createJiraAccount"
   | "createJiraSearch"
   | "createPhabricatorAccount"
   | "deleteBugzillaAccount"
   | "deleteBugzillaSearch"
   | "deleteGithubSearch"
-  | "deleteGoogleMailSearch"
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
   | "editBugzillaSearch"
   | "editGithubSearch"
-  | "editGoogleMailSearch"
   | "editJiraSearch"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
@@ -159,20 +126,17 @@ export type MutationFieldPolicy = {
   createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  createGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
-  editGoogleMailSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };
@@ -264,20 +228,6 @@ export type StrictTypedTypePolicies = {
       | GithubSearchKeySpecifier
       | (() => undefined | GithubSearchKeySpecifier);
     fields?: GithubSearchFieldPolicy;
-  };
-  GoogleAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | GoogleAccountKeySpecifier
-      | (() => undefined | GoogleAccountKeySpecifier);
-    fields?: GoogleAccountFieldPolicy;
-  };
-  GoogleMailSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | GoogleMailSearchKeySpecifier
-      | (() => undefined | GoogleMailSearchKeySpecifier);
-    fields?: GoogleMailSearchFieldPolicy;
   };
   JiraAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:

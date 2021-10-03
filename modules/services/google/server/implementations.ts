@@ -5,11 +5,7 @@ import { DateTime } from "luxon";
 
 import { GoogleService } from ".";
 import { In, Not, sql } from "../../../db";
-import type {
-  ResolverImpl,
-  ServiceItem,
-  ServiceTransaction,
-} from "../../../server/utils";
+import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
 import {
   TaskController,
   EntityImpl,
@@ -34,10 +30,6 @@ import type {
   GoogleThreadEntity,
   GoogleThreadLabelEntity,
 } from "./entities";
-import type {
-  GoogleAccountResolvers,
-  GoogleMailSearchResolvers,
-} from "./schema";
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
 
@@ -49,10 +41,7 @@ export type GoogleAccountState = Omit<
   mailSearches: GoogleMailSearchState[];
 };
 
-export class Account
-  extends BaseAccount<GoogleAccountEntity>
-  implements ResolverImpl<GoogleAccountResolvers>
-{
+export class Account extends BaseAccount<GoogleAccountEntity> {
   public static readonly store = storeBuilder(Account, "google.Account");
 
   private client: GoogleApi | null = null;
@@ -244,10 +233,15 @@ export type GoogleMailSearchState = Omit<
   url: string;
 };
 
-export class MailSearch
-  extends BaseList<GoogleMailSearchEntity, gmail_v1.Schema$Thread[]>
-  implements ResolverImpl<GoogleMailSearchResolvers>
-{
+export type GoogleMailSearchParams = Omit<
+  GoogleMailSearchState,
+  "id" | "url" | "accountId"
+>;
+
+export class MailSearch extends BaseList<
+  GoogleMailSearchEntity,
+  gmail_v1.Schema$Thread[]
+> {
   public static readonly store = storeBuilder(MailSearch, "google.MailSearch");
 
   public get name(): string {
@@ -325,7 +319,7 @@ export class MailSearch
 
   public static async create(
     account: Account,
-    record: Omit<GoogleMailSearchEntity, "id" | "accountId">,
+    record: GoogleMailSearchParams,
   ): Promise<MailSearch> {
     let threads = await account.authClient.listThreads(record.query);
 

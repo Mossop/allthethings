@@ -81,11 +81,14 @@ export function objMap<M>(mapper: M): <T>(val: T) => Mapped<T, M> {
   };
 }
 
-export type QueryOptions = Omit<
+export type ApiRequestParams = Omit<
   RequestParams,
   "cancelToken" | "credentials"
-> & {
+>;
+
+export type QueryOptions = ApiRequestParams & {
   pollInterval?: number;
+  refreshToken?: Token;
 };
 
 interface QueryEvents<D> {
@@ -103,16 +106,25 @@ export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
   protected timer: number | null = null;
   protected polls: Deferred<D>[] = [];
   protected loading = false;
+  protected readonly refreshToken: Token;
+  protected pollInterval: number | null;
+  protected options: ApiRequestParams;
 
   public constructor(
-    protected readonly method: VoidApiMethod<D>,
-    protected readonly options: QueryOptions = {},
+    protected readonly method: (
+      options: RequestParams,
+    ) => Promise<HttpResponse<D>>,
+    { refreshToken = method, pollInterval, ...options }: QueryOptions = {},
     protected paused: boolean = false,
   ) {
     super();
 
+    this.pollInterval = pollInterval ?? null;
+    this.refreshToken = refreshToken;
+    this.options = options;
+
     if (!paused) {
-      addRefreshable(method, this);
+      addRefreshable(this.refreshToken, this);
     }
 
     this.schedule();
@@ -124,7 +136,7 @@ export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
     }
 
     this.paused = false;
-    addRefreshable(this.method, this);
+    addRefreshable(this.refreshToken, this);
 
     if (this.pendingResult) {
       this.pendingResult = false;
@@ -162,7 +174,7 @@ export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
     }
 
     this.paused = true;
-    removeRefreshable(this.method, this);
+    removeRefreshable(this.refreshToken, this);
     api.abortRequest(this.cancelToken);
   }
 
@@ -239,8 +251,8 @@ export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
       this.setError(e);
     }
 
-    if (this.options.pollInterval) {
-      this.nextPoll = Date.now() + this.options.pollInterval;
+    if (this.pollInterval) {
+      this.nextPoll = Date.now() + this.pollInterval;
     }
 
     this.schedule();
@@ -277,11 +289,11 @@ export function queryHook<A, D>(
   method: ApiMethod<A, D>,
   options?: QueryOptions,
 ): QueryHook<[A], D>;
-export function queryHook<A extends unknown[], D>(
-  method: ApiMethod<A, D>,
-  options: QueryOptions = {},
-): QueryHook<A, D> {
-  return (...args: A): QueryHookResult<D> => {
+export function queryHook<D>(
+  method: (...args: any) => Promise<HttpResponse<D>>,
+  { refreshToken = method, ...options }: QueryOptions = {},
+): any {
+  return (...args: unknown[]): QueryHookResult<D> => {
     let [state, setState] = useState<QueryHookResult<D>>([
       undefined,
       { loading: true },
@@ -305,11 +317,18 @@ export function queryHook<A extends unknown[], D>(
     );
 
     let queryRef = useRef<Query<D>>();
-    let previousArgs = useRef<A>(args);
+    let previousArgs = useRef(args);
 
     let query: Query<D>;
     if (!queryRef.current || !equal(args, previousArgs.current)) {
-      queryRef.current = new Query(() => method(args), options, true);
+      queryRef.current = new Query(
+        (options: RequestParams) => method(...args, options),
+        {
+          ...options,
+          refreshToken,
+        },
+        true,
+      );
       previousArgs.current = args;
     }
     query = queryRef.current;
@@ -330,7 +349,7 @@ export function queryHook<A extends unknown[], D>(
   };
 }
 
-export type MutationOptions = Omit<RequestParams, "cancelToken"> & {
+export type MutationOptions = ApiRequestParams & {
   refreshTokens?: Token[];
 };
 

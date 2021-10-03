@@ -25,8 +25,8 @@ import {
 } from "../../../../client/utils";
 import type { DateTimeOffset } from "../../../../utils";
 import { addOffset, decodeRelativeDateTime } from "../../../../utils";
+import { useDeleteGoogleMailSearchMutation } from "../api";
 import Google from "../logos/Google";
-import { useDeleteGoogleMailSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -71,16 +71,12 @@ function SearchSettingsItem({
 
   let resetStore = useResetStore();
 
-  let [deleteSearchMutation] = useDeleteGoogleMailSearchMutation({
-    variables: {
-      id: search.id,
-    },
-  });
+  let [deleteSearchMutation] = useDeleteGoogleMailSearchMutation();
 
   let deleteSearch = useCallback(async () => {
-    await deleteSearchMutation();
+    await deleteSearchMutation({ id: search.id });
     await resetStore();
-  }, [resetStore, deleteSearchMutation]);
+  }, [deleteSearchMutation, search.id, resetStore]);
 
   let dueOffset = useMemo(() => {
     if (search.dueOffset) {

@@ -43,6 +43,28 @@ export type GoogleAccountState = OmitGoogleAccountEntityUserIdOrAccessTokenOrRef
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickGoogleMailSearchStateExcludeKeysIdOrUrlOrAccountId {
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitGoogleMailSearchStateIdOrUrlOrAccountId = PickGoogleMailSearchStateExcludeKeysIdOrUrlOrAccountId;
+
+export type GoogleMailSearchParams = OmitGoogleMailSearchStateIdOrUrlOrAccountId;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialGoogleMailSearchParams {
+  name?: string;
+  query?: string;
+  dueOffset?: string | null;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickUserEntityExcludeKeysPassword {
   email: string;
   isAdmin: boolean;
@@ -665,6 +687,56 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
         path: `/service/google/accounts`,
         method: "GET",
         format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateSearch
+     * @request PUT:/service/google/search
+     * @response `200` `GoogleMailSearchState` Ok
+     */
+    createSearch: (data: { params: GoogleMailSearchParams; accountId: string }, params: RequestParams = {}) =>
+      this.request<GoogleMailSearchState, any>({
+        path: `/service/google/search`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditSearch
+     * @request PATCH:/service/google/search
+     * @response `200` `GoogleMailSearchState` Ok
+     */
+    editSearch: (data: { params: PartialGoogleMailSearchParams; id: string }, params: RequestParams = {}) =>
+      this.request<GoogleMailSearchState, any>({
+        path: `/service/google/search`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteSearch
+     * @request DELETE:/service/google/search
+     * @response `204` `void` No content
+     */
+    deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/google/search`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
         ...params,
       }),
   };

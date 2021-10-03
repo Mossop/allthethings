@@ -101,6 +101,49 @@
           }
         ]
       },
+      "Pick_GoogleMailSearchState.Exclude_keyofGoogleMailSearchState.id-or-url-or-accountId__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "query",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GoogleMailSearchState.id-or-url-or-accountId_": {
+        "$ref": "#/components/schemas/Pick_GoogleMailSearchState.Exclude_keyofGoogleMailSearchState.id-or-url-or-accountId__"
+      },
+      "GoogleMailSearchParams": {
+        "$ref": "#/components/schemas/Omit_GoogleMailSearchState.id-or-url-or-accountId_"
+      },
+      "Partial_GoogleMailSearchParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
       "Pick_UserEntity.Exclude_keyofUserEntity.password__": {
         "properties": {
           "email": {
@@ -1204,6 +1247,114 @@
         },
         "security": [],
         "parameters": []
+      }
+    },
+    "/service/google/search": {
+      "put": {
+        "operationId": "CreateSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleMailSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/GoogleMailSearchParams"
+                  },
+                  "accountId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "accountId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GoogleMailSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_GoogleMailSearchParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteSearch",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
       }
     },
     "/api/page": {

@@ -19,11 +19,15 @@ import {
   Styles,
 } from "../../../../client/utils";
 import type { DateTimeOffset } from "../../../../utils";
-import { decodeRelativeDateTime, addOffset } from "../../../../utils";
+import {
+  encodeRelativeDateTime,
+  decodeRelativeDateTime,
+  addOffset,
+} from "../../../../utils";
 import {
   useCreateGoogleMailSearchMutation,
   useEditGoogleMailSearchMutation,
-} from "../operations";
+} from "../api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -78,31 +82,32 @@ export default function SearchDialog({
   let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
-    useCreateGoogleMailSearchMutation({
-      variables: {
-        account: account.id,
-        params: state,
-      },
-    });
+    useCreateGoogleMailSearchMutation();
 
   let [editSearch, { loading: pendingEdit, error: editError }] =
     useEditGoogleMailSearchMutation();
 
   let submit = useCallback(async (): Promise<void> => {
+    let apiState = {
+      ...state,
+      dueOffset: encodeRelativeDateTime(state.dueOffset),
+    };
+
     if (search) {
       await editSearch({
-        variables: {
-          id: search.id,
-          params: state,
-        },
+        id: search.id,
+        params: apiState,
       });
     } else {
-      await createSearch();
+      await createSearch({
+        accountId: account.id,
+        params: apiState,
+      });
     }
 
     await resetStore();
     close();
-  }, [search, resetStore, close, editSearch, state, createSearch]);
+  }, [state, search, resetStore, close, editSearch, createSearch, account.id]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

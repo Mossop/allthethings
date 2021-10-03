@@ -26,7 +26,7 @@ class BugzillaService extends BaseService {
     }, UPDATE_DELAY);
   }
 
-  public get resolvers(): Record<string, unknown> {
+  public override get resolvers(): Record<string, unknown> {
     return Resolvers;
   }
 

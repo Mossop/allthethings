@@ -14,7 +14,6 @@ import type {
   ServiceMiddlewareContext,
 } from "../../../server/utils";
 import { Account, File, MailSearch, Thread } from "./implementations";
-import Resolvers from "./resolvers";
 import { RegisterRoutes } from "./routes";
 import type { GoogleServiceConfig } from "./types";
 
@@ -131,10 +130,6 @@ export class GoogleService extends BaseService {
       }
     }
     await super.update(tx);
-  }
-
-  public get resolvers(): Record<string, unknown> {
-    return Resolvers;
   }
 
   public buildTransaction(tx: ServiceTransaction): ServiceTransaction {

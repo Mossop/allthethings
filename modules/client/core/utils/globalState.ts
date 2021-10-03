@@ -3,7 +3,7 @@ import { SystemZone } from "luxon";
 
 import type { RelativeDateTime } from "../../../utils";
 import { DateTimeUnit, encodeRelativeDateTime } from "../../../utils";
-import type { ServerState } from "../../utils";
+import type { RequestParams, ServerState } from "../../utils";
 import { api, history, log, Query } from "../../utils";
 import type { Problem, State, User } from "../schema";
 import { buildState } from "../schema";
@@ -45,14 +45,17 @@ class GlobalStateManager {
     ];
 
     this.query = new Query(
-      () =>
-        api.state.getState({
-          itemFilter: {
-            dueBefore: encodeRelativeDateTime(dueBefore),
-            isDone: false,
+      (params: RequestParams) =>
+        api.state.getState(
+          {
+            itemFilter: {
+              dueBefore: encodeRelativeDateTime(dueBefore),
+              isDone: false,
+            },
           },
-        }),
-      { pollInterval: POLL_INTERVAL },
+          params,
+        ),
+      { pollInterval: POLL_INTERVAL, refreshToken: api.state.getState },
     );
 
     this.query.on("data", (data: ServerState) => this.onData(data));

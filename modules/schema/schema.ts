@@ -87,30 +87,6 @@ export type GithubSearchParams = {
   readonly query: Scalars["String"];
 };
 
-export type GoogleAccount = {
-  readonly __typename: "GoogleAccount";
-  readonly avatar?: Maybe<Scalars["String"]>;
-  readonly email: Scalars["String"];
-  readonly id: Scalars["ID"];
-  readonly loginUrl: Scalars["String"];
-  readonly mailSearches: ReadonlyArray<GoogleMailSearch>;
-};
-
-export type GoogleMailSearch = {
-  readonly __typename: "GoogleMailSearch";
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly id: Scalars["ID"];
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-  readonly url: Scalars["String"];
-};
-
-export type GoogleMailSearchParams = {
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-};
-
 export type JiraAccount = {
   readonly __typename: "JiraAccount";
   readonly apiToken: Scalars["String"];
@@ -148,20 +124,17 @@ export type Mutation = {
   readonly createBugzillaAccount: BugzillaAccount;
   readonly createBugzillaSearch: BugzillaSearch;
   readonly createGithubSearch: GithubSearch;
-  readonly createGoogleMailSearch: GoogleMailSearch;
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
   readonly createPhabricatorAccount: PhabricatorAccount;
   readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
   readonly deleteGithubSearch: Scalars["Boolean"];
-  readonly deleteGoogleMailSearch: Scalars["Boolean"];
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
   readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
-  readonly editGoogleMailSearch?: Maybe<GoogleMailSearch>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
 };
@@ -178,11 +151,6 @@ export type MutationCreateBugzillaSearchArgs = {
 export type MutationCreateGithubSearchArgs = {
   account: Scalars["ID"];
   params: GithubSearchParams;
-};
-
-export type MutationCreateGoogleMailSearchArgs = {
-  account: Scalars["ID"];
-  params: GoogleMailSearchParams;
 };
 
 export type MutationCreateJiraAccountArgs = {
@@ -210,10 +178,6 @@ export type MutationDeleteGithubSearchArgs = {
   search: Scalars["ID"];
 };
 
-export type MutationDeleteGoogleMailSearchArgs = {
-  id: Scalars["ID"];
-};
-
 export type MutationDeleteJiraAccountArgs = {
   account: Scalars["ID"];
 };
@@ -234,11 +198,6 @@ export type MutationEditBugzillaSearchArgs = {
 export type MutationEditGithubSearchArgs = {
   params: GithubSearchParams;
   search: Scalars["ID"];
-};
-
-export type MutationEditGoogleMailSearchArgs = {
-  id: Scalars["ID"];
-  params: GoogleMailSearchParams;
 };
 
 export type MutationEditJiraSearchArgs = {
