@@ -5,40 +5,6 @@ import type {
   TypePolicies,
   TypePolicy,
 } from "@apollo/client/cache";
-export type BugzillaAccountKeySpecifier = (
-  | "icon"
-  | "id"
-  | "name"
-  | "searches"
-  | "url"
-  | "username"
-  | BugzillaAccountKeySpecifier
-)[];
-export type BugzillaAccountFieldPolicy = {
-  icon?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
-  searches?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-  username?: FieldPolicy<any> | FieldReadFunction<any>;
-};
-export type BugzillaSearchKeySpecifier = (
-  | "dueOffset"
-  | "id"
-  | "name"
-  | "query"
-  | "type"
-  | "url"
-  | BugzillaSearchKeySpecifier
-)[];
-export type BugzillaSearchFieldPolicy = {
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
-  query?: FieldPolicy<any> | FieldReadFunction<any>;
-  type?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-};
 export type GithubAccountKeySpecifier = (
   | "avatar"
   | "id"
@@ -104,38 +70,28 @@ export type JiraSearchFieldPolicy = {
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type MutationKeySpecifier = (
-  | "createBugzillaAccount"
-  | "createBugzillaSearch"
   | "createGithubSearch"
   | "createJiraAccount"
   | "createJiraSearch"
   | "createPhabricatorAccount"
-  | "deleteBugzillaAccount"
-  | "deleteBugzillaSearch"
   | "deleteGithubSearch"
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
-  | "editBugzillaSearch"
   | "editGithubSearch"
   | "editJiraSearch"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
 )[];
 export type MutationFieldPolicy = {
-  createBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  createBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteBugzillaAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  editBugzillaSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -180,7 +136,6 @@ export type QueryFieldPolicy = {
   user?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type UserKeySpecifier = (
-  | "bugzillaAccounts"
   | "email"
   | "githubAccounts"
   | "id"
@@ -191,7 +146,6 @@ export type UserKeySpecifier = (
   | UserKeySpecifier
 )[];
 export type UserFieldPolicy = {
-  bugzillaAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   email?: FieldPolicy<any> | FieldReadFunction<any>;
   githubAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -201,20 +155,6 @@ export type UserFieldPolicy = {
   phabricatorQueries?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type StrictTypedTypePolicies = {
-  BugzillaAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | BugzillaAccountKeySpecifier
-      | (() => undefined | BugzillaAccountKeySpecifier);
-    fields?: BugzillaAccountFieldPolicy;
-  };
-  BugzillaSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | BugzillaSearchKeySpecifier
-      | (() => undefined | BugzillaSearchKeySpecifier);
-    fields?: BugzillaSearchFieldPolicy;
-  };
   GithubAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:
       | false

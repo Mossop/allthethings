@@ -1,3 +1,5 @@
+import type * as KoaRouter from "@koa/router";
+
 import type {
   ServiceExport,
   Server,
@@ -5,7 +7,7 @@ import type {
 } from "../../../server/utils";
 import { BaseService } from "../../../server/utils";
 import { Bug, Search } from "./implementations";
-import Resolvers from "./resolvers";
+import { RegisterRoutes } from "./routes";
 
 const UPDATE_DELAY = 60000;
 
@@ -26,8 +28,8 @@ class BugzillaService extends BaseService {
     }, UPDATE_DELAY);
   }
 
-  public override get resolvers(): Record<string, unknown> {
-    return Resolvers;
+  public addWebRoutes(router: KoaRouter): void {
+    RegisterRoutes(router);
   }
 
   public buildTransaction(tx: ServiceTransaction): ServiceTransaction {

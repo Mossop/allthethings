@@ -4,12 +4,7 @@ import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
-import type { BugzillaAccount, BugzillaAccountParams } from "../../../schema";
-import type {
-  ResolverImpl,
-  ServiceItem,
-  ServiceTransaction,
-} from "../../../server/utils";
+import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
 import {
   TaskController,
   id,
@@ -19,7 +14,7 @@ import {
   BaseList,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { offsetFromJson } from "../../../utils";
+import { map, offsetFromJson } from "../../../utils";
 import { SearchType } from "../schema";
 import type { BugFields } from "../schema";
 import type {
@@ -27,10 +22,6 @@ import type {
   BugzillaBugEntity,
   BugzillaSearchEntity,
 } from "./entities";
-import type {
-  BugzillaAccountResolvers,
-  BugzillaSearchResolvers,
-} from "./schema";
 
 function isDone(status: string): boolean {
   switch (status) {
@@ -43,10 +34,18 @@ function isDone(status: string): boolean {
   }
 }
 
-export class Account
-  extends BaseAccount<BugzillaAccountEntity>
-  implements ResolverImpl<BugzillaAccountResolvers>
-{
+export type BugzillaAccountParams = Omit<
+  BugzillaAccountEntity,
+  "id" | "userId" | "icon"
+>;
+export type BugzillaAccountState = Pick<
+  BugzillaAccountEntity,
+  "id" | "name" | "icon" | "url"
+> & {
+  searches: BugzillaSearchState[];
+};
+
+export class Account extends BaseAccount<BugzillaAccountEntity> {
   public static readonly store = storeBuilder(Account, "bugzilla.Account");
 
   private api: BugzillaAPI | null = null;
@@ -61,6 +60,19 @@ export class Account
 
   public async searches(): Promise<Search[]> {
     return Search.store(this.tx).find({ accountId: this.id });
+  }
+
+  public async state(): Promise<BugzillaAccountState> {
+    return {
+      id: this.id,
+      name: this.name,
+      url: this.url,
+      icon: this.icon,
+      searches: await map(
+        this.searches(),
+        (search: Search): Promise<BugzillaSearchState> => search.state(),
+      ),
+    };
   }
 
   public normalizeQuery(
@@ -226,25 +238,27 @@ export class Account
   public static async create(
     tx: ServiceTransaction,
     userId: string,
-    args: BugzillaAccountParams & Pick<BugzillaAccount, "icon">,
+    args: BugzillaAccountParams & Pick<BugzillaAccountEntity, "icon">,
   ): Promise<Account> {
     let record: BugzillaAccountEntity = {
-      ...args,
       id: await id(),
-      username: args.username ?? null,
-      password: args.password ?? null,
       userId,
-      icon: args.icon ?? null,
+      ...args,
     };
 
     return Account.store(tx).create(record);
   }
 }
 
-export class Search
-  extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]>
-  implements ResolverImpl<BugzillaSearchResolvers>
-{
+export type BugzillaSearchParams = Omit<
+  BugzillaSearchEntity,
+  "id" | "accountId" | "type"
+>;
+export type BugzillaSearchState = Omit<BugzillaSearchEntity, "accountId"> & {
+  url: string;
+};
+
+export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
   public static readonly store = storeBuilder(Search, "bugzilla.Search");
 
   public owner(): Promise<Account> {
@@ -261,6 +275,17 @@ export class Search
 
   public get query(): string {
     return this.entity.query;
+  }
+
+  public async state(): Promise<BugzillaSearchState> {
+    return {
+      id: this.id,
+      name: this.name,
+      query: this.query,
+      type: this.type,
+      url: await this.url(),
+      dueOffset: this.entity.dueOffset,
+    };
   }
 
   public override get dueOffset(): DateTimeOffset | null {
@@ -328,21 +353,22 @@ export class Search
 
   public static async create(
     account: Account,
-    record: Omit<BugzillaSearchEntity, "id">,
+    params: BugzillaSearchParams,
   ): Promise<Search> {
-    let bugs = await Search.getBugRecords(account.tx, account.getAPI(), {
-      type: record.type,
-      query: record.query,
-    });
+    let query = account.normalizeQuery(params.query);
+
+    let bugs = await Search.getBugRecords(account.tx, account.getAPI(), query);
 
     let id = await account.tx.addList({
-      name: record.name,
+      name: params.name,
       url: null,
     });
 
     let search = await Search.store(account.tx).create({
+      ...params,
+      ...query,
       id,
-      ...record,
+      accountId: account.id,
     });
     await search.updateList(bugs);
 

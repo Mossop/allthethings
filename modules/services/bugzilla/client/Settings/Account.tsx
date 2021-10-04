@@ -4,7 +4,11 @@ import AddCircleIcon from "@material-ui/icons/AddCircle";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  BugzillaAccountState,
+  BugzillaSearchState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   Heading,
   ImageIcon,
@@ -17,12 +21,11 @@ import {
   Icons,
   useResetStore,
 } from "../../../../client/utils";
-import type { BugzillaAccount, BugzillaSearch } from "../../../../schema";
-import Icon from "../Icon";
 import {
   useDeleteBugzillaSearchMutation,
   useDeleteBugzillaAccountMutation,
-} from "../operations";
+} from "../api";
+import Icon from "../Icon";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -50,8 +53,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
-  account: BugzillaAccount;
-  search: BugzillaSearch;
+  account: BugzillaAccountState;
+  search: BugzillaSearchState;
 }
 
 function SearchSettingsItem({
@@ -64,16 +67,12 @@ function SearchSettingsItem({
 
   let resetStore = useResetStore();
 
-  let [deleteSearchMutation] = useDeleteBugzillaSearchMutation({
-    variables: {
-      search: search.id,
-    },
-  });
+  let [deleteSearchMutation] = useDeleteBugzillaSearchMutation();
 
   let deleteSearch = useCallback(async () => {
-    await deleteSearchMutation();
+    await deleteSearchMutation({ id: search.id });
     await resetStore();
-  }, [deleteSearchMutation, resetStore]);
+  }, [deleteSearchMutation, resetStore, search.id]);
 
   return (
     <SettingsListItem>
@@ -110,7 +109,7 @@ function SearchSettingsItem({
 }
 
 interface AccountSettingsProps {
-  account: Omit<BugzillaAccount, "username">;
+  account: BugzillaAccountState;
 }
 
 export default function AccountSettings({
@@ -120,16 +119,12 @@ export default function AccountSettings({
   let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
   let resetStore = useResetStore();
 
-  let [deleteAccountMutation] = useDeleteBugzillaAccountMutation({
-    variables: {
-      account: account.id,
-    },
-  });
+  let [deleteAccountMutation] = useDeleteBugzillaAccountMutation();
 
   let deleteAccount = useCallback(async () => {
-    await deleteAccountMutation();
+    await deleteAccountMutation({ id: account.id });
     await resetStore();
-  }, [deleteAccountMutation, resetStore]);
+  }, [account.id, deleteAccountMutation, resetStore]);
 
   return (
     <SettingsPage
@@ -159,7 +154,7 @@ export default function AccountSettings({
           </>
         }
       >
-        {account.searches.map((search: BugzillaSearch) => (
+        {account.searches.map((search: BugzillaSearchState) => (
           <SearchSettingsItem
             key={search.id}
             account={account}

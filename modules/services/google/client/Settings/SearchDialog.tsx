@@ -20,8 +20,8 @@ import {
 } from "../../../../client/utils";
 import type { DateTimeOffset } from "../../../../utils";
 import {
-  encodeRelativeDateTime,
-  decodeRelativeDateTime,
+  encodeDateTimeOffset,
+  decodeDateTimeOffset,
   addOffset,
 } from "../../../../utils";
 import {
@@ -66,7 +66,7 @@ export default function SearchDialog({
         name: search.name,
         query: search.query,
         dueOffset: search.dueOffset
-          ? (decodeRelativeDateTime(search.dueOffset) as DateTimeOffset)
+          ? decodeDateTimeOffset(search.dueOffset)
           : null,
       };
     }
@@ -90,7 +90,7 @@ export default function SearchDialog({
   let submit = useCallback(async (): Promise<void> => {
     let apiState = {
       ...state,
-      dueOffset: encodeRelativeDateTime(state.dueOffset),
+      dueOffset: encodeDateTimeOffset(state.dueOffset),
     };
 
     if (search) {

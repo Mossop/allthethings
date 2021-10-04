@@ -158,11 +158,6 @@ module.exports = {
       },
     },
 
-    ...serviceTargets("bugzilla", {
-      BugzillaAccount: "./implementations#Account",
-      BugzillaSearch: "./implementations#Search",
-    }),
-
     ...serviceTargets("github", {
       GithubAccount: "./implementations#Account",
       GithubSearch: "./implementations#Search",

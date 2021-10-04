@@ -1,23 +1,25 @@
 import type { Bug as BugzillaAPIBug } from "bugzilla";
 
-import type { BugzillaAccount, BugzillaSearch } from "../../../schema";
-import type { GraphQLType } from "../../../utils";
 import type { SearchType } from "../schema";
 
-export type BugzillaAccountEntity = Required<
-  Omit<GraphQLType<BugzillaAccount>, "searches">
-> & {
+export interface BugzillaAccountEntity {
+  id: string;
   userId: string;
+  username: string | null;
   password: string | null;
-};
+  icon: string | null;
+  name: string;
+  url: string;
+}
 
-export type BugzillaSearchEntity = Required<
-  Omit<GraphQLType<BugzillaSearch>, "url" | "type" | "dueOffset">
-> & {
+export interface BugzillaSearchEntity {
+  id: string;
   accountId: string;
+  name: string;
+  query: string;
   type: SearchType;
   dueOffset: string | null;
-};
+}
 
 export type BugzillaBugEntity = Pick<BugzillaAPIBug, "summary"> & {
   accountId: string;

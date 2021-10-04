@@ -144,6 +144,188 @@
         "type": "object",
         "description": "Make all properties in T optional"
       },
+      "Pick_BugzillaAccountEntity.id-or-name-or-icon-or-url_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "icon": {
+            "type": "string",
+            "nullable": true
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "icon",
+          "url"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "SearchType": {
+        "enum": [
+          "quick",
+          "advanced"
+        ],
+        "type": "string",
+        "x-enum-varnames": [
+          "Quicksearch",
+          "Advanced"
+        ]
+      },
+      "Pick_BugzillaSearchEntity.Exclude_keyofBugzillaSearchEntity.accountId__": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "type": {
+            "$ref": "#/components/schemas/SearchType"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "query",
+          "type",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_BugzillaSearchEntity.accountId_": {
+        "$ref": "#/components/schemas/Pick_BugzillaSearchEntity.Exclude_keyofBugzillaSearchEntity.accountId__"
+      },
+      "BugzillaSearchState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_BugzillaSearchEntity.accountId_"
+          },
+          {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "BugzillaAccountState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pick_BugzillaAccountEntity.id-or-name-or-icon-or-url_"
+          },
+          {
+            "properties": {
+              "searches": {
+                "items": {
+                  "$ref": "#/components/schemas/BugzillaSearchState"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "searches"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_BugzillaAccountEntity.Exclude_keyofBugzillaAccountEntity.id-or-userId-or-icon__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "username": {
+            "type": "string",
+            "nullable": true
+          },
+          "password": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "url",
+          "username",
+          "password"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_BugzillaAccountEntity.id-or-userId-or-icon_": {
+        "$ref": "#/components/schemas/Pick_BugzillaAccountEntity.Exclude_keyofBugzillaAccountEntity.id-or-userId-or-icon__"
+      },
+      "BugzillaAccountParams": {
+        "$ref": "#/components/schemas/Omit_BugzillaAccountEntity.id-or-userId-or-icon_"
+      },
+      "Pick_BugzillaSearchEntity.Exclude_keyofBugzillaSearchEntity.id-or-accountId-or-type__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "query",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_BugzillaSearchEntity.id-or-accountId-or-type_": {
+        "$ref": "#/components/schemas/Pick_BugzillaSearchEntity.Exclude_keyofBugzillaSearchEntity.id-or-accountId-or-type__"
+      },
+      "BugzillaSearchParams": {
+        "$ref": "#/components/schemas/Omit_BugzillaSearchEntity.id-or-accountId-or-type_"
+      },
+      "Partial_BugzillaSearchParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
       "Pick_UserEntity.Exclude_keyofUserEntity.password__": {
         "properties": {
           "email": {
@@ -1313,6 +1495,199 @@
                 "properties": {
                   "params": {
                     "$ref": "#/components/schemas/Partial_GoogleMailSearchParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteSearch",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/bugzilla/account": {
+      "get": {
+        "operationId": "ListAccounts",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/BugzillaAccountState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      },
+      "put": {
+        "operationId": "CreateAccount",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugzillaAccountState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/BugzillaAccountParams"
+                  }
+                },
+                "required": [
+                  "params"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteAccount",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/bugzilla/search": {
+      "put": {
+        "operationId": "CreateSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugzillaSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/BugzillaSearchParams"
+                  },
+                  "accountId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "accountId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BugzillaSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_BugzillaSearchParams_"
                   },
                   "id": {
                     "type": "string"

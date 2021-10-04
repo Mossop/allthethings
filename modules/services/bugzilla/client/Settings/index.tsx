@@ -1,14 +1,16 @@
 import { useCallback } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  BugzillaAccountState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   useSetSettingsPage,
   SettingsPageItem,
   useBoolState,
 } from "../../../../client/utils";
-import type { BugzillaAccount } from "../../../../schema";
+import { useListBugzillaAccountsQuery } from "../api";
 import Icon from "../Icon";
-import { useListBugzillaAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -19,19 +21,19 @@ export function SettingsPages(): ReactResult {
   let setSettingsPage = useSetSettingsPage();
 
   let onAccountCreated = useCallback(
-    (account: Omit<BugzillaAccount, "username">) => {
+    (account: BugzillaAccountState) => {
       closeAccountDialog();
       setSettingsPage(account.id, "bugzilla");
     },
     [closeAccountDialog, setSettingsPage],
   );
 
-  let { data } = useListBugzillaAccountsQuery();
-  let accounts = data?.user?.bugzillaAccounts ?? [];
+  let [data] = useListBugzillaAccountsQuery();
+  let accounts = data ?? [];
 
   return (
     <>
-      {accounts.map((account: Omit<BugzillaAccount, "username">) => (
+      {accounts.map((account: BugzillaAccountState) => (
         <SettingsPageItem
           key={account.id}
           serviceId="bugzilla"
@@ -59,8 +61,8 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ page }: SettingsPageProps): ReactResult {
-  let { data } = useListBugzillaAccountsQuery();
-  let accounts = data?.user?.bugzillaAccounts ?? [];
+  let [data] = useListBugzillaAccountsQuery();
+  let accounts = data ?? [];
 
   for (let account of accounts) {
     if (account.id == page) {

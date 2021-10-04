@@ -65,6 +65,74 @@ export interface PartialGoogleMailSearchParams {
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickBugzillaAccountEntityIdOrNameOrIconOrUrl {
+  id: string;
+  name: string;
+  icon: string | null;
+  url: string;
+}
+
+export enum SearchType {
+  Quicksearch = "quick",
+  Advanced = "advanced",
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickBugzillaSearchEntityExcludeKeysAccountId {
+  id: string;
+  name: string;
+  query: string;
+  type: SearchType;
+  dueOffset: string | null;
+}
+
+export type OmitBugzillaSearchEntityAccountId = PickBugzillaSearchEntityExcludeKeysAccountId;
+
+export type BugzillaSearchState = OmitBugzillaSearchEntityAccountId & { url: string };
+
+export type BugzillaAccountState = PickBugzillaAccountEntityIdOrNameOrIconOrUrl & { searches: BugzillaSearchState[] };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickBugzillaAccountEntityExcludeKeysIdOrUserIdOrIcon {
+  name: string;
+  url: string;
+  username: string | null;
+  password: string | null;
+}
+
+export type OmitBugzillaAccountEntityIdOrUserIdOrIcon = PickBugzillaAccountEntityExcludeKeysIdOrUserIdOrIcon;
+
+export type BugzillaAccountParams = OmitBugzillaAccountEntityIdOrUserIdOrIcon;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickBugzillaSearchEntityExcludeKeysIdOrAccountIdOrType {
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitBugzillaSearchEntityIdOrAccountIdOrType = PickBugzillaSearchEntityExcludeKeysIdOrAccountIdOrType;
+
+export type BugzillaSearchParams = OmitBugzillaSearchEntityIdOrAccountIdOrType;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialBugzillaSearchParams {
+  name?: string;
+  query?: string;
+  dueOffset?: string | null;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickUserEntityExcludeKeysPassword {
   email: string;
   isAdmin: boolean;
@@ -734,6 +802,105 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
     deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/service/google/search`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
+  bugzilla = {
+    /**
+     * No description
+     *
+     * @name ListAccounts
+     * @request GET:/service/bugzilla/account
+     * @response `200` `(BugzillaAccountState)[]` Ok
+     */
+    listAccounts: (params: RequestParams = {}) =>
+      this.request<BugzillaAccountState[], any>({
+        path: `/service/bugzilla/account`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateAccount
+     * @request PUT:/service/bugzilla/account
+     * @response `200` `BugzillaAccountState` Ok
+     */
+    createAccount: (data: { params: BugzillaAccountParams }, params: RequestParams = {}) =>
+      this.request<BugzillaAccountState, any>({
+        path: `/service/bugzilla/account`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteAccount
+     * @request DELETE:/service/bugzilla/account
+     * @response `204` `void` No content
+     */
+    deleteAccount: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/bugzilla/account`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateSearch
+     * @request PUT:/service/bugzilla/search
+     * @response `200` `BugzillaSearchState` Ok
+     */
+    createSearch: (data: { params: BugzillaSearchParams; accountId: string }, params: RequestParams = {}) =>
+      this.request<BugzillaSearchState, any>({
+        path: `/service/bugzilla/search`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditSearch
+     * @request PATCH:/service/bugzilla/search
+     * @response `200` `BugzillaSearchState` Ok
+     */
+    editSearch: (data: { params: PartialBugzillaSearchParams; id: string }, params: RequestParams = {}) =>
+      this.request<BugzillaSearchState, any>({
+        path: `/service/bugzilla/search`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteSearch
+     * @request DELETE:/service/bugzilla/search
+     * @response `204` `void` No content
+     */
+    deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/bugzilla/search`,
         method: "DELETE",
         body: data,
         type: ContentType.Json,

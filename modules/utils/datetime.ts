@@ -220,61 +220,74 @@ export function relativeDateTimeFromJson(json: unknown): RelativeDateTime {
   return offsetFromJson(json);
 }
 
-export function encodeRelativeDateTime(rdt: RelativeDateTime): string;
-export function encodeRelativeDateTime(
-  rdt: RelativeDateTime | null | undefined,
-): string | null;
-export function encodeRelativeDateTime(
-  rdt: RelativeDateTime | null | undefined,
-): string | null {
-  if (!rdt) {
-    return null;
-  }
-
-  if (DateTime.isDateTime(rdt)) {
-    return rdt.toISO();
-  }
-
-  return JSON.stringify(rdt);
+interface Encoder<T> {
+  (val: T): string;
+  (val: T | null | undefined): string | null;
 }
 
-export function decodeRelativeDateTime(value: string): RelativeDateTime;
-export function decodeRelativeDateTime(
-  value: string | null | undefined,
-): RelativeDateTime | null;
-export function decodeRelativeDateTime(
-  value: string | null | undefined,
-): RelativeDateTime | null {
-  if (!value) {
-    return null;
-  }
-
-  if (value.charAt(0) == "[" || value.charAt(0) == "{") {
-    let json = JSON.parse(value);
-    return offsetFromJson(json);
-  }
-
-  return DateTime.fromISO(value);
+interface Decoder<T> {
+  (val: string): T;
+  (val: string | null): T | null;
+  (val: string | undefined): T | undefined;
+  (val: string | null | undefined): T | null | undefined;
 }
 
-export function encodeDateTime(dt: DateTime): string;
-export function encodeDateTime(dt: DateTime | undefined | null): string | null;
-export function encodeDateTime(dt: DateTime | undefined | null): string | null {
-  if (dt) {
-    return dt.toISO();
+function encoder<T>(mapper: (val: T) => string): Encoder<T> {
+  function encoder(val: T): string;
+  function encoder(val: T | null | undefined): string | null;
+  function encoder(val: T | null | undefined): string | null {
+    if (val === null || val === undefined) {
+      return null;
+    }
+
+    return mapper(val);
   }
 
-  return null;
+  return encoder;
 }
 
-export function decodeDateTime(val: string): DateTime;
-export function decodeDateTime(val: string | undefined | null): DateTime | null;
-export function decodeDateTime(
-  val: string | undefined | null,
-): DateTime | null {
-  if (val) {
+function decoder<T>(mapper: (val: string) => T): Decoder<T> {
+  function decoder(val: string): T;
+  function decoder(val: string | null): T | null;
+  function decoder(val: string | undefined): T | undefined;
+  function decoder(val: string | null | undefined): T | null | undefined;
+  function decoder(val: string | null | undefined): T | null | undefined {
+    if (val === null || val === undefined) {
+      return val;
+    }
+
+    return mapper(val);
+  }
+
+  return decoder;
+}
+
+export const encodeDateTime = encoder((val: DateTime): string => val.toISO());
+export const decodeDateTime = decoder(
+  (val: string): DateTime => DateTime.fromISO(val),
+);
+export const encodeRelativeDateTime = encoder(
+  (val: RelativeDateTime): string => {
+    if (DateTime.isDateTime(val)) {
+      return val.toISO();
+    }
+
+    return JSON.stringify(val);
+  },
+);
+export const decodeRelativeDateTime = decoder(
+  (val: string): RelativeDateTime => {
+    if (val.charAt(0) == "[" || val.charAt(0) == "{") {
+      let json = JSON.parse(val);
+      return offsetFromJson(json);
+    }
+
     return DateTime.fromISO(val);
-  }
-
-  return null;
-}
+  },
+);
+export const encodeDateTimeOffset = encoder((val: DateTimeOffset): string =>
+  JSON.stringify(val),
+);
+export const decodeDateTimeOffset = decoder(
+  (val: string): DateTimeOffset => offsetFromJson(JSON.parse(val)),
+);

@@ -24,39 +24,6 @@ export type Scalars = {
   RelativeDateTime: RelativeDateTime;
 };
 
-export type BugzillaAccount = {
-  readonly __typename: "BugzillaAccount";
-  readonly icon?: Maybe<Scalars["String"]>;
-  readonly id: Scalars["ID"];
-  readonly name: Scalars["String"];
-  readonly searches: ReadonlyArray<BugzillaSearch>;
-  readonly url: Scalars["String"];
-  readonly username?: Maybe<Scalars["String"]>;
-};
-
-export type BugzillaAccountParams = {
-  readonly name: Scalars["String"];
-  readonly password?: Maybe<Scalars["String"]>;
-  readonly url: Scalars["String"];
-  readonly username?: Maybe<Scalars["String"]>;
-};
-
-export type BugzillaSearch = {
-  readonly __typename: "BugzillaSearch";
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly id: Scalars["ID"];
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-  readonly type: Scalars["String"];
-  readonly url: Scalars["String"];
-};
-
-export type BugzillaSearchParams = {
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-};
-
 export type CreatePhabricatorAccountParams = {
   readonly apiKey: Scalars["String"];
   readonly queries: ReadonlyArray<Scalars["ID"]>;
@@ -121,31 +88,17 @@ export type JiraSearchParams = {
 
 export type Mutation = {
   readonly __typename: "Mutation";
-  readonly createBugzillaAccount: BugzillaAccount;
-  readonly createBugzillaSearch: BugzillaSearch;
   readonly createGithubSearch: GithubSearch;
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
   readonly createPhabricatorAccount: PhabricatorAccount;
-  readonly deleteBugzillaAccount?: Maybe<Scalars["Boolean"]>;
-  readonly deleteBugzillaSearch?: Maybe<Scalars["Boolean"]>;
   readonly deleteGithubSearch: Scalars["Boolean"];
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
-  readonly editBugzillaSearch?: Maybe<BugzillaSearch>;
   readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
-};
-
-export type MutationCreateBugzillaAccountArgs = {
-  params: BugzillaAccountParams;
-};
-
-export type MutationCreateBugzillaSearchArgs = {
-  account: Scalars["ID"];
-  params: BugzillaSearchParams;
 };
 
 export type MutationCreateGithubSearchArgs = {
@@ -166,14 +119,6 @@ export type MutationCreatePhabricatorAccountArgs = {
   params: CreatePhabricatorAccountParams;
 };
 
-export type MutationDeleteBugzillaAccountArgs = {
-  account: Scalars["ID"];
-};
-
-export type MutationDeleteBugzillaSearchArgs = {
-  search: Scalars["ID"];
-};
-
 export type MutationDeleteGithubSearchArgs = {
   search: Scalars["ID"];
 };
@@ -188,11 +133,6 @@ export type MutationDeleteJiraSearchArgs = {
 
 export type MutationDeletePhabricatorAccountArgs = {
   account: Scalars["ID"];
-};
-
-export type MutationEditBugzillaSearchArgs = {
-  params: BugzillaSearchParams;
-  search: Scalars["ID"];
 };
 
 export type MutationEditGithubSearchArgs = {
@@ -242,7 +182,6 @@ export type UpdatePhabricatorAccountParams = {
 
 export type User = {
   readonly __typename: "User";
-  readonly bugzillaAccounts: ReadonlyArray<BugzillaAccount>;
   readonly email: Scalars["String"];
   readonly githubAccounts: ReadonlyArray<GithubAccount>;
   readonly id: Scalars["ID"];

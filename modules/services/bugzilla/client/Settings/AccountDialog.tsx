@@ -1,6 +1,7 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { BugzillaAccountState } from "../../../../client/utils";
 import {
   RadioGroupInput,
   TextFieldInput,
@@ -8,11 +9,7 @@ import {
   useBoolState,
   FormState,
 } from "../../../../client/utils";
-import type { BugzillaAccount } from "../../../../schema";
-import {
-  refetchListBugzillaAccountsQuery,
-  useCreateBugzillaAccountMutation,
-} from "../operations";
+import { useCreateBugzillaAccountMutation } from "../api";
 
 enum AuthType {
   Public = "public",
@@ -21,7 +18,7 @@ enum AuthType {
 }
 
 interface AccountDialogProps {
-  onAccountCreated: (account: Omit<BugzillaAccount, "username">) => void;
+  onAccountCreated: (account: BugzillaAccountState) => void;
   onClosed: () => void;
 }
 
@@ -39,26 +36,23 @@ export default function AccountDialog({
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount, { loading, error }] = useCreateBugzillaAccountMutation({
-    variables: {
+  let [createAccount, { loading, error }] = useCreateBugzillaAccountMutation();
+
+  let submit = useCallback(async (): Promise<void> => {
+    let account = await createAccount({
       params: {
         name: state.name,
         url: state.url,
         username: state.auth == AuthType.Password ? state.username : state.key,
         password: state.auth == AuthType.Password ? state.password : null,
       },
-    },
-    refetchQueries: [refetchListBugzillaAccountsQuery()],
-  });
-
-  let submit = useCallback(async (): Promise<void> => {
-    let { data: account } = await createAccount();
+    });
     if (!account) {
       return;
     }
 
-    onAccountCreated(account.createBugzillaAccount);
-  }, [createAccount, onAccountCreated]);
+    onAccountCreated(account);
+  }, [createAccount, onAccountCreated, state]);
 
   return (
     <Dialog

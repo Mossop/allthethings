@@ -24,7 +24,7 @@ import {
   useBoolState,
 } from "../../../../client/utils";
 import type { DateTimeOffset } from "../../../../utils";
-import { addOffset, decodeRelativeDateTime } from "../../../../utils";
+import { addOffset, decodeDateTimeOffset } from "../../../../utils";
 import { useDeleteGoogleMailSearchMutation } from "../api";
 import Google from "../logos/Google";
 import SearchDialog from "./SearchDialog";
@@ -80,7 +80,7 @@ function SearchSettingsItem({
 
   let dueOffset = useMemo(() => {
     if (search.dueOffset) {
-      let dueOffset = decodeRelativeDateTime(search.dueOffset);
+      let dueOffset = decodeDateTimeOffset(search.dueOffset);
       let result = addOffset(DateTime.now(), dueOffset as DateTimeOffset);
       return `Due ${result.toRelative()}`;
     }
