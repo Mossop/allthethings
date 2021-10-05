@@ -10,35 +10,6 @@ const scalars = {
   RelativeDateTime: "./types#RelativeDateTime",
 };
 
-const clientOperationPlugins = {
-  "typescript-operations": {
-    avoidOptionals: true,
-    immutableTypes: true,
-    preResolveTypes: true,
-    useTypeImports: true,
-    onlyOperationTypes: true,
-    nonOptionalTypename: true,
-    namespacedImportName: "Schema",
-    scalars: Object.fromEntries(
-      Object.keys(scalars).map((key) => [key, `Schema.Scalars['${key}']`]),
-    ),
-  },
-  "named-operations-object": {
-    identifierName: "OperationNames",
-  },
-  "typescript-react-apollo": {
-    useTypeImports: true,
-    withRefetchFn: true,
-    namespacedImportName: "Schema",
-  },
-  add: {
-    content: [
-      "/* eslint-disable */",
-      "import * as Schema from '../../../schema';",
-    ],
-  },
-};
-
 const resolverPlugins = (schemaPath, mappers = {}) => ({
   "typescript-resolvers": {
     useIndexSignature: false,
@@ -55,22 +26,6 @@ const resolverPlugins = (schemaPath, mappers = {}) => ({
       "/* eslint-disable */",
       `import * as Schema from '${schemaPath}';`,
     ],
-  },
-});
-
-const serviceTargets = (service, mappers = {}) => ({
-  [path.join(rootDir, "services", service, "client", "operations.ts")]: {
-    schema: [path.join(rootDir, "**", "*.graphql")],
-    documents: path.join(rootDir, "services", service, "client", "*.gql"),
-    plugins: clientOperationPlugins,
-  },
-
-  [path.join(rootDir, "services", service, "server", "schema.ts")]: {
-    schema: [
-      path.join(rootDir, "schema", "scalars.graphql"),
-      path.join(rootDir, "services", service, "schema", "schema.graphql"),
-    ],
-    plugins: resolverPlugins("../../../schema", mappers),
   },
 });
 
@@ -157,11 +112,6 @@ module.exports = {
         }),
       },
     },
-
-    ...serviceTargets("phabricator", {
-      PhabricatorAccount: "./implementations#Account",
-      PhabricatorQuery: "./implementations#QueryClass",
-    }),
 
     ...require("./modules/services/github/server/codegen"),
   },

@@ -10,12 +10,7 @@ import type {
 import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
 
-import type { CreatePhabricatorAccountParams } from "../../../schema";
-import type {
-  ResolverImpl,
-  ServiceItem,
-  ServiceTransaction,
-} from "../../../server/utils";
+import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
 import {
   TaskController,
   id,
@@ -33,12 +28,23 @@ import type {
   PhabricatorQueryEntity,
   PhabricatorRevisionEntity,
 } from "./entities";
-import type { PhabricatorAccountResolvers } from "./schema";
 
-export class Account
-  extends BaseAccount<PhabricatorAccountEntity>
-  implements ResolverImpl<PhabricatorAccountResolvers>
-{
+export type PhabricatorAccountParams = Pick<
+  PhabricatorAccountEntity,
+  "url" | "apiKey"
+> & {
+  queries: string[];
+};
+
+export type PhabricatorAccountState = Pick<
+  PhabricatorAccountEntity,
+  "id" | "email" | "url" | "apiKey"
+> & {
+  icon: string;
+  enabledQueries: string[];
+};
+
+export class Account extends BaseAccount<PhabricatorAccountEntity> {
   public static readonly store = storeBuilder(Account, "phabricator.Account");
 
   private _projectPHIDs: string[] | null = null;
@@ -101,6 +107,17 @@ export class Account
     return queries.map((query: Query): string => query.queryId);
   }
 
+  public async state(): Promise<PhabricatorAccountState> {
+    return {
+      id: this.id,
+      email: this.email,
+      apiKey: this.apiKey,
+      icon: this.icon,
+      url: this.url,
+      enabledQueries: await this.enabledQueries(),
+    };
+  }
+
   public async items(): Promise<Revision[]> {
     return Revision.store(this.tx).find({
       accountId: this.id,
@@ -118,16 +135,26 @@ export class Account
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
     if (icon != this.icon) {
-      await this.update({
+      await super.update({
         icon,
       });
+    }
+  }
+
+  public override async update({
+    queries,
+    ...params
+  }: Partial<PhabricatorAccountParams>): Promise<void> {
+    await super.update(params);
+    if (queries !== undefined) {
+      await Query.ensureQueries(this, queries);
     }
   }
 
   public static async create(
     tx: ServiceTransaction,
     userId: string,
-    { url, apiKey, queries }: CreatePhabricatorAccountParams,
+    { url, apiKey, queries }: PhabricatorAccountParams,
   ): Promise<Account> {
     let api = conduit(url, apiKey);
     let user = await api.user.whoami();
@@ -156,8 +183,14 @@ export interface QueryClass {
   new (tx: ServiceTransaction, record: PhabricatorQueryEntity): Query;
 
   readonly queryId: string;
+  readonly queryName: string;
   readonly description: string;
 }
+
+export type PhabricatorQueryState = Pick<PhabricatorQueryEntity, "queryId"> & {
+  name: string;
+  description: string;
+};
 
 export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
   public static readonly store = storeImplBuilder(
@@ -228,6 +261,10 @@ export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
 
   public get queryId(): string {
     return this.entity.queryId;
+  }
+
+  public get name(): string {
+    return this.class.name;
   }
 
   public get description(): string {
@@ -375,8 +412,7 @@ abstract class ReviewQuery extends Query {
 class MustReview extends ReviewQuery {
   public static queryId = "mustreview";
   public static description = "Revisions that must be reviewed.";
-
-  public readonly name: string = "Must Review";
+  public static queryName = "Must Review";
 
   protected override filterRevision(
     account: Account,
@@ -393,8 +429,7 @@ class MustReview extends ReviewQuery {
 class CanReview extends ReviewQuery {
   public static queryId = "canreview";
   public static description = "Revisions that can be reviewed.";
-
-  public readonly name: string = "Review";
+  public static queryName = "Review";
 
   protected override filterRevision(
     account: Account,
@@ -411,8 +446,7 @@ class CanReview extends ReviewQuery {
 class Draft extends Query {
   public static queryId = "draft";
   public static description = "Draft revisions.";
-
-  public readonly name = "Draft";
+  public static queryName = "Draft";
 
   protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     let account = await this.account();
@@ -426,8 +460,7 @@ class Draft extends Query {
 class NeedsRevision extends Query {
   public static queryId = "needsrevision";
   public static description = "Revisions that need changes.";
-
-  public readonly name = "Needs Changes";
+  public static queryName = "Needs Changes";
 
   protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     let account = await this.account();
@@ -441,8 +474,7 @@ class NeedsRevision extends Query {
 class Waiting extends Query {
   public static queryId = "waiting";
   public static description = "Revisions waiting on reviewers.";
-
-  public readonly name = "In Review";
+  public static queryName = "In Review";
 
   protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     let account = await this.account();
@@ -456,8 +488,7 @@ class Waiting extends Query {
 class Accepted extends Query {
   public static queryId = "accepted";
   public static description = "Revisions that are ready to land.";
-
-  public readonly name = "Accepted";
+  public static queryName = "Accepted";
 
   protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     let account = await this.account();

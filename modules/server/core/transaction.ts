@@ -166,7 +166,7 @@ export const buildServiceTransaction = memoized(
           icon?: string | null,
         ): Promise<void> {
           let item = await Item.store(tx).get(id);
-          let detail = item.detail;
+          let detail = await item.detail;
           if (
             !(detail instanceof ServiceDetail) ||
             detail.serviceId != serviceOwner.id

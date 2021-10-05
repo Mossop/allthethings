@@ -11,13 +11,15 @@ import {
   ReactMemo,
   Checkbox,
 } from "../../../../client/utils";
-import type { ReactResult } from "../../../../client/utils";
-import type { PhabricatorAccount, PhabricatorQuery } from "../../../../schema";
+import type {
+  ReactResult,
+  PhabricatorQueryState,
+  PhabricatorAccountState,
+} from "../../../../client/utils";
 import {
   useListPhabricatorQueriesQuery,
-  refetchListPhabricatorAccountsQuery,
   useCreatePhabricatorAccountMutation,
-} from "../operations";
+} from "../api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -34,7 +36,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface QueryCheckboxProps {
-  query: PhabricatorQuery;
+  query: PhabricatorQueryState;
   checked: boolean;
   onChange: (id: string, checked: boolean) => void;
 }
@@ -54,9 +56,9 @@ const QueryCheckbox = ReactMemo(function QueryCheckbox({
 });
 
 interface AccountDialogProps {
-  onAccountCreated: (account: Omit<PhabricatorAccount, "username">) => void;
+  onAccountCreated: (account: PhabricatorAccountState) => void;
   onClosed: () => void;
-  queries: readonly PhabricatorQuery[];
+  queries: readonly PhabricatorQueryState[];
 }
 
 const AccountDialog = ReactMemo(function AccountDialog({
@@ -75,27 +77,25 @@ const AccountDialog = ReactMemo(function AccountDialog({
   let [state, setState] = useState<State>({
     url: "",
     apiKey: "",
-    queries: queries.map((query: PhabricatorQuery): string => query.queryId),
+    queries: queries.map(
+      (query: PhabricatorQueryState): string => query.queryId,
+    ),
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount, { loading, error }] = useCreatePhabricatorAccountMutation(
-    {
-      variables: {
-        params: state,
-      },
-      refetchQueries: [refetchListPhabricatorAccountsQuery()],
-    },
-  );
+  let [createAccount, { loading, error }] =
+    useCreatePhabricatorAccountMutation();
 
   let submit = useCallback(async (): Promise<void> => {
-    let { data: account } = await createAccount();
+    let account = await createAccount({
+      params: state,
+    });
     if (!account) {
       return;
     }
 
-    onAccountCreated(account.createPhabricatorAccount);
-  }, [createAccount, onAccountCreated]);
+    onAccountCreated(account);
+  }, [createAccount, onAccountCreated, state]);
 
   let changeQuery = useCallback((id: string, enabled: boolean): void => {
     setState((state: State): State => {
@@ -143,7 +143,7 @@ const AccountDialog = ReactMemo(function AccountDialog({
 
       <div className={classes.queriesHeader}>Queries</div>
 
-      {queries.map((query: PhabricatorQuery) => (
+      {queries.map((query: PhabricatorQueryState) => (
         <QueryCheckbox
           key={query.queryId}
           query={query}
@@ -160,13 +160,11 @@ export type AccountDialogOuterProps = Omit<AccountDialogProps, "queries">;
 export default ReactMemo(function AccountDialogOuter(
   props: AccountDialogOuterProps,
 ): ReactResult {
-  let { data } = useListPhabricatorQueriesQuery();
+  let [data] = useListPhabricatorQueriesQuery();
 
   if (data === undefined) {
     return null;
   }
 
-  return (
-    <AccountDialog {...props} queries={data.user?.phabricatorQueries ?? []} />
-  );
+  return <AccountDialog {...props} queries={data} />;
 });

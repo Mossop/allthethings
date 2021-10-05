@@ -2,7 +2,11 @@ import type { Theme } from "@material-ui/core";
 import { makeStyles, createStyles, IconButton } from "@material-ui/core";
 import { useCallback, useMemo } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  PhabricatorAccountState,
+  PhabricatorQueryState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   Heading,
   ImageIcon,
@@ -14,13 +18,11 @@ import {
   SubHeading,
   ReactMemo,
 } from "../../../../client/utils";
-import type { PhabricatorAccount, PhabricatorQuery } from "../../../../schema";
 import {
-  useUpdatePhabricatorAccountMutation,
+  useEditPhabricatorAccountMutation,
   useListPhabricatorQueriesQuery,
-  refetchListPhabricatorAccountsQuery,
   useDeletePhabricatorAccountMutation,
-} from "../operations";
+} from "../api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -42,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface QueryProps {
-  query: PhabricatorQuery;
+  query: PhabricatorQueryState;
   enabled: boolean;
   onChangeQuery: (query: string, enabled: boolean) => void;
 }
@@ -69,7 +71,7 @@ const Query = ReactMemo(function Query({
 });
 
 interface AccountSettingsProps {
-  account: PhabricatorAccount;
+  account: PhabricatorAccountState;
 }
 
 export default ReactMemo(function AccountSettings({
@@ -78,24 +80,17 @@ export default ReactMemo(function AccountSettings({
   let classes = useStyles();
   let resetStore = useResetStore();
 
-  let { data: queryList } = useListPhabricatorQueriesQuery();
-  let queries = queryList?.user?.phabricatorQueries ?? [];
+  let [queryList] = useListPhabricatorQueriesQuery();
+  let queries = queryList ?? [];
 
-  let [updateAccount] = useUpdatePhabricatorAccountMutation({
-    refetchQueries: [refetchListPhabricatorAccountsQuery()],
-  });
+  let [updateAccount] = useEditPhabricatorAccountMutation();
 
-  let [deleteAccountMutation] = useDeletePhabricatorAccountMutation({
-    variables: {
-      account: account.id,
-    },
-    refetchQueries: [refetchListPhabricatorAccountsQuery()],
-  });
+  let [deleteAccountMutation] = useDeletePhabricatorAccountMutation();
 
   let deleteAccount = useCallback(async () => {
-    await deleteAccountMutation();
+    await deleteAccountMutation({ id: account.id });
     await resetStore();
-  }, [deleteAccountMutation, resetStore]);
+  }, [account.id, deleteAccountMutation, resetStore]);
 
   let onChangeQuery = useMemo(() => {
     return (query: string, enabled: boolean): void => {
@@ -107,13 +102,9 @@ export default ReactMemo(function AccountSettings({
       }
 
       void updateAccount({
-        variables: {
-          id: account.id,
-          params: {
-            url: null,
-            apiKey: null,
-            queries: [...enabledQueries],
-          },
+        id: account.id,
+        params: {
+          queries: [...enabledQueries],
         },
       });
     };
@@ -136,7 +127,7 @@ export default ReactMemo(function AccountSettings({
       }
     >
       <SettingsListSection heading={<SubHeading>Queries</SubHeading>}>
-        {queries.map((query: PhabricatorQuery) => (
+        {queries.map((query: PhabricatorQueryState) => (
           <Query
             key={query.queryId}
             query={query}

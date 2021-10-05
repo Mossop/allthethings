@@ -1,14 +1,16 @@
 import { useCallback } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  PhabricatorAccountState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   useSetSettingsPage,
   SettingsPageItem,
   useBoolState,
 } from "../../../../client/utils";
-import type { PhabricatorAccount } from "../../../../schema";
+import { useListPhabricatorAccountsQuery } from "../api";
 import Icon from "../Icon";
-import { useListPhabricatorAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -19,19 +21,19 @@ export function SettingsPages(): ReactResult {
   let setSettingsPage = useSetSettingsPage();
 
   let onAccountCreated = useCallback(
-    (account: Omit<PhabricatorAccount, "username">) => {
+    (account: PhabricatorAccountState) => {
       closeAccountDialog();
       setSettingsPage(account.id, "phabricator");
     },
     [closeAccountDialog, setSettingsPage],
   );
 
-  let { data } = useListPhabricatorAccountsQuery();
-  let accounts = data?.user?.phabricatorAccounts ?? [];
+  let [data] = useListPhabricatorAccountsQuery();
+  let accounts = data ?? [];
 
   return (
     <>
-      {accounts.map((account: PhabricatorAccount) => (
+      {accounts.map((account: PhabricatorAccountState) => (
         <SettingsPageItem
           key={account.id}
           serviceId="phabricator"
@@ -59,8 +61,8 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ page }: SettingsPageProps): ReactResult {
-  let { data } = useListPhabricatorAccountsQuery();
-  let accounts = data?.user?.phabricatorAccounts ?? [];
+  let [data] = useListPhabricatorAccountsQuery();
+  let accounts = data ?? [];
 
   for (let account of accounts) {
     if (account.id == page) {

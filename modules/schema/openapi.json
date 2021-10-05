@@ -6,6 +6,144 @@
     "requestBodies": {},
     "responses": {},
     "schemas": {
+      "Pick_PhabricatorAccountEntity.id-or-email-or-url-or-apiKey_": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "url",
+          "apiKey"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "PhabricatorAccountState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pick_PhabricatorAccountEntity.id-or-email-or-url-or-apiKey_"
+          },
+          {
+            "properties": {
+              "enabledQueries": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              },
+              "icon": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "enabledQueries",
+              "icon"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_PhabricatorAccountEntity.url-or-apiKey_": {
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "url",
+          "apiKey"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "PhabricatorAccountParams": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pick_PhabricatorAccountEntity.url-or-apiKey_"
+          },
+          {
+            "properties": {
+              "queries": {
+                "items": {
+                  "type": "string"
+                },
+                "type": "array"
+              }
+            },
+            "required": [
+              "queries"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Partial_PhabricatorAccountParams_": {
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "apiKey": {
+            "type": "string"
+          },
+          "queries": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
+      "Pick_PhabricatorQueryEntity.queryId_": {
+        "properties": {
+          "queryId": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "queryId"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "PhabricatorQueryState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Pick_PhabricatorQueryEntity.queryId_"
+          },
+          {
+            "properties": {
+              "description": {
+                "type": "string"
+              },
+              "name": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "description",
+              "name"
+            ],
+            "type": "object"
+          }
+        ]
+      },
       "Pick_JiraAccountEntity.Exclude_keyofJiraAccountEntity.userId__": {
         "properties": {
           "id": {
@@ -1698,6 +1836,152 @@
   },
   "openapi": "3.0.0",
   "paths": {
+    "/service/phabricator/account": {
+      "get": {
+        "operationId": "ListAccounts",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PhabricatorAccountState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      },
+      "put": {
+        "operationId": "CreateAccount",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhabricatorAccountState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/PhabricatorAccountParams"
+                  }
+                },
+                "required": [
+                  "params"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditAccount",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PhabricatorAccountState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_PhabricatorAccountParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteAccount",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/phabricator/query": {
+      "get": {
+        "operationId": "ListQueries",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/PhabricatorQueryState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      }
+    },
     "/service/jira/account": {
       "get": {
         "operationId": "ListAccounts",

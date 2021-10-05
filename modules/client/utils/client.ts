@@ -12,6 +12,49 @@
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickPhabricatorAccountEntityIdOrEmailOrUrlOrApiKey {
+  id: string;
+  email: string;
+  url: string;
+  apiKey: string;
+}
+
+export type PhabricatorAccountState = PickPhabricatorAccountEntityIdOrEmailOrUrlOrApiKey & {
+  enabledQueries: string[];
+  icon: string;
+};
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickPhabricatorAccountEntityUrlOrApiKey {
+  url: string;
+  apiKey: string;
+}
+
+export type PhabricatorAccountParams = PickPhabricatorAccountEntityUrlOrApiKey & { queries: string[] };
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialPhabricatorAccountParams {
+  url?: string;
+  apiKey?: string;
+  queries?: string[];
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickPhabricatorQueryEntityQueryId {
+  queryId: string;
+}
+
+export type PhabricatorQueryState = PickPhabricatorQueryEntityQueryId & { description: string; name: string };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickJiraAccountEntityExcludeKeysUserId {
   id: string;
   apiToken: string;
@@ -845,6 +888,87 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title No title
  */
 export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<SecurityDataType> {
+  phabricator = {
+    /**
+     * No description
+     *
+     * @name ListAccounts
+     * @request GET:/service/phabricator/account
+     * @response `200` `(PhabricatorAccountState)[]` Ok
+     */
+    listAccounts: (params: RequestParams = {}) =>
+      this.request<PhabricatorAccountState[], any>({
+        path: `/service/phabricator/account`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateAccount
+     * @request PUT:/service/phabricator/account
+     * @response `200` `PhabricatorAccountState` Ok
+     */
+    createAccount: (data: { params: PhabricatorAccountParams }, params: RequestParams = {}) =>
+      this.request<PhabricatorAccountState, any>({
+        path: `/service/phabricator/account`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditAccount
+     * @request PATCH:/service/phabricator/account
+     * @response `200` `PhabricatorAccountState` Ok
+     */
+    editAccount: (data: { params: PartialPhabricatorAccountParams; id: string }, params: RequestParams = {}) =>
+      this.request<PhabricatorAccountState, any>({
+        path: `/service/phabricator/account`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteAccount
+     * @request DELETE:/service/phabricator/account
+     * @response `204` `void` No content
+     */
+    deleteAccount: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/phabricator/account`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name ListQueries
+     * @request GET:/service/phabricator/query
+     * @response `200` `(PhabricatorQueryState)[]` Ok
+     */
+    listQueries: (params: RequestParams = {}) =>
+      this.request<PhabricatorQueryState[], any>({
+        path: `/service/phabricator/query`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+  };
   jira = {
     /**
      * No description
