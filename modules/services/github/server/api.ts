@@ -7,7 +7,6 @@ import type { DocumentNode } from "graphql";
 import { print } from "graphql";
 
 import { GithubService } from ".";
-import type { ServiceTransaction } from "../../../server/utils";
 import type { Account } from "./implementations";
 import type { SearchQuery, UserInfoQuery } from "./operations";
 import { getSdk } from "./operations";
@@ -146,11 +145,8 @@ export class GitHubApi {
     );
   }
 
-  public static generateLoginUrl(
-    tx: ServiceTransaction,
-    userId: string,
-  ): string {
-    return generateLoginUrl(tx.serviceUrl, userId);
+  public static generateLoginUrl(serviceUrl: URL, userId: string): string {
+    return generateLoginUrl(serviceUrl, userId);
   }
 
   public static getKit(token: string): Octokit {

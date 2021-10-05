@@ -30,30 +30,6 @@ export type CreatePhabricatorAccountParams = {
   readonly url: Scalars["String"];
 };
 
-export type GithubAccount = {
-  readonly __typename: "GithubAccount";
-  readonly avatar: Scalars["String"];
-  readonly id: Scalars["ID"];
-  readonly loginUrl: Scalars["String"];
-  readonly searches: ReadonlyArray<GithubSearch>;
-  readonly user: Scalars["String"];
-};
-
-export type GithubSearch = {
-  readonly __typename: "GithubSearch";
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly id: Scalars["ID"];
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-  readonly url: Scalars["String"];
-};
-
-export type GithubSearchParams = {
-  readonly dueOffset?: Maybe<Scalars["DateTimeOffset"]>;
-  readonly name: Scalars["String"];
-  readonly query: Scalars["String"];
-};
-
 export type JiraAccount = {
   readonly __typename: "JiraAccount";
   readonly apiToken: Scalars["String"];
@@ -88,22 +64,14 @@ export type JiraSearchParams = {
 
 export type Mutation = {
   readonly __typename: "Mutation";
-  readonly createGithubSearch: GithubSearch;
   readonly createJiraAccount: JiraAccount;
   readonly createJiraSearch: JiraSearch;
   readonly createPhabricatorAccount: PhabricatorAccount;
-  readonly deleteGithubSearch: Scalars["Boolean"];
   readonly deleteJiraAccount?: Maybe<Scalars["Boolean"]>;
   readonly deleteJiraSearch?: Maybe<Scalars["Boolean"]>;
   readonly deletePhabricatorAccount?: Maybe<Scalars["Boolean"]>;
-  readonly editGithubSearch?: Maybe<GithubSearch>;
   readonly editJiraSearch?: Maybe<JiraSearch>;
   readonly updatePhabricatorAccount?: Maybe<PhabricatorAccount>;
-};
-
-export type MutationCreateGithubSearchArgs = {
-  account: Scalars["ID"];
-  params: GithubSearchParams;
 };
 
 export type MutationCreateJiraAccountArgs = {
@@ -119,10 +87,6 @@ export type MutationCreatePhabricatorAccountArgs = {
   params: CreatePhabricatorAccountParams;
 };
 
-export type MutationDeleteGithubSearchArgs = {
-  search: Scalars["ID"];
-};
-
 export type MutationDeleteJiraAccountArgs = {
   account: Scalars["ID"];
 };
@@ -133,11 +97,6 @@ export type MutationDeleteJiraSearchArgs = {
 
 export type MutationDeletePhabricatorAccountArgs = {
   account: Scalars["ID"];
-};
-
-export type MutationEditGithubSearchArgs = {
-  params: GithubSearchParams;
-  search: Scalars["ID"];
 };
 
 export type MutationEditJiraSearchArgs = {
@@ -169,7 +128,6 @@ export type PhabricatorQuery = {
 
 export type Query = {
   readonly __typename: "Query";
-  readonly githubLoginUrl: Scalars["String"];
   readonly schemaVersion: Scalars["String"];
   readonly user?: Maybe<User>;
 };
@@ -183,7 +141,6 @@ export type UpdatePhabricatorAccountParams = {
 export type User = {
   readonly __typename: "User";
   readonly email: Scalars["String"];
-  readonly githubAccounts: ReadonlyArray<GithubAccount>;
   readonly id: Scalars["ID"];
   readonly isAdmin: Scalars["Boolean"];
   readonly jiraAccounts: ReadonlyArray<JiraAccount>;

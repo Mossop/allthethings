@@ -14,13 +14,9 @@ import {
   ref,
   storeBuilder,
 } from "../../../server/utils";
-import type {
-  ResolverImpl,
-  ServiceItem,
-  ServiceTransaction,
-} from "../../../server/utils";
+import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { offsetFromJson } from "../../../utils";
+import { map, offsetFromJson } from "../../../utils";
 import type { IssueLikeFields, LabelFields, RepositoryFields } from "../schema";
 import { GitHubApi, UserInfo } from "./api";
 import type {
@@ -31,7 +27,6 @@ import type {
   GithubSearchEntity,
   IssueLikeLabelEntity,
 } from "./entities";
-import type { GithubAccountResolvers, GithubSearchResolvers } from "./schema";
 import type {
   IssueLikeApiResult,
   LabelApiResult,
@@ -41,10 +36,16 @@ import type {
 const ISSUELIKE_REGEX =
   /https:\/\/github\.com\/([^/]+)\/(.+)\/(?:pull|issues)\/(\d+)/;
 
-export class Account
-  extends BaseAccount<GithubAccountEntity>
-  implements ResolverImpl<GithubAccountResolvers>
-{
+export type GithubAccountParams = Omit<GithubAccountEntity, "id" | "userId">;
+export type GithubAccountState = Omit<
+  GithubAccountEntity,
+  "userId" | "token"
+> & {
+  loginUrl: string;
+  searches: GithubSearchState[];
+};
+
+export class Account extends BaseAccount<GithubAccountEntity> {
   public static readonly store = storeBuilder(Account, "github.Account");
 
   private client: GitHubApi | null = null;
@@ -81,6 +82,19 @@ export class Account
     return Search.store(this.tx).find({
       accountId: this.id,
     });
+  }
+
+  public async state(): Promise<GithubAccountState> {
+    return {
+      id: this.id,
+      user: this.user,
+      avatar: this.avatar,
+      loginUrl: this.loginUrl,
+      searches: await map(
+        this.searches(),
+        (search: Search): Promise<GithubSearchState> => search.state(),
+      ),
+    };
   }
 
   public async items(): Promise<IssueLike[]> {
@@ -239,10 +253,12 @@ export class Label extends IdentifiedEntityImpl<
   }
 }
 
-export class Search
-  extends BaseList<GithubSearchEntity, IssueLikeApiResult[]>
-  implements ResolverImpl<GithubSearchResolvers>
-{
+export type GithubSearchParams = Omit<GithubSearchEntity, "id" | "accountId">;
+export type GithubSearchState = Omit<GithubSearchEntity, "accountId"> & {
+  url: string;
+};
+
+export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
   public static readonly store = storeBuilder(Search, "github.Search");
 
   public account(): Promise<Account> {
@@ -267,6 +283,16 @@ export class Search
     let url = new URL("https://github.com/issues");
     url.searchParams.set("q", this.query);
     return url.toString();
+  }
+
+  public async state(): Promise<GithubSearchState> {
+    return {
+      id: this.id,
+      name: this.name,
+      query: this.query,
+      dueOffset: this.entity.dueOffset,
+      url: await this.url(),
+    };
   }
 
   public async listItems(
@@ -305,13 +331,12 @@ export class Search
   }
 
   public static async create(
-    tx: ServiceTransaction,
     account: Account,
-    record: Omit<GithubSearchEntity, "id" | "accountId">,
+    record: GithubSearchParams,
   ): Promise<Search> {
     let issues = await account.api.search(record.query);
 
-    let id = await tx.addList({
+    let id = await account.tx.addList({
       name: record.name,
       url: null,
     });
@@ -322,7 +347,7 @@ export class Search
       accountId: account.id,
     };
 
-    let search = await Search.store(tx).create(dbRecord);
+    let search = await Search.store(account.tx).create(dbRecord);
     await search.updateList(issues);
     return search;
   }

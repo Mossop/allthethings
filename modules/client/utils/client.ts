@@ -65,6 +65,58 @@ export interface PartialGoogleMailSearchParams {
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickGithubAccountEntityExcludeKeysUserIdOrToken {
+  id: string;
+  user: string;
+  avatar: string;
+}
+
+export type OmitGithubAccountEntityUserIdOrToken = PickGithubAccountEntityExcludeKeysUserIdOrToken;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickGithubSearchEntityExcludeKeysAccountId {
+  id: string;
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitGithubSearchEntityAccountId = PickGithubSearchEntityExcludeKeysAccountId;
+
+export type GithubSearchState = OmitGithubSearchEntityAccountId & { url: string };
+
+export type GithubAccountState = OmitGithubAccountEntityUserIdOrToken & {
+  searches: GithubSearchState[];
+  loginUrl: string;
+};
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickGithubSearchEntityExcludeKeysIdOrAccountId {
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitGithubSearchEntityIdOrAccountId = PickGithubSearchEntityExcludeKeysIdOrAccountId;
+
+export type GithubSearchParams = OmitGithubSearchEntityIdOrAccountId;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialGithubSearchParams {
+  name?: string;
+  query?: string;
+  dueOffset?: string | null;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickBugzillaAccountEntityIdOrNameOrIconOrUrl {
   id: string;
   name: string;
@@ -802,6 +854,87 @@ export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<
     deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
       this.request<void, any>({
         path: `/service/google/search`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
+  github = {
+    /**
+     * No description
+     *
+     * @name GetLoginUrl
+     * @request GET:/service/github/loginUrl
+     * @response `200` `DateTime` Ok
+     */
+    getLoginUrl: (params: RequestParams = {}) =>
+      this.request<DateTime, any>({
+        path: `/service/github/loginUrl`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name ListAccounts
+     * @request GET:/service/github/accounts
+     * @response `200` `(GithubAccountState)[]` Ok
+     */
+    listAccounts: (params: RequestParams = {}) =>
+      this.request<GithubAccountState[], any>({
+        path: `/service/github/accounts`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateSearch
+     * @request PUT:/service/github/search
+     * @response `200` `GithubSearchState` Ok
+     */
+    createSearch: (data: { params: GithubSearchParams; accountId: string }, params: RequestParams = {}) =>
+      this.request<GithubSearchState, any>({
+        path: `/service/github/search`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditSearch
+     * @request PATCH:/service/github/search
+     * @response `200` `GithubSearchState` Ok
+     */
+    editSearch: (data: { params: PartialGithubSearchParams; id: string }, params: RequestParams = {}) =>
+      this.request<GithubSearchState, any>({
+        path: `/service/github/search`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteSearch
+     * @request DELETE:/service/github/search
+     * @response `204` `void` No content
+     */
+    deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/github/search`,
         method: "DELETE",
         body: data,
         type: ContentType.Json,

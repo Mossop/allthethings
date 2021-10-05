@@ -5,7 +5,7 @@ const { generateApi } = require("swagger-typescript-api");
 const { withDir } = require("tmp-promise");
 const { generateSpec, generateRoutes } = require("tsoa");
 
-const SERVICES = ["bugzilla", "google"];
+const SERVICES = ["bugzilla", "github", "google"];
 
 let modules = path.resolve(path.join(__dirname, "modules"));
 

@@ -15,15 +15,19 @@ import {
   Styles,
 } from "../../../../client/utils";
 import type {
-  DateTimeOffset,
-  GithubAccount,
-  GithubSearch,
-} from "../../../../schema";
-import { addOffset } from "../../../../utils";
+  GithubSearchState,
+  GithubAccountState,
+} from "../../../../client/utils";
+import type { DateTimeOffset } from "../../../../schema";
+import {
+  addOffset,
+  decodeDateTimeOffset,
+  encodeDateTimeOffset,
+} from "../../../../utils";
 import {
   useCreateGithubSearchMutation,
   useEditGithubSearchMutation,
-} from "../operations";
+} from "../api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,8 +42,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchDialogProps {
-  account: GithubAccount;
-  search?: GithubSearch;
+  account: GithubAccountState;
+  search?: GithubSearchState;
   onClosed: () => void;
 }
 
@@ -61,7 +65,7 @@ export default function SearchDialog({
       return {
         name: search.name,
         query: search.query,
-        dueOffset: search.dueOffset ?? null,
+        dueOffset: decodeDateTimeOffset(search.dueOffset),
       };
     }
 
@@ -76,12 +80,7 @@ export default function SearchDialog({
   let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
-    useCreateGithubSearchMutation({
-      variables: {
-        account: account.id,
-        params: state,
-      },
-    });
+    useCreateGithubSearchMutation();
 
   let [editSearch, { loading: pendingEdit, error: editError }] =
     useEditGithubSearchMutation();
@@ -89,18 +88,25 @@ export default function SearchDialog({
   let submit = useCallback(async (): Promise<void> => {
     if (search) {
       await editSearch({
-        variables: {
-          id: search.id,
-          params: state,
+        id: search.id,
+        params: {
+          ...state,
+          dueOffset: encodeDateTimeOffset(state.dueOffset),
         },
       });
     } else {
-      await createSearch();
+      await createSearch({
+        accountId: account.id,
+        params: {
+          ...state,
+          dueOffset: encodeDateTimeOffset(state.dueOffset),
+        },
+      });
     }
 
     await resetStore();
     close();
-  }, [search, resetStore, close, editSearch, state, createSearch]);
+  }, [search, resetStore, close, editSearch, state, createSearch, account.id]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

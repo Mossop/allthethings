@@ -1,3 +1,4 @@
+import type * as KoaRouter from "@koa/router";
 import type Koa from "koa";
 import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
@@ -12,7 +13,7 @@ import type {
   ServiceWebContext,
 } from "../../../server/utils";
 import { Account, IssueLike, Search } from "./implementations";
-import Resolvers from "./resolvers";
+import { RegisterRoutes } from "./routes";
 import type { GithubServiceConfig } from "./types";
 
 function first(param: string | string[] | undefined): string | undefined {
@@ -107,8 +108,8 @@ export class GithubService extends BaseService {
     await super.update(tx);
   }
 
-  public override get resolvers(): Record<string, unknown> {
-    return Resolvers;
+  public addWebRoutes(router: KoaRouter): void {
+    RegisterRoutes(router);
   }
 
   public buildTransaction(tx: ServiceTransaction): ServiceTransaction {

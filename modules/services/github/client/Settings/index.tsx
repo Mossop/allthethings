@@ -1,22 +1,17 @@
-import type { ReactResult } from "../../../../client/utils";
+import type { GithubAccountState, ReactResult } from "../../../../client/utils";
 import { SettingsPageItem } from "../../../../client/utils";
-import type { GithubAccount } from "../../../../schema";
+import { useListGithubAccountsQuery, useLoginUrlQuery } from "../api";
 import GitHub from "../logos/GitHub";
-import {
-  useListGithubAccountsQuery,
-  useRequestLoginUrlQuery,
-} from "../operations";
 import AccountSettings from "./Account";
 
 export function SettingsPages(): ReactResult {
-  let { data: loginUrlData } = useRequestLoginUrlQuery();
-  let loginUrl = loginUrlData?.githubLoginUrl;
-  let { data } = useListGithubAccountsQuery();
-  let accounts = data?.user?.githubAccounts ?? [];
+  let [loginUrl] = useLoginUrlQuery();
+  let [data] = useListGithubAccountsQuery();
+  let accounts = data ?? [];
 
   return (
     <>
-      {accounts.map((account: GithubAccount) => (
+      {accounts.map((account: GithubAccountState) => (
         <SettingsPageItem
           key={account.id}
           serviceId="github"
@@ -26,7 +21,7 @@ export function SettingsPages(): ReactResult {
           {account.user}
         </SettingsPageItem>
       ))}
-      {loginUrlData && (
+      {loginUrl && (
         <SettingsPageItem icon={<GitHub />} href={loginUrl}>
           Add Account
         </SettingsPageItem>
@@ -40,8 +35,8 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ page }: SettingsPageProps): ReactResult {
-  let { data } = useListGithubAccountsQuery();
-  let accounts = data?.user?.githubAccounts ?? [];
+  let [data] = useListGithubAccountsQuery();
+  let accounts = data ?? [];
 
   for (let account of accounts) {
     if (account.id == page) {

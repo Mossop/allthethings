@@ -1,24 +1,20 @@
-import type { GithubAccount, GithubSearch } from "../../../schema";
-import type { GraphQLType, Overwrite } from "../../../utils";
 import type { IssueState, PullRequestState } from "./operations";
 
-export type GithubAccountEntity = Omit<
-  GithubAccount,
-  "__typename" | "loginUrl" | "searches"
-> & {
+export interface GithubAccountEntity {
+  id: string;
   userId: string;
   token: string;
   user: string;
   avatar: string;
-};
+}
 
-export type GithubSearchEntity = Overwrite<
-  Omit<GraphQLType<GithubSearch>, "url">,
-  {
-    accountId: string;
-    dueOffset: string | null;
-  }
->;
+export interface GithubSearchEntity {
+  id: string;
+  accountId: string;
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
 
 export interface GithubRepositoryEntity {
   id: string;

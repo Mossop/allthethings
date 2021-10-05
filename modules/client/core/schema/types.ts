@@ -5,36 +5,6 @@ import type {
   TypePolicies,
   TypePolicy,
 } from "@apollo/client/cache";
-export type GithubAccountKeySpecifier = (
-  | "avatar"
-  | "id"
-  | "loginUrl"
-  | "searches"
-  | "user"
-  | GithubAccountKeySpecifier
-)[];
-export type GithubAccountFieldPolicy = {
-  avatar?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  loginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
-  searches?: FieldPolicy<any> | FieldReadFunction<any>;
-  user?: FieldPolicy<any> | FieldReadFunction<any>;
-};
-export type GithubSearchKeySpecifier = (
-  | "dueOffset"
-  | "id"
-  | "name"
-  | "query"
-  | "url"
-  | GithubSearchKeySpecifier
-)[];
-export type GithubSearchFieldPolicy = {
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
-  query?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-};
 export type JiraAccountKeySpecifier = (
   | "apiToken"
   | "email"
@@ -70,29 +40,23 @@ export type JiraSearchFieldPolicy = {
   url?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type MutationKeySpecifier = (
-  | "createGithubSearch"
   | "createJiraAccount"
   | "createJiraSearch"
   | "createPhabricatorAccount"
-  | "deleteGithubSearch"
   | "deleteJiraAccount"
   | "deleteJiraSearch"
   | "deletePhabricatorAccount"
-  | "editGithubSearch"
   | "editJiraSearch"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
 )[];
 export type MutationFieldPolicy = {
-  createGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
   deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  editGithubSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };
@@ -125,19 +89,16 @@ export type PhabricatorQueryFieldPolicy = {
   queryId?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type QueryKeySpecifier = (
-  | "githubLoginUrl"
   | "schemaVersion"
   | "user"
   | QueryKeySpecifier
 )[];
 export type QueryFieldPolicy = {
-  githubLoginUrl?: FieldPolicy<any> | FieldReadFunction<any>;
   schemaVersion?: FieldPolicy<any> | FieldReadFunction<any>;
   user?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type UserKeySpecifier = (
   | "email"
-  | "githubAccounts"
   | "id"
   | "isAdmin"
   | "jiraAccounts"
@@ -147,7 +108,6 @@ export type UserKeySpecifier = (
 )[];
 export type UserFieldPolicy = {
   email?: FieldPolicy<any> | FieldReadFunction<any>;
-  githubAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   isAdmin?: FieldPolicy<any> | FieldReadFunction<any>;
   jiraAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
@@ -155,20 +115,6 @@ export type UserFieldPolicy = {
   phabricatorQueries?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type StrictTypedTypePolicies = {
-  GithubAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | GithubAccountKeySpecifier
-      | (() => undefined | GithubAccountKeySpecifier);
-    fields?: GithubAccountFieldPolicy;
-  };
-  GithubSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | GithubSearchKeySpecifier
-      | (() => undefined | GithubSearchKeySpecifier);
-    fields?: GithubSearchFieldPolicy;
-  };
   JiraAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:
       | false

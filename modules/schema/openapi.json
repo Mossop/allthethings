@@ -144,6 +144,143 @@
         "type": "object",
         "description": "Make all properties in T optional"
       },
+      "Pick_GithubAccountEntity.Exclude_keyofGithubAccountEntity.userId-or-token__": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "user": {
+            "type": "string"
+          },
+          "avatar": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "user",
+          "avatar"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GithubAccountEntity.userId-or-token_": {
+        "$ref": "#/components/schemas/Pick_GithubAccountEntity.Exclude_keyofGithubAccountEntity.userId-or-token__"
+      },
+      "Pick_GithubSearchEntity.Exclude_keyofGithubSearchEntity.accountId__": {
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "id",
+          "name",
+          "query",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GithubSearchEntity.accountId_": {
+        "$ref": "#/components/schemas/Pick_GithubSearchEntity.Exclude_keyofGithubSearchEntity.accountId__"
+      },
+      "GithubSearchState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_GithubSearchEntity.accountId_"
+          },
+          {
+            "properties": {
+              "url": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "url"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "GithubAccountState": {
+        "allOf": [
+          {
+            "$ref": "#/components/schemas/Omit_GithubAccountEntity.userId-or-token_"
+          },
+          {
+            "properties": {
+              "searches": {
+                "items": {
+                  "$ref": "#/components/schemas/GithubSearchState"
+                },
+                "type": "array"
+              },
+              "loginUrl": {
+                "type": "string"
+              }
+            },
+            "required": [
+              "searches",
+              "loginUrl"
+            ],
+            "type": "object"
+          }
+        ]
+      },
+      "Pick_GithubSearchEntity.Exclude_keyofGithubSearchEntity.id-or-accountId__": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "name",
+          "query",
+          "dueOffset"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
+      "Omit_GithubSearchEntity.id-or-accountId_": {
+        "$ref": "#/components/schemas/Pick_GithubSearchEntity.Exclude_keyofGithubSearchEntity.id-or-accountId__"
+      },
+      "GithubSearchParams": {
+        "$ref": "#/components/schemas/Omit_GithubSearchEntity.id-or-accountId_"
+      },
+      "Partial_GithubSearchParams_": {
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "query": {
+            "type": "string"
+          },
+          "dueOffset": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "type": "object",
+        "description": "Make all properties in T optional"
+      },
       "Pick_BugzillaAccountEntity.id-or-name-or-icon-or-url_": {
         "properties": {
           "id": {
@@ -1495,6 +1632,155 @@
                 "properties": {
                   "params": {
                     "$ref": "#/components/schemas/Partial_GoogleMailSearchParams_"
+                  },
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "operationId": "DeleteSearch",
+        "responses": {
+          "204": {
+            "description": "No content"
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "id"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/service/github/loginUrl": {
+      "get": {
+        "operationId": "GetLoginUrl",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      }
+    },
+    "/service/github/accounts": {
+      "get": {
+        "operationId": "ListAccounts",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/GithubAccountState"
+                  },
+                  "type": "array"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": []
+      }
+    },
+    "/service/github/search": {
+      "put": {
+        "operationId": "CreateSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/GithubSearchParams"
+                  },
+                  "accountId": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "params",
+                  "accountId"
+                ],
+                "type": "object"
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "operationId": "EditSearch",
+        "responses": {
+          "200": {
+            "description": "Ok",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GithubSearchState"
+                }
+              }
+            }
+          }
+        },
+        "security": [],
+        "parameters": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "properties": {
+                  "params": {
+                    "$ref": "#/components/schemas/Partial_GithubSearchParams_"
                   },
                   "id": {
                     "type": "string"

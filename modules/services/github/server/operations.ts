@@ -20417,6 +20417,8 @@ export type Topic = Node &
      * first. Returns up to 10 Topics.
      */
     readonly relatedTopics: ReadonlyArray<Topic>;
+    /** A list of repositories. */
+    readonly repositories: RepositoryConnection;
     /** Returns a count of how many stargazers there are on this object */
     readonly stargazerCount: Scalars["Int"];
     /** A list of users who have starred this starrable. */
@@ -20428,6 +20430,20 @@ export type Topic = Node &
 /** A topic aggregates entities that are related to a subject. */
 export type TopicRelatedTopicsArgs = {
   first?: Maybe<Scalars["Int"]>;
+};
+
+/** A topic aggregates entities that are related to a subject. */
+export type TopicRepositoriesArgs = {
+  affiliations: Maybe<ReadonlyArray<Maybe<RepositoryAffiliation>>>;
+  after: Maybe<Scalars["String"]>;
+  before: Maybe<Scalars["String"]>;
+  first: Maybe<Scalars["Int"]>;
+  isLocked: Maybe<Scalars["Boolean"]>;
+  last: Maybe<Scalars["Int"]>;
+  orderBy: Maybe<RepositoryOrder>;
+  ownerAffiliations?: Maybe<ReadonlyArray<Maybe<RepositoryAffiliation>>>;
+  privacy: Maybe<RepositoryPrivacy>;
+  sponsorableOnly?: Maybe<Scalars["Boolean"]>;
 };
 
 /** A topic aggregates entities that are related to a subject. */

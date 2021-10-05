@@ -158,11 +158,6 @@ module.exports = {
       },
     },
 
-    ...serviceTargets("github", {
-      GithubAccount: "./implementations#Account",
-      GithubSearch: "./implementations#Search",
-    }),
-
     ...serviceTargets("jira", {
       JiraAccount: "./implementations#Account",
       JiraSearch: "./implementations#Search",

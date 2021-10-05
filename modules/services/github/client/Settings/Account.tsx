@@ -5,7 +5,11 @@ import LoopIcon from "@material-ui/icons/Loop";
 import SearchIcon from "@material-ui/icons/Search";
 import { useCallback } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type {
+  GithubAccountState,
+  GithubSearchState,
+  ReactResult,
+} from "../../../../client/utils";
 import {
   Icons,
   useResetStore,
@@ -18,9 +22,8 @@ import {
   SubHeading,
   useBoolState,
 } from "../../../../client/utils";
-import type { GithubAccount, GithubSearch } from "../../../../schema";
+import { useDeleteGithubSearchMutation } from "../api";
 import GitHub from "../logos/GitHub";
-import { useDeleteGithubSearchMutation } from "../operations";
 import SearchDialog from "./SearchDialog";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -48,8 +51,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchSettingsItemProps {
-  account: GithubAccount;
-  search: GithubSearch;
+  account: GithubAccountState;
+  search: GithubSearchState;
 }
 
 function SearchSettingsItem({
@@ -61,16 +64,12 @@ function SearchSettingsItem({
   let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
     useBoolState();
 
-  let [deleteSearchMutation] = useDeleteGithubSearchMutation({
-    variables: {
-      id: search.id,
-    },
-  });
+  let [deleteSearchMutation] = useDeleteGithubSearchMutation();
 
   let deleteSearch = useCallback(async () => {
-    await deleteSearchMutation();
+    await deleteSearchMutation({ id: search.id });
     await resetStore();
-  }, [deleteSearchMutation, resetStore]);
+  }, [deleteSearchMutation, resetStore, search.id]);
 
   return (
     <SettingsListItem>
@@ -107,7 +106,7 @@ function SearchSettingsItem({
 }
 
 interface AccountSettingsProps {
-  account: GithubAccount;
+  account: GithubAccountState;
 }
 
 export default function AccountSettings({
@@ -146,7 +145,7 @@ export default function AccountSettings({
           </>
         }
       >
-        {account.searches.map((search: GithubSearch) => (
+        {account.searches.map((search: GithubSearchState) => (
           <SearchSettingsItem
             key={search.id}
             account={account}
