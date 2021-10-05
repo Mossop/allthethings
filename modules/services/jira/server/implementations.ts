@@ -4,12 +4,7 @@ import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
 
-import type { JiraAccountParams } from "../../../schema";
-import type {
-  ResolverImpl,
-  ServiceItem,
-  ServiceTransaction,
-} from "../../../server/utils";
+import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
 import {
   TaskController,
   id,
@@ -19,21 +14,26 @@ import {
   BaseAccount,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { offsetFromJson } from "../../../utils";
+import { map, offsetFromJson } from "../../../utils";
 import type { IssueFields } from "../schema";
 import type {
   JiraAccountEntity,
   JiraIssueEntity,
   JiraSearchEntity,
 } from "./entities";
-import type { JiraAccountResolvers, JiraSearchResolvers } from "./schema";
 
-type JiraIssue = Version3Models.IssueBean;
+type JiraIssue = Version3Models.Issue;
 
-export class Account
-  extends BaseAccount<JiraAccountEntity>
-  implements ResolverImpl<JiraAccountResolvers>
-{
+export type JiraAccountParams = Omit<
+  JiraAccountEntity,
+  "id" | "userId" | "serverName" | "userName"
+>;
+
+export type JiraAccountState = Omit<JiraAccountEntity, "userId"> & {
+  searches: JiraSearchState[];
+};
+
+export class Account extends BaseAccount<JiraAccountEntity> {
   public static readonly store = storeBuilder(Account, "jira.Account");
 
   public get userId(): string {
@@ -64,6 +64,21 @@ export class Account
     return Search.store(this.tx).find({
       accountId: this.id,
     });
+  }
+
+  public async state(): Promise<JiraAccountState> {
+    return {
+      id: this.id,
+      apiToken: this.apiToken,
+      email: this.email,
+      userName: this.userName,
+      serverName: this.serverName,
+      url: this.url,
+      searches: await map(
+        this.searches,
+        (search: Search): Promise<JiraSearchState> => search.state(),
+      ),
+    };
   }
 
   public async items(): Promise<[]> {
@@ -126,10 +141,13 @@ export class Account
   }
 }
 
-export class Search
-  extends BaseList<JiraSearchEntity, JiraIssue[]>
-  implements ResolverImpl<JiraSearchResolvers>
-{
+export type JiraSearchParams = Omit<JiraSearchEntity, "id" | "accountId">;
+
+export type JiraSearchState = Omit<JiraSearchEntity, "accountId"> & {
+  url: string;
+};
+
+export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
   public static readonly store = storeBuilder(Search, "jira.Search");
 
   public account(): Promise<Account> {
@@ -156,6 +174,16 @@ export class Search
     url.searchParams.set("jql", this.query);
 
     return url.toString();
+  }
+
+  public async state(): Promise<JiraSearchState> {
+    return {
+      id: this.id,
+      name: this.name,
+      query: this.query,
+      url: await this.url(),
+      dueOffset: this.entity.dueOffset,
+    };
   }
 
   public async listItems(issues?: JiraIssue[]): Promise<Issue[]> {
@@ -207,7 +235,7 @@ export class Search
 
   public static async create(
     account: Account,
-    record: Omit<JiraSearchEntity, "id">,
+    record: JiraSearchParams,
   ): Promise<Search> {
     let issues = await Search.getIssues(account, record.query);
 
@@ -217,8 +245,9 @@ export class Search
     });
 
     let search = await Search.store(account.tx).create({
-      id,
       ...record,
+      accountId: account.id,
+      id,
     });
 
     await search.updateList(issues);

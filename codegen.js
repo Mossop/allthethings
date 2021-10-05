@@ -158,11 +158,6 @@ module.exports = {
       },
     },
 
-    ...serviceTargets("jira", {
-      JiraAccount: "./implementations#Account",
-      JiraSearch: "./implementations#Search",
-    }),
-
     ...serviceTargets("phabricator", {
       PhabricatorAccount: "./implementations#Account",
       PhabricatorQuery: "./implementations#QueryClass",

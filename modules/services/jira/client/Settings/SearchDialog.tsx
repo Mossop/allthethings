@@ -4,6 +4,10 @@ import { DateTime } from "luxon";
 import type { ReactElement } from "react";
 import { useMemo, useState, useCallback } from "react";
 
+import type {
+  JiraSearchState,
+  JiraAccountState,
+} from "../../../../client/utils";
 import {
   TextFieldInput,
   Dialog,
@@ -14,16 +18,13 @@ import {
   Icons,
   Styles,
 } from "../../../../client/utils";
-import type {
-  DateTimeOffset,
-  JiraAccount,
-  JiraSearch,
-} from "../../../../schema";
-import { addOffset } from "../../../../utils";
+import type { DateTimeOffset } from "../../../../schema";
 import {
-  useCreateJiraSearchMutation,
-  useEditJiraSearchMutation,
-} from "../operations";
+  addOffset,
+  decodeDateTimeOffset,
+  encodeDateTimeOffset,
+} from "../../../../utils";
+import { useCreateJiraSearchMutation, useEditJiraSearchMutation } from "../api";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -38,8 +39,8 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 interface SearchDialogProps {
-  account: JiraAccount;
-  search?: JiraSearch;
+  account: JiraAccountState;
+  search?: JiraSearchState;
   onClosed: () => void;
 }
 
@@ -61,7 +62,7 @@ export default function SearchDialog({
       return {
         name: search.name,
         query: search.query,
-        dueOffset: search.dueOffset ?? null,
+        dueOffset: decodeDateTimeOffset(search.dueOffset),
       };
     }
 
@@ -76,12 +77,7 @@ export default function SearchDialog({
   let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
-    useCreateJiraSearchMutation({
-      variables: {
-        account: account.id,
-        params: state,
-      },
-    });
+    useCreateJiraSearchMutation();
 
   let [editSearch, { loading: pendingEdit, error: editError }] =
     useEditJiraSearchMutation();
@@ -89,18 +85,25 @@ export default function SearchDialog({
   let submit = useCallback(async (): Promise<void> => {
     if (search) {
       await editSearch({
-        variables: {
-          id: search.id,
-          params: state,
+        id: search.id,
+        params: {
+          ...state,
+          dueOffset: encodeDateTimeOffset(state.dueOffset),
         },
       });
     } else {
-      await createSearch();
+      await createSearch({
+        accountId: account.id,
+        params: {
+          ...state,
+          dueOffset: encodeDateTimeOffset(state.dueOffset),
+        },
+      });
     }
 
     await resetStore();
     close();
-  }, [close, createSearch, editSearch, resetStore, search, state]);
+  }, [account.id, close, createSearch, editSearch, resetStore, search, state]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

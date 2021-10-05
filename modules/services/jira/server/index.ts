@@ -1,3 +1,5 @@
+import type * as KoaRouter from "@koa/router";
+
 import type {
   Server,
   ServiceExport,
@@ -5,7 +7,7 @@ import type {
 } from "../../../server/utils";
 import { BaseService } from "../../../server/utils";
 import { Account, Issue, Search } from "./implementations";
-import Resolvers from "./resolvers";
+import { RegisterRoutes } from "./routes";
 
 const UPDATE_DELAY = 60000;
 
@@ -34,8 +36,8 @@ export class JiraService extends BaseService {
     await super.update(tx);
   }
 
-  public override get resolvers(): Record<string, unknown> {
-    return Resolvers;
+  public addWebRoutes(router: KoaRouter): void {
+    RegisterRoutes(router);
   }
 
   public buildTransaction(tx: ServiceTransaction): ServiceTransaction {

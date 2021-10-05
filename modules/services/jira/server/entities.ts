@@ -1,14 +1,17 @@
-import type { JiraAccount } from "../../../schema";
-import type { GraphQLType } from "../../../utils";
-
-export type JiraAccountEntity = Omit<GraphQLType<JiraAccount>, "searches"> & {
+export interface JiraAccountEntity {
+  id: string;
   userId: string;
-};
+  apiToken: string;
+  email: string;
+  serverName: string;
+  url: string;
+  userName: string;
+}
 
 export interface JiraIssueEntity {
+  id: string;
   accountId: string;
   issueKey: string;
-  id: string;
   icon: string | null;
   type: string;
   summary: string;
@@ -16,8 +19,8 @@ export interface JiraIssueEntity {
 }
 
 export interface JiraSearchEntity {
-  accountId: string;
   id: string;
+  accountId: string;
   name: string;
   query: string;
   dueOffset: string | null;

@@ -1,20 +1,17 @@
 import type { ReactElement } from "react";
 import { useState, useCallback } from "react";
 
+import type { JiraAccountState } from "../../../../client/utils";
 import {
   TextFieldInput,
   Dialog,
   useBoolState,
   FormState,
 } from "../../../../client/utils";
-import type { JiraAccount } from "../../../../schema";
-import {
-  refetchListJiraAccountsQuery,
-  useCreateJiraAccountMutation,
-} from "../operations";
+import { useCreateJiraAccountMutation } from "../api";
 
 interface AccountDialogProps {
-  onAccountCreated: (account: JiraAccount) => void;
+  onAccountCreated: (account: JiraAccountState) => void;
   onClosed: () => void;
 }
 
@@ -29,21 +26,18 @@ export default function AccountDialog({
   });
   let [isOpen, , close] = useBoolState(true);
 
-  let [createAccount, { loading, error }] = useCreateJiraAccountMutation({
-    variables: {
-      params: state,
-    },
-    refetchQueries: [refetchListJiraAccountsQuery()],
-  });
+  let [createAccount, { loading, error }] = useCreateJiraAccountMutation();
 
   let submit = useCallback(async (): Promise<void> => {
-    let { data: account } = await createAccount();
+    let account = await createAccount({
+      params: state,
+    });
     if (!account) {
       return;
     }
 
-    onAccountCreated(account.createJiraAccount);
-  }, [createAccount, onAccountCreated]);
+    onAccountCreated(account);
+  }, [createAccount, onAccountCreated, state]);
 
   return (
     <Dialog

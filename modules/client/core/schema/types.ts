@@ -5,59 +5,15 @@ import type {
   TypePolicies,
   TypePolicy,
 } from "@apollo/client/cache";
-export type JiraAccountKeySpecifier = (
-  | "apiToken"
-  | "email"
-  | "id"
-  | "searches"
-  | "serverName"
-  | "url"
-  | "userName"
-  | JiraAccountKeySpecifier
-)[];
-export type JiraAccountFieldPolicy = {
-  apiToken?: FieldPolicy<any> | FieldReadFunction<any>;
-  email?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  searches?: FieldPolicy<any> | FieldReadFunction<any>;
-  serverName?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-  userName?: FieldPolicy<any> | FieldReadFunction<any>;
-};
-export type JiraSearchKeySpecifier = (
-  | "dueOffset"
-  | "id"
-  | "name"
-  | "query"
-  | "url"
-  | JiraSearchKeySpecifier
-)[];
-export type JiraSearchFieldPolicy = {
-  dueOffset?: FieldPolicy<any> | FieldReadFunction<any>;
-  id?: FieldPolicy<any> | FieldReadFunction<any>;
-  name?: FieldPolicy<any> | FieldReadFunction<any>;
-  query?: FieldPolicy<any> | FieldReadFunction<any>;
-  url?: FieldPolicy<any> | FieldReadFunction<any>;
-};
 export type MutationKeySpecifier = (
-  | "createJiraAccount"
-  | "createJiraSearch"
   | "createPhabricatorAccount"
-  | "deleteJiraAccount"
-  | "deleteJiraSearch"
   | "deletePhabricatorAccount"
-  | "editJiraSearch"
   | "updatePhabricatorAccount"
   | MutationKeySpecifier
 )[];
 export type MutationFieldPolicy = {
-  createJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  createJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   createPhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteJiraAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  deleteJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   deletePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
-  editJiraSearch?: FieldPolicy<any> | FieldReadFunction<any>;
   updatePhabricatorAccount?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type PhabricatorAccountKeySpecifier = (
@@ -101,7 +57,6 @@ export type UserKeySpecifier = (
   | "email"
   | "id"
   | "isAdmin"
-  | "jiraAccounts"
   | "phabricatorAccounts"
   | "phabricatorQueries"
   | UserKeySpecifier
@@ -110,25 +65,10 @@ export type UserFieldPolicy = {
   email?: FieldPolicy<any> | FieldReadFunction<any>;
   id?: FieldPolicy<any> | FieldReadFunction<any>;
   isAdmin?: FieldPolicy<any> | FieldReadFunction<any>;
-  jiraAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   phabricatorAccounts?: FieldPolicy<any> | FieldReadFunction<any>;
   phabricatorQueries?: FieldPolicy<any> | FieldReadFunction<any>;
 };
 export type StrictTypedTypePolicies = {
-  JiraAccount?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | JiraAccountKeySpecifier
-      | (() => undefined | JiraAccountKeySpecifier);
-    fields?: JiraAccountFieldPolicy;
-  };
-  JiraSearch?: Omit<TypePolicy, "fields" | "keyFields"> & {
-    keyFields?:
-      | false
-      | JiraSearchKeySpecifier
-      | (() => undefined | JiraSearchKeySpecifier);
-    fields?: JiraSearchFieldPolicy;
-  };
   Mutation?: Omit<TypePolicy, "fields" | "keyFields"> & {
     keyFields?:
       | false

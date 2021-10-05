@@ -12,6 +12,72 @@
 /**
  * From T, pick a set of properties whose keys are in the union K
  */
+export interface PickJiraAccountEntityExcludeKeysUserId {
+  id: string;
+  apiToken: string;
+  email: string;
+  serverName: string;
+  url: string;
+  userName: string;
+}
+
+export type OmitJiraAccountEntityUserId = PickJiraAccountEntityExcludeKeysUserId;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickJiraSearchEntityExcludeKeysAccountId {
+  id: string;
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitJiraSearchEntityAccountId = PickJiraSearchEntityExcludeKeysAccountId;
+
+export type JiraSearchState = OmitJiraSearchEntityAccountId & { url: string };
+
+export type JiraAccountState = OmitJiraAccountEntityUserId & { searches: JiraSearchState[] };
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickJiraAccountEntityExcludeKeysIdOrUserIdOrServerNameOrUserName {
+  apiToken: string;
+  email: string;
+  url: string;
+}
+
+export type OmitJiraAccountEntityIdOrUserIdOrServerNameOrUserName =
+  PickJiraAccountEntityExcludeKeysIdOrUserIdOrServerNameOrUserName;
+
+export type JiraAccountParams = OmitJiraAccountEntityIdOrUserIdOrServerNameOrUserName;
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickJiraSearchEntityExcludeKeysIdOrAccountId {
+  name: string;
+  query: string;
+  dueOffset: string | null;
+}
+
+export type OmitJiraSearchEntityIdOrAccountId = PickJiraSearchEntityExcludeKeysIdOrAccountId;
+
+export type JiraSearchParams = OmitJiraSearchEntityIdOrAccountId;
+
+/**
+ * Make all properties in T optional
+ */
+export interface PartialJiraSearchParams {
+  name?: string;
+  query?: string;
+  dueOffset?: string | null;
+}
+
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
 export interface PickGoogleAccountEntityExcludeKeysUserIdOrAccessTokenOrRefreshTokenOrExpiry {
   id: string;
   email: string;
@@ -779,6 +845,105 @@ export class HttpClient<SecurityDataType = unknown> {
  * @title No title
  */
 export class Api<SecurityDataType extends unknown = unknown> extends HttpClient<SecurityDataType> {
+  jira = {
+    /**
+     * No description
+     *
+     * @name ListAccounts
+     * @request GET:/service/jira/account
+     * @response `200` `(JiraAccountState)[]` Ok
+     */
+    listAccounts: (params: RequestParams = {}) =>
+      this.request<JiraAccountState[], any>({
+        path: `/service/jira/account`,
+        method: "GET",
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateAccount
+     * @request PUT:/service/jira/account
+     * @response `200` `JiraAccountState` Ok
+     */
+    createAccount: (data: { params: JiraAccountParams }, params: RequestParams = {}) =>
+      this.request<JiraAccountState, any>({
+        path: `/service/jira/account`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteAccount
+     * @request DELETE:/service/jira/account
+     * @response `204` `void` No content
+     */
+    deleteAccount: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/jira/account`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name CreateSearch
+     * @request PUT:/service/jira/search
+     * @response `200` `JiraSearchState` Ok
+     */
+    createSearch: (data: { params: JiraSearchParams; accountId: string }, params: RequestParams = {}) =>
+      this.request<JiraSearchState, any>({
+        path: `/service/jira/search`,
+        method: "PUT",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name EditSearch
+     * @request PATCH:/service/jira/search
+     * @response `200` `JiraSearchState` Ok
+     */
+    editSearch: (data: { params: PartialJiraSearchParams; id: string }, params: RequestParams = {}) =>
+      this.request<JiraSearchState, any>({
+        path: `/service/jira/search`,
+        method: "PATCH",
+        body: data,
+        type: ContentType.Json,
+        format: "json",
+        ...params,
+      }),
+
+    /**
+     * No description
+     *
+     * @name DeleteSearch
+     * @request DELETE:/service/jira/search
+     * @response `204` `void` No content
+     */
+    deleteSearch: (data: { id: string }, params: RequestParams = {}) =>
+      this.request<void, any>({
+        path: `/service/jira/search`,
+        method: "DELETE",
+        body: data,
+        type: ContentType.Json,
+        ...params,
+      }),
+  };
   google = {
     /**
      * No description

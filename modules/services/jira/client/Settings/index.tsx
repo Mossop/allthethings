@@ -1,14 +1,13 @@
 import { useCallback } from "react";
 
-import type { ReactResult } from "../../../../client/utils";
+import type { JiraAccountState, ReactResult } from "../../../../client/utils";
 import {
   useBoolState,
   useSetSettingsPage,
   SettingsPageItem,
 } from "../../../../client/utils";
-import type { JiraAccount } from "../../../../schema";
+import { useListJiraAccountsQuery } from "../api";
 import Icon from "../Icon";
-import { useListJiraAccountsQuery } from "../operations";
 import AccountSettings from "./Account";
 import AccountDialog from "./AccountDialog";
 
@@ -19,19 +18,19 @@ export function SettingsPages(): ReactResult {
   let setSettingsPage = useSetSettingsPage();
 
   let onAccountCreated = useCallback(
-    (account: Omit<JiraAccount, "username">) => {
+    (account: JiraAccountState) => {
       closeAccountDialog();
       setSettingsPage(account.id, "jira");
     },
     [closeAccountDialog, setSettingsPage],
   );
 
-  let { data } = useListJiraAccountsQuery();
-  let accounts = data?.user?.jiraAccounts ?? [];
+  let [data] = useListJiraAccountsQuery();
+  let accounts = data ?? [];
 
   return (
     <>
-      {accounts.map((account: JiraAccount) => (
+      {accounts.map((account: JiraAccountState) => (
         <SettingsPageItem
           key={account.id}
           serviceId="jira"
@@ -59,8 +58,8 @@ interface SettingsPageProps {
 }
 
 export function SettingsPage({ page }: SettingsPageProps): ReactResult {
-  let { data } = useListJiraAccountsQuery();
-  let accounts = data?.user?.jiraAccounts ?? [];
+  let [data] = useListJiraAccountsQuery();
+  let accounts = data ?? [];
 
   for (let account of accounts) {
     if (account.id == page) {
