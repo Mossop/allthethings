@@ -54,10 +54,6 @@ export class Account extends BaseAccount<GoogleAccountEntity> {
     return this.entity.email;
   }
 
-  public get avatar(): string | null {
-    return this.entity.avatar;
-  }
-
   public get loginUrl(): string {
     return this.authClient.generateAuthUrl();
   }
@@ -65,8 +61,8 @@ export class Account extends BaseAccount<GoogleAccountEntity> {
   public async state(): Promise<GoogleAccountState> {
     return {
       id: this.id,
-      email: this.email,
-      avatar: this.avatar,
+      email: this.entity.email,
+      avatar: this.entity.avatar,
       loginUrl: this.loginUrl,
       mailSearches: await map(
         this.mailSearches(),
@@ -92,7 +88,7 @@ export class Account extends BaseAccount<GoogleAccountEntity> {
 
   public buildURL(target: URL): URL {
     let url = new URL("https://accounts.google.com/AccountChooser");
-    url.searchParams.set("Email", this.email);
+    url.searchParams.set("Email", this.entity.email);
     url.searchParams.set("continue", target.toString());
     return url;
   }
@@ -248,10 +244,6 @@ export class MailSearch extends BaseList<
     return this.entity.name;
   }
 
-  public get query(): string {
-    return this.entity.query;
-  }
-
   public override get dueOffset(): DateTimeOffset | null {
     return this.entity.dueOffset
       ? offsetFromJson(JSON.parse(this.entity.dueOffset))
@@ -267,7 +259,7 @@ export class MailSearch extends BaseList<
       id: this.id,
       url: await this.url(),
       name: this.name,
-      query: this.query,
+      query: this.entity.query,
       dueOffset: this.dueOffset ? encodeRelativeDateTime(this.dueOffset) : null,
     };
   }
@@ -276,7 +268,7 @@ export class MailSearch extends BaseList<
     let account = await this.account();
 
     let url = new URL("https://mail.google.com/mail/");
-    url.hash = `search/${this.query}`;
+    url.hash = `search/${this.entity.query}`;
     return account.buildURL(url).toString();
   }
 
@@ -286,7 +278,7 @@ export class MailSearch extends BaseList<
     let account = await this.account();
 
     if (!threadList) {
-      threadList = await account.authClient.listThreads(this.query);
+      threadList = await account.authClient.listThreads(this.entity.query);
     }
 
     let instances: Thread[] = [];

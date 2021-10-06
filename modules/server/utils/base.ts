@@ -5,30 +5,26 @@ import type { Service, ServiceTransaction, ServiceItem } from "./services";
 import type { IdentifiedEntity, StoreBuilder } from "./store";
 import { IdentifiedEntityImpl } from "./store";
 
-interface ItemProvider<Tx extends ServiceTransaction = ServiceTransaction> {
-  store: StoreBuilder<Tx, any, BaseItem<any, Tx>>;
+interface ItemProvider {
+  store: StoreBuilder<ServiceTransaction, any, BaseItem<any>>;
 
   createItemFromURL(
-    tx: Tx,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
   ): Promise<ServiceItem | null>;
 }
 
-interface ListProvider<Tx extends ServiceTransaction = ServiceTransaction> {
-  store: StoreBuilder<Tx, any, BaseList<any, any, Tx>>;
+interface ListProvider {
+  store: StoreBuilder<ServiceTransaction, any, BaseList<any, any>>;
 }
 
-export abstract class BaseService<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> implements Service<Tx>
-{
-  protected abstract readonly itemProviders: ItemProvider<Tx>[];
-  protected abstract readonly listProviders: ListProvider<Tx>[];
-  public abstract buildTransaction(tx: ServiceTransaction): Awaitable<Tx>;
+export abstract class BaseService implements Service {
+  protected abstract readonly itemProviders: ItemProvider[];
+  protected abstract readonly listProviders: ListProvider[];
 
-  protected async update(tx: Tx): Promise<void> {
+  protected async update(tx: ServiceTransaction): Promise<void> {
     let seenIds = new Set<string>();
 
     for (let provider of this.listProviders) {
@@ -59,14 +55,17 @@ export abstract class BaseService<
     }
   }
 
-  public async deleteItem(tx: Tx, id: string): Promise<void> {
+  public async deleteItem(tx: ServiceTransaction, id: string): Promise<void> {
     for (let provider of this.itemProviders) {
       let item = await provider.store(tx).get(id);
       await item.delete();
     }
   }
 
-  public async getServiceItem(tx: Tx, id: string): Promise<ServiceItem> {
+  public async getServiceItem(
+    tx: ServiceTransaction,
+    id: string,
+  ): Promise<ServiceItem> {
     for (let provider of this.itemProviders) {
       let item = await provider.store(tx).findOne({ id });
       if (item) {
@@ -78,7 +77,7 @@ export abstract class BaseService<
   }
 
   public async createItemFromURL(
-    tx: Tx,
+    tx: ServiceTransaction,
     userId: string,
     url: URL,
     isTask: boolean,
@@ -96,13 +95,12 @@ export abstract class BaseService<
 
 export abstract class BaseAccount<
   Entity extends IdentifiedEntity,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends IdentifiedEntityImpl<Entity, Tx> {
-  public async lists(): Promise<BaseList<any, any, Tx>[]> {
+> extends IdentifiedEntityImpl<Entity, ServiceTransaction> {
+  public async lists(): Promise<BaseList<any, any>[]> {
     return [];
   }
 
-  public abstract items(): Promise<BaseItem<any, Tx>[]>;
+  public abstract items(): Promise<BaseItem<any>[]>;
 
   public override async delete(): Promise<void> {
     let seenIds = new Set<string>();
@@ -129,8 +127,7 @@ export abstract class BaseAccount<
 export abstract class BaseList<
   Entity extends IdentifiedEntity,
   SR,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends IdentifiedEntityImpl<Entity, Tx> {
+> extends IdentifiedEntityImpl<Entity, ServiceTransaction> {
   protected abstract listItems(results?: SR): Promise<ServiceItem[]>;
 
   public abstract get name(): string;
@@ -163,8 +160,7 @@ export abstract class BaseList<
 
 export abstract class BaseItem<
   Entity extends IdentifiedEntity,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends IdentifiedEntityImpl<Entity, Tx> {
+> extends IdentifiedEntityImpl<Entity, ServiceTransaction> {
   public abstract fields(): Awaitable<unknown>;
 
   public async url(): Promise<string | null | undefined> {

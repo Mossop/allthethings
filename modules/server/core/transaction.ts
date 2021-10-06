@@ -4,7 +4,7 @@ import { DateTime } from "luxon";
 
 import type { Database, QueryInstance } from "../../db";
 import type { DescriptorsFor, Logger } from "../../utils";
-import { memoized, waitFor } from "../../utils";
+import { memoized } from "../../utils";
 import { TaskController } from "../utils";
 import type {
   Service,
@@ -48,10 +48,7 @@ type ServiceTransactionProps = Omit<
 >;
 
 export const buildServiceTransaction = memoized(
-  <Tx extends ServiceTransaction>(
-    service: Service<Tx>,
-    tx: Transaction,
-  ): Promise<Tx> => {
+  (service: Service, tx: Transaction): ServiceTransaction => {
     let serviceOwner = ServiceOwner.getOwner(service);
 
     let descriptors: DescriptorsFor<ServiceTransactionProps> = {
@@ -245,11 +242,7 @@ export const buildServiceTransaction = memoized(
       },
     };
 
-    let serviceTransaction = Object.create(
-      tx,
-      descriptors,
-    ) as ServiceTransaction;
-    return waitFor(service.buildTransaction(serviceTransaction));
+    return Object.create(tx, descriptors) as ServiceTransaction;
   },
 );
 

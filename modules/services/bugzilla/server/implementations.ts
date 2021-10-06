@@ -62,12 +62,24 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
     return Search.store(this.tx).find({ accountId: this.id });
   }
 
+  public get userId(): string {
+    return this.entity.userId;
+  }
+
+  public get icon(): string | null {
+    return this.entity.icon;
+  }
+
+  public get url(): string {
+    return this.entity.url;
+  }
+
   public async state(): Promise<BugzillaAccountState> {
     return {
-      id: this.id,
-      name: this.name,
-      url: this.url,
-      icon: this.icon,
+      id: this.entity.id,
+      name: this.entity.name,
+      url: this.entity.url,
+      icon: this.entity.icon,
       searches: await map(
         this.searches(),
         (search: Search): Promise<BugzillaSearchState> => search.state(),
@@ -86,7 +98,7 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
     }
 
     let queryUrl = new URL(query);
-    let ourUrl = new URL(this.url);
+    let ourUrl = new URL(this.entity.url);
 
     if (queryUrl.origin != ourUrl.origin) {
       throw new Error("Query is for a different bugzilla installation.");
@@ -135,29 +147,8 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
 
     return this.api;
   }
-
-  public get name(): string {
-    return this.entity.name;
-  }
-
-  public get icon(): string | null {
-    return this.entity.icon;
-  }
-
-  public get url(): string {
-    return this.entity.url;
-  }
-
-  public get userId(): string {
-    return this.entity.userId;
-  }
-
-  public get username(): string | null {
-    return this.entity.username;
-  }
-
   public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
-    let baseUrl = new URL("show_bug.cgi", this.url);
+    let baseUrl = new URL("show_bug.cgi", this.entity.url);
     if (baseUrl.origin != url.origin || baseUrl.pathname != url.pathname) {
       return null;
     }
@@ -269,20 +260,12 @@ export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
     return this.entity.name;
   }
 
-  public get type(): SearchType {
-    return this.entity.type;
-  }
-
-  public get query(): string {
-    return this.entity.query;
-  }
-
   public async state(): Promise<BugzillaSearchState> {
     return {
-      id: this.id,
-      name: this.name,
-      query: this.query,
-      type: this.type,
+      id: this.entity.id,
+      name: this.entity.name,
+      query: this.entity.query,
+      type: this.entity.type,
       url: await this.url(),
       dueOffset: this.entity.dueOffset,
     };
@@ -295,10 +278,10 @@ export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
   }
 
   public override async url(): Promise<string> {
-    let search = this.query;
-    if (this.type == SearchType.Quicksearch) {
+    let search = this.entity.query;
+    if (this.entity.type == SearchType.Quicksearch) {
       let params = new URLSearchParams();
-      params.set("quicksearch", this.query);
+      params.set("quicksearch", this.entity.query);
       search = params.toString();
     }
 
@@ -415,10 +398,6 @@ export class Bug
     return null;
   }
 
-  public get bugId(): number {
-    return this.entity.bugId;
-  }
-
   public override async url(): Promise<string> {
     let account = await this.owner();
     let baseUrl = new URL(account.url);
@@ -436,7 +415,7 @@ export class Bug
 
     if (!record) {
       let bugs = await this.tx.segment.inSegment("Bug API update", async () =>
-        account.getAPI().getBugs([this.bugId]),
+        account.getAPI().getBugs([this.entity.bugId]),
       );
       if (!bugs.length) {
         throw new Error("Unknown bug.");

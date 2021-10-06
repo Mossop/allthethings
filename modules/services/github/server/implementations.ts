@@ -70,10 +70,6 @@ export class Account extends BaseAccount<GithubAccountEntity> {
     return this.entity.user;
   }
 
-  public get avatar(): string {
-    return this.entity.avatar;
-  }
-
   public get loginUrl(): string {
     return this.api.generateLoginUrl();
   }
@@ -87,8 +83,8 @@ export class Account extends BaseAccount<GithubAccountEntity> {
   public async state(): Promise<GithubAccountState> {
     return {
       id: this.id,
-      user: this.user,
-      avatar: this.avatar,
+      user: this.entity.user,
+      avatar: this.entity.avatar,
       loginUrl: this.loginUrl,
       searches: await map(
         this.searches(),
@@ -269,10 +265,6 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
     return this.entity.name;
   }
 
-  public get query(): string {
-    return this.entity.query;
-  }
-
   public override get dueOffset(): DateTimeOffset | null {
     return this.entity.dueOffset
       ? offsetFromJson(JSON.parse(this.entity.dueOffset))
@@ -281,7 +273,7 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
 
   public override async url(): Promise<string> {
     let url = new URL("https://github.com/issues");
-    url.searchParams.set("q", this.query);
+    url.searchParams.set("q", this.entity.query);
     return url.toString();
   }
 
@@ -289,7 +281,7 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
     return {
       id: this.id,
       name: this.name,
-      query: this.query,
+      query: this.entity.query,
       dueOffset: this.entity.dueOffset,
       url: await this.url(),
     };
@@ -301,7 +293,7 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
     let account = await this.account();
 
     if (!issueList) {
-      issueList = await account.api.search(this.query);
+      issueList = await account.api.search(this.entity.query);
     }
 
     let instances: IssueLike[] = [];

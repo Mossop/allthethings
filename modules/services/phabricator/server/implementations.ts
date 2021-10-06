@@ -68,7 +68,7 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
   }
 
   public get conduit(): Conduit {
-    return conduit(this.url, this.apiKey);
+    return conduit(this.url, this.entity.apiKey);
   }
 
   public get phid(): string {
@@ -91,14 +91,6 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
     return this.entity.userId;
   }
 
-  public get email(): string {
-    return this.entity.email;
-  }
-
-  public get apiKey(): string {
-    return this.entity.apiKey;
-  }
-
   public async enabledQueries(): Promise<string[]> {
     let queries = await Query.store(this.tx).find({
       accountId: this.id,
@@ -110,10 +102,10 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
   public async state(): Promise<PhabricatorAccountState> {
     return {
       id: this.id,
-      email: this.email,
-      apiKey: this.apiKey,
+      email: this.entity.email,
+      apiKey: this.entity.apiKey,
       icon: this.icon,
-      url: this.url,
+      url: this.entity.url,
       enabledQueries: await this.enabledQueries(),
     };
   }

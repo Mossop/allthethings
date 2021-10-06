@@ -38,14 +38,14 @@ export interface ServiceItem<T = unknown> {
   fields: MaybeCallable<Awaitable<T>>;
 }
 
-export interface Server<Tx extends ServiceTransaction = ServiceTransaction> {
+export interface Server {
   readonly rootUrl: URL;
   readonly serviceUrl: URL;
   readonly taskManager: TaskManager;
 
   withTransaction<R>(
     operation: string,
-    task: (tx: Tx) => Promise<R>,
+    task: (tx: ServiceTransaction) => Promise<R>,
   ): Promise<R>;
 }
 
@@ -74,27 +74,21 @@ export type ServiceTransaction = Transaction & {
   settingsPageUrl(page: string): URL;
 };
 
-export type ServiceWebContext<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> = Overwrite<
+export type ServiceWebContext = Overwrite<
   WebContext,
   {
     readonly userId: string;
     readonly rootUrl: URL;
     readonly serviceUrl: URL;
 
-    startTransaction(writable: boolean): Promise<Tx>;
+    startTransaction(writable: boolean): Promise<ServiceTransaction>;
     settingsPageUrl(page: string): URL;
   }
 >;
 
-export type ServiceMiddlewareContext<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> = MiddlewareContext<ServiceWebContext<Tx>>;
+export type ServiceMiddlewareContext = MiddlewareContext<ServiceWebContext>;
 
-export class ServiceController<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> extends RequestController<ServiceWebContext<Tx>> {
+export class ServiceController extends RequestController<ServiceWebContext> {
   public get userId(): string {
     return this.context.userId;
   }
@@ -107,7 +101,7 @@ export class ServiceController<
     return this.context.serviceUrl;
   }
 
-  public startTransaction(writable: boolean): Promise<Tx> {
+  public startTransaction(writable: boolean): Promise<ServiceTransaction> {
     return this.context.startTransaction(writable);
   }
 
@@ -116,24 +110,26 @@ export class ServiceController<
   }
 }
 
-export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
-  readonly buildTransaction: (transaction: ServiceTransaction) => Awaitable<Tx>;
+export interface Service {
   readonly createItemFromURL?: (
-    tx: Tx,
+    tx: ServiceTransaction,
     userId: string,
     targetUrl: URL,
     isTask: boolean,
   ) => Promise<string | null>;
-  readonly getServiceItem: (tx: Tx, id: string) => Awaitable<ServiceItem>;
+  readonly getServiceItem: (
+    tx: ServiceTransaction,
+    id: string,
+  ) => Awaitable<ServiceItem>;
   readonly addWebRoutes?: (router: KoaRouter) => void;
-  readonly listProblems?: (tx: Tx, userId: string | null) => Promise<Problem[]>;
+  readonly listProblems?: (
+    tx: ServiceTransaction,
+    userId: string | null,
+  ) => Promise<Problem[]>;
 }
 
-export interface ServiceExport<
-  C = any,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> {
+export interface ServiceExport<C = any> {
   readonly id: string;
   readonly configDecoder?: JsonDecoder.Decoder<C>;
-  readonly init: (server: Server<Tx>, config: C) => Awaitable<Service<Tx>>;
+  readonly init: (server: Server, config: C) => Awaitable<Service>;
 }

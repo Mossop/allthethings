@@ -40,10 +40,6 @@ class PhabricatorService extends BaseService {
   public addWebRoutes(router: KoaRouter): void {
     RegisterRoutes(router);
   }
-
-  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
-    return tx;
-  }
 }
 
 const serviceExport: ServiceExport<unknown> = {

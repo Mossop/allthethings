@@ -40,24 +40,8 @@ export class Account extends BaseAccount<JiraAccountEntity> {
     return this.entity.userId;
   }
 
-  public get serverName(): string {
-    return this.entity.serverName;
-  }
-
-  public get userName(): string {
-    return this.entity.userName;
-  }
-
   public get url(): string {
     return this.entity.url;
-  }
-
-  public get email(): string {
-    return this.entity.email;
-  }
-
-  public get apiToken(): string {
-    return this.entity.apiToken;
   }
 
   public get searches(): Promise<Search[]> {
@@ -69,11 +53,11 @@ export class Account extends BaseAccount<JiraAccountEntity> {
   public async state(): Promise<JiraAccountState> {
     return {
       id: this.id,
-      apiToken: this.apiToken,
-      email: this.email,
-      userName: this.userName,
-      serverName: this.serverName,
-      url: this.url,
+      apiToken: this.entity.apiToken,
+      email: this.entity.email,
+      userName: this.entity.userName,
+      serverName: this.entity.serverName,
+      url: this.entity.url,
       searches: await map(
         this.searches,
         (search: Search): Promise<JiraSearchState> => search.state(),
@@ -90,8 +74,8 @@ export class Account extends BaseAccount<JiraAccountEntity> {
       host: this.url,
       authentication: {
         basic: {
-          email: this.email,
-          apiToken: this.apiToken,
+          email: this.entity.email,
+          apiToken: this.entity.apiToken,
         },
       },
       telemetry: false,
@@ -106,7 +90,7 @@ export class Account extends BaseAccount<JiraAccountEntity> {
 
     await this.update({
       serverName: serverInfo.serverTitle ?? this.url,
-      userName: userInfo.displayName ?? userInfo.name ?? this.email,
+      userName: userInfo.displayName ?? userInfo.name ?? this.entity.email,
     });
   }
 
@@ -158,10 +142,6 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
     return this.entity.name;
   }
 
-  public get query(): string {
-    return this.entity.query;
-  }
-
   public override get dueOffset(): DateTimeOffset | null {
     return this.entity.dueOffset
       ? offsetFromJson(JSON.parse(this.entity.dueOffset))
@@ -171,7 +151,7 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
   public override async url(): Promise<string> {
     let account = await this.account();
     let url = new URL("/issues/", account.url);
-    url.searchParams.set("jql", this.query);
+    url.searchParams.set("jql", this.entity.query);
 
     return url.toString();
   }
@@ -180,7 +160,7 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
     return {
       id: this.id,
       name: this.name,
-      query: this.query,
+      query: this.entity.query,
       url: await this.url(),
       dueOffset: this.entity.dueOffset,
     };
@@ -190,7 +170,7 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
     let account = await this.account();
 
     if (!issues) {
-      issues = await Search.getIssues(account, this.query);
+      issues = await Search.getIssues(account, this.entity.query);
     }
 
     let instances: Issue[] = [];

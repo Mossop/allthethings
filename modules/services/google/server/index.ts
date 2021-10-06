@@ -107,10 +107,6 @@ export class GoogleService extends BaseService {
     await super.update(tx);
   }
 
-  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
-    return tx;
-  }
-
   public async listProblems(
     tx: ServiceTransaction,
     userId: string | null,

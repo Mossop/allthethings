@@ -107,10 +107,6 @@ export class GithubService extends BaseService {
     RegisterRoutes(router);
   }
 
-  public buildTransaction(tx: ServiceTransaction): ServiceTransaction {
-    return tx;
-  }
-
   public async listProblems(
     tx: ServiceTransaction,
     userId: string | null,

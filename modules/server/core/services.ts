@@ -1,7 +1,7 @@
 import { URL } from "url";
 
 import type { Database } from "../../db";
-import { assert, memoized } from "../../utils";
+import { assert } from "../../utils";
 import type {
   Problem,
   Segment,
@@ -16,18 +16,13 @@ import type { ServerConfig } from "./config";
 import TaskManager from "./tasks";
 import { buildServiceTransaction, withTransaction } from "./transaction";
 
-export class ServiceOwner<
-  C = unknown,
-  Tx extends ServiceTransaction = ServiceTransaction,
-> implements Server<Tx>
-{
-  private servicePromise: Promise<Service<Tx>> | null;
+export class ServiceOwner<C = any> implements Server {
+  private servicePromise: Promise<Service> | null;
   public readonly taskManager = TaskManager;
 
-  private static ownerCache: Map<Service<any>, ServiceOwner<any, any>> =
-    new Map();
+  private static ownerCache: Map<Service, ServiceOwner> = new Map();
 
-  public static getOwner(service: Service<any>): ServiceOwner<any, any> {
+  public static getOwner(service: Service): ServiceOwner {
     let owner = ServiceOwner.ownerCache.get(service);
     if (!owner) {
       throw new Error("Unknown service.");
@@ -38,7 +33,7 @@ export class ServiceOwner<
   public constructor(
     private readonly db: Database,
     private readonly serverConfig: ServerConfig,
-    public readonly serviceExport: ServiceExport<C, Tx>,
+    public readonly serviceExport: ServiceExport<C>,
   ) {
     this.servicePromise = null;
   }
@@ -51,7 +46,7 @@ export class ServiceOwner<
     return new URL(`service/${this.id}/`, this.rootUrl);
   }
 
-  public initService(): Promise<Service<Tx>> {
+  public initService(): Promise<Service> {
     return inSegment(
       "initService",
       { service: this.serviceExport.id },
@@ -74,7 +69,7 @@ export class ServiceOwner<
     );
   }
 
-  public get service(): Promise<Service<Tx>> {
+  public get service(): Promise<Service> {
     if (!this.servicePromise) {
       this.servicePromise = this.initService();
     }
@@ -84,7 +79,7 @@ export class ServiceOwner<
 
   public async withTransaction<R>(
     operation: string,
-    task: (tx: Tx) => Promise<R>,
+    task: (tx: ServiceTransaction) => Promise<R>,
   ): Promise<R> {
     let service = await this.service;
 
@@ -101,7 +96,7 @@ export class ServiceOwner<
             segment,
             "DB transaction",
             async (tx: Transaction): Promise<R> => {
-              return task(await buildServiceTransaction(service, tx));
+              return task(buildServiceTransaction(service, tx));
             },
           );
 
@@ -120,7 +115,7 @@ export class ServiceOwner<
     return this.serviceExport.id;
   }
 
-  public async init(): Promise<Service<Tx>> {
+  public async init(): Promise<Service> {
     let service = await this.service;
     ServiceOwner.ownerCache.set(service, this);
     return service;
@@ -128,15 +123,15 @@ export class ServiceOwner<
 }
 
 class ServiceManagerImpl {
-  private readonly serviceExports: Map<string, ServiceExport<unknown, any>> =
+  private readonly serviceExports: Map<string, ServiceExport<unknown>> =
     new Map();
   private readonly serviceOwners = new Map<
-    ServiceExport<unknown, any>,
-    ServiceOwner<unknown, any>
+    ServiceExport<unknown>,
+    ServiceOwner
   >();
   private readonly serviceCache = new Map<string, Service>();
 
-  public addService(serviceExport: ServiceExport<any, any>): void {
+  public addService(serviceExport: ServiceExport): void {
     this.serviceExports.set(serviceExport.id, serviceExport);
   }
 
@@ -159,7 +154,7 @@ class ServiceManagerImpl {
 
     for (let service of this.services) {
       if (service.listProblems) {
-        let serviceTransaction = await buildServiceTransaction(service, tx);
+        let serviceTransaction = buildServiceTransaction(service, tx);
         problems = problems.concat(
           await service.listProblems(serviceTransaction, userId),
         );
@@ -190,7 +185,7 @@ class ServiceManagerImpl {
   ): Promise<string | null> {
     for (let service of this.services) {
       if (service.createItemFromURL) {
-        let serviceTransaction = await buildServiceTransaction(service, tx);
+        let serviceTransaction = buildServiceTransaction(service, tx);
         try {
           let id = await service.createItemFromURL(
             serviceTransaction,
