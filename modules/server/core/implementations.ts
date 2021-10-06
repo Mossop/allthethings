@@ -15,7 +15,7 @@ import {
 } from "../../db";
 import type { Awaitable, RelativeDateTime } from "../../utils";
 import { addOffset, call, memoized, waitFor } from "../../utils";
-import type { ItemList, ResolverImpl, Transaction, Store } from "../utils";
+import type { ItemList, Transaction, Store } from "../utils";
 import {
   TaskController,
   id,
@@ -42,7 +42,6 @@ import type {
   UserEntity,
 } from "./entities";
 import { ItemType } from "./entities";
-import type { UserResolvers } from "./schema";
 import { ServiceManager } from "./services";
 import { buildServiceTransaction } from "./transaction";
 
@@ -139,10 +138,7 @@ export type UserState = Omit<UserEntity, "password"> & {
   __typename: "User";
 };
 
-export class User
-  extends IdentifiedEntityImpl<UserEntity>
-  implements ResolverImpl<UserResolvers>
-{
+export class User extends IdentifiedEntityImpl<UserEntity> {
   public static readonly store = storeBuilder(User, "core.User");
 
   public static async create(

@@ -13,7 +13,6 @@ import {
   SettingsPage,
   Styles,
   Icons,
-  useResetStore,
   SettingsListSection,
   SubHeading,
   ReactMemo,
@@ -78,7 +77,6 @@ export default ReactMemo(function AccountSettings({
   account,
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
-  let resetStore = useResetStore();
 
   let [queryList] = useListPhabricatorQueriesQuery();
   let queries = queryList ?? [];
@@ -89,8 +87,7 @@ export default ReactMemo(function AccountSettings({
 
   let deleteAccount = useCallback(async () => {
     await deleteAccountMutation({ id: account.id });
-    await resetStore();
-  }, [account.id, deleteAccountMutation, resetStore]);
+  }, [account.id, deleteAccountMutation]);
 
   let onChangeQuery = useMemo(() => {
     return (query: string, enabled: boolean): void => {

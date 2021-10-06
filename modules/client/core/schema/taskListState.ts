@@ -1,9 +1,9 @@
 import type { DateTime } from "luxon";
 
-import type { GraphQLType } from ".";
 import type { Overwrite } from "../../../utils";
 import { decodeDateTime } from "../../../utils";
 import type {
+  ApiType,
   FileDetailState,
   ItemState,
   LinkDetailState,
@@ -97,11 +97,11 @@ export type WithTask<T extends Item> = Overwrite<
   }
 >;
 
-export function isSection(val: GraphQLType): val is Section {
+export function isSection(val: ApiType): val is Section {
   return val.__typename == "Section";
 }
 
-export function isItem(val: GraphQLType): val is Item {
+export function isItem(val: ApiType): val is Item {
   return val.__typename == "Item";
 }
 

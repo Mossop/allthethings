@@ -9,6 +9,10 @@ import { log } from "./logging";
 import type { Token } from "./refresh";
 import { addRefreshable, refresh, removeRefreshable } from "./refresh";
 
+export interface ApiType {
+  __typename: string;
+}
+
 type VoidApiMethod<D> = (params?: RequestParams) => Promise<HttpResponse<D>>;
 type ApiMethod<A, D> = (
   arg: A,
@@ -234,11 +238,8 @@ export class Query<D = unknown> extends TypedEmitter<QueryEvents<D>> {
     let pollers = this.polls.splice(0, this.polls.length);
 
     try {
-      let credentials: RequestCredentials = "include";
-
       let response = await this.method({
         ...this.options,
-        credentials,
         cancelToken: this.cancelToken,
       });
 
@@ -387,11 +388,9 @@ export function mutationHook<A, D>(
       async (arg: A): Promise<D> => {
         setState({ loading: true, error: undefined });
 
-        let credentials: RequestCredentials = "include";
         let response = await method(arg, {
           ...options,
           cancelToken,
-          credentials,
         });
         if (response.error) {
           setState({ loading: false, error: response.error as Error });
@@ -416,7 +415,7 @@ export function mutationHook<A, D>(
   };
 }
 
-let url = new URL(document.URL);
-let port = url.port ? parseInt(url.port) : 80;
-let baseUrl = `http://${url.hostname}:${port + 10}`;
-export const api = new Api({ baseUrl });
+let baseUrl = new URL("/", document.URL).toString();
+export const api = new Api({
+  baseUrl: baseUrl.substring(0, baseUrl.length - 1),
+});

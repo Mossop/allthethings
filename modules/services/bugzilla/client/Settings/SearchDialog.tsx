@@ -12,13 +12,12 @@ import {
   TextFieldInput,
   Dialog,
   useBoolState,
-  useResetStore,
   FormState,
   DateTimeOffsetDialog,
   Icons,
   Styles,
 } from "../../../../client/utils";
-import type { DateTimeOffset } from "../../../../schema";
+import type { DateTimeOffset } from "../../../../utils";
 import {
   addOffset,
   encodeDateTimeOffset,
@@ -77,7 +76,6 @@ export default function SearchDialog({
   });
   let [isOpen, , close] = useBoolState(true);
   let [isDueDialogOpen, openDueDialog, closeDueDialog] = useBoolState();
-  let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
     useCreateBugzillaSearchMutation();
@@ -104,9 +102,8 @@ export default function SearchDialog({
       });
     }
 
-    await resetStore();
     close();
-  }, [search, resetStore, close, editSearch, state, createSearch, account.id]);
+  }, [search, close, editSearch, state, createSearch, account.id]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

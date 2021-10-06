@@ -1,7 +1,6 @@
 import type { URL } from "url";
 
 import type * as KoaRouter from "@koa/router";
-import type Koa from "koa";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
@@ -75,23 +74,7 @@ export type ServiceTransaction = Transaction & {
   settingsPageUrl(page: string): URL;
 };
 
-export interface ServiceWebContextExtras<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> {
-  readonly userId: string;
-  readonly transaction: Tx;
-}
-
 export type ServiceWebContext<
-  Tx extends ServiceTransaction = ServiceTransaction,
-> = ServiceWebContextExtras<Tx> & Koa.DefaultContext & Koa.ExtendableContext;
-
-export type ServiceWebMiddleware<Tx extends ServiceTransaction> = (
-  ctx: Koa.ParameterizedContext<unknown, ServiceWebContext<Tx>>,
-  next: Koa.Next,
-) => Promise<any>;
-
-export type ServiceWebContext2<
   Tx extends ServiceTransaction = ServiceTransaction,
 > = Overwrite<
   WebContext,
@@ -107,11 +90,11 @@ export type ServiceWebContext2<
 
 export type ServiceMiddlewareContext<
   Tx extends ServiceTransaction = ServiceTransaction,
-> = MiddlewareContext<ServiceWebContext2<Tx>>;
+> = MiddlewareContext<ServiceWebContext<Tx>>;
 
 export class ServiceController<
   Tx extends ServiceTransaction = ServiceTransaction,
-> extends RequestController<ServiceWebContext2<Tx>> {
+> extends RequestController<ServiceWebContext<Tx>> {
   public get userId(): string {
     return this.context.userId;
   }
@@ -135,7 +118,6 @@ export class ServiceController<
 
 export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
   readonly buildTransaction: (transaction: ServiceTransaction) => Awaitable<Tx>;
-  readonly resolvers: Record<string, unknown>;
   readonly createItemFromURL?: (
     tx: Tx,
     userId: string,
@@ -143,7 +125,6 @@ export interface Service<Tx extends ServiceTransaction = ServiceTransaction> {
     isTask: boolean,
   ) => Promise<string | null>;
   readonly getServiceItem: (tx: Tx, id: string) => Awaitable<ServiceItem>;
-  readonly webMiddleware?: ServiceWebMiddleware<Tx>;
   readonly addWebRoutes?: (router: KoaRouter) => void;
   readonly listProblems?: (tx: Tx, userId: string | null) => Promise<Problem[]>;
 }

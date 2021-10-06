@@ -26,8 +26,6 @@ export class ServiceOwner<
 
   private static ownerCache: Map<Service<any>, ServiceOwner<any, any>> =
     new Map();
-  private static resolverMap: WeakMap<Record<string, unknown>, ServiceOwner> =
-    new WeakMap();
 
   public static getOwner(service: Service<any>): ServiceOwner<any, any> {
     let owner = ServiceOwner.ownerCache.get(service);
@@ -35,12 +33,6 @@ export class ServiceOwner<
       throw new Error("Unknown service.");
     }
     return owner;
-  }
-
-  public static getServiceOwnerForResolver(
-    resolver: Record<string, unknown>,
-  ): ServiceOwner | undefined {
-    return ServiceOwner.resolverMap.get(resolver);
   }
 
   public constructor(
@@ -124,15 +116,6 @@ export class ServiceOwner<
     );
   }
 
-  public readonly resolvers = memoized(async function resolvers(
-    this: ServiceOwner,
-  ): Promise<Record<string, unknown>> {
-    let service = await this.service;
-    let resolvers = service.resolvers;
-    ServiceOwner.resolverMap.set(resolvers, this);
-    return resolvers;
-  });
-
   public get id(): string {
     return this.serviceExport.id;
   }
@@ -184,16 +167,6 @@ class ServiceManagerImpl {
     }
 
     return problems;
-  }
-
-  public getServiceResolvers(): Promise<Record<string, unknown>[]> {
-    return Promise.all(
-      Array.from(
-        this.serviceOwners.values(),
-        (owner: ServiceOwner): Promise<Record<string, unknown>> =>
-          owner.resolvers(),
-      ),
-    );
   }
 
   public getServiceId(service: Service): string {

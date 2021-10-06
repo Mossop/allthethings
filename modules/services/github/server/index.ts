@@ -1,6 +1,5 @@
 import type * as KoaRouter from "@koa/router";
 import type Koa from "koa";
-import koaMount from "koa-mount";
 import { JsonDecoder } from "ts.data.json";
 
 import { BaseService } from "../../../server/utils";
@@ -9,8 +8,7 @@ import type {
   Server,
   Problem,
   ServiceTransaction,
-  ServiceWebMiddleware,
-  ServiceWebContext,
+  ServiceMiddlewareContext,
 } from "../../../server/utils";
 import { Account, IssueLike, Search } from "./implementations";
 import { RegisterRoutes } from "./routes";
@@ -28,8 +26,6 @@ const INITIAL_DELAY = 1000;
 const UPDATE_DELAY = 60000;
 
 export class GithubService extends BaseService {
-  public readonly webMiddleware: ServiceWebMiddleware<ServiceTransaction>;
-
   private static _service: GithubService | null = null;
 
   protected readonly listProviders = [Search];
@@ -67,26 +63,6 @@ export class GithubService extends BaseService {
     GithubService._service = this;
     this.problems = new Map();
 
-    let oauthMiddleware: ServiceWebMiddleware<ServiceTransaction> = async (
-      ctx: ServiceWebContext,
-      next: Koa.Next,
-    ): Promise<any> => {
-      let code = first(ctx.query.code);
-      let userId = first(ctx.query.state);
-
-      if (!code || userId != ctx.userId) {
-        ctx.transaction.segment.error("Bad oauth", { code, userId });
-        return next();
-      }
-
-      ctx.set("Cache-Control", "no-cache");
-
-      let account = await Account.create(ctx.transaction, ctx.userId, code);
-      ctx.redirect(ctx.transaction.settingsPageUrl(account.id).toString());
-    };
-
-    this.webMiddleware = koaMount("/oauth", oauthMiddleware);
-
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
       await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
         this.update(tx),
@@ -109,6 +85,25 @@ export class GithubService extends BaseService {
   }
 
   public addWebRoutes(router: KoaRouter): void {
+    router.get(
+      "/oauth",
+      async (ctx: ServiceMiddlewareContext, next: Koa.Next) => {
+        let code = first(ctx.query.code);
+        let userId = first(ctx.query.state);
+
+        if (!code || userId != ctx.userId) {
+          ctx.segment.error("Bad oauth", { code, userId });
+          return next();
+        }
+
+        ctx.set("Cache-Control", "no-cache");
+
+        let tx = await ctx.startTransaction(true);
+        let account = await Account.create(tx, ctx.userId, code);
+        ctx.redirect(ctx.settingsPageUrl(account.id).toString());
+      },
+    );
+
     RegisterRoutes(router);
   }
 

@@ -2,7 +2,6 @@ export * from "./base";
 export * from "./controllers";
 export * from "./logging";
 export * from "./page";
-export * from "./schema";
 export * from "./segment";
 export * from "./services";
 export * from "./store";

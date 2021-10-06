@@ -7,7 +7,6 @@ import {
   Dialog,
   FormState,
   useBoolState,
-  useResetStore,
 } from "../../utils";
 import { useLogin } from "../utils/api";
 
@@ -23,34 +22,13 @@ export default ReactMemo(function LoginDialog({
     password: "",
   });
 
-  let [login] = useLogin();
-  let [loading, setLoading] = useState(false);
-  let [error, setError] = useState<Error | null>(null);
+  let [login, { loading, error }] = useLogin();
 
   let [isOpen, , close] = useBoolState(true);
 
-  let resetStore = useResetStore();
-
   let submit = useCallback(async () => {
-    setLoading(true);
-    let data = new FormData();
-    data.set("email", state.email);
-    data.set("password", state.password);
-    let url = new URL("/api/login", document.URL);
-    let response = await fetch(url.toString(), {
-      method: "POST",
-      body: data,
-    });
-
-    if (!response.ok) {
-      setError(new Error(`Login failed: ${response.statusText}`));
-      return;
-    }
-
-    await resetStore();
-
     await login(state);
-  }, [state, resetStore, login]);
+  }, [state, login]);
 
   return (
     <Dialog

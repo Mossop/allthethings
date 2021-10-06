@@ -22,5 +22,3 @@ export * as Styles from "./styles";
 export * from "./Text";
 export * from "./types";
 export * from "./url";
-
-export * as Apollo from "@apollo/client";

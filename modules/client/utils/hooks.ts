@@ -1,4 +1,3 @@
-import { useApolloClient } from "@apollo/client";
 import { useCallback, useMemo, useState } from "react";
 
 export function useBoolState(
@@ -11,13 +10,6 @@ export function useBoolState(
     useCallback(() => setState(false), []),
     useCallback(() => setState((current: boolean): boolean => !current), []),
   ];
-}
-
-export function useResetStore(): () => Promise<void> {
-  let client = useApolloClient();
-  return useCallback(async () => {
-    await client.resetStore();
-  }, [client]);
 }
 
 export function useBoundCallback<R, A extends unknown[], B extends unknown[]>(

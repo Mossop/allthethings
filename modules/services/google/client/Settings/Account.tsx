@@ -12,7 +12,6 @@ import type {
   ReactResult,
 } from "../../../../client/utils";
 import {
-  useResetStore,
   Icons,
   Heading,
   ImageIcon,
@@ -23,7 +22,6 @@ import {
   SubHeading,
   useBoolState,
 } from "../../../../client/utils";
-import type { DateTimeOffset } from "../../../../utils";
 import { addOffset, decodeDateTimeOffset } from "../../../../utils";
 import { useDeleteGoogleMailSearchMutation } from "../api";
 import Google from "../logos/Google";
@@ -69,19 +67,16 @@ function SearchSettingsItem({
   let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
     useBoolState();
 
-  let resetStore = useResetStore();
-
   let [deleteSearchMutation] = useDeleteGoogleMailSearchMutation();
 
   let deleteSearch = useCallback(async () => {
     await deleteSearchMutation({ id: search.id });
-    await resetStore();
-  }, [deleteSearchMutation, search.id, resetStore]);
+  }, [deleteSearchMutation, search.id]);
 
   let dueOffset = useMemo(() => {
     if (search.dueOffset) {
       let dueOffset = decodeDateTimeOffset(search.dueOffset);
-      let result = addOffset(DateTime.now(), dueOffset as DateTimeOffset);
+      let result = addOffset(DateTime.now(), dueOffset);
       return `Due ${result.toRelative()}`;
     }
 

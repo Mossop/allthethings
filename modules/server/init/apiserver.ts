@@ -223,32 +223,6 @@ export async function createApiServer(
     ),
   );
 
-  app.use(async (ctx: WebServerContext, next: Koa.Next): Promise<void> => {
-    if (ctx.get("Origin")) {
-      ctx.set("Access-Control-Allow-Origin", ctx.get("Origin"));
-      ctx.set("Access-Control-Allow-Credentials", "true");
-    }
-
-    if (ctx.method == "OPTIONS") {
-      ctx.status = 204;
-      if (ctx.get("Access-Control-Request-Method")) {
-        ctx.set(
-          "Access-Control-Allow-Methods",
-          ctx.get("Access-Control-Request-Method"),
-        );
-      }
-
-      if (ctx.get("Access-Control-Request-Headers")) {
-        ctx.set(
-          "Access-Control-Allow-Headers",
-          ctx.get("Access-Control-Request-Headers"),
-        );
-      }
-    } else {
-      await next();
-    }
-  });
-
   app.use(transactionMiddleware);
 
   app.use(
@@ -330,6 +304,7 @@ export async function createApiServer(
         });
 
         // @ts-ignore
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return routes(ctx, next);
       });
 
@@ -352,7 +327,7 @@ export async function createApiServer(
     ctx.body = html;
   });
 
-  app.listen(config.port + 10);
+  app.listen(config.port);
 
   return app;
 }

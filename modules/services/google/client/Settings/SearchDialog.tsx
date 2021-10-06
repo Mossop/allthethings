@@ -12,7 +12,6 @@ import {
   TextFieldInput,
   Dialog,
   useBoolState,
-  useResetStore,
   FormState,
   Icons,
   DateTimeOffsetDialog,
@@ -79,7 +78,6 @@ export default function SearchDialog({
   });
   let [isOpen, , close] = useBoolState(true);
   let [isDueDialogOpen, openDueDialog, closeDueDialog] = useBoolState();
-  let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
     useCreateGoogleMailSearchMutation();
@@ -105,9 +103,8 @@ export default function SearchDialog({
       });
     }
 
-    await resetStore();
     close();
-  }, [state, search, resetStore, close, editSearch, createSearch, account.id]);
+  }, [state, search, close, editSearch, createSearch, account.id]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

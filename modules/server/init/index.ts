@@ -7,7 +7,6 @@ import { ServiceManager } from "../core/services";
 import type { Transaction, Segment } from "../utils";
 import { inSegment } from "../utils";
 import { createApiServer } from "./apiserver";
-import { createGqlServer } from "./gqlserver";
 import { Migration0001KnexPrep } from "./migrations/0001-KnexPrep";
 import { Migration0002Core } from "./migrations/0002-Core";
 import { Migration0003Bugzilla } from "./migrations/0003-Bugzilla";
@@ -16,7 +15,6 @@ import { Migration0005Google } from "./migrations/0005-Google";
 import { Migration0006Jira } from "./migrations/0006-Jira";
 import { Migration0007Phabricator } from "./migrations/0007-Phabricator";
 import { Migration0008Knex } from "./migrations/0008-Knex";
-import { createWebServer } from "./webserver";
 
 install();
 
@@ -92,8 +90,6 @@ async function init(): Promise<void> {
 
       await ServiceManager.initServices(connection, config);
 
-      let gqlServer = await createGqlServer();
-      await createWebServer(config, connection, gqlServer);
       await createApiServer(config, connection);
       segment.info("Startup complete");
     } catch (e) {

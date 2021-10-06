@@ -9,12 +9,6 @@ export type Awaitable<T> = T | Promise<T>;
 export type MakeRequired<T, F extends keyof T> = Omit<T, F> &
   Required<Pick<T, F>>;
 
-export type GraphQLType<T> = Omit<T, "__typename">;
-
-export type GraphQLResolver<T> = {
-  readonly [K in keyof GraphQLType<T>]: MaybeCallable<Awaitable<T[K]>>;
-};
-
 export type ArrayContents<T> = T extends readonly (infer R)[] ? R : never;
 
 export type DescriptorsFor<C> = {

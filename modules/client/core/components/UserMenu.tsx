@@ -14,7 +14,6 @@ import {
   Menu,
   useMenuState,
   bindTrigger,
-  useResetStore,
 } from "../../utils";
 import type { ReactResult } from "../../utils";
 import ChangePasswordDialog from "../dialogs/ChangePassword";
@@ -46,18 +45,11 @@ export default ReactMemo(function UserMenu(): ReactResult {
   let userMenuState = useMenuState("user-menu");
   let [changePasswordOpen, showChangePassword, closeChangePassword] =
     useBoolState();
-  let resetStore = useResetStore();
   let [logout] = useLogout();
 
   let doLogout = useCallback(async (): Promise<void> => {
     await logout();
-
-    let url = new URL("/api/logout", document.URL);
-    await fetch(url.toString(), {
-      method: "POST",
-    });
-    await resetStore();
-  }, [resetStore, logout]);
+  }, [logout]);
 
   let doSettings = useCallback((): void => {
     pushView({

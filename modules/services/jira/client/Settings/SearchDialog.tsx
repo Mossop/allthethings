@@ -12,13 +12,12 @@ import {
   TextFieldInput,
   Dialog,
   useBoolState,
-  useResetStore,
   FormState,
   DateTimeOffsetDialog,
   Icons,
   Styles,
 } from "../../../../client/utils";
-import type { DateTimeOffset } from "../../../../schema";
+import type { DateTimeOffset } from "../../../../utils";
 import {
   addOffset,
   decodeDateTimeOffset,
@@ -74,7 +73,6 @@ export default function SearchDialog({
   });
   let [isOpen, , close] = useBoolState(true);
   let [isDueDialogOpen, openDueDialog, closeDueDialog] = useBoolState();
-  let resetStore = useResetStore();
 
   let [createSearch, { loading: pendingCreate, error: createError }] =
     useCreateJiraSearchMutation();
@@ -101,9 +99,8 @@ export default function SearchDialog({
       });
     }
 
-    await resetStore();
     close();
-  }, [account.id, close, createSearch, editSearch, resetStore, search, state]);
+  }, [account.id, close, createSearch, editSearch, search, state]);
 
   let due = useMemo(() => {
     if (state.dueOffset) {

@@ -1,5 +1,5 @@
 import { createHash } from "crypto";
-import { promises as fs } from "fs";
+import fsSync, { promises as fs } from "fs";
 import path from "path";
 import { URL } from "url";
 
@@ -18,8 +18,6 @@ import { DateTime } from "luxon";
 
 import { ItemHolderBase } from ".";
 import { sql } from "../../db";
-// eslint-disable-next-line import/extensions
-import schema from "../../schema/openapi.json";
 import {
   addOffset,
   decodeDateTime,
@@ -88,6 +86,12 @@ interface LoginParams {
   password: string;
 }
 
+let schema = JSON.parse(
+  fsSync.readFileSync(
+    path.join(__dirname, "..", "..", "..", "modules", "schema", "openapi.json"),
+    { encoding: "utf-8" },
+  ),
+);
 let hasher = createHash("sha256");
 hasher.update(JSON.stringify(schema));
 let schemaVersion = hasher.digest("hex");

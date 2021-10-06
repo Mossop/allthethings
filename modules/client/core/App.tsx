@@ -1,4 +1,3 @@
-import { ApolloProvider } from "@apollo/client";
 import LuxonUtils from "@date-io/luxon";
 import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
 import type { Theme } from "@material-ui/core";
@@ -8,7 +7,6 @@ import type { ReactResult } from "../utils";
 import ErrorHandler from "./components/ErrorHandler";
 import GlobalPopups from "./components/GlobalPopups";
 import Main from "./components/Main";
-import { client } from "./schema/client";
 import { DragContext } from "./utils/drag";
 
 const base = createMuiTheme();
@@ -118,16 +116,14 @@ export default function App(): ReactResult {
     <ThemeProvider theme={base}>
       <ThemeProvider theme={baseTheme}>
         <DragContext>
-          <ApolloProvider client={client}>
-            <CssBaseline />
-            <ErrorHandler>
-              <MuiPickersUtilsProvider utils={LuxonUtils}>
-                <GlobalPopups>
-                  <Main />
-                </GlobalPopups>
-              </MuiPickersUtilsProvider>
-            </ErrorHandler>
-          </ApolloProvider>
+          <CssBaseline />
+          <ErrorHandler>
+            <MuiPickersUtilsProvider utils={LuxonUtils}>
+              <GlobalPopups>
+                <Main />
+              </GlobalPopups>
+            </MuiPickersUtilsProvider>
+          </ErrorHandler>
         </DragContext>
       </ThemeProvider>
     </ThemeProvider>

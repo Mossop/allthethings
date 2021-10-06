@@ -15,7 +15,6 @@ import {
   SettingsPage,
   Styles,
   Icons,
-  useResetStore,
   useBoolState,
   SettingsListSection,
   SubHeading,
@@ -62,7 +61,6 @@ function SearchSettingsItem({
   search,
 }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
-  let resetStore = useResetStore();
   let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
     useBoolState();
 
@@ -70,8 +68,7 @@ function SearchSettingsItem({
 
   let deleteSearch = useCallback(async () => {
     await deleteSearchMutation({ id: search.id });
-    await resetStore();
-  }, [deleteSearchMutation, resetStore, search.id]);
+  }, [deleteSearchMutation, search.id]);
 
   return (
     <SettingsListItem>
@@ -116,14 +113,12 @@ export default function AccountSettings({
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
   let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
-  let resetStore = useResetStore();
 
   let [deleteAccountMutation] = useDeleteJiraAccountMutation();
 
   let deleteAccount = useCallback(async () => {
     await deleteAccountMutation({ id: account.id });
-    await resetStore();
-  }, [account.id, deleteAccountMutation, resetStore]);
+  }, [account.id, deleteAccountMutation]);
 
   return (
     <SettingsPage

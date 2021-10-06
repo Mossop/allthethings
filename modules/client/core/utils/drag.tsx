@@ -8,16 +8,9 @@ import {
   useContext,
 } from "react";
 
-import type { ReactResult, ReactChildren } from "../../utils";
+import type { ReactResult, ReactChildren, ApiType } from "../../utils";
 import { refresh, api, log, ReactMemo } from "../../utils";
-import type {
-  GraphQLType,
-  Project,
-  Item,
-  Section,
-  TaskList,
-  Inbox,
-} from "../schema";
+import type { Project, Item, Section, TaskList, Inbox } from "../schema";
 import { isInbox, isTaskList, isProject, isSection, isItem } from "../schema";
 import { SharedState, useAsyncSharedState } from "./sharedstate";
 
@@ -47,7 +40,7 @@ abstract class DragOperation {
   public abstract startDrag(): void;
   public abstract completeDrag(): Promise<void>;
   public abstract targetEnter(
-    dropTarget: GraphQLType,
+    dropTarget: ApiType,
     dropElement: HTMLElement,
   ): void;
   public abstract targetLeave(): void;
@@ -108,7 +101,7 @@ class ItemDragOperation extends BaseDragOperation<ItemDrag> {
     return;
   }
 
-  public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
+  public targetEnter(dropTarget: ApiType, dropElement: HTMLElement): void {
     if (
       !isTaskList(dropTarget) &&
       !isSection(dropTarget) &&
@@ -167,7 +160,7 @@ class ProjectDragOperation extends BaseDragOperation<ProjectDrag> {
     await refresh(api.state.getState);
   }
 
-  public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
+  public targetEnter(dropTarget: ApiType, dropElement: HTMLElement): void {
     if (!isTaskList(dropTarget)) {
       return this.targetLeave();
     }
@@ -227,7 +220,7 @@ class SectionDragOperation extends BaseDragOperation<SectionDrag> {
     return;
   }
 
-  public targetEnter(dropTarget: GraphQLType, dropElement: HTMLElement): void {
+  public targetEnter(dropTarget: ApiType, dropElement: HTMLElement): void {
     if (!isTaskList(dropTarget)) {
       return this.targetLeave();
     }
@@ -269,7 +262,7 @@ class DragManager {
 
   public dragSourceStart(
     event: DragEvent,
-    dragSource: GraphQLType,
+    dragSource: ApiType,
     previewElement: HTMLElement | null,
   ): void {
     if (this.state.value) {
@@ -317,7 +310,7 @@ class DragManager {
     this.operation.startDrag();
   }
 
-  public dragSourceEnd(event: DragEvent, dragSource: GraphQLType): void {
+  public dragSourceEnd(event: DragEvent, dragSource: ApiType): void {
     let drag = this.state.value;
 
     if (!drag || !this.operation || drag.dragSource !== dragSource) {
@@ -346,7 +339,7 @@ class DragManager {
     }
   }
 
-  public dropTargetEnter(event: DragEvent, dropTarget: GraphQLType): void {
+  public dropTargetEnter(event: DragEvent, dropTarget: ApiType): void {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
@@ -369,7 +362,7 @@ class DragManager {
     }
   }
 
-  public dropTargetOver(event: DragEvent, dropTarget: GraphQLType): void {
+  public dropTargetOver(event: DragEvent, dropTarget: ApiType): void {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
@@ -388,7 +381,7 @@ class DragManager {
     event.dataTransfer!.dropEffect = "move";
   }
 
-  public dropTargetLeave(event: DragEvent, dropTarget: GraphQLType): void {
+  public dropTargetLeave(event: DragEvent, dropTarget: ApiType): void {
     let drag = this.state.value;
 
     if (!drag || !this.operation) {
@@ -419,7 +412,7 @@ class DragManager {
     this.operation.targetLeave();
   }
 
-  public dropTargetDrop(event: DragEvent, dropTarget: GraphQLType): void {
+  public dropTargetDrop(event: DragEvent, dropTarget: ApiType): void {
     if (this.state.value?.dropTarget !== dropTarget) {
       return;
     }
@@ -483,7 +476,7 @@ function registerEvents<K extends keyof HTMLElementEventMap>(
   };
 }
 
-export function useDropTarget(dropTarget: GraphQLType): DropTargetProps {
+export function useDropTarget(dropTarget: ApiType): DropTargetProps {
   let [dropElement, dropRef] = useState<HTMLElement | null>(null);
 
   let [manager, drag] = useDragManager();
@@ -516,7 +509,7 @@ export interface DragSource {
   dragRef: Ref<any>;
 }
 
-export function useDragSource(dragSource: GraphQLType): DragSource {
+export function useDragSource(dragSource: ApiType): DragSource {
   let previewRef = useRef<HTMLElement>(null);
   let [dragElement, dragRef] = useState<HTMLElement | null>(null);
 

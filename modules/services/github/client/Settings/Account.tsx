@@ -12,7 +12,6 @@ import type {
 } from "../../../../client/utils";
 import {
   Icons,
-  useResetStore,
   SettingsListItem,
   Heading,
   ImageIcon,
@@ -60,7 +59,6 @@ function SearchSettingsItem({
   search,
 }: SearchSettingsItemProps): ReactResult {
   let classes = useStyles();
-  let resetStore = useResetStore();
   let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
     useBoolState();
 
@@ -68,8 +66,7 @@ function SearchSettingsItem({
 
   let deleteSearch = useCallback(async () => {
     await deleteSearchMutation({ id: search.id });
-    await resetStore();
-  }, [deleteSearchMutation, resetStore, search.id]);
+  }, [deleteSearchMutation, search.id]);
 
   return (
     <SettingsListItem>

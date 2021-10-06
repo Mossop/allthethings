@@ -28,10 +28,6 @@ export abstract class BaseService<
   protected abstract readonly listProviders: ListProvider<Tx>[];
   public abstract buildTransaction(tx: ServiceTransaction): Awaitable<Tx>;
 
-  public get resolvers(): Record<string, unknown> {
-    return {};
-  }
-
   protected async update(tx: Tx): Promise<void> {
     let seenIds = new Set<string>();
 

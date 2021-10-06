@@ -19,7 +19,6 @@ import {
   Styles,
   useBoolState,
   Icons,
-  useResetStore,
 } from "../../../../client/utils";
 import {
   useDeleteBugzillaSearchMutation,
@@ -65,14 +64,11 @@ function SearchSettingsItem({
   let [editSearchDialogOpen, editSearch, closeEditSearchDialog] =
     useBoolState();
 
-  let resetStore = useResetStore();
-
   let [deleteSearchMutation] = useDeleteBugzillaSearchMutation();
 
   let deleteSearch = useCallback(async () => {
     await deleteSearchMutation({ id: search.id });
-    await resetStore();
-  }, [deleteSearchMutation, resetStore, search.id]);
+  }, [deleteSearchMutation, search.id]);
 
   return (
     <SettingsListItem>
@@ -117,14 +113,12 @@ export default function AccountSettings({
 }: AccountSettingsProps): ReactResult {
   let classes = useStyles();
   let [showSearchDialog, openSearchDialog, closeSearchDialog] = useBoolState();
-  let resetStore = useResetStore();
 
   let [deleteAccountMutation] = useDeleteBugzillaAccountMutation();
 
   let deleteAccount = useCallback(async () => {
     await deleteAccountMutation({ id: account.id });
-    await resetStore();
-  }, [account.id, deleteAccountMutation, resetStore]);
+  }, [account.id, deleteAccountMutation]);
 
   return (
     <SettingsPage

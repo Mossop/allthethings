@@ -1,4 +1,3 @@
-import type { GraphQLType } from ".";
 import type { Overwrite } from "../../../utils";
 import type {
   ServerContextState,
@@ -6,6 +5,7 @@ import type {
   ServerProjectState,
   ServerState,
   ServerUserState,
+  ApiType,
 } from "../../utils";
 
 export type Problem = Readonly<ServerProblem>;
@@ -47,23 +47,23 @@ export interface Inbox {
 
 export type TaskList = Project | Context;
 
-export function isInbox(val: GraphQLType): val is Inbox {
+export function isInbox(val: ApiType): val is Inbox {
   return val.__typename == "Inbox";
 }
 
-export function isContext(val: GraphQLType): val is Context {
+export function isContext(val: ApiType): val is Context {
   return val.__typename == "Context";
 }
 
-export function isProject(val: GraphQLType): val is Project {
+export function isProject(val: ApiType): val is Project {
   return val.__typename == "Project";
 }
 
-export function isUser(val: GraphQLType): val is User {
+export function isUser(val: ApiType): val is User {
   return val.__typename == "User";
 }
 
-export function isTaskList(val: GraphQLType): val is TaskList {
+export function isTaskList(val: ApiType): val is TaskList {
   return isProject(val) || isContext(val);
 }
 
