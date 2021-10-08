@@ -90,9 +90,6 @@ const AccountDialog = ReactMemo(function AccountDialog({
     let account = await createAccount({
       params: state,
     });
-    if (!account) {
-      return;
-    }
 
     onAccountCreated(account);
   }, [createAccount, onAccountCreated, state]);

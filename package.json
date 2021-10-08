@@ -17,7 +17,7 @@
     "build": "yarn build-schema && yarn build-server && yarn build-client",
     "watch": "npm-run-all -p watch-schema watch-client watch-server",
     "start": "node dist/server/init testing/config.json",
-    "jslint": "eslint modules/client && eslint modules/db && eslint modules/schema && eslint modules/server && eslint modules/services && eslint modules/utils && eslint *.js",
+    "jslint": "eslint modules/client && eslint modules/db && eslint modules/server && eslint modules/services && eslint modules/utils && eslint *.js",
     "prettier": "prettier --write .",
     "depcheck": "depcheck",
     "lint": "yarn prettier && yarn jslint && yarn depcheck",

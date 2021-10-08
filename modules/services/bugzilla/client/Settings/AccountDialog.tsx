@@ -47,9 +47,6 @@ export default function AccountDialog({
         password: state.auth == AuthType.Password ? state.password : null,
       },
     });
-    if (!account) {
-      return;
-    }
 
     onAccountCreated(account);
   }, [createAccount, onAccountCreated, state]);
