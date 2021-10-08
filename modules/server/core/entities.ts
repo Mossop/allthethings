@@ -118,6 +118,7 @@ export interface ServiceDetailEntity extends ItemPropertyEntity {
   hasTaskState: boolean;
   taskDone: DateTime | null;
   taskDue: DateTime | null;
+  fields: unknown;
 }
 
 // Data for a service list.

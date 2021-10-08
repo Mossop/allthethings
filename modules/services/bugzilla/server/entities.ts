@@ -1,4 +1,4 @@
-import type { Bug as BugzillaAPIBug } from "bugzilla";
+import type { DateTime } from "luxon";
 
 import type { SearchType } from "../schema";
 
@@ -21,10 +21,8 @@ export interface BugzillaSearchEntity {
   dueOffset: string | null;
 }
 
-export type BugzillaBugEntity = Pick<BugzillaAPIBug, "summary"> & {
+export interface BugzillaBugEntity {
   accountId: string;
   bugId: number;
-  id: string;
-  status: string;
-  resolution: string | null;
-};
+  done: DateTime | null;
+}

@@ -196,3 +196,26 @@ export function any<T>(conditions: (Sql | WhereConditions<T>)[]): Sql {
     return clauses[0];
   }
 }
+
+// eslint-disable-next-line @typescript-eslint/ban-types
+export function values(name: string, values: object[]): Sql {
+  if (!values.length) {
+    throw new Error("Empty values are not supported.");
+  }
+
+  let keys = Object.keys(values[0]);
+
+  let columns = keys.map((key: string): Sql => sql.ref(key));
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  let rows = values.map((value: object): Sql => {
+    let fields = keys.map((key: string): unknown => value[key] ?? null);
+
+    return sql`(${sql.join(fields, ", ")})`;
+  });
+
+  return sql`
+    (VALUES ${sql.join(rows, ", ")})
+    AS
+    ${sql.ref(name)} (${sql.join(columns, ", ")})
+  `;
+}

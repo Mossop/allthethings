@@ -10,7 +10,7 @@ import type {
   ServiceTransaction,
   ServiceMiddlewareContext,
 } from "../../../server/utils";
-import { Account, File, MailSearch, Thread } from "./implementations";
+import { Account, FileUpdater, ThreadUpdater } from "./implementations";
 import { RegisterRoutes } from "./routes";
 import type { GoogleServiceConfig } from "./types";
 
@@ -22,15 +22,10 @@ function first(param: string | string[] | undefined): string | undefined {
   return param;
 }
 
-const INITIAL_DELAY = 1000;
-const UPDATE_DELAY = 60000;
-
 export class GoogleService extends BaseService {
   private static _service: GoogleService | null = null;
 
-  protected readonly listProviders = [MailSearch];
-
-  protected readonly itemProviders = [File, Thread];
+  protected readonly itemUpdaters = [FileUpdater, ThreadUpdater];
 
   public static get config(): GoogleServiceConfig {
     return GoogleService.service.config;
@@ -55,21 +50,13 @@ export class GoogleService extends BaseService {
   }
 
   public constructor(
-    private readonly server: Server,
+    server: Server,
     private readonly config: GoogleServiceConfig,
   ) {
-    super();
+    super(server);
 
     GoogleService._service = this;
     this.problems = new Map();
-
-    server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
-        this.update(tx),
-      );
-
-      return UPDATE_DELAY;
-    }, INITIAL_DELAY);
   }
 
   public addWebRoutes(router: KoaRouter): void {
@@ -104,6 +91,7 @@ export class GoogleService extends BaseService {
         // Ignore account failure.
       }
     }
+
     await super.update(tx);
   }
 

@@ -1,5 +1,3 @@
-import type { IssueState, PullRequestState } from "./operations";
-
 export interface GithubAccountEntity {
   id: string;
   userId: string;
@@ -16,37 +14,7 @@ export interface GithubSearchEntity {
   dueOffset: string | null;
 }
 
-export interface GithubRepositoryEntity {
-  id: string;
+export interface GithubIssueLikeEntity {
   accountId: string;
   nodeId: string;
-  owner: string;
-  name: string;
-  url: string;
-}
-
-export interface GithubIssueLikeEntity {
-  id: string;
-  repositoryId: string;
-  nodeId: string;
-  type: "pr" | "issue";
-  number: number;
-  title: string;
-  url: string;
-  state: IssueState | PullRequestState;
-}
-
-export interface GithubLabelEntity {
-  id: string;
-  repositoryId: string;
-  nodeId: string;
-  name: string;
-  color: string;
-  url: string;
-}
-
-export interface IssueLikeLabelEntity {
-  repositoryId: string;
-  issueLike: string;
-  label: string;
 }

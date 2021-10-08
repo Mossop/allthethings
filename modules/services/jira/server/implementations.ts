@@ -4,17 +4,21 @@ import type { Version3Models } from "jira.js";
 import { Version3Client } from "jira.js";
 import { DateTime } from "luxon";
 
-import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
+import { sql } from "../../../db";
+import type {
+  CoreItemParams,
+  RemoteList,
+  ServiceTransaction,
+} from "../../../server/utils";
 import {
-  TaskController,
+  ItemUpdater,
   id,
   storeBuilder,
   BaseList,
-  BaseItem,
   BaseAccount,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { map, offsetFromJson } from "../../../utils";
+import { decodeRelativeDateTime, map, offsetFromJson } from "../../../utils";
 import type { IssueFields } from "../schema";
 import type {
   JiraAccountEntity,
@@ -44,6 +48,10 @@ export class Account extends BaseAccount<JiraAccountEntity> {
     return this.entity.url;
   }
 
+  protected lists(): Promise<Search[]> {
+    return this.searches;
+  }
+
   public get searches(): Promise<Search[]> {
     return Search.store(this.tx).find({
       accountId: this.id,
@@ -65,8 +73,10 @@ export class Account extends BaseAccount<JiraAccountEntity> {
     };
   }
 
-  public async items(): Promise<[]> {
-    return [];
+  public async items(): Promise<string[]> {
+    return this.tx.db.pluck<string>(
+      sql`SELECT "id" FROM "jira"."Issue" WHERE "accountId" = ${this.id}`,
+    );
   }
 
   public get apiClient(): Version3Client {
@@ -131,8 +141,13 @@ export type JiraSearchState = Omit<JiraSearchEntity, "accountId"> & {
   url: string;
 };
 
-export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
+export class Search extends BaseList<JiraSearchEntity, RemoteIssue> {
   public static readonly store = storeBuilder(Search, "jira.Search");
+
+  public async userId(): Promise<string> {
+    let account = await this.account();
+    return account.userId;
+  }
 
   public account(): Promise<Account> {
     return Account.store(this.tx).get(this.entity.accountId);
@@ -166,38 +181,16 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
     };
   }
 
-  public async listItems(issues?: JiraIssue[]): Promise<Issue[]> {
+  public async listItems(): Promise<RemoteIssue[]> {
     let account = await this.account();
+    let issues = await Search.getIssues(account, this.entity.query);
 
-    if (!issues) {
-      issues = await Search.getIssues(account, this.entity.query);
-    }
-
-    let instances: Issue[] = [];
-
-    for (let issue of issues) {
-      if (!issue.key) {
-        continue;
-      }
-
-      let instance = await Issue.store(this.tx).findOne({
-        issueKey: issue.key,
-      });
-
-      if (!instance) {
-        instance = await Issue.create(
-          account,
-          issue,
-          TaskController.ServiceList,
-        );
-      } else {
-        await instance.updateItem(issue);
-      }
-
-      instances.push(instance);
-    }
-
-    return instances;
+    return issues.map(
+      (issue: JiraIssue): RemoteIssue => ({
+        accountId: account.id,
+        issue,
+      }),
+    );
   }
 
   public static async getIssues(
@@ -218,57 +211,113 @@ export class Search extends BaseList<JiraSearchEntity, JiraIssue[]> {
     record: JiraSearchParams,
   ): Promise<Search> {
     let issues = await Search.getIssues(account, record.query);
+    let updater = new IssueUpdater(account.tx);
+    let url = new URL("/issues/", account.url);
+    url.searchParams.set("jql", record.query);
 
-    let id = await account.tx.addList({
+    let id = await updater.addList({
+      userId: account.userId,
       name: record.name,
-      url: null,
+      url: url.toString(),
+      due: decodeRelativeDateTime(record.dueOffset),
+      remotes: issues.map(
+        (issue: JiraIssue): RemoteIssue => ({ accountId: account.id, issue }),
+      ),
     });
 
-    let search = await Search.store(account.tx).create({
+    return Search.store(account.tx).create({
       ...record,
       accountId: account.id,
       id,
     });
-
-    await search.updateList(issues);
-
-    return search;
   }
 }
 
-function recordFromIssue(
-  issue: JiraIssue,
-): Omit<JiraIssueEntity, "id" | "accountId"> {
-  if (!issue.key) {
-    throw new Error("Invalid issue: no key.");
-  }
-
-  return {
-    issueKey: issue.key,
-    icon: issue.fields.issuetype?.iconUrl ?? null,
-    summary: issue.fields.summary,
-    status: issue.fields.status.name ?? "Unknown",
-    type: issue.fields.issuetype?.name ?? "Unknown",
-  };
+interface RemoteIssue {
+  accountId: string;
+  issue: JiraIssue;
 }
 
-export class Issue
-  extends BaseItem<JiraIssueEntity>
-  implements ServiceItem<IssueFields>
-{
-  public static readonly store = storeBuilder(Issue, "jira.Issue");
-
-  public account(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
+export class IssueUpdater extends ItemUpdater<JiraIssueEntity, RemoteIssue> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "jira.Issue", "accountId", "issueKey");
   }
 
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
+  private accounts: Map<string, Account> = new Map();
+
+  protected override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+    }
+  }
+
+  protected async entityForRemote({
+    accountId,
+    issue,
+  }: RemoteIssue): Promise<JiraIssueEntity> {
+    return {
+      accountId,
+      issueKey: issue.key,
+    };
+  }
+
+  protected paramsForRemote({ accountId, issue }: RemoteIssue): CoreItemParams {
+    let account = this.accounts.get(accountId)!;
+    let baseUrl = new URL(account.url);
+
+    let fields: IssueFields = {
+      accountId: accountId,
+      issueKey: issue.key,
+      summary: issue.fields.summary,
+      url: new URL(`browse/${issue.key}`, baseUrl).toString(),
+      icon: issue.fields.issuetype?.iconUrl ?? null,
+      status: issue.fields.status.name ?? "Unknown",
+      type: issue.fields.issuetype?.name ?? "Unknown",
+    };
+
+    return {
+      summary: "",
+      fields,
+      due: null,
+      done: issue.fields.resolutiondate
+        ? DateTime.fromISO(issue.fields.resolutiondate)
+        : null,
+    };
+  }
+
+  protected async updateEntities(
+    entities: JiraIssueEntity[],
+  ): Promise<RemoteIssue[]> {
+    let results: RemoteIssue[] = [];
+
+    for (let { accountId, issueKey } of entities) {
+      let account = this.accounts.get(accountId)!;
+      let issue = await account.apiClient.issues.getIssue({
+        issueIdOrKey: issueKey,
+      });
+
+      results.push({
+        accountId,
+        issue,
+      });
+    }
+
+    return results;
+  }
+
+  protected getLists(): Promise<RemoteList<RemoteIssue>[]> {
+    return Search.store(this.tx).find();
+  }
+
+  protected async getRemoteForURL(
     userId: string,
     url: URL,
-    isTask: boolean,
-  ): Promise<Issue | null> {
-    for (let account of await Account.store(tx).find({ userId })) {
+  ): Promise<RemoteIssue | null> {
+    for (let account of this.accounts.values()) {
+      if (account.userId != userId) {
+        continue;
+      }
+
       let base = new URL("/browse/", account.url);
       if (base.origin != url.origin) {
         continue;
@@ -280,104 +329,19 @@ export class Issue
 
       let issueIdOrKey = url.pathname.substring(base.pathname.length);
       try {
-        let issue = await account.tx.segment.inSegment(
-          "Issue API Request",
-          () =>
-            account.apiClient.issues.getIssue({
-              issueIdOrKey,
-            }),
-        );
+        let issue = await account.apiClient.issues.getIssue({
+          issueIdOrKey,
+        });
 
-        let controller = isTask ? TaskController.Service : null;
-        if (controller && issue.fields.resolutiondate) {
-          controller = TaskController.Manual;
-        }
-
-        return Issue.create(account, issue, controller);
+        return {
+          accountId: account.id,
+          issue,
+        };
       } catch (e) {
         // Probably an unknown issue.
       }
     }
 
     return null;
-  }
-
-  public get issueKey(): string {
-    return this.entity.issueKey;
-  }
-
-  public override async url(): Promise<string> {
-    let account = await this.account();
-    let baseUrl = new URL(account.url);
-
-    return new URL(`browse/${this.issueKey}`, baseUrl).toString();
-  }
-
-  public override async icon(): Promise<string | null> {
-    return this.entity.icon;
-  }
-
-  public override async updateItem(issue?: JiraIssue): Promise<void> {
-    let account = await this.account();
-
-    if (!issue) {
-      issue = await account.tx.segment.inSegment("Issue API update", () =>
-        account.apiClient.issues.getIssue({
-          issueIdOrKey: this.issueKey,
-        }),
-      );
-
-      if (!issue) {
-        throw new Error("Unknown issue.");
-      }
-    }
-
-    await this.update({
-      ...recordFromIssue(issue),
-      accountId: account.id,
-    });
-
-    let done = issue.fields.resolutiondate
-      ? DateTime.fromISO(issue.fields.resolutiondate)
-      : null;
-    await this.tx.setItemTaskDone(this.id, done);
-    await this.tx.setItemSummary(this.id, issue.fields.summary);
-  }
-
-  public async fields(): Promise<IssueFields> {
-    let account = await this.account();
-    return {
-      accountId: account.id,
-      issueKey: this.entity.issueKey,
-      summary: this.entity.summary,
-      url: await this.url(),
-      icon: this.entity.icon,
-      status: this.entity.status,
-      type: this.entity.type,
-    };
-  }
-
-  public static async create(
-    account: Account,
-    issue: JiraIssue,
-    controller: TaskController | null,
-  ): Promise<Issue> {
-    let id = await account.tx.createItem(account.userId, {
-      summary: issue.fields.summary,
-      archived: null,
-      snoozed: null,
-      done: issue.fields.resolutiondate
-        ? DateTime.fromISO(issue.fields.resolutiondate)
-        : null,
-      controller,
-    });
-
-    let record = {
-      ...recordFromIssue(issue),
-      id,
-      accountId: account.id,
-    };
-
-    return Issue.store(account.tx).create(record);
   }
 }

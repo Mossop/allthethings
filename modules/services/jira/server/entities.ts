@@ -9,13 +9,8 @@ export interface JiraAccountEntity {
 }
 
 export interface JiraIssueEntity {
-  id: string;
   accountId: string;
   issueKey: string;
-  icon: string | null;
-  type: string;
-  summary: string;
-  status: string;
 }
 
 export interface JiraSearchEntity {

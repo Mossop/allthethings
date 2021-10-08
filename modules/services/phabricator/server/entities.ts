@@ -1,4 +1,4 @@
-import type { RevisionStatus } from "conduit-api";
+import type { DateTime } from "luxon";
 
 export interface PhabricatorAccountEntity {
   id: string;
@@ -18,10 +18,7 @@ export interface PhabricatorQueryEntity {
 }
 
 export interface PhabricatorRevisionEntity {
-  id: string;
   accountId: string;
   revisionId: number;
-  title: string;
-  uri: string;
-  status: RevisionStatus;
+  done: DateTime | null;
 }

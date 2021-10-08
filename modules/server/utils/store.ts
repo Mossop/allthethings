@@ -88,19 +88,11 @@ export abstract class EntityImpl<Entity, Tx extends Transaction = Transaction> {
   }
 }
 
-interface ImplBuilder<
-  Tx extends Transaction,
-  Entity,
-  Impl extends EntityImpl<Entity, Tx>,
-> {
+interface ImplBuilder<Tx extends Transaction, Entity, Impl> {
   (tx: Tx, entity: Entity): Impl;
 }
 
-interface ImplConstructor<
-  Tx extends Transaction,
-  Entity,
-  Impl extends EntityImpl<Entity, Tx>,
-> {
+interface ImplConstructor<Tx extends Transaction, Entity, Impl> {
   new (tx: Tx, entity: Entity): Impl;
 }
 
@@ -117,11 +109,7 @@ export abstract class IdentifiedEntityImpl<
   }
 }
 
-export class Store<
-  Tx extends Transaction,
-  Entity,
-  Impl extends EntityImpl<Entity, Tx>,
-> {
+export class Store<Tx extends Transaction, Entity, Impl> {
   public constructor(
     public readonly tx: Tx,
     public readonly table: string,
@@ -238,22 +226,14 @@ export class Store<
   }
 }
 
-export interface StoreBuilder<
-  Tx extends Transaction,
-  Entity,
-  Impl extends EntityImpl<Entity, Tx>,
-> {
+export interface StoreBuilder<Tx extends Transaction, Entity, Impl> {
   readonly table: string;
 
   (tx: Tx): Store<Tx, Entity, Impl>;
 }
 
 type Keys<T> = keyof T & string;
-export function storeBuilder<
-  Tx extends Transaction,
-  Entity,
-  Impl extends EntityImpl<Entity, Tx>,
->(
+export function storeBuilder<Tx extends Transaction, Entity, Impl>(
   impl: ImplConstructor<Tx, Entity, Impl>,
   table: string,
   key?: Keys<Entity> | Keys<Entity>[],

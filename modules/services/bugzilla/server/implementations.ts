@@ -4,17 +4,17 @@ import type { Bug as BugzillaAPIBug, History } from "bugzilla";
 import BugzillaAPI from "bugzilla";
 import type { DateTime } from "luxon";
 
-import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
+import { sql } from "../../../db";
+import type { CoreItemParams, ServiceTransaction } from "../../../server/utils";
 import {
-  TaskController,
   id,
+  ItemUpdater,
   storeBuilder,
-  BaseItem,
   BaseAccount,
   BaseList,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { map, offsetFromJson } from "../../../utils";
+import { decodeRelativeDateTime, map, offsetFromJson } from "../../../utils";
 import { SearchType } from "../schema";
 import type { BugFields } from "../schema";
 import type {
@@ -50,8 +50,10 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
 
   private api: BugzillaAPI | null = null;
 
-  public async items(): Promise<Bug[]> {
-    return Bug.store(this.tx).find({ accountId: this.id });
+  public async items(): Promise<string[]> {
+    return this.db.pluck<string>(
+      sql`SELECT "id" FROM "bugzilla"."Bug" WHERE "accountId" = ${this.id}`,
+    );
   }
 
   public override lists(): Promise<Search[]> {
@@ -60,18 +62,6 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
 
   public async searches(): Promise<Search[]> {
     return Search.store(this.tx).find({ accountId: this.id });
-  }
-
-  public get userId(): string {
-    return this.entity.userId;
-  }
-
-  public get icon(): string | null {
-    return this.entity.icon;
-  }
-
-  public get url(): string {
-    return this.entity.url;
   }
 
   public async state(): Promise<BugzillaAccountState> {
@@ -147,47 +137,6 @@ export class Account extends BaseAccount<BugzillaAccountEntity> {
 
     return this.api;
   }
-  public async getBugFromURL(url: URL, isTask: boolean): Promise<Bug | null> {
-    let baseUrl = new URL("show_bug.cgi", this.entity.url);
-    if (baseUrl.origin != url.origin || baseUrl.pathname != url.pathname) {
-      return null;
-    }
-
-    let id = url.searchParams.get("id");
-    if (!id) {
-      return null;
-    }
-
-    let existing = await Bug.store(this.tx).findOne({ bugId: parseInt(id) });
-    if (existing) {
-      return existing;
-    }
-
-    let api = this.getAPI();
-    let bugs: BugzillaAPIBug[];
-    try {
-      bugs = await this.tx.segment.inSegment("Bug API Request", async () =>
-        api.getBugs([id!]),
-      );
-    } catch (e) {
-      return null;
-    }
-
-    if (bugs.length) {
-      let controller: TaskController | null = null;
-      if (isTask) {
-        controller = TaskController.Service;
-        if (isDone(bugs[0].status)) {
-          // It doesn't make much sense to be creating a complete task so assume this is manual.
-          controller = TaskController.Manual;
-        }
-      }
-
-      return await Bug.create(this, bugs[0], controller);
-    }
-
-    return null;
-  }
 
   public async doneForStatus(bug: BugzillaAPIBug): Promise<DateTime | null> {
     if (!isDone(bug.status)) {
@@ -249,15 +198,44 @@ export type BugzillaSearchState = Omit<BugzillaSearchEntity, "accountId"> & {
   url: string;
 };
 
-export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
+export class Search extends BaseList<BugzillaSearchEntity, RemoteBug> {
   public static readonly store = storeBuilder(Search, "bugzilla.Search");
 
-  public owner(): Promise<Account> {
+  public account(): Promise<Account> {
     return Account.store(this.tx).get(this.entity.accountId);
+  }
+
+  public async userId(): Promise<string> {
+    let account = await this.account();
+    return account.entity.userId;
   }
 
   public get name(): string {
     return this.entity.name;
+  }
+
+  public override get dueOffset(): DateTimeOffset | null {
+    return this.entity.dueOffset
+      ? offsetFromJson(JSON.parse(this.entity.dueOffset))
+      : null;
+  }
+
+  public static url(account: Account, query: string, type: SearchType): string {
+    if (type == SearchType.Quicksearch) {
+      let params = new URLSearchParams();
+      params.set("quicksearch", query);
+      query = params.toString();
+    }
+
+    let url = new URL("buglist.cgi", account.entity.url);
+    url.search = query;
+
+    return url.toString();
+  }
+
+  public override async url(): Promise<string> {
+    let account = await this.account();
+    return Search.url(account, this.entity.query, this.entity.type);
   }
 
   public async state(): Promise<BugzillaSearchState> {
@@ -271,53 +249,15 @@ export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
     };
   }
 
-  public override get dueOffset(): DateTimeOffset | null {
-    return this.entity.dueOffset
-      ? offsetFromJson(JSON.parse(this.entity.dueOffset))
-      : null;
-  }
-
-  public override async url(): Promise<string> {
-    let search = this.entity.query;
-    if (this.entity.type == SearchType.Quicksearch) {
-      let params = new URLSearchParams();
-      params.set("quicksearch", this.entity.query);
-      search = params.toString();
-    }
-
-    let account = await this.owner();
-    let url = new URL("buglist.cgi", account.url);
-    url.search = search;
-
-    return url.toString();
-  }
-
-  public async listItems(bugs?: BugzillaAPIBug[]): Promise<Bug[]> {
-    if (!bugs) {
-      bugs = await this.getBugRecords();
-    }
-
-    let instances: Bug[] = [];
-
-    for (let bug of bugs) {
-      let instance = await Bug.store(this.tx).findOne({ bugId: bug.id });
-
-      if (!instance) {
-        let account = await this.owner();
-        instance = await Bug.create(account, bug, TaskController.ServiceList);
-      } else {
-        await instance.updateItem(bug);
-      }
-
-      instances.push(instance);
-    }
-
-    return instances;
-  }
-
-  public async getBugRecords(): Promise<BugzillaAPIBug[]> {
-    let account = await this.owner();
-    return Search.getBugRecords(account.tx, account.getAPI(), this.entity);
+  public async listItems(): Promise<RemoteBug[]> {
+    let account = await this.account();
+    return map(
+      Search.getBugRecords(account.tx, account.getAPI(), this.entity),
+      (bug: BugzillaAPIBug): RemoteBug => ({
+        accountId: this.entity.accountId,
+        bug,
+      }),
+    );
   }
 
   public static async getBugRecords(
@@ -342,9 +282,18 @@ export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
 
     let bugs = await Search.getBugRecords(account.tx, account.getAPI(), query);
 
-    let id = await account.tx.addList({
+    let updater = new BugUpdater(account.tx);
+    let id = await updater.addList({
+      userId: account.entity.userId,
       name: params.name,
-      url: null,
+      url: Search.url(account, query.query, query.type),
+      due: decodeRelativeDateTime(params.dueOffset),
+      remotes: bugs.map(
+        (bug: BugzillaAPIBug): RemoteBug => ({
+          bug,
+          accountId: account.id,
+        }),
+      ),
     });
 
     let search = await Search.store(account.tx).create({
@@ -353,118 +302,159 @@ export class Search extends BaseList<BugzillaSearchEntity, BugzillaAPIBug[]> {
       id,
       accountId: account.id,
     });
-    await search.updateList(bugs);
 
     return search;
   }
 }
 
-type FixedFields = "accountId" | "id";
-
-function recordFromBug(
-  bug: BugzillaAPIBug,
-): Omit<BugzillaBugEntity, FixedFields> {
-  return {
-    bugId: bug.id,
-    summary: bug.summary,
-    status: bug.status,
-    resolution: bug.resolution || null,
-  };
+interface RemoteBug {
+  accountId: string;
+  bug: BugzillaAPIBug;
 }
 
-export class Bug
-  extends BaseItem<BugzillaBugEntity>
-  implements ServiceItem<BugFields>
-{
-  public static readonly store = storeBuilder(Bug, "bugzilla.Bug");
-
-  public owner(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
+export class BugUpdater extends ItemUpdater<BugzillaBugEntity, RemoteBug> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "bugzilla.Bug", "accountId", "bugId");
   }
 
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
+  private accounts: Map<string, Account> = new Map();
+
+  public override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+    }
+  }
+
+  protected async entityForRemote({
+    accountId,
+    bug,
+  }: RemoteBug): Promise<BugzillaBugEntity> {
+    let account = this.accounts.get(accountId)!;
+
+    let previous = this.previousEntity(
+      this.entityKey({
+        accountId,
+        bugId: bug.id,
+      }),
+    );
+
+    let done: DateTime | null = null;
+    if (isDone(bug.status)) {
+      done = previous?.done ?? (await account.doneForStatus(bug));
+    }
+
+    return {
+      accountId,
+      bugId: bug.id,
+      done,
+    };
+  }
+
+  protected paramsForRemote(
+    { accountId, bug }: RemoteBug,
+    entity: BugzillaBugEntity,
+  ): CoreItemParams {
+    let account = this.accounts.get(accountId)!;
+    let baseUrl = new URL(account.entity.url);
+
+    let fields: BugFields = {
+      accountId: accountId,
+      bugId: bug.id,
+      summary: bug.summary,
+      url: new URL(`show_bug.cgi?id=${bug.id}`, baseUrl).toString(),
+      icon: account.entity.icon,
+      status: bug.status,
+      resolution: bug.resolution,
+    };
+
+    return {
+      summary: bug.summary,
+      fields,
+      due: null,
+      done: entity.done,
+    };
+  }
+
+  protected async updateEntities(
+    entities: BugzillaBugEntity[],
+  ): Promise<RemoteBug[]> {
+    let allBugs: RemoteBug[] = [];
+
+    for (let account of this.accounts.values()) {
+      let bugMap = new Map(
+        entities
+          .filter(
+            (entity: BugzillaBugEntity): boolean =>
+              entity.accountId == account.id,
+          )
+          .map((entity: BugzillaBugEntity): [number, BugzillaBugEntity] => [
+            entity.bugId,
+            entity,
+          ]),
+      );
+
+      let api = account.getAPI();
+      let bugs: BugzillaAPIBug[];
+      try {
+        bugs = await this.tx.segment.inSegment("Bug API Request", async () =>
+          api.getBugs([...bugMap.keys()]),
+        );
+      } catch (e) {
+        continue;
+      }
+
+      for (let bug of bugs) {
+        allBugs.push({
+          accountId: account.id,
+          bug,
+        });
+      }
+    }
+
+    return allBugs;
+  }
+
+  protected async getLists(): Promise<Search[]> {
+    return Search.store(this.tx).find();
+  }
+
+  public override async getRemoteForURL(
     userId: string,
     url: URL,
-    isTask: boolean,
-  ): Promise<Bug | null> {
-    for (let account of await Account.store(tx).find({ userId })) {
-      let bug = await account.getBugFromURL(url, isTask);
-      if (bug) {
-        return bug;
+  ): Promise<RemoteBug | null> {
+    for (let account of this.accounts.values()) {
+      if (account.entity.userId != userId) {
+        continue;
+      }
+
+      let baseUrl = new URL("show_bug.cgi", account.entity.url);
+      if (baseUrl.origin != url.origin || baseUrl.pathname != url.pathname) {
+        return null;
+      }
+
+      let id = url.searchParams.get("id");
+      if (!id) {
+        return null;
+      }
+
+      let api = account.getAPI();
+      let bugs: BugzillaAPIBug[];
+      try {
+        bugs = await this.tx.segment.inSegment("Bug API Request", async () =>
+          api.getBugs([id!]),
+        );
+      } catch (e) {
+        return null;
+      }
+
+      if (bugs.length) {
+        return {
+          accountId: account.id,
+          bug: bugs[0],
+        };
       }
     }
 
     return null;
-  }
-
-  public override async url(): Promise<string> {
-    let account = await this.owner();
-    let baseUrl = new URL(account.url);
-
-    return new URL(`show_bug.cgi?id=${this.entity.bugId}`, baseUrl).toString();
-  }
-
-  public override async icon(): Promise<string | null> {
-    let account = await this.owner();
-    return account.icon;
-  }
-
-  public override async updateItem(record?: BugzillaAPIBug): Promise<void> {
-    let account = await this.owner();
-
-    if (!record) {
-      let bugs = await this.tx.segment.inSegment("Bug API update", async () =>
-        account.getAPI().getBugs([this.entity.bugId]),
-      );
-      if (!bugs.length) {
-        throw new Error("Unknown bug.");
-      }
-
-      record = bugs[0];
-    }
-
-    await this.update({
-      ...recordFromBug(record),
-      accountId: account.id,
-    });
-    await this.tx.setItemTaskDone(this.id, await account.doneForStatus(record));
-    await this.tx.setItemSummary(this.id, record.summary);
-  }
-
-  public async fields(): Promise<BugFields> {
-    let account = await this.owner();
-
-    return {
-      accountId: account.id,
-      bugId: this.entity.bugId,
-      summary: this.entity.summary,
-      url: await this.url(),
-      icon: account.icon,
-      status: this.entity.status,
-      resolution: this.entity.resolution,
-    };
-  }
-
-  public static async create(
-    account: Account,
-    bug: BugzillaAPIBug,
-    controller: TaskController | null,
-  ): Promise<Bug> {
-    let id = await account.tx.createItem(account.userId, {
-      summary: bug.summary,
-      archived: null,
-      snoozed: null,
-      done: await account.doneForStatus(bug),
-      controller,
-    });
-
-    let record = {
-      id,
-      ...recordFromBug(bug),
-      accountId: account.id,
-    };
-
-    return Bug.store(account.tx).create(record);
   }
 }

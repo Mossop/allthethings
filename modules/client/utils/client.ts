@@ -544,6 +544,7 @@ export type NoteDetailState = NoteDetailParams & { __typename: "NoteDetail" };
 export interface PickServiceDetailEntityExcludeKeysIdOrTaskDueOrTaskDone {
   serviceId: string;
   hasTaskState: boolean;
+  fields: any;
 }
 
 export type OmitServiceDetailEntityIdOrTaskDueOrTaskDone = PickServiceDetailEntityExcludeKeysIdOrTaskDueOrTaskDone;
@@ -555,7 +556,44 @@ export interface ServiceListEntity {
   url: string | null;
 }
 
-export type ServiceListState = ServiceListEntity & { __typename: "ServiceList" };
+/**
+ * From T, pick a set of properties whose keys are in the union K
+ */
+export interface PickServiceListItemEntityPresentOrDoneOrDue {
+  due: DateTime | null;
+  done: DateTime | null;
+
+  /**
+   * A DateTime is an immutable data structure representing a specific date and time and accompanying methods.
+   * It contains class and instance methods for creating, parsing, interrogating, transforming, and formatting them.
+   *
+   * A DateTime comprises of:
+   * * A timestamp. Each DateTime instance refers to a specific millisecond of the Unix epoch.
+   * * A time zone. Each instance is considered in the context of a specific zone (by default the local system's zone).
+   * * Configuration properties that effect how output strings are formatted, such as `locale`, `numberingSystem`, and `outputCalendar`.
+   *
+   * Here is a brief overview of the most commonly used functionality it provides:
+   *
+   * * **Creation**: To create a DateTime from its components, use one of its factory class methods: {@link DateTime.local}, {@link DateTime.utc}, and (most flexibly) {@link DateTime.fromObject}.
+   * To create one from a standard string format, use {@link DateTime.fromISO}, {@link DateTime.fromHTTP}, and {@link DateTime.fromRFC2822}.
+   * To create one from a custom string format, use {@link DateTime.fromFormat}. To create one from a native JS date, use {@link DateTime.fromJSDate}.
+   * * **Gregorian calendar and time**: To examine the Gregorian properties of a DateTime individually (i.e as opposed to collectively through {@link DateTime#toObject }), use the {@link DateTime#year },
+   * {@link DateTime#month }, {@link DateTime#day }, {@link DateTime#hour }, {@link DateTime#minute }, {@link DateTime#second }, {@link DateTime#millisecond } accessors.
+   * * **Week calendar**: For ISO week calendar attributes, see the {@link DateTime#weekYear }, {@link DateTime#weekNumber }, and {@link DateTime#weekday } accessors.
+   * * **Configuration** See the {@link DateTime#locale } and {@link DateTime#numberingSystem } accessors.
+   * * **Transformation**: To transform the DateTime into other DateTimes, use {@link DateTime#set }, {@link DateTime#reconfigure }, {@link DateTime#setZone }, {@link DateTime#setLocale },
+   * {@link DateTime.plus}, {@link DateTime#minus }, {@link DateTime#endOf }, {@link DateTime#startOf }, {@link DateTime#toUTC }, and {@link DateTime#toLocal }.
+   * * **Output**: To convert the DateTime to other representations, use the {@link DateTime#toRelative }, {@link DateTime#toRelativeCalendar }, {@link DateTime#toJSON }, {@link DateTime#toISO },
+   * {@link DateTime#toHTTP }, {@link DateTime#toObject }, {@link DateTime#toRFC2822 }, {@link DateTime#toString }, {@link DateTime#toLocaleString }, {@link DateTime#toFormat },
+   * {@link DateTime#toMillis } and {@link DateTime#toJSDate }.
+   *
+   * There's plenty others documented below. In addition, for more information on subtler topics
+   * like internationalization, time zones, alternative calendars, validity, and so on, see the external documentation.
+   */
+  present: DateTime;
+}
+
+export type ServiceListState = ServiceListEntity & PickServiceListItemEntityPresentOrDoneOrDue;
 
 export type ServiceDetailState = OmitServiceDetailEntityIdOrTaskDueOrTaskDone & {
   lists: ServiceListState[];

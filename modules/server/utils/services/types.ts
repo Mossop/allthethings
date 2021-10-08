@@ -4,17 +4,12 @@ import type * as KoaRouter from "@koa/router";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
-import type {
-  Awaitable,
-  MaybeCallable,
-  Overwrite,
-  RelativeDateTime,
-} from "../../utils";
-import type { MiddlewareContext, WebContext } from "./controllers";
-import { RequestController } from "./controllers";
-import type { TaskManager } from "./tasks";
-import type { Transaction } from "./transaction";
-import type { Problem, TaskController } from "./types";
+import type { Awaitable, Overwrite, RelativeDateTime } from "../../../utils";
+import type { MiddlewareContext, WebContext } from "../controllers";
+import { RequestController } from "../controllers";
+import type { TaskManager } from "../tasks";
+import type { Transaction } from "../transaction";
+import type { Problem, TaskController } from "../types";
 
 export interface ItemList {
   name: string;
@@ -23,19 +18,21 @@ export interface ItemList {
   due?: RelativeDateTime | null;
 }
 
-export interface CreateItemParams {
+export interface CoreItemParams {
   summary: string;
-  archived: DateTime | null;
-  snoozed: DateTime | null;
+  fields: unknown;
   due?: DateTime | null;
-  done?: DateTime | boolean | null;
-  controller: TaskController | null;
+  done?: DateTime | null;
 }
 
-export interface ServiceItem<T = unknown> {
+export type CreateItemParams = CoreItemParams & {
+  userId: string;
+  controller: TaskController | null;
+};
+
+export type UpdateItemParams = CoreItemParams & {
   id: string;
-  fields: MaybeCallable<Awaitable<T>>;
-}
+};
 
 export interface Server {
   readonly rootUrl: URL;
@@ -52,19 +49,9 @@ export type ServiceTransaction = Transaction & {
   readonly rootUrl: URL;
   readonly serviceUrl: URL;
 
-  createItem(user: string, props: CreateItemParams): Promise<string>;
-  setItemTaskDone(
-    id: string,
-    done: DateTime | boolean | null,
-    due?: DateTime | null,
-  ): Promise<void>;
-  setItemSummary(id: string, summary: string): Promise<void>;
-  disconnectItem(
-    id: string,
-    url?: string | null,
-    icon?: string | null,
-  ): Promise<void>;
-  deleteItem(id: string): Promise<void>;
+  createItems(params: CreateItemParams[]): Promise<string[]>;
+  updateItems(params: UpdateItemParams[]): Promise<void>;
+  deleteItems(ids: string[]): Promise<void>;
 
   addList(list: ItemList): Promise<string>;
   updateList(id: string, list: Partial<ItemList>): Promise<void>;
@@ -117,10 +104,6 @@ export interface Service {
     targetUrl: URL,
     isTask: boolean,
   ) => Promise<string | null>;
-  readonly getServiceItem: (
-    tx: ServiceTransaction,
-    id: string,
-  ) => Awaitable<ServiceItem>;
   readonly addWebRoutes?: (router: KoaRouter) => void;
   readonly listProblems?: (
     tx: ServiceTransaction,

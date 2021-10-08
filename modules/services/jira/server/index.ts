@@ -6,27 +6,11 @@ import type {
   ServiceTransaction,
 } from "../../../server/utils";
 import { BaseService } from "../../../server/utils";
-import { Account, Issue, Search } from "./implementations";
+import { Account, IssueUpdater } from "./implementations";
 import { RegisterRoutes } from "./routes";
 
-const UPDATE_DELAY = 60000;
-
 export class JiraService extends BaseService {
-  protected readonly listProviders = [Search];
-
-  protected readonly itemProviders = [Issue];
-
-  public constructor(private readonly server: Server) {
-    super();
-
-    server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
-        this.update(tx),
-      );
-
-      return UPDATE_DELAY;
-    }, UPDATE_DELAY);
-  }
+  protected readonly itemUpdaters = [IssueUpdater];
 
   public override async update(tx: ServiceTransaction): Promise<void> {
     let accounts = await Account.store(tx).find();

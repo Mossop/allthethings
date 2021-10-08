@@ -248,7 +248,7 @@ const models: TsoaRoute.Models = {
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Pick_ServiceDetailEntity.Exclude_keyofServiceDetailEntity.id-or-taskDue-or-taskDone__": {
         "dataType": "refAlias",
-        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"serviceId":{"dataType":"string","required":true},"hasTaskState":{"dataType":"boolean","required":true}},"validators":{}},
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"serviceId":{"dataType":"string","required":true},"hasTaskState":{"dataType":"boolean","required":true},"fields":{"dataType":"any","required":true}},"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "Omit_ServiceDetailEntity.id-or-taskDue-or-taskDone_": {
@@ -267,9 +267,14 @@ const models: TsoaRoute.Models = {
         "additionalProperties": false,
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
+    "Pick_ServiceListItemEntity.present-or-done-or-due_": {
+        "dataType": "refAlias",
+        "type": {"dataType":"nestedObjectLiteral","nestedProperties":{"due":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"done":{"dataType":"union","subSchemas":[{"ref":"DateTime"},{"dataType":"enum","enums":[null]}],"required":true},"present":{"ref":"DateTime","required":true}},"validators":{}},
+    },
+    // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ServiceListState": {
         "dataType": "refAlias",
-        "type": {"dataType":"intersection","subSchemas":[{"ref":"ServiceListEntity"},{"dataType":"nestedObjectLiteral","nestedProperties":{"__typename":{"dataType":"enum","enums":["ServiceList"],"required":true}}}],"validators":{}},
+        "type": {"dataType":"intersection","subSchemas":[{"ref":"ServiceListEntity"},{"ref":"Pick_ServiceListItemEntity.present-or-done-or-due_"}],"validators":{}},
     },
     // WARNING: This file was auto-generated with tsoa. Please do not modify it. Re-run tsoa to re-generate this file: https://github.com/lukeautry/tsoa
     "ServiceDetailState": {

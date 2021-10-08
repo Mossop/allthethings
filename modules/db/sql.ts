@@ -108,6 +108,10 @@ sql.ref = function ref(...refs: string[]): Sql {
 };
 
 sql.join = function join(values: readonly unknown[], join: string): Sql {
+  if (values.length == 0) {
+    throw new Error("Nothing to join");
+  }
+
   let joiner = new QueryJoiner();
 
   joiner.pushPart("");

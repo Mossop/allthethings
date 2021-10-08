@@ -50,3 +50,29 @@ export function memoized<R, A extends unknown[]>(
     return result;
   };
 }
+
+export interface Key<O> {
+  _dummy: O;
+}
+
+export function objectKey<O>(
+  ...keys: (keyof O)[]
+): (obj: Partial<O>) => Key<O> {
+  let values = new WeakMap<WrappedMap, Key<O>>();
+  let memos = new WrappedMap();
+
+  return (obj: Partial<O>): Key<O> => {
+    let inner = memos;
+    for (let key of keys) {
+      inner = inner.get(obj[key]);
+    }
+
+    let key = values.get(inner);
+    if (!key) {
+      key = {} as unknown as Key<O>;
+      values.set(inner, key);
+    }
+
+    return key;
+  };
+}

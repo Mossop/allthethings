@@ -2,7 +2,7 @@
 import { hash as bcryptHash, compare as bcryptCompare } from "bcrypt";
 import { DateTime } from "luxon";
 
-import type { Sql } from "../../db";
+import type { Sql, WhereConditions } from "../../db";
 import {
   any,
   all,
@@ -14,7 +14,7 @@ import {
   where,
 } from "../../db";
 import type { Awaitable, RelativeDateTime } from "../../utils";
-import { addOffset, call, memoized, waitFor } from "../../utils";
+import { lazy, addOffset, memoized } from "../../utils";
 import type { ItemList, Transaction, Store } from "../utils";
 import {
   TaskController,
@@ -42,8 +42,6 @@ import type {
   UserEntity,
 } from "./entities";
 import { ItemType } from "./entities";
-import { ServiceManager } from "./services";
-import { buildServiceTransaction } from "./transaction";
 
 export type TaskList = Project | Context;
 export type ItemHolder = TaskList | Section;
@@ -495,6 +493,14 @@ export type ItemState = ItemParams &
     detail: ItemDetailState | null;
   };
 
+type ExtendedItemEntity = ItemEntity & {
+  taskInfo?: TaskInfoEntity | null;
+  fileDetail?: FileDetail | null;
+  noteDetail?: NoteDetail | null;
+  serviceDetail?: ServiceDetail | null;
+  linkDetail?: LinkDetail | null;
+};
+
 export class Item extends IdentifiedEntityImpl<ItemEntity> {
   public static readonly store = storeBuilder(Item, "core.Item");
 
@@ -546,37 +552,176 @@ export class Item extends IdentifiedEntityImpl<ItemEntity> {
   }
 
   private static listQuery(
+    userId: string,
     filters: ItemFilter | ItemFilter[] | null | undefined,
   ): Sql {
-    let tables = sql`
-      FROM ${ref(Item)} AS "Item"
-        LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
-    `;
-
     if (filters) {
-      return sql`${tables} WHERE ${filtersToSql(filters)}`;
+      return sql`"userId" = ${userId} AND ${filtersToSql(filters)}`;
     }
 
-    return tables;
+    return sql`"userId" = ${userId}`;
   }
 
   public static count(
     tx: Transaction,
+    userId: string,
     filters?: ItemFilter | ItemFilter[] | null,
   ): Promise<number> {
     return tx.db.value(
-      sql`SELECT COUNT(*)::integer ${Item.listQuery(filters)}`,
+      sql`
+        SELECT COUNT(*)::integer
+        FROM ${ref(Item)} AS "Item"
+          LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
+        WHERE ${Item.listQuery(userId, filters)}
+      `,
     );
   }
 
   public static list(
     tx: Transaction,
+    userId: string,
     filters?: ItemFilter | ItemFilter[] | null,
   ): Promise<Item[]> {
-    return Item.store(tx).list(sql`
-      SELECT "Item".* ${Item.listQuery(filters)}
+    return tx.segment.inSegment("Item List", async (): Promise<Item[]> => {
+      let entities = await tx.db.query<ExtendedItemEntity>(sql`
+      SELECT
+        "Item".*,
+        to_jsonb("TaskInfo".*) AS "taskInfo"
+      FROM ${ref(Item)} AS "Item"
+        LEFT JOIN ${ref(TaskInfo)} AS "TaskInfo" USING ("id")
+      WHERE ${Item.listQuery(userId, filters)}
       ORDER BY "Item"."sectionIndex" ASC, "Item"."created" DESC
     `);
+
+      let entityMap = new Map<string, ExtendedItemEntity>();
+      let noteIds: string[] = [];
+      let fileIds: string[] = [];
+      let linkIds: string[] = [];
+      let serviceIds: string[] = [];
+
+      for (let entity of entities) {
+        entityMap.set(entity.id, entity);
+        switch (entity.type) {
+          case ItemType.File:
+            fileIds.push(entity.id);
+            break;
+          case ItemType.Note:
+            noteIds.push(entity.id);
+            break;
+          case ItemType.Link:
+            linkIds.push(entity.id);
+            break;
+          case ItemType.Service:
+            serviceIds.push(entity.id);
+            break;
+        }
+      }
+
+      if (fileIds.length) {
+        for (let detail of await FileDetail.store(tx).find({
+          id: In(fileIds),
+        })) {
+          entityMap.get(detail.id)!.fileDetail = detail;
+        }
+      }
+
+      if (linkIds.length) {
+        for (let detail of await LinkDetail.store(tx).find({
+          id: In(linkIds),
+        })) {
+          entityMap.get(detail.id)!.linkDetail = detail;
+        }
+      }
+
+      if (noteIds.length) {
+        for (let detail of await NoteDetail.store(tx).find({
+          id: In(noteIds),
+        })) {
+          entityMap.get(detail.id)!.noteDetail = detail;
+        }
+      }
+
+      if (serviceIds.length) {
+        let listItems = sql`
+          SELECT
+            "ServiceListItem"."itemId",
+            "ServiceList".*,
+            "ServiceListItem"."present",
+            "ServiceListItem"."due",
+            "ServiceListItem"."done"
+          FROM
+            "core"."ServiceList" AS "ServiceList"
+            JOIN
+            "core"."ServiceListItem" AS "ServiceListItem"
+              ON "ServiceListItem"."listId" = "ServiceList"."id"
+          WHERE
+            ${where({
+              "ServiceListItem.itemId": In(serviceIds),
+            })}
+        `;
+
+        let details = await ServiceDetail.store(tx).list(sql`
+          SELECT "ServiceDetail".*, json_agg("ListItem".*) AS "lists"
+          FROM "core"."ServiceDetail" AS "ServiceDetail"
+          LEFT JOIN (${listItems}) AS "ListItem"
+            ON "ListItem"."itemId" = "ServiceDetail"."id"
+          WHERE ${where({
+            "ServiceDetail.id": In(serviceIds),
+          })}
+          GROUP BY "ServiceDetail"."id"
+        `);
+
+        for (let detail of details) {
+          entityMap.get(detail.id)!.serviceDetail = detail;
+        }
+      }
+
+      return entities.map(
+        (entity: ExtendedItemEntity): Item => new Item(tx, entity),
+      );
+    });
+  }
+
+  public readonly taskInfo: PromiseLike<TaskInfo | null>;
+  public readonly fileDetail: PromiseLike<FileDetail | null>;
+  public readonly noteDetail: PromiseLike<NoteDetail | null>;
+  public readonly serviceDetail: PromiseLike<ServiceDetail | null>;
+  public readonly linkDetail: PromiseLike<LinkDetail | null>;
+
+  public constructor(
+    tx: Transaction,
+    {
+      taskInfo,
+      fileDetail,
+      noteDetail,
+      serviceDetail,
+      linkDetail,
+      ...entity
+    }: ExtendedItemEntity,
+  ) {
+    super(tx, entity);
+
+    this.taskInfo =
+      taskInfo === undefined
+        ? lazy(() => TaskInfo.store(tx).get(this.id))
+        : Promise.resolve(taskInfo ? new TaskInfo(tx, taskInfo) : null);
+
+    this.fileDetail =
+      fileDetail === undefined
+        ? lazy(() => FileDetail.store(tx).get(this.id))
+        : Promise.resolve(fileDetail);
+    this.noteDetail =
+      noteDetail === undefined
+        ? lazy(() => NoteDetail.store(tx).get(this.id))
+        : Promise.resolve(noteDetail);
+    this.serviceDetail =
+      serviceDetail === undefined
+        ? lazy(() => ServiceDetail.store(tx).get(this.id))
+        : Promise.resolve(serviceDetail);
+    this.linkDetail =
+      linkDetail === undefined
+        ? lazy(() => LinkDetail.store(tx).get(this.id))
+        : Promise.resolve(linkDetail);
   }
 
   public get type(): ItemType | null {
@@ -619,22 +764,18 @@ export class Item extends IdentifiedEntityImpl<ItemEntity> {
     return User.store(this.tx).get(this.entity.userId);
   });
 
-  public get taskInfo(): Promise<TaskInfo | null> {
-    return TaskInfo.store(this.tx).findOne({ id: this.id });
-  }
-
-  public get detail(): Promise<ItemDetail | null> {
+  public get detail(): PromiseLike<ItemDetail | null> {
     switch (this.entity.type) {
       case null:
         return Promise.resolve(null);
       case ItemType.File:
-        return FileDetail.store(this.tx).findOne({ id: this.id });
+        return this.fileDetail;
       case ItemType.Note:
-        return NoteDetail.store(this.tx).findOne({ id: this.id });
+        return this.noteDetail;
       case ItemType.Service:
-        return ServiceDetail.store(this.tx).findOne({ id: this.id });
+        return this.serviceDetail;
       case ItemType.Link:
-        return LinkDetail.store(this.tx).findOne({ id: this.id });
+        return this.linkDetail;
     }
   }
 
@@ -1003,6 +1144,10 @@ export type ServiceDetailState = Omit<
   lists: ServiceListState[];
 };
 
+type ExtendedServiceDetailEntity = ServiceDetailEntity & {
+  lists?: (ServiceListState | null)[];
+};
+
 export class ServiceDetail extends ItemDetailImpl<ServiceDetailEntity> {
   public static readonly store = storeBuilder(
     ServiceDetail,
@@ -1022,6 +1167,38 @@ export class ServiceDetail extends ItemDetailImpl<ServiceDetailEntity> {
     );
   }
 
+  public readonly lists: PromiseLike<ServiceListState[]>;
+
+  public constructor(
+    tx: Transaction,
+    { lists, ...entity }: ExtendedServiceDetailEntity,
+  ) {
+    super(tx, entity);
+
+    let notNull = (val: ServiceListState | null): val is ServiceListState =>
+      !!val;
+
+    this.lists =
+      lists === undefined
+        ? lazy(() =>
+            this.tx.db.query<ServiceListState>(sql`
+        SELECT
+          "ServiceList".*,
+          "ServiceListItem"."present",
+          "ServiceListItem"."due",
+          "ServiceListItem"."done"
+        FROM ${ref(ServiceListItem)} AS "ServiceListItem"
+          LEFT JOIN ${ref(
+            ServiceList,
+          )} AS "ServiceList" ON "ServiceListItem"."listId" = "ServiceList"."id"
+        WHERE ${where({
+          itemId: this.itemId,
+        })}
+      `),
+          )
+        : Promise.resolve(lists.filter(notNull));
+  }
+
   public get serviceId(): string {
     return this.entity.serviceId;
   }
@@ -1039,52 +1216,20 @@ export class ServiceDetail extends ItemDetailImpl<ServiceDetailEntity> {
   }
 
   public async state(): Promise<ServiceDetailState> {
-    let lists = await this.lists();
+    let lists = await this.lists;
+    let currentLists = lists.filter(
+      (list: ServiceListState): boolean => list.done === null,
+    );
 
     return {
       __typename: "ServiceDetail",
       serviceId: this.serviceId,
       hasTaskState: this.hasTaskState,
-      wasEverListed: await this.wasEverListed(),
-      isCurrentlyListed: lists.length > 0,
-      lists: lists.map((list: ServiceList): ServiceListState => list.state),
-      fields: JSON.parse(await this.fields()),
+      wasEverListed: lists.length > 0,
+      isCurrentlyListed: currentLists.length > 0,
+      lists: currentLists,
+      fields: this.entity.fields,
     };
-  }
-
-  public async fields(): Promise<string> {
-    let service = ServiceManager.getService(this.serviceId);
-    let serviceTx = buildServiceTransaction(service, this.tx);
-    let item = await service.getServiceItem(serviceTx, this.itemId);
-    return JSON.stringify(await waitFor(call(item, item.fields)));
-  }
-
-  public async lists(): Promise<ServiceList[]> {
-    return ServiceList.store(this.tx).list(sql`
-      SELECT "ServiceList".* FROM ${ref(ServiceListItem)} AS "ServiceListItem"
-        LEFT JOIN ${ref(
-          ServiceList,
-        )} AS "ServiceList" ON "ServiceListItem"."listId"="ServiceList"."id"
-      WHERE ${where({
-        itemId: this.itemId,
-        done: IsNull(),
-      })}
-    `);
-  }
-
-  public async wasEverListed(): Promise<boolean> {
-    let count = await ServiceListItem.store(this.tx).count({
-      itemId: this.itemId,
-    });
-    return count > 0;
-  }
-
-  public async isCurrentlyListed(): Promise<boolean> {
-    let count = await ServiceListItem.store(this.tx).count({
-      itemId: this.itemId,
-      done: IsNull(),
-    });
-    return count > 0;
   }
 }
 
@@ -1103,9 +1248,8 @@ function calcDue(
   return addOffset(now, offset);
 }
 
-export type ServiceListState = ServiceListEntity & {
-  __typename: "ServiceList";
-};
+export type ServiceListState = ServiceListEntity &
+  Pick<ServiceListItemEntity, "present" | "done" | "due">;
 
 export class ServiceList extends IdentifiedEntityImpl<ServiceListEntity> {
   public static readonly store = storeBuilder(ServiceList, "core.ServiceList");
@@ -1138,13 +1282,6 @@ export class ServiceList extends IdentifiedEntityImpl<ServiceListEntity> {
 
   public get url(): string | null {
     return this.entity.url;
-  }
-
-  public get state(): ServiceListState {
-    return {
-      __typename: "ServiceList",
-      ...this.entity,
-    };
   }
 
   protected async setItems(
@@ -1213,7 +1350,7 @@ export class ServiceList extends IdentifiedEntityImpl<ServiceListEntity> {
 
   public override async delete(): Promise<void> {
     return this.tx.segment.inSegment("ServiceList.delete", async () => {
-      let currentIds = await this.db.pluck<string>(
+      let idsInList = await this.db.pluck<string>(
         sql`SELECT "itemId" FROM ${ref(ServiceListItem)} WHERE "listId" = ${
           this.id
         }`,
@@ -1221,28 +1358,42 @@ export class ServiceList extends IdentifiedEntityImpl<ServiceListEntity> {
 
       await super.delete();
 
-      let presentIds = await this.db.pluck<string>(
+      if (!idsInList.length) {
+        return;
+      }
+
+      let idsInOtherLists = await this.db.pluck<string>(
         sql`SELECT DISTINCT "itemId" FROM ${ref(ServiceListItem)} WHERE ${where(
           {
-            itemId: In(currentIds),
-            present: Not(IsNull()),
+            itemId: In(idsInList),
           },
         )}`,
       );
 
-      let idsToUpdate = currentIds.filter(
-        (id: string): boolean => !presentIds.includes(id),
+      let conditions: WhereConditions<TaskInfoEntity>[] = [
+        {
+          id: In(idsInList),
+          controller: TaskController.ServiceList,
+        },
+      ];
+
+      if (idsInOtherLists.length) {
+        conditions.push({
+          id: Not(In(idsInOtherLists)),
+        });
+      }
+
+      let idsToDelete = await this.db.pluck<string>(
+        sql`SELECT "id" FROM ${ref(TaskInfo)} WHERE ${all(conditions)}`,
       );
 
-      let done = DateTime.now();
-      await TaskInfo.store(this.tx).update(
-        { done },
-        {
-          id: In(idsToUpdate),
-          controller: TaskController.ServiceList,
-          done: IsNull(),
-        },
-      );
+      if (idsToDelete.length) {
+        await Item.store(this.tx).delete({
+          id: In(idsToDelete),
+        });
+      }
+
+      await TaskInfo.updateTaskDetails(this.tx, idsInOtherLists);
     });
   }
 }

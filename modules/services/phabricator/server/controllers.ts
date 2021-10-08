@@ -6,7 +6,7 @@ import type {
   PhabricatorAccountState,
   PhabricatorAccountParams,
   PhabricatorQueryState,
-  QueryClass,
+  QueryType,
 } from "./implementations";
 import { Query, Account } from "./implementations";
 
@@ -70,11 +70,11 @@ export class AccountController extends ServiceController {
 export class SearchController extends ServiceController {
   @Get()
   public async listQueries(): Promise<PhabricatorQueryState[]> {
-    return Object.values(Query.queries).map(
-      (query: QueryClass): PhabricatorQueryState => ({
-        queryId: query.queryId,
-        name: query.queryName,
-        description: query.description,
+    return Object.entries(Query.queries).map(
+      ([queryId, behaviour]: [string, QueryType]): PhabricatorQueryState => ({
+        queryId,
+        name: behaviour.name,
+        description: behaviour.description,
       }),
     );
   }

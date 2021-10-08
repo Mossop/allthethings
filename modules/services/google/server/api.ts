@@ -7,6 +7,7 @@ import { google, Auth } from "googleapis";
 import { GaxiosError } from "googleapis-common";
 
 import { GoogleService } from ".";
+import type { Overwrite } from "../../../utils";
 import type { GoogleAccountEntity } from "./entities";
 import type { Account } from "./implementations";
 
@@ -52,6 +53,13 @@ export type GoogleAPIFile = Present<
     "id" | "name" | "mimeType" | "description" | "iconLink" | "webViewLink"
   >,
   "id" | "name" | "mimeType"
+>;
+
+export type GoogleAPIThread = Overwrite<
+  gmail_v1.Schema$Thread,
+  {
+    id: string;
+  }
 >;
 
 const fileFields: (keyof GoogleAPIFile | "trashed")[] = [
@@ -171,22 +179,25 @@ export class GoogleApi {
     return getAccountInfo(this.client);
   }
 
-  public async getThread(
-    threadId: string,
-  ): Promise<gmail_v1.Schema$Thread | null> {
+  public async getThread(threadId: string): Promise<GoogleAPIThread | null> {
     let api = google.gmail({
       version: "v1",
       auth: this.client,
     });
 
     return this.account.tx.segment.inSegment("thread API request", () =>
-      this.apiCall(async () => {
+      this.apiCall(async (): Promise<GoogleAPIThread | null> => {
         try {
           let { data: thread } = await api.users.threads.get({
             userId: "me",
             id: threadId,
           });
 
+          if (!thread.id) {
+            return null;
+          }
+
+          // @ts-ignore
           return thread;
         } catch (e) {
           if (e instanceof GaxiosError && e.response?.status == 404) {
@@ -198,14 +209,14 @@ export class GoogleApi {
     );
   }
 
-  public async listThreads(query: string): Promise<gmail_v1.Schema$Thread[]> {
+  public async listThreads(query: string): Promise<GoogleAPIThread[]> {
     let api = google.gmail({
       version: "v1",
       auth: this.client,
     });
 
     return this.account.tx.segment.inSegment("list API threads", async () => {
-      let threads: Promise<gmail_v1.Schema$Thread | null>[] = [];
+      let threads: Promise<GoogleAPIThread | null>[] = [];
 
       let pageToken: string | null | undefined = undefined;
       while (pageToken !== null) {

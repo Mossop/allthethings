@@ -10,7 +10,7 @@ import type {
   ServiceTransaction,
   ServiceMiddlewareContext,
 } from "../../../server/utils";
-import { Account, IssueLike, Search } from "./implementations";
+import { Account, IssueLikeUpdater } from "./implementations";
 import { RegisterRoutes } from "./routes";
 import type { GithubServiceConfig } from "./types";
 
@@ -22,15 +22,10 @@ function first(param: string | string[] | undefined): string | undefined {
   return param;
 }
 
-const INITIAL_DELAY = 1000;
-const UPDATE_DELAY = 60000;
-
 export class GithubService extends BaseService {
+  protected itemUpdaters = [IssueLikeUpdater];
+
   private static _service: GithubService | null = null;
-
-  protected readonly listProviders = [Search];
-
-  protected readonly itemProviders = [IssueLike];
 
   public static get config(): GithubServiceConfig {
     return GithubService.service.config;
@@ -55,21 +50,13 @@ export class GithubService extends BaseService {
   }
 
   public constructor(
-    private readonly server: Server,
+    server: Server,
     private readonly config: GithubServiceConfig,
   ) {
-    super();
+    super(server);
 
     GithubService._service = this;
     this.problems = new Map();
-
-    server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
-        this.update(tx),
-      );
-
-      return UPDATE_DELAY;
-    }, INITIAL_DELAY);
   }
 
   public override async update(tx: ServiceTransaction): Promise<void> {
@@ -81,6 +68,7 @@ export class GithubService extends BaseService {
         // Ignore account failure.
       }
     }
+
     await super.update(tx);
   }
 

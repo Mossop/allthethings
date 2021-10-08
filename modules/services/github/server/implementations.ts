@@ -2,36 +2,29 @@ import { URL } from "url";
 
 import { DateTime } from "luxon";
 
-import { In, Not, sql } from "../../../db";
+import { sql } from "../../../db";
 import {
-  TaskController,
   BaseAccount,
-  BaseItem,
   BaseList,
-  EntityImpl,
   id,
-  IdentifiedEntityImpl,
-  ref,
   storeBuilder,
+  ItemUpdater,
 } from "../../../server/utils";
-import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
+import type {
+  ServiceTransaction,
+  CoreItemParams,
+  RemoteList,
+} from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { map, offsetFromJson } from "../../../utils";
-import type { IssueLikeFields, LabelFields, RepositoryFields } from "../schema";
+import { decodeRelativeDateTime, map, offsetFromJson } from "../../../utils";
+import type { IssueLikeFields, LabelFields } from "../schema";
 import { GitHubApi, UserInfo } from "./api";
 import type {
   GithubAccountEntity,
   GithubIssueLikeEntity,
-  GithubLabelEntity,
-  GithubRepositoryEntity,
   GithubSearchEntity,
-  IssueLikeLabelEntity,
 } from "./entities";
-import type {
-  IssueLikeApiResult,
-  LabelApiResult,
-  RepositoryApiResult,
-} from "./types";
+import type { IssueLikeApiResult, LabelApiResult } from "./types";
 
 const ISSUELIKE_REGEX =
   /https:\/\/github\.com\/([^/]+)\/(.+)\/(?:pull|issues)\/(\d+)/;
@@ -44,6 +37,11 @@ export type GithubAccountState = Omit<
   loginUrl: string;
   searches: GithubSearchState[];
 };
+
+interface RemoteIssueLike {
+  issueLike: IssueLikeApiResult;
+  accountId: string;
+}
 
 export class Account extends BaseAccount<GithubAccountEntity> {
   public static readonly store = storeBuilder(Account, "github.Account");
@@ -74,6 +72,10 @@ export class Account extends BaseAccount<GithubAccountEntity> {
     return this.api.generateLoginUrl();
   }
 
+  protected lists(): Promise<Search[]> {
+    return this.searches();
+  }
+
   public searches(): Promise<Search[]> {
     return Search.store(this.tx).find({
       accountId: this.id,
@@ -93,15 +95,10 @@ export class Account extends BaseAccount<GithubAccountEntity> {
     };
   }
 
-  public async items(): Promise<IssueLike[]> {
-    return IssueLike.store(this.tx).list(sql`
-      SELECT "IssueLike".*
-      FROM ${ref(IssueLike)} AS "IssueLike"
-      JOIN ${ref(
-        Repository,
-      )} AS "Repository" ON "Repository"."id"="IssueLike"."repositoryId"
-      WHERE "Repository"."accountId"=${this.id}
-    `);
+  protected items(): Promise<string[]> {
+    return this.db.pluck<string>(
+      sql`SELECT "id" FROM "github"."IssueLike" WHERE "accountId" = ${this.id}`,
+    );
   }
 
   public async updateAccount(): Promise<void> {
@@ -147,118 +144,21 @@ export class Account extends BaseAccount<GithubAccountEntity> {
   }
 }
 
-export class Repository extends IdentifiedEntityImpl<
-  GithubRepositoryEntity,
-  ServiceTransaction
-> {
-  public static readonly store = storeBuilder(Repository, "github.Repository");
-
-  public static async getOrCreate(
-    account: Account,
-    record: RepositoryApiResult,
-  ): Promise<Repository> {
-    let repo = await Repository.store(account.tx).findOne({
-      accountId: account.id,
-      nodeId: record.id,
-    });
-
-    if (repo) {
-      await repo.update({
-        owner: record.owner.login,
-        name: record.name,
-        url: record.url,
-      });
-      return repo;
-    }
-
-    return Repository.store(account.tx).create({
-      id: await id(),
-      accountId: account.id,
-      nodeId: record.id,
-      owner: record.owner.login,
-      name: record.name,
-      url: record.url,
-    });
-  }
-
-  public account(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
-  }
-
-  public get nodeId(): string {
-    return this.entity.nodeId;
-  }
-
-  public async fields(): Promise<RepositoryFields> {
-    return {
-      owner: this.entity.owner,
-      name: this.entity.name,
-      url: this.entity.url,
-    };
-  }
-}
-
-export class Label extends IdentifiedEntityImpl<
-  GithubLabelEntity,
-  ServiceTransaction
-> {
-  public static readonly store = storeBuilder(Label, "github.Label");
-
-  public static async getOrCreate(
-    repository: Repository,
-    record: LabelApiResult,
-  ): Promise<Label> {
-    let label = await Label.store(repository.tx).findOne({
-      repositoryId: repository.id,
-      nodeId: record.id,
-    });
-
-    if (label) {
-      await label.update({
-        color: record.color,
-        name: record.name,
-        url: record.url,
-      });
-      return label;
-    }
-
-    return Label.store(repository.tx).create({
-      id: await id(),
-      repositoryId: repository.id,
-      nodeId: record.id,
-      color: record.color,
-      name: record.name,
-      url: record.url,
-    });
-  }
-
-  public repository(): Promise<Repository> {
-    return Repository.store(this.tx).get(this.entity.repositoryId);
-  }
-
-  public get nodeId(): string {
-    return this.entity.nodeId;
-  }
-
-  public async fields(): Promise<LabelFields> {
-    return {
-      name: this.entity.name,
-      color: this.entity.color,
-      url: this.entity.url,
-    };
-  }
-}
-
 export type GithubSearchParams = Omit<GithubSearchEntity, "id" | "accountId">;
 export type GithubSearchState = Omit<GithubSearchEntity, "accountId"> & {
   url: string;
 };
 
-export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
+export class Search extends BaseList<GithubSearchEntity, RemoteIssueLike> {
   public static readonly store = storeBuilder(Search, "github.Search");
 
   public account(): Promise<Account> {
     return Account.store(this.tx).get(this.entity.accountId);
+  }
+
+  public async userId(): Promise<string> {
+    let account = await this.account();
+    return account.entity.userId;
   }
 
   public get name(): string {
@@ -287,50 +187,39 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
     };
   }
 
-  public async listItems(
-    issueList?: readonly IssueLikeApiResult[],
-  ): Promise<IssueLike[]> {
+  public async listItems(): Promise<RemoteIssueLike[]> {
     let account = await this.account();
-
-    if (!issueList) {
-      issueList = await account.api.search(this.entity.query);
-    }
-
-    let instances: IssueLike[] = [];
-
-    for (let issue of issueList) {
-      let repo = await Repository.getOrCreate(account, issue.repository);
-
-      let instance = await IssueLike.store(this.tx).findOne({
-        repositoryId: repo.id,
-        nodeId: issue.id,
-      });
-
-      if (instance) {
-        await instance.updateItem(issue);
-      } else {
-        instance = await IssueLike.create(
-          repo,
-          issue,
-          TaskController.ServiceList,
-        );
-      }
-
-      instances.push(instance);
-    }
-
-    return instances;
+    return map(
+      account.api.search(this.entity.query),
+      (issueLike: IssueLikeApiResult): RemoteIssueLike => ({
+        accountId: this.entity.accountId,
+        issueLike,
+      }),
+    );
   }
 
   public static async create(
     account: Account,
     record: GithubSearchParams,
   ): Promise<Search> {
-    let issues = await account.api.search(record.query);
+    let issues = await map(
+      account.api.search(record.query),
+      (issueLike: IssueLikeApiResult): RemoteIssueLike => ({
+        accountId: account.id,
+        issueLike,
+      }),
+    );
 
-    let id = await account.tx.addList({
+    let url = new URL("https://github.com/issues");
+    url.searchParams.set("q", record.query);
+
+    let updater = new IssueLikeUpdater(account.tx);
+    let id = await updater.addList({
+      userId: account.entity.userId,
+      url: url.toString(),
+      due: decodeRelativeDateTime(record.dueOffset),
       name: record.name,
-      url: null,
+      remotes: issues,
     });
 
     let dbRecord = {
@@ -339,119 +228,100 @@ export class Search extends BaseList<GithubSearchEntity, IssueLikeApiResult[]> {
       accountId: account.id,
     };
 
-    let search = await Search.store(account.tx).create(dbRecord);
-    await search.updateList(issues);
-    return search;
+    return Search.store(account.tx).create(dbRecord);
   }
 }
 
-export class IssueLike
-  extends BaseItem<GithubIssueLikeEntity>
-  implements ServiceItem<IssueLikeFields>
-{
-  public static readonly store = storeBuilder(IssueLike, "github.IssueLike");
-
-  public repository(): Promise<Repository> {
-    return Repository.store(this.tx).get(this.entity.repositoryId);
+export class IssueLikeUpdater extends ItemUpdater<
+  GithubIssueLikeEntity,
+  RemoteIssueLike
+> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "github.IssueLike", "nodeId");
   }
 
-  public get nodeId(): string {
-    return this.entity.nodeId;
+  private accounts: Map<string, Account> = new Map();
+
+  protected override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+    }
   }
 
-  public override async url(): Promise<string> {
-    return this.entity.url;
-  }
-
-  public static recordFromApi(
-    data: IssueLikeApiResult,
-  ): Omit<GithubIssueLikeEntity, "id" | "repositoryId"> {
-    let state = data.__typename == "Issue" ? data.issueState : data.prState;
+  protected async entityForRemote({
+    accountId,
+    issueLike,
+  }: RemoteIssueLike): Promise<GithubIssueLikeEntity> {
     return {
-      nodeId: data.id,
-      type: data.__typename == "Issue" ? "issue" : "pr",
-      number: data.number,
-      title: data.title,
-      url: data.url,
-      state,
+      accountId,
+      nodeId: issueLike.id,
     };
   }
 
-  public override async updateItem(
-    issueLike?: IssueLikeApiResult,
-  ): Promise<void> {
-    let repository = await this.repository();
-    let account = await repository.account();
+  protected paramsForRemote({ issueLike }: RemoteIssueLike): CoreItemParams {
+    let isLabel = (label: LabelApiResult | null): label is LabelApiResult =>
+      !!label;
+    let labels = issueLike.labels?.nodes?.filter(isLabel) ?? [];
 
-    if (!issueLike) {
-      issueLike = (await account.api.node(this.nodeId)) ?? undefined;
-      if (!issueLike) {
-        return this.tx.deleteItem(this.id);
-      }
-    }
+    let fields: IssueLikeFields = {
+      type: issueLike.__typename == "Issue" ? "issue" : "pr",
+      number: issueLike.number,
+      title: issueLike.title,
+      url: issueLike.url,
+      state:
+        issueLike.__typename == "Issue"
+          ? issueLike.issueState
+          : issueLike.prState,
+      repository: {
+        name: issueLike.repository.name,
+        owner: issueLike.repository.owner.login,
+        url: issueLike.repository.url,
+      },
+      labels: labels.map(
+        (label: LabelApiResult): LabelFields => ({
+          color: label.color,
+          name: label.name,
+          url: label.url,
+        }),
+      ),
+    };
 
-    await this.update(IssueLike.recordFromApi(issueLike));
-
-    let labels: Label[] = [];
-    for (let apiLabel of issueLike.labels?.nodes ?? []) {
-      if (apiLabel) {
-        labels.push(await Label.getOrCreate(repository, apiLabel));
-      }
-    }
-
-    await IssueLikeLabel.setIssueLabels(this, labels);
-
-    await this.tx.setItemTaskDone(
-      this.id,
-      issueLike.closedAt ? DateTime.fromISO(issueLike.closedAt) : null,
-    );
+    return {
+      summary: issueLike.title,
+      fields,
+      due: null,
+      done: issueLike.closedAt ? DateTime.fromISO(issueLike.closedAt) : null,
+    };
   }
 
-  public static async create(
-    repository: Repository,
-    data: IssueLikeApiResult,
-    controller: TaskController | null,
-  ): Promise<IssueLike> {
-    let record = IssueLike.recordFromApi(data);
+  protected async updateEntities(
+    entities: GithubIssueLikeEntity[],
+  ): Promise<RemoteIssueLike[]> {
+    let results: RemoteIssueLike[] = [];
 
-    // Probably didn't want to create an already complete task.
-    if (data.closedAt && controller == TaskController.Service) {
-      controller = TaskController.Manual;
-    }
+    for (let entity of entities) {
+      let account = this.accounts.get(entity.accountId)!;
 
-    let account = await repository.account();
-    let id = await repository.tx.createItem(account.userId, {
-      summary: record.title,
-      archived: null,
-      snoozed: null,
-      done: data.closedAt ? DateTime.fromISO(data.closedAt) : null,
-      controller,
-    });
-
-    let issueLike = await IssueLike.store(repository.tx).create({
-      ...record,
-      id,
-      repositoryId: repository.id,
-    });
-
-    let labels: Label[] = [];
-    for (let apiLabel of data.labels?.nodes ?? []) {
-      if (apiLabel) {
-        labels.push(await Label.getOrCreate(repository, apiLabel));
+      let node = await account.api.node(entity.nodeId);
+      if (node) {
+        results.push({
+          accountId: account.id,
+          issueLike: node,
+        });
       }
     }
 
-    await IssueLikeLabel.setIssueLabels(issueLike, labels);
-
-    return issueLike;
+    return results;
   }
 
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
+  protected getLists(): Promise<RemoteList<RemoteIssueLike>[]> {
+    return Search.store(this.tx).find();
+  }
+
+  protected async getRemoteForURL(
     userId: string,
     url: URL,
-    isTask: boolean,
-  ): Promise<IssueLike | null> {
+  ): Promise<RemoteIssueLike | null> {
     let matches = ISSUELIKE_REGEX.exec(url.toString());
     if (!matches) {
       return null;
@@ -460,103 +330,23 @@ export class IssueLike
     let [, owner, repo, numberStr] = matches;
     let number = parseInt(numberStr);
 
-    for (let account of await Account.store(tx).find({ userId })) {
-      let repository = await Repository.store(tx).findOne({
-        accountId: account.id,
-        owner: owner,
-        name: repo,
-      });
-
-      if (repository) {
-        let existing = await IssueLike.store(tx).findOne({
-          repositoryId: repository.id,
-          number,
-        });
-
-        if (existing) {
-          return existing;
-        }
+    for (let account of this.accounts.values()) {
+      if (account.entity.userId != userId) {
+        continue;
       }
 
       let issueLike = await account.api.lookup(owner, repo, number);
       if (
-        issueLike?.__typename != "Issue" &&
-        issueLike?.__typename != "PullRequest"
+        issueLike?.__typename == "Issue" ||
+        issueLike?.__typename == "PullRequest"
       ) {
-        continue;
+        return {
+          accountId: account.id,
+          issueLike,
+        };
       }
-
-      if (!repository) {
-        repository = await Repository.getOrCreate(
-          account,
-          issueLike.repository,
-        );
-      }
-
-      return IssueLike.create(
-        repository,
-        issueLike,
-        isTask ? TaskController.Service : null,
-      );
     }
 
     return null;
-  }
-
-  public async fields(): Promise<IssueLikeFields> {
-    let { id, repositoryId, nodeId, ...fields } = this.entity;
-
-    let labels = await IssueLikeLabel.issueLabels(this);
-    let labelFields = Promise.all(
-      labels.map((label: Label): Promise<LabelFields> => label.fields()),
-    );
-
-    let repository = await this.repository();
-    return {
-      ...fields,
-      repository: await repository.fields(),
-      labels: await labelFields,
-    };
-  }
-}
-
-class IssueLikeLabel extends EntityImpl<
-  IssueLikeLabelEntity,
-  ServiceTransaction
-> {
-  public static readonly store = storeBuilder(
-    IssueLikeLabel,
-    "github.IssueLikeLabel",
-    ["issueLike", "label"],
-  );
-
-  public static async issueLabels(issueLike: IssueLike): Promise<Label[]> {
-    return Label.store(issueLike.tx).list(sql`
-      SELECT "Label".*
-      FROM ${ref(Label)} AS "Label"
-        JOIN ${ref(
-          IssueLikeLabel,
-        )} AS "IssueLikeLabel" ON "IssueLikeLabel"."label" = "Label"."id"
-        WHERE "IssueLikeLabel"."issueLike" = ${issueLike.id}
-    `);
-  }
-
-  public static async setIssueLabels(
-    issueLike: IssueLike,
-    labels: Label[],
-  ): Promise<void> {
-    let store = IssueLikeLabel.store(issueLike.tx);
-    await store.delete({
-      issueLike: issueLike.id,
-      label: Not(In(labels.map((label: Label) => label.id))),
-    });
-
-    await store.upsert(
-      labels.map((label: Label) => ({
-        repositoryId: issueLike.entity.repositoryId,
-        issueLike: issueLike.id,
-        label: label.id,
-      })),
-    );
   }
 }

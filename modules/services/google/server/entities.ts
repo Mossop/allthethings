@@ -1,4 +1,4 @@
-import type { FileFields, ThreadFields } from "../schema";
+import type { DateTime } from "luxon";
 
 export interface GoogleAccountEntity {
   id: string;
@@ -18,18 +18,19 @@ export interface GoogleMailSearchEntity {
   dueOffset: string | null;
 }
 
-export type GoogleFileEntity = Omit<FileFields, "type">;
+export interface GoogleFileEntity {
+  accountId: string;
+  fileId: string;
+}
 
-export type GoogleThreadEntity = Omit<ThreadFields, "type" | "labels" | "url">;
+export interface GoogleThreadEntity {
+  accountId: string;
+  threadId: string;
+  done: DateTime | null;
+}
 
 export interface GoogleLabelEntity {
   accountId: string;
   id: string;
   name: string;
-}
-
-export interface GoogleThreadLabelEntity {
-  accountId: string;
-  threadId: string;
-  labelId: string;
 }

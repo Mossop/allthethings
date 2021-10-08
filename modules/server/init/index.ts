@@ -15,6 +15,7 @@ import { Migration0005Google } from "./migrations/0005-Google";
 import { Migration0006Jira } from "./migrations/0006-Jira";
 import { Migration0007Phabricator } from "./migrations/0007-Phabricator";
 import { Migration0008Knex } from "./migrations/0008-Knex";
+import { Migration0009ReducedQueries } from "./migrations/0009-ReducedQueries";
 
 install();
 
@@ -55,6 +56,7 @@ async function init(): Promise<void> {
             new Migration0006Jira(),
             new Migration0007Phabricator(),
             new Migration0008Knex(),
+            new Migration0009ReducedQueries(),
           ];
 
           if (process.argv.length >= 4 && process.argv[3] == "rebuild") {

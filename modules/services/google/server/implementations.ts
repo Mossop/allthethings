@@ -1,26 +1,31 @@
 import { URL } from "url";
 
-import type { gmail_v1 } from "googleapis";
 import { DateTime } from "luxon";
 
 import { GoogleService } from ".";
 import { In, Not, sql } from "../../../db";
-import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
+import type {
+  CoreItemParams,
+  RemoteList,
+  ServiceTransaction,
+} from "../../../server/utils";
 import {
-  TaskController,
-  EntityImpl,
+  ItemUpdater,
   id,
   IdentifiedEntityImpl,
-  ref,
   storeBuilder,
   BaseAccount,
-  BaseItem,
   BaseList,
 } from "../../../server/utils";
 import type { DateTimeOffset } from "../../../utils";
-import { map, encodeRelativeDateTime, offsetFromJson } from "../../../utils";
+import {
+  decodeRelativeDateTime,
+  map,
+  encodeRelativeDateTime,
+  offsetFromJson,
+} from "../../../utils";
 import type { FileFields, ThreadFields } from "../schema";
-import type { GoogleAPIFile, GoogleAPILabel } from "./api";
+import type { GoogleAPIFile, GoogleAPILabel, GoogleAPIThread } from "./api";
 import { encodeWebId, getAccountInfo, decodeWebId, GoogleApi } from "./api";
 import type {
   GoogleAccountEntity,
@@ -28,7 +33,6 @@ import type {
   GoogleLabelEntity,
   GoogleMailSearchEntity,
   GoogleThreadEntity,
-  GoogleThreadLabelEntity,
 } from "./entities";
 
 const DRIVE_REGEX = /^https:\/\/[a-z]+.google.com\/[a-z]+\/d\/([^/]+)/;
@@ -71,15 +75,19 @@ export class Account extends BaseAccount<GoogleAccountEntity> {
     };
   }
 
-  public async items(): Promise<(Thread | File)[]> {
-    return [
-      ...(await Thread.store(this.tx).find({ accountId: this.id })),
-      ...(await File.store(this.tx).find({ accountId: this.id })),
-    ];
+  protected lists(): Promise<MailSearch[]> {
+    return this.mailSearches();
   }
 
-  public override lists(): Promise<MailSearch[]> {
-    return this.mailSearches();
+  protected async items(): Promise<string[]> {
+    return [
+      ...(await this.tx.db.pluck<string>(
+        sql`SELECT "id" FROM "google"."File" WHERE "accountId" = ${this.id}`,
+      )),
+      ...(await this.tx.db.pluck<string>(
+        sql`SELECT "id" FROM "google"."Thread" WHERE "accountId" = ${this.id}`,
+      )),
+    ];
   }
 
   public async mailSearches(): Promise<MailSearch[]> {
@@ -234,11 +242,13 @@ export type GoogleMailSearchParams = Omit<
   "id" | "url" | "accountId"
 >;
 
-export class MailSearch extends BaseList<
-  GoogleMailSearchEntity,
-  gmail_v1.Schema$Thread[]
-> {
+export class MailSearch extends BaseList<GoogleMailSearchEntity, RemoteThread> {
   public static readonly store = storeBuilder(MailSearch, "google.MailSearch");
+
+  public async userId(): Promise<string> {
+    let account = await this.account();
+    return account.entity.userId;
+  }
 
   public get name(): string {
     return this.entity.name;
@@ -272,38 +282,21 @@ export class MailSearch extends BaseList<
     return account.buildURL(url).toString();
   }
 
-  public async listItems(
-    threadList?: gmail_v1.Schema$Thread[],
-  ): Promise<Thread[]> {
+  public async listItems(): Promise<RemoteThread[]> {
     let account = await this.account();
+    let threadList = await account.authClient.listThreads(this.entity.query);
 
-    if (!threadList) {
-      threadList = await account.authClient.listThreads(this.entity.query);
-    }
-
-    let instances: Thread[] = [];
+    let instances: RemoteThread[] = [];
 
     for (let thread of threadList) {
       if (!thread.id) {
         continue;
       }
 
-      let instance = await Thread.store(this.tx).findOne({
+      instances.push({
         accountId: this.entity.accountId,
-        threadId: thread.id,
+        thread,
       });
-
-      if (instance) {
-        await instance.updateItem(thread);
-      } else {
-        instance = await Thread.create(
-          account,
-          thread,
-          TaskController.ServiceList,
-        );
-      }
-
-      instances.push(instance);
     }
 
     return instances;
@@ -314,10 +307,22 @@ export class MailSearch extends BaseList<
     record: GoogleMailSearchParams,
   ): Promise<MailSearch> {
     let threads = await account.authClient.listThreads(record.query);
+    let updater = new ThreadUpdater(account.tx);
 
-    let id = await account.tx.addList({
+    let url = new URL("https://mail.google.com/mail/");
+    url.hash = `search/${record.query}`;
+
+    let id = await updater.addList({
+      userId: account.userId,
       name: record.name,
-      url: null,
+      url: account.buildURL(url).toString(),
+      due: decodeRelativeDateTime(record.dueOffset),
+      remotes: threads.map(
+        (thread: GoogleAPIThread): RemoteThread => ({
+          accountId: account.id,
+          thread,
+        }),
+      ),
     });
 
     let dbRecord = {
@@ -326,76 +331,188 @@ export class MailSearch extends BaseList<
       accountId: account.id,
     };
 
-    let search = await MailSearch.store(account.tx).create(dbRecord);
-    await search.updateList(threads);
-    return search;
+    return MailSearch.store(account.tx).create(dbRecord);
   }
 }
 
-export class Thread
-  extends BaseItem<GoogleThreadEntity>
-  implements ServiceItem<ThreadFields>
-{
-  public static readonly store = storeBuilder(Thread, "google.Thread");
+class Label extends IdentifiedEntityImpl<GoogleLabelEntity> {
+  public static readonly store = storeBuilder(Label, "google.Label", [
+    "accountId",
+    "id",
+  ]);
 
-  public account(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
+  public get name(): string {
+    return this.entity.name;
+  }
+}
+
+interface RemoteFile {
+  accountId: string;
+  file: GoogleAPIFile;
+}
+
+export class FileUpdater extends ItemUpdater<GoogleFileEntity, RemoteFile> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "google.File", "fileId");
   }
 
-  public get threadId(): string {
-    return this.entity.threadId;
+  private accounts: Map<string, Account> = new Map();
+
+  protected override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+    }
   }
 
-  public override async url(): Promise<string> {
-    let account = await this.account();
-
-    let intId = BigInt(`0x${this.threadId}`);
-    let encoded = encodeWebId(`f:${intId}`);
-    let url = new URL(`https://mail.google.com/mail/#all/${encoded}`);
-    return account.buildURL(url).toString();
+  protected async entityForRemote({
+    accountId,
+    file,
+  }: RemoteFile): Promise<GoogleFileEntity> {
+    return {
+      accountId,
+      fileId: file.id,
+    };
   }
 
-  public override async updateItem(
-    thread?: gmail_v1.Schema$Thread,
-  ): Promise<void> {
-    let account = await this.account();
+  protected paramsForRemote({ accountId, file }: RemoteFile): CoreItemParams {
+    let fields: FileFields = {
+      type: "file",
+      accountId,
+      name: file.name,
+      description: file.description ?? null,
+      mimeType: file.mimeType,
+      url: file.webViewLink ?? null,
+    };
 
-    if (!thread) {
-      thread = (await account.authClient.getThread(this.threadId)) ?? undefined;
-      if (!thread) {
-        return this.tx.deleteItem(this.id);
+    return {
+      summary: file.name,
+      fields,
+      done: undefined,
+      due: undefined,
+    };
+  }
+
+  protected async updateEntities(
+    entities: GoogleFileEntity[],
+  ): Promise<RemoteFile[]> {
+    let files: RemoteFile[] = [];
+
+    for (let { accountId, fileId } of entities) {
+      let account = this.accounts.get(accountId)!;
+      let file = await account.authClient.getFile(fileId);
+      if (file) {
+        files.push({
+          accountId,
+          file,
+        });
       }
     }
 
-    let { record, labels } = await Thread.recordFromThread(this.tx, thread);
-
-    await this.update(record);
-
-    await this.tx.setItemTaskDone(this.id, !record.unread);
-
-    await ThreadLabel.setThreadLabels(this, labels);
+    return files;
   }
 
-  public static async recordFromThread(
-    tx: ServiceTransaction,
-    data: gmail_v1.Schema$Thread,
-  ): Promise<{
-    record: Omit<GoogleThreadEntity, "id" | "accountId">;
-    labels: Label[];
-  }> {
-    if (!data.id) {
-      throw new Error("No ID.");
+  protected async getLists(): Promise<RemoteList<RemoteFile>[]> {
+    return [];
+  }
+
+  protected async getRemoteForURL(
+    userId: string,
+    url: URL,
+  ): Promise<RemoteFile | null> {
+    let matches = DRIVE_REGEX.exec(url.toString());
+    if (!matches) {
+      return null;
     }
+
+    for (let account of this.accounts.values()) {
+      if (account.userId != userId) {
+        continue;
+      }
+
+      let file = await account.authClient.getFile(matches[1]);
+      if (file) {
+        return {
+          accountId: account.id,
+          file,
+        };
+      }
+    }
+
+    return null;
+  }
+}
+
+interface RemoteThread {
+  accountId: string;
+  thread: GoogleAPIThread;
+}
+
+export class ThreadUpdater extends ItemUpdater<
+  GoogleThreadEntity,
+  RemoteThread
+> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "google.Thread", "threadId");
+  }
+
+  private accounts: Map<string, Account> = new Map();
+  private labels: Map<string, Map<string, Label>> = new Map();
+
+  protected override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+      this.labels.set(account.id, new Map());
+    }
+
+    for (let label of await Label.store(this.tx).find()) {
+      let labelMap = this.labels.get(label.entity.accountId)!;
+      labelMap.set(label.id, label);
+    }
+  }
+
+  protected async entityForRemote({
+    accountId,
+    thread,
+  }: RemoteThread): Promise<GoogleThreadEntity> {
+    let isDone = (): boolean => {
+      for (let message of thread.messages ?? []) {
+        if (message.labelIds?.includes("UNREAD")) {
+          return false;
+        }
+      }
+
+      return true;
+    };
+
+    let previous = this.previousEntity(this.entityKey({ threadId: thread.id }));
+
+    let done: DateTime | null = null;
+    if (isDone()) {
+      done = previous?.done ?? DateTime.now();
+    }
+
+    return {
+      accountId,
+      threadId: thread.id,
+      done,
+    };
+  }
+
+  protected paramsForRemote(
+    { accountId, thread }: RemoteThread,
+    entity: GoogleThreadEntity,
+  ): CoreItemParams {
+    let labelMap = this.labels.get(accountId)!;
 
     let subject: string | null = null;
     let unread = false;
     let starred = false;
     let labels: Set<string> = new Set();
 
-    for (let message of data.messages ?? []) {
+    for (let message of thread.messages ?? []) {
       for (let label of message.labelIds ?? []) {
-        if (label.startsWith("Label_")) {
-          labels.add(label);
+        if (labelMap.has(label)) {
+          labels.add(labelMap.get(label)!.name);
         } else if (label == "UNREAD") {
           unread = true;
         } else if (label == "STARRED") {
@@ -417,56 +534,57 @@ export class Thread
       throw new Error("Missing subject");
     }
 
+    let account = this.accounts.get(accountId)!;
+
+    let intId = BigInt(`0x${thread.id}`);
+    let encoded = encodeWebId(`f:${intId}`);
+    let url = new URL(`https://mail.google.com/mail/#all/${encoded}`);
+
+    let fields: ThreadFields = {
+      type: "thread",
+      accountId,
+      subject,
+      unread,
+      starred,
+      url: account.buildURL(url).toString(),
+      labels: [...labels],
+    };
+
     return {
-      record: {
-        threadId: data.id,
-        subject,
-        unread,
-        starred,
-      },
-      labels: await Label.store(tx).find({
-        id: In([...labels]),
-      }),
+      summary: subject,
+      fields,
+      done: entity.done,
+      due: undefined,
     };
   }
 
-  public static async create(
-    account: Account,
-    data: gmail_v1.Schema$Thread,
-    controller: TaskController | null,
-  ): Promise<Thread> {
-    let { record, labels } = await Thread.recordFromThread(account.tx, data);
+  protected async updateEntities(
+    entities: GoogleThreadEntity[],
+  ): Promise<RemoteThread[]> {
+    let threads: RemoteThread[] = [];
 
-    // Probably didn't want to create an already complete task.
-    if (!record.unread && controller == TaskController.Service) {
-      controller = TaskController.Manual;
+    for (let { accountId, threadId } of entities) {
+      let account = this.accounts.get(accountId)!;
+      let thread = await account.authClient.getThread(threadId);
+      if (thread) {
+        threads.push({
+          accountId,
+          thread,
+        });
+      }
     }
 
-    let id = await account.tx.createItem(account.userId, {
-      summary: record.subject,
-      archived: null,
-      snoozed: null,
-      done: record.unread ? null : DateTime.now(),
-      controller,
-    });
-
-    let thread = await Thread.store(account.tx).create({
-      ...record,
-      id,
-      accountId: account.id,
-    });
-
-    await ThreadLabel.setThreadLabels(thread, labels);
-
-    return thread;
+    return threads;
   }
 
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
+  protected getLists(): Promise<RemoteList<RemoteThread>[]> {
+    return MailSearch.store(this.tx).find();
+  }
+
+  protected async getRemoteForURL(
     userId: string,
     url: URL,
-    isTask: boolean,
-  ): Promise<Thread | null> {
+  ): Promise<RemoteThread | null> {
     if (url.hostname != "mail.google.com" || url.hash.length == 0) {
       return null;
     }
@@ -485,201 +603,20 @@ export class Thread
 
     let threadId = BigInt(decoded).toString(16);
 
-    for (let account of await Account.store(tx).find({ userId: userId })) {
-      let existing = await Thread.store(tx).findOne({
-        accountId: account.id,
-        threadId,
-      });
-      if (existing) {
-        return existing;
-      }
-
-      let apiThread = await account.authClient.getThread(threadId);
-      if (!apiThread) {
+    for (let account of this.accounts.values()) {
+      if (account.entity.userId != userId) {
         continue;
       }
 
-      await account.updateLabels();
-      return Thread.create(
-        account,
-        apiThread,
-        isTask ? TaskController.Service : null,
-      );
-    }
-
-    return null;
-  }
-
-  public async fields(): Promise<ThreadFields> {
-    let labels = await ThreadLabel.threadLabels(this);
-
-    return {
-      ...this.entity,
-      labels: labels.map((label: Label): string => label.name),
-      url: await this.url(),
-      type: "thread",
-    };
-  }
-}
-
-export class File
-  extends BaseItem<GoogleFileEntity>
-  implements ServiceItem<FileFields>
-{
-  public static readonly store = storeBuilder(File, "google.File");
-
-  public account(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
-  }
-
-  public override async url(): Promise<string | null> {
-    return this.entity.url;
-  }
-
-  public get fileId(): string {
-    return this.entity.fileId;
-  }
-
-  private static recordFromFile(
-    file: GoogleAPIFile,
-  ): Omit<GoogleFileEntity, "accountId" | "id" | "fileId"> {
-    return {
-      name: file.name,
-      description: file.description ?? null,
-      mimeType: file.mimeType,
-      url: file.webViewLink ?? null,
-    };
-  }
-
-  public override async updateItem(file?: GoogleAPIFile): Promise<void> {
-    let account = await this.account();
-
-    if (!file) {
-      file = (await account.authClient.getFile(this.fileId)) ?? undefined;
-
-      if (!file) {
-        return this.tx.deleteItem(this.id);
-      }
-    }
-
-    let record = File.recordFromFile(file);
-    await this.update(record);
-  }
-
-  public static async create(
-    account: Account,
-    file: GoogleAPIFile,
-    isTask: boolean,
-  ): Promise<File> {
-    let id = await account.tx.createItem(account.userId, {
-      summary: file.name,
-      archived: null,
-      snoozed: null,
-      done: undefined,
-      controller: isTask ? TaskController.Manual : null,
-    });
-
-    let record = {
-      fileId: file.id,
-      ...File.recordFromFile(file),
-      id,
-      accountId: account.id,
-    };
-
-    return File.store(account.tx).create(record);
-  }
-
-  public async fields(): Promise<FileFields> {
-    return {
-      ...this.entity,
-      type: "file",
-    };
-  }
-
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
-    userId: string,
-    url: URL,
-    isTask: boolean,
-  ): Promise<File | null> {
-    let matches = DRIVE_REGEX.exec(url.toString());
-    if (!matches) {
-      return null;
-    }
-
-    let fileId = matches[1];
-
-    for (let account of await Account.store(tx).find({ userId: userId })) {
-      let existing = await File.store(tx).findOne({
-        accountId: account.id,
-        fileId,
-      });
-      if (existing) {
-        return existing;
-      }
-
-      let file = await account.authClient.getFile(matches[1]);
-      if (file) {
-        return File.create(
-          account,
-          {
-            webViewLink: url.toString(),
-            ...file,
-          },
-          isTask,
-        );
+      let thread = await account.authClient.getThread(threadId);
+      if (thread) {
+        return {
+          accountId: account.id,
+          thread,
+        };
       }
     }
 
     return null;
-  }
-}
-
-class Label extends IdentifiedEntityImpl<GoogleLabelEntity> {
-  public static readonly store = storeBuilder(Label, "google.Label", [
-    "accountId",
-    "id",
-  ]);
-
-  public get name(): string {
-    return this.entity.name;
-  }
-}
-
-class ThreadLabel extends EntityImpl<GoogleThreadLabelEntity> {
-  public static readonly store = storeBuilder(
-    ThreadLabel,
-    "google.ThreadLabel",
-    ["threadId", "labelId"],
-  );
-
-  public static async threadLabels(thread: Thread): Promise<Label[]> {
-    return Label.store(thread.tx).list(sql`
-      SELECT "Label".*
-      FROM ${ref(Label)} AS "Label"
-        JOIN ${ref(
-          ThreadLabel,
-        )} AS "ThreadLabel" ON "ThreadLabel"."labelId" = "Label"."id"
-        WHERE "ThreadLabel"."threadId" = ${thread.id}
-    `);
-  }
-
-  public static async setThreadLabels(
-    thread: Thread,
-    labels: Label[],
-  ): Promise<void> {
-    let store = ThreadLabel.store(thread.tx);
-    await store.delete({
-      threadId: thread.id,
-      labelId: Not(In(labels.map((label: Label): string => label.id))),
-    });
-
-    await store.upsert(
-      labels.map((label: Label) => ({
-        accountId: thread.entity.accountId,
-        threadId: thread.id,
-        labelId: label.id,
-      })),
-    );
   }
 }

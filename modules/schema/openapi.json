@@ -1372,11 +1372,13 @@
           },
           "hasTaskState": {
             "type": "boolean"
-          }
+          },
+          "fields": {}
         },
         "required": [
           "serviceId",
-          "hasTaskState"
+          "hasTaskState",
+          "fields"
         ],
         "type": "object",
         "description": "From T, pick a set of properties whose keys are in the union K"
@@ -1409,25 +1411,43 @@
         "type": "object",
         "additionalProperties": false
       },
+      "Pick_ServiceListItemEntity.present-or-done-or-due_": {
+        "properties": {
+          "due": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "done": {
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/DateTime"
+              }
+            ],
+            "nullable": true
+          },
+          "present": {
+            "$ref": "#/components/schemas/DateTime"
+          }
+        },
+        "required": [
+          "due",
+          "done",
+          "present"
+        ],
+        "type": "object",
+        "description": "From T, pick a set of properties whose keys are in the union K"
+      },
       "ServiceListState": {
         "allOf": [
           {
             "$ref": "#/components/schemas/ServiceListEntity"
           },
           {
-            "properties": {
-              "__typename": {
-                "type": "string",
-                "enum": [
-                  "ServiceList"
-                ],
-                "nullable": false
-              }
-            },
-            "required": [
-              "__typename"
-            ],
-            "type": "object"
+            "$ref": "#/components/schemas/Pick_ServiceListItemEntity.present-or-done-or-due_"
           }
         ]
       },

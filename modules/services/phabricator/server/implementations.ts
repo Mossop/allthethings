@@ -10,24 +10,30 @@ import type {
 import conduit, { RevisionStatus, requestAll } from "conduit-api";
 import { DateTime } from "luxon";
 
-import type { ServiceItem, ServiceTransaction } from "../../../server/utils";
+import { sql } from "../../../db";
+import type {
+  CoreItemParams,
+  RemoteList,
+  ServiceTransaction,
+} from "../../../server/utils";
 import {
-  TaskController,
+  ItemUpdater,
   id,
   storeBuilder,
-  storeImplBuilder,
   bestIcon,
   loadPageInfo,
-  BaseItem,
   BaseList,
   BaseAccount,
 } from "../../../server/utils";
+import { upsert } from "../../../utils";
 import type { RevisionFields } from "../schema";
 import type {
   PhabricatorAccountEntity,
   PhabricatorQueryEntity,
   PhabricatorRevisionEntity,
 } from "./entities";
+
+type ApiRevision = Differential$Revision$Search$Result;
 
 export type PhabricatorAccountParams = Pick<
   PhabricatorAccountEntity,
@@ -110,10 +116,10 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
     };
   }
 
-  public async items(): Promise<Revision[]> {
-    return Revision.store(this.tx).find({
-      accountId: this.id,
-    });
+  public async items(): Promise<string[]> {
+    return this.tx.db.pluck<string>(
+      sql`SEELCT "id" FROM "phabricator"."Revision" WHERE "accountId" = ${this.id}`,
+    );
   }
 
   public override async lists(): Promise<Query[]> {
@@ -161,42 +167,76 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
   }
 }
 
-export interface QueryClass {
-  new (tx: ServiceTransaction, record: PhabricatorQueryEntity): Query;
-
-  readonly queryId: string;
-  readonly queryName: string;
-  readonly description: string;
-}
-
 export type PhabricatorQueryState = Pick<PhabricatorQueryEntity, "queryId"> & {
   name: string;
   description: string;
 };
 
-export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
-  public static readonly store = storeImplBuilder(
-    Query.buildQuery,
-    "phabricator.Query",
-  );
+export interface QueryType {
+  name: string;
+  description: string;
+  builder: new (account: Account) => QueryBuilder;
+}
 
-  public static queries: Record<string, QueryClass> = {};
+abstract class QueryBuilder {
+  public constructor(protected readonly account: Account) {}
 
-  public static addQuery(query: QueryClass): void {
-    Query.queries[query.queryId] = query;
+  public async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
+    return {};
   }
 
-  public static buildQuery(
-    tx: ServiceTransaction,
-    record: PhabricatorQueryEntity,
-  ): Query {
-    let queryClass = Query.queries[record.queryId];
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-    if (!queryClass) {
-      throw new Error(`Unknown query ${record.id}`);
-    }
+  public filterRevision(
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    account: Account,
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    projectPHIDs: string[],
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    revision: Differential$Revision$Search$Result,
+  ): boolean {
+    return true;
+  }
 
-    return new queryClass(tx, record);
+  public async getParams(): Promise<Differential$Revision$Search$Params> {
+    return {
+      queryKey: "active",
+      constraints: await this.getConstraints(),
+      attachments: {
+        reviewers: true,
+        "reviewers-extra": true,
+      },
+    };
+  }
+
+  public async listItems(): Promise<RemoteRevision[]> {
+    let api = this.account.conduit;
+    let revisions = await this.account.tx.segment.inSegment(
+      "Query API Request",
+      async () =>
+        requestAll(api.differential.revision.search, await this.getParams()),
+    );
+    let projectPHIDs = await this.account.getProjectPHIDs();
+
+    revisions = revisions.filter(
+      (revision: Differential$Revision$Search$Result) =>
+        this.filterRevision(this.account, projectPHIDs, revision),
+    );
+
+    return revisions.map(
+      (revision: ApiRevision): RemoteRevision => ({
+        accountId: this.account.id,
+        revision,
+      }),
+    );
+  }
+}
+
+export class Query extends BaseList<PhabricatorQueryEntity, RemoteRevision> {
+  public static readonly store = storeBuilder(Query, "phabricator.Query");
+
+  public static queries: Record<string, QueryType> = {};
+
+  public static addQuery(id: string, query: QueryType): void {
+    Query.queries[id] = query;
   }
 
   public static async ensureQueries(
@@ -222,23 +262,37 @@ export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
         throw new Error(`Unknown query type: ${queryId}`);
       }
 
-      let id = await account.tx.addList({
-        name: "temp",
+      let builder = new Query.queries[queryId].builder(account);
+      let updater = new RevisionUpdater(account.tx);
+
+      let id = await updater.addList({
+        userId: account.userId,
+        name: Query.queries[queryId].name,
         url: null,
+        due: null,
+        remotes: await builder.listItems(),
       });
 
-      let query = await Query.store(account.tx).create({
+      await Query.store(account.tx).create({
         id,
         queryId,
         accountId: account.id,
       });
-
-      await query.updateList();
     }
+  }
+
+  public async userId(): Promise<string> {
+    let account = await this.account();
+    return account.userId;
   }
 
   public async account(): Promise<Account> {
     return Account.store(this.tx).get(this.entity.accountId);
+  }
+
+  public async builder(): Promise<QueryBuilder> {
+    let account = await this.account();
+    return new this.behaviour.builder(account);
   }
 
   public get queryId(): string {
@@ -246,77 +300,20 @@ export abstract class Query extends BaseList<PhabricatorQueryEntity, never> {
   }
 
   public get name(): string {
-    return this.class.name;
+    return this.behaviour.name;
   }
 
   public get description(): string {
-    return this.class.description;
+    return this.behaviour.description;
   }
 
-  protected get class(): QueryClass {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-    return Object.getPrototypeOf(this);
+  protected get behaviour(): QueryType {
+    return Query.queries[this.entity.queryId];
   }
 
-  protected async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    return {};
-  }
-
-  protected filterRevision(
-    _account: Account,
-    _projectPHIDs: string[],
-    _revision: Differential$Revision$Search$Result,
-  ): boolean {
-    return true;
-  }
-
-  protected async getParams(): Promise<Differential$Revision$Search$Params> {
-    return {
-      queryKey: "active",
-      constraints: await this.getConstraints(),
-      attachments: {
-        reviewers: true,
-        "reviewers-extra": true,
-      },
-    };
-  }
-
-  protected async listItems(): Promise<Revision[]> {
-    let account = await this.account();
-
-    let api = account.conduit;
-    let revisions = await this.tx.segment.inSegment(
-      "Query API Request",
-      async () =>
-        requestAll(api.differential.revision.search, await this.getParams()),
-    );
-    let projectPHIDs = await account.getProjectPHIDs();
-
-    revisions = revisions.filter(
-      (revision: Differential$Revision$Search$Result) =>
-        this.filterRevision(account, projectPHIDs, revision),
-    );
-
-    let results: Revision[] = [];
-    for (let revision of revisions) {
-      let item = await Revision.store(this.tx).findOne({
-        revisionId: revision.id,
-      });
-
-      if (item) {
-        await item.updateItem(revision);
-      } else {
-        item = await Revision.create(
-          account,
-          revision,
-          TaskController.ServiceList,
-        );
-      }
-
-      results.push(item);
-    }
-
-    return results;
+  public async listItems(): Promise<RemoteRevision[]> {
+    let builder = await this.builder();
+    return builder.listItems();
   }
 }
 
@@ -328,7 +325,7 @@ enum ReviewState {
 
 type ArrayType<T> = T extends (infer R)[] ? R : never;
 
-abstract class ReviewQuery extends Query {
+abstract class ReviewQuery extends QueryBuilder {
   protected getReviewState(
     account: Account,
     projectPHIDs: string[],
@@ -382,8 +379,8 @@ abstract class ReviewQuery extends Query {
     return ReviewState.Reviewed;
   }
 
-  protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    let account = await this.account();
+  public override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
+    let account = this.account;
     return {
       reviewerPHIDs: [account.phid],
       statuses: [RevisionStatus.NeedsReview],
@@ -392,11 +389,7 @@ abstract class ReviewQuery extends Query {
 }
 
 class MustReview extends ReviewQuery {
-  public static queryId = "mustreview";
-  public static description = "Revisions that must be reviewed.";
-  public static queryName = "Must Review";
-
-  protected override filterRevision(
+  public override filterRevision(
     account: Account,
     projectPHIDs: string[],
     revision: Differential$Revision$Search$Result,
@@ -409,11 +402,7 @@ class MustReview extends ReviewQuery {
 }
 
 class CanReview extends ReviewQuery {
-  public static queryId = "canreview";
-  public static description = "Revisions that can be reviewed.";
-  public static queryName = "Review";
-
-  protected override filterRevision(
+  public override filterRevision(
     account: Account,
     projectPHIDs: string[],
     revision: Differential$Revision$Search$Result,
@@ -425,137 +414,181 @@ class CanReview extends ReviewQuery {
   }
 }
 
-class Draft extends Query {
-  public static queryId = "draft";
-  public static description = "Draft revisions.";
-  public static queryName = "Draft";
-
-  protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    let account = await this.account();
+class Draft extends QueryBuilder {
+  public override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     return {
-      authorPHIDs: [account.phid],
+      authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.Draft],
     };
   }
 }
 
-class NeedsRevision extends Query {
-  public static queryId = "needsrevision";
-  public static description = "Revisions that need changes.";
-  public static queryName = "Needs Changes";
-
-  protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    let account = await this.account();
+class NeedsRevision extends QueryBuilder {
+  public override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     return {
-      authorPHIDs: [account.phid],
+      authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.NeedsRevision, RevisionStatus.ChangesPlanned],
     };
   }
 }
 
-class Waiting extends Query {
-  public static queryId = "waiting";
-  public static description = "Revisions waiting on reviewers.";
-  public static queryName = "In Review";
-
-  protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    let account = await this.account();
+class Waiting extends QueryBuilder {
+  public override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     return {
-      authorPHIDs: [account.phid],
+      authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.NeedsReview],
     };
   }
 }
 
-class Accepted extends Query {
-  public static queryId = "accepted";
-  public static description = "Revisions that are ready to land.";
-  public static queryName = "Accepted";
-
-  protected override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
-    let account = await this.account();
+class Accepted extends QueryBuilder {
+  public override async getConstraints(): Promise<Differential$Revision$Search$Constraints> {
     return {
-      authorPHIDs: [account.phid],
+      authorPHIDs: [this.account.phid],
       statuses: [RevisionStatus.Accepted],
     };
   }
 }
 
-Query.addQuery(MustReview);
-Query.addQuery(CanReview);
-Query.addQuery(Draft);
-Query.addQuery(NeedsRevision);
-Query.addQuery(Waiting);
-Query.addQuery(Accepted);
+Query.addQuery("mustreview", {
+  name: "Must Review",
+  description: "Revisions that must be reviewed.",
+  builder: MustReview,
+});
+Query.addQuery("canreview", {
+  name: "Review",
+  description: "Revisions that can be reviewed.",
+  builder: CanReview,
+});
+Query.addQuery("draft", {
+  name: "Draft",
+  description: "Draft revisions.",
+  builder: Draft,
+});
+Query.addQuery("needsrevision", {
+  name: "Needs Changes",
+  description: "Revisions that need changes.",
+  builder: NeedsRevision,
+});
+Query.addQuery("waiting", {
+  name: "In Review",
+  description: "Revisions waiting on reviewers.",
+  builder: Waiting,
+});
+Query.addQuery("accepted", {
+  name: "Accepted",
+  description: "Revisions that are ready to land.",
+  builder: Accepted,
+});
 
-export class Revision
-  extends BaseItem<PhabricatorRevisionEntity>
-  implements ServiceItem<RevisionFields>
-{
-  public static readonly store = storeBuilder(Revision, "phabricator.Revision");
+interface RemoteRevision {
+  accountId: string;
+  revision: ApiRevision;
+}
 
-  public async account(): Promise<Account> {
-    return Account.store(this.tx).get(this.entity.accountId);
+export class RevisionUpdater extends ItemUpdater<
+  PhabricatorRevisionEntity,
+  RemoteRevision
+> {
+  public constructor(tx: ServiceTransaction) {
+    super(tx, "phabricator.Revision", "accountId", "revisionId");
   }
 
-  public get title(): string {
-    return this.entity.title;
+  private accounts: Map<string, Account> = new Map();
+
+  protected override async init(): Promise<void> {
+    for (let account of await Account.store(this.tx).find()) {
+      this.accounts.set(account.id, account);
+    }
   }
 
-  public override async url(): Promise<string> {
-    return this.entity.uri;
-  }
+  protected async entityForRemote({
+    accountId,
+    revision,
+  }: RemoteRevision): Promise<PhabricatorRevisionEntity> {
+    let done: DateTime | null = null;
+    if (revision.fields.status.closed) {
+      let previous = this.previousEntity(
+        this.entityKey({ accountId, revisionId: revision.id }),
+      );
 
-  public async fields(): Promise<RevisionFields> {
-    let account = await this.account();
+      done = previous?.done ?? DateTime.now();
+    }
+
     return {
-      accountId: this.entity.accountId,
-      revisionId: this.entity.revisionId,
-      title: this.title,
-      uri: await this.url(),
-      status: this.entity.status,
-      icon: account.revisionIcon,
+      accountId,
+      revisionId: revision.id,
+      done,
     };
   }
 
-  public override async updateItem(
-    revision?: Differential$Revision$Search$Result,
-  ): Promise<void> {
-    let account = await this.account();
+  protected paramsForRemote(
+    { accountId, revision }: RemoteRevision,
+    entity: PhabricatorRevisionEntity,
+  ): CoreItemParams {
+    let account = this.accounts.get(accountId)!;
 
-    if (!revision) {
-      let revisions = await account.tx.segment.inSegment(
+    let fields: RevisionFields = {
+      accountId,
+      revisionId: revision.id,
+      title: revision.fields.title,
+      uri: revision.fields.uri,
+      status: revision.fields.status.value,
+      icon: account.revisionIcon,
+    };
+
+    return {
+      summary: revision.fields.title,
+      fields,
+      due: null,
+      done: entity.done,
+    };
+  }
+
+  protected async updateEntities(
+    entities: PhabricatorRevisionEntity[],
+  ): Promise<RemoteRevision[]> {
+    let accountIds = new Map<Account, number[]>();
+    let results: RemoteRevision[] = [];
+
+    for (let entity of entities) {
+      let account = this.accounts.get(entity.accountId)!;
+      let ids = upsert(accountIds, account, () => []);
+      ids.push(entity.revisionId);
+    }
+
+    for (let [account, ids] of accountIds) {
+      let { data: revisions } = await account.tx.segment.inSegment(
         "Revision API Search",
         () =>
           account.conduit.differential.revision.search({
             constraints: {
-              ids: [this.entity.revisionId],
+              ids,
             },
           }),
       );
 
-      if (revisions.data.length < 1) {
-        return this.tx.deleteItem(this.id);
-      }
-
-      [revision] = revisions.data;
+      results.push(
+        ...revisions.map(
+          (revision: ApiRevision): RemoteRevision => ({
+            accountId: account.id,
+            revision,
+          }),
+        ),
+      );
     }
 
-    await this.tx.setItemTaskDone(this.id, revision.fields.status.closed);
-
-    await this.update({
-      title: revision.fields.title,
-      uri: revision.fields.uri,
-      status: revision.fields.status.value,
-    });
+    return results;
   }
 
-  public static async createItemFromURL(
-    tx: ServiceTransaction,
+  protected getLists(): Promise<RemoteList<RemoteRevision>[]> {
+    return Query.store(this.tx).find();
+  }
+
+  protected async getRemoteForURL(
     userId: string,
     url: URL,
-    isTask: boolean,
-  ): Promise<Revision | null> {
+  ): Promise<RemoteRevision | null> {
     let matches = /\/D(\d+)$/.exec(url.toString());
     if (!matches) {
       return null;
@@ -563,13 +596,13 @@ export class Revision
 
     let id = parseInt(matches[1]);
 
-    for (let account of await Account.store(tx).find({ userId })) {
+    for (let account of this.accounts.values()) {
       let accountUrl = new URL(account.url);
       if (accountUrl.origin != url.origin) {
         continue;
       }
 
-      let revisions = await account.tx.segment.inSegment(
+      let { data: revisions } = await account.tx.segment.inSegment(
         "Revision API Search",
         () =>
           account.conduit.differential.revision.search({
@@ -579,41 +612,14 @@ export class Revision
           }),
       );
 
-      if (revisions.data.length == 1) {
-        let [revision] = revisions.data;
-        let controller = isTask ? TaskController.Service : null;
-        if (isTask && revision.fields.status.closed) {
-          controller = TaskController.Manual;
-        }
-        return Revision.create(account, revision, controller);
+      if (revisions.length == 1) {
+        return {
+          accountId: account.id,
+          revision: revisions[0],
+        };
       }
     }
 
     return null;
-  }
-
-  public static async create(
-    account: Account,
-    revision: Differential$Revision$Search$Result,
-    controller: TaskController | null,
-  ): Promise<Revision> {
-    let id = await account.tx.createItem(account.userId, {
-      summary: revision.fields.title,
-      archived: null,
-      snoozed: null,
-      done: revision.fields.status.closed ? DateTime.now() : null,
-      controller,
-    });
-
-    let record = {
-      id,
-      accountId: account.id,
-      revisionId: revision.id,
-      title: revision.fields.title,
-      uri: revision.fields.uri,
-      status: revision.fields.status.value,
-    };
-
-    return Revision.store(account.tx).create(record);
   }
 }

@@ -342,7 +342,7 @@ export class StateController extends CoreController {
       };
 
       if (userImpl) {
-        let inboxItems = await Item.count(tx, {
+        let inboxItems = await Item.count(tx, userImpl.id, {
           itemHolderId: null,
           isArchived: false,
           isSnoozed: false,
@@ -357,14 +357,22 @@ export class StateController extends CoreController {
               async (project: Project): Promise<ServerProjectState> => {
                 return {
                   ...project.state,
-                  dueTasks: await Item.count(tx, withItemHolderId(project.id)),
+                  dueTasks: await Item.count(
+                    tx,
+                    userImpl!.id,
+                    withItemHolderId(project.id),
+                  ),
                 };
               },
             );
 
             return {
               ...context.state,
-              dueTasks: await Item.count(tx, withItemHolderId(context.id)),
+              dueTasks: await Item.count(
+                tx,
+                userImpl!.id,
+                withItemHolderId(context.id),
+              ),
               projects,
             };
           },
@@ -464,7 +472,7 @@ export class ProjectController extends CoreController {
     let sections = await map(
       taskList.sections(),
       async (section: Section): Promise<SectionContents> => {
-        let items = Item.list(tx, withItemHolderId(section.id));
+        let items = Item.list(tx, user.id, withItemHolderId(section.id));
 
         return {
           ...section.state,
@@ -477,7 +485,7 @@ export class ProjectController extends CoreController {
       },
     );
 
-    let items = Item.list(tx, withItemHolderId(taskList.id));
+    let items = Item.list(tx, user.id, withItemHolderId(taskList.id));
 
     return {
       ...taskList.state,
@@ -657,7 +665,7 @@ export class ItemController extends CoreController {
   ): Promise<ItemState[]> {
     let filters = intoItemFilters(itemFilter);
     return map(
-      Item.list(tx, filters),
+      Item.list(tx, user.id, filters),
       (item: Item): Promise<ItemState> => item.state(),
     );
   }

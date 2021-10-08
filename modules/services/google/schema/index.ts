@@ -1,8 +1,6 @@
 export interface FileFields {
   type: "file";
   accountId: string;
-  id: string;
-  fileId: string;
   name: string;
   description: string | null;
   mimeType: string;
@@ -14,8 +12,6 @@ export interface ThreadFields {
   labels: string[];
   url: string;
   accountId: string;
-  id: string;
-  threadId: string;
   subject: string;
   unread: boolean;
   starred: boolean;

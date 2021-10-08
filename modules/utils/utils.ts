@@ -82,3 +82,20 @@ export function defer<R>(): Deferred<R> {
     promise,
   };
 }
+
+export function lazy<T>(cb: () => Promise<T>): PromiseLike<T> {
+  return {
+    then<TResult1 = T, TResult2 = never>(
+      onfulfilled?:
+        | ((value: T) => TResult1 | PromiseLike<TResult1>)
+        | undefined
+        | null,
+      onrejected?:
+        | ((reason: any) => TResult2 | PromiseLike<TResult2>)
+        | undefined
+        | null,
+    ): PromiseLike<TResult1 | TResult2> {
+      return cb().then(onfulfilled, onrejected);
+    },
+  };
+}

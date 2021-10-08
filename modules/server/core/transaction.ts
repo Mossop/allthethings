@@ -1,11 +1,10 @@
 import { URL } from "url";
 
-import { DateTime } from "luxon";
-
 import type { Database, QueryInstance } from "../../db";
+import { sql, values, In } from "../../db";
 import type { DescriptorsFor, Logger } from "../../utils";
 import { memoized } from "../../utils";
-import { TaskController } from "../utils";
+import { id, ref, TaskController } from "../utils";
 import type {
   Service,
   ServiceTransaction,
@@ -13,16 +12,15 @@ import type {
   CreateItemParams,
   ItemList,
   Segment,
+  UpdateItemParams,
 } from "../utils";
+import type {
+  ItemEntity,
+  ServiceDetailEntity,
+  TaskInfoEntity,
+} from "./entities";
 import { ItemType } from "./entities";
-import {
-  Item,
-  LinkDetail,
-  ServiceDetail,
-  ServiceList,
-  TaskInfo,
-  User,
-} from "./implementations";
+import { Item, ServiceDetail, ServiceList, TaskInfo } from "./implementations";
 import { ServiceOwner } from "./services";
 
 async function buildTransaction(
@@ -71,141 +69,131 @@ export const buildServiceTransaction = memoized(
         },
       },
 
-      createItem: {
+      createItems: {
         enumerable: true,
-        async value(
-          userId: string,
-          { due, done, controller, ...item }: CreateItemParams,
-        ): Promise<string> {
-          let user = await User.store(tx).get(userId);
-
-          if (done === true) {
-            done = DateTime.now();
-          } else if (done === false) {
-            done = null;
+        async value(params: CreateItemParams[]): Promise<string[]> {
+          if (!params.length) {
+            return [];
           }
 
-          let itemImpl = await Item.create(tx, user, ItemType.Service, item);
+          let ids: string[] = [];
+          let entities: Omit<ItemEntity, "created">[] = [];
+          let details: ServiceDetailEntity[] = [];
+          let taskInfos: TaskInfoEntity[] = [];
 
-          await ServiceDetail.create(tx, itemImpl, {
-            serviceId: serviceOwner.id,
-            hasTaskState: done !== undefined,
-            taskDone: done ?? null,
-            taskDue: due ?? null,
-          });
+          for (let param of params) {
+            let itemId = await id();
 
-          if (done !== undefined && controller) {
-            await TaskInfo.store(tx).create({
-              id: itemImpl.id,
-              due: due ?? null,
-              done: done ?? null,
-              manualDue: null,
-              manualDone: null,
-              controller,
+            ids.push(itemId);
+
+            entities.push({
+              id: itemId,
+              userId: param.userId,
+              sectionId: null,
+              sectionIndex: 0,
+
+              summary: param.summary,
+              archived: null,
+              snoozed: null,
+              type: ItemType.Service,
             });
+
+            let taskDone = param.done ?? null;
+            let taskDue = param.due ?? null;
+
+            details.push({
+              id: itemId,
+              serviceId: serviceOwner.id,
+              hasTaskState: param.done !== undefined,
+              taskDone,
+              taskDue,
+              fields: param.fields,
+            });
+
+            if (param.controller) {
+              taskInfos.push({
+                id: itemId,
+                due:
+                  param.controller == TaskController.Service ? taskDue : null,
+                done:
+                  param.controller == TaskController.Service ? taskDone : null,
+                manualDue: null,
+                manualDone: null,
+                controller: param.controller,
+              });
+            }
           }
 
-          return itemImpl.id;
+          await Item.store(tx).create(entities);
+          await ServiceDetail.store(tx).create(details);
+          await TaskInfo.store(tx).create(taskInfos);
+
+          return ids;
         },
       },
 
-      setItemTaskDone: {
+      updateItems: {
         enumerable: true,
-        async value(
-          id: string,
-          done: DateTime | boolean | null,
-          due?: DateTime | null,
-        ): Promise<void> {
-          let item = await Item.store(tx).get(id);
-
-          let detail = await item.detail;
-          if (!(detail instanceof ServiceDetail)) {
-            throw new Error("Item is not from a service.");
-          }
-
-          if (!detail.hasTaskState) {
+        async value(params: UpdateItemParams[]): Promise<void> {
+          if (!params.length) {
             return;
           }
 
-          let currentDone = detail.taskDone;
-          if (done === true) {
-            done = currentDone ?? DateTime.now();
-          } else if (done === false) {
-            done = null;
+          let detailParams: ServiceDetailEntity[] = [];
+          let itemParams: Pick<ItemEntity, "id" | "summary">[] = [];
+          let items: string[] = [];
+
+          for (let param of params) {
+            items.push(param.id);
+
+            itemParams.push({
+              id: param.id,
+              summary: param.summary,
+            });
+
+            detailParams.push({
+              id: param.id,
+              serviceId: serviceOwner.id,
+              hasTaskState: param.done !== undefined,
+              taskDone: param.done ?? null,
+              taskDue: param.due ?? null,
+              fields: param.fields,
+            });
           }
 
-          if (due === undefined) {
-            due = detail.taskDue;
-          }
+          await tx.db.update(sql`
+            UPDATE ${ref(Item)} as "Item"
+              SET "summary" = "v"."summary"
+              FROM ${values("v", itemParams)}
+              WHERE "Item"."id" = "v"."id"
+          `);
 
-          await detail.update({
-            taskDone: done,
-            taskDue: due,
-          });
+          await tx.db.update(sql`
+            UPDATE ${ref(ServiceDetail)} as "ServiceDetail"
+              SET
+                "hasTaskState" = "v"."hasTaskState"::boolean,
+                "taskDone" = "v"."taskDone"::TIMESTAMP WITH TIME ZONE,
+                "taskDue" = "v"."taskDue"::TIMESTAMP WITH TIME ZONE,
+                "fields" = "v"."fields"::jsonb
+              FROM ${values("v", detailParams)}
+              WHERE
+                "ServiceDetail"."id" = "v"."id"
+                AND
+                "ServiceDetail"."serviceId" = "v"."serviceId"
+          `);
 
-          await TaskInfo.updateTaskDetails(tx, [id]);
+          await TaskInfo.updateTaskDetails(tx, items);
         },
       },
 
-      setItemSummary: {
+      deleteItems: {
         enumerable: true,
-        async value(id: string, summary: string): Promise<void> {
-          let item = await Item.store(tx).get(id);
-          await item.update({ summary });
-        },
-      },
-
-      disconnectItem: {
-        enumerable: true,
-        async value(
-          id: string,
-          url?: string | null,
-          icon?: string | null,
-        ): Promise<void> {
-          let item = await Item.store(tx).get(id);
-          let detail = await item.detail;
-          if (
-            !(detail instanceof ServiceDetail) ||
-            detail.serviceId != serviceOwner.id
-          ) {
-            throw new Error("Item is not from this service.");
-          }
-          await detail.delete();
-
-          if (url) {
-            await item.update({
-              type: ItemType.Link,
-            });
-
-            await LinkDetail.create(tx, item, {
-              url,
-              icon: icon ?? null,
-            });
-          } else {
-            await item.update({
-              type: null,
-            });
-          }
-
-          let taskInfo = await item.taskInfo;
-          if (!taskInfo) {
+        async value(ids: string[]): Promise<void> {
+          if (!ids.length) {
             return;
           }
 
-          if (taskInfo.controller != TaskController.Manual) {
-            await taskInfo.update({
-              due: taskInfo.manualDue,
-              controller: TaskController.Manual,
-            });
-          }
-        },
-      },
-
-      deleteItem: {
-        enumerable: true,
-        async value(id: string): Promise<void> {
-          let item = await Item.store(tx).get(id);
-          await item.delete();
+          await Item.store(tx).delete({ id: In(ids) });
         },
       },
 
