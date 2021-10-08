@@ -36,11 +36,20 @@ export class AccountController extends ServiceController {
   @Patch()
   public async editAccount(
     @Body()
-    { id, params }: { id: string; params: Partial<PhabricatorAccountParams> },
+    {
+      id,
+      params: { queries, ...params },
+    }: {
+      id: string;
+      params: Partial<PhabricatorAccountParams>;
+    },
   ): Promise<PhabricatorAccountState> {
     let tx = await this.startTransaction(true);
     let account = await Account.store(tx).get(id);
     await account.update(params);
+    if (queries !== undefined) {
+      await Query.ensureQueries(account, queries);
+    }
 
     return account.state();
   }

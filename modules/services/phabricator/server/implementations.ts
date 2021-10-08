@@ -127,19 +127,9 @@ export class Account extends BaseAccount<PhabricatorAccountEntity> {
     let icon = bestIcon(info.icons, 24)?.url.toString() ?? null;
 
     if (icon != this.icon) {
-      await super.update({
+      await this.update({
         icon,
       });
-    }
-  }
-
-  public override async update({
-    queries,
-    ...params
-  }: Partial<PhabricatorAccountParams>): Promise<void> {
-    await super.update(params);
-    if (queries !== undefined) {
-      await Query.ensureQueries(this, queries);
     }
   }
 
