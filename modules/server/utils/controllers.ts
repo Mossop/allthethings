@@ -5,23 +5,30 @@ import type Koa from "koa";
 import type { Segment } from "./segment";
 import type { Transaction } from "./transaction";
 
-export interface WebContext {
+export interface WebContext<Tx extends Transaction> {
   readonly segment: Segment;
-  startTransaction(writable: boolean): Promise<Transaction>;
+  startTransaction(writable: boolean): Promise<Tx>;
 }
 
-export type MiddlewareContext<Ctx extends WebContext> =
-  Koa.ParameterizedContext<Koa.DefaultState, Ctx & Koa.DefaultContext>;
+export type MiddlewareContext<
+  Tx extends Transaction,
+  Ctx extends WebContext<Tx>,
+> = Koa.ParameterizedContext<Koa.DefaultState, Ctx & Koa.DefaultContext>;
 
 export class RequestController<
-  Ctx extends WebContext = WebContext,
+  Tx extends Transaction = Transaction,
+  Ctx extends WebContext<Tx> = WebContext<Tx>,
 > extends Controller {
-  public constructor(protected readonly context: MiddlewareContext<Ctx>) {
+  public constructor(protected readonly context: MiddlewareContext<Tx, Ctx>) {
     super();
   }
 
   public get segment(): Segment {
     return this.context.segment;
+  }
+
+  public startTransaction(writable: boolean): Promise<Tx> {
+    return this.context.startTransaction(writable);
   }
 }
 

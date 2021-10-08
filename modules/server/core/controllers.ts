@@ -471,7 +471,7 @@ export class ProjectController extends CoreController {
 
           items: await map(
             items,
-            (item: Item): Promise<ItemState> => item.state,
+            (item: Item): Promise<ItemState> => item.state(),
           ),
         };
       },
@@ -481,7 +481,7 @@ export class ProjectController extends CoreController {
 
     return {
       ...taskList.state,
-      items: await map(items, (item: Item): Promise<ItemState> => item.state),
+      items: await map(items, (item: Item): Promise<ItemState> => item.state()),
       sections,
     };
   }
@@ -658,7 +658,7 @@ export class ItemController extends CoreController {
     let filters = intoItemFilters(itemFilter);
     return map(
       Item.list(tx, filters),
-      (item: Item): Promise<ItemState> => item.state,
+      (item: Item): Promise<ItemState> => item.state(),
     );
   }
 
@@ -711,7 +711,7 @@ export class ItemController extends CoreController {
       await item.move(itemHolder, before);
     }
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -769,7 +769,7 @@ export class ItemController extends CoreController {
       await taskInfo.update(updates);
     }
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -794,11 +794,11 @@ export class ItemController extends CoreController {
         await taskInfo.delete();
       }
 
-      return item.state;
+      return item.state();
     }
 
     if (taskInfo && taskInfo.controller == controller) {
-      return item.state;
+      return item.state();
     }
 
     if (controller == TaskController.Manual) {
@@ -890,7 +890,7 @@ export class ItemController extends CoreController {
       }
     }
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -945,7 +945,7 @@ export class ItemController extends CoreController {
         await item.move(itemHolder, null);
       }
 
-      return item.state;
+      return item.state();
     }
 
     let pageInfo = await loadPageInfo(tx.segment, targetUrl);
@@ -983,7 +983,7 @@ export class ItemController extends CoreController {
       await item.move(itemHolder, before);
     }
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -1018,7 +1018,7 @@ export class ItemController extends CoreController {
       await item.move(null);
     }
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -1038,7 +1038,7 @@ export class ItemController extends CoreController {
     let item = await Item.store(tx).get(id);
     await item.update(params);
 
-    return item.state;
+    return item.state();
   }
 
   @Authenticated(true)
@@ -1056,6 +1056,6 @@ export class ItemController extends CoreController {
     let item = await Item.store(tx).get(id);
     await item.delete();
 
-    return item.state;
+    return item.state();
   }
 }

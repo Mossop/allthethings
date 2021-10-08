@@ -1,17 +1,17 @@
 import type { URL } from "url";
 
 import type * as KoaRouter from "@koa/router";
+import { Body, Delete, Patch } from "@tsoa/runtime";
 import type { DateTime } from "luxon";
 import type { JsonDecoder } from "ts.data.json";
 
-import type { MiddlewareContext } from ".";
 import type {
   Awaitable,
   MaybeCallable,
   Overwrite,
   RelativeDateTime,
 } from "../../utils";
-import type { WebContext } from "./controllers";
+import type { MiddlewareContext, WebContext } from "./controllers";
 import { RequestController } from "./controllers";
 import type { TaskManager } from "./tasks";
 import type { Transaction } from "./transaction";
@@ -75,20 +75,25 @@ export type ServiceTransaction = Transaction & {
 };
 
 export type ServiceWebContext = Overwrite<
-  WebContext,
+  WebContext<ServiceTransaction>,
   {
     readonly userId: string;
     readonly rootUrl: URL;
     readonly serviceUrl: URL;
 
-    startTransaction(writable: boolean): Promise<ServiceTransaction>;
     settingsPageUrl(page: string): URL;
   }
 >;
 
-export type ServiceMiddlewareContext = MiddlewareContext<ServiceWebContext>;
+export type ServiceMiddlewareContext = MiddlewareContext<
+  ServiceTransaction,
+  ServiceWebContext
+>;
 
-export class ServiceController extends RequestController<ServiceWebContext> {
+export class ServiceController extends RequestController<
+  ServiceTransaction,
+  ServiceWebContext
+> {
   public get userId(): string {
     return this.context.userId;
   }
@@ -99,10 +104,6 @@ export class ServiceController extends RequestController<ServiceWebContext> {
 
   public get serviceUrl(): URL {
     return this.context.serviceUrl;
-  }
-
-  public startTransaction(writable: boolean): Promise<ServiceTransaction> {
-    return this.context.startTransaction(writable);
   }
 
   public settingsPageUrl(page: string): URL {

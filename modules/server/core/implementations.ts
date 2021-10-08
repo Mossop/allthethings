@@ -599,22 +599,20 @@ export class Item extends IdentifiedEntityImpl<ItemEntity> {
     return this.entity.archived;
   }
 
-  public get state(): Promise<ItemState> {
-    return (async (): Promise<ItemState> => {
-      let taskInfo = await this.taskInfo;
-      let detail = await this.detail;
+  public async state(): Promise<ItemState> {
+    let taskInfo = await this.taskInfo;
+    let detail = await this.detail;
 
-      return {
-        __typename: "Item",
-        id: this.id,
-        summary: this.summary,
-        archived: this.archived,
-        snoozed: this.snoozed,
-        created: this.created,
-        taskInfo: taskInfo?.state ?? null,
-        detail: detail ? await detail.state : null,
-      };
-    })();
+    return {
+      __typename: "Item",
+      id: this.id,
+      summary: this.summary,
+      archived: this.archived,
+      snoozed: this.snoozed,
+      created: this.created,
+      taskInfo: taskInfo?.state ?? null,
+      detail: detail ? await detail.state() : null,
+    };
   }
 
   public readonly user = memoized(async function (this: Item): Promise<User> {
@@ -869,7 +867,7 @@ abstract class ItemDetailImpl<
     });
   }
 
-  public abstract get state(): Awaitable<ItemDetailState>;
+  public abstract state(): Awaitable<ItemDetailState>;
 }
 
 export type LinkDetailParams = Omit<LinkDetailEntity, "id" | "icon">;
@@ -903,7 +901,7 @@ export class LinkDetail extends ItemDetailImpl<LinkDetailEntity> {
     return this.entity.icon;
   }
 
-  public get state(): LinkDetailState {
+  public state(): LinkDetailState {
     return {
       __typename: "LinkDetail",
       url: this.url,
@@ -950,7 +948,7 @@ export class FileDetail extends ItemDetailImpl<FileDetailEntity> {
     return this.entity.size;
   }
 
-  public get state(): FileDetailState {
+  public state(): FileDetailState {
     return {
       __typename: "FileDetail",
       filename: this.filename,
@@ -986,7 +984,7 @@ export class NoteDetail extends ItemDetailImpl<NoteDetailEntity> {
     return this.entity.note;
   }
 
-  public get state(): NoteDetailState {
+  public state(): NoteDetailState {
     return {
       __typename: "NoteDetail",
       note: this.note,
@@ -1040,25 +1038,23 @@ export class ServiceDetail extends ItemDetailImpl<ServiceDetailEntity> {
     return this.entity.taskDone;
   }
 
-  public get state(): Promise<ServiceDetailState> {
-    return (async (): Promise<ServiceDetailState> => {
-      let lists = await this.lists();
+  public async state(): Promise<ServiceDetailState> {
+    let lists = await this.lists();
 
-      return {
-        __typename: "ServiceDetail",
-        serviceId: this.serviceId,
-        hasTaskState: this.hasTaskState,
-        wasEverListed: await this.wasEverListed(),
-        isCurrentlyListed: lists.length > 0,
-        lists: lists.map((list: ServiceList): ServiceListState => list.state),
-        fields: JSON.parse(await this.fields()),
-      };
-    })();
+    return {
+      __typename: "ServiceDetail",
+      serviceId: this.serviceId,
+      hasTaskState: this.hasTaskState,
+      wasEverListed: await this.wasEverListed(),
+      isCurrentlyListed: lists.length > 0,
+      lists: lists.map((list: ServiceList): ServiceListState => list.state),
+      fields: JSON.parse(await this.fields()),
+    };
   }
 
   public async fields(): Promise<string> {
     let service = ServiceManager.getService(this.serviceId);
-    let serviceTx = await buildServiceTransaction(service, this.tx);
+    let serviceTx = buildServiceTransaction(service, this.tx);
     let item = await service.getServiceItem(serviceTx, this.itemId);
     return JSON.stringify(await waitFor(call(item, item.fields)));
   }

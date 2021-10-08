@@ -1,14 +1,9 @@
-import type { Transaction } from "../utils";
 import { NotAuthenticatedError, RequestController } from "../utils";
 import { User } from "./implementations";
 
 export class CoreController extends RequestController {
   public get userId(): string | null {
     return (this.context.session?.userId as string | undefined) ?? null;
-  }
-
-  public startTransaction(writable: boolean): Promise<Transaction> {
-    return this.context.startTransaction(writable);
   }
 }
 

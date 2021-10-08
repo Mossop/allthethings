@@ -39,12 +39,12 @@ interface TransactionHolder {
   complete: Promise<void>;
 }
 
-type ExtraContext = WebContext & {
+type ExtraContext = WebContext<Transaction> & {
   commitTransaction(): Promise<void>;
   rollbackTransaction(): Promise<void>;
 };
 
-type WebServerContext = MiddlewareContext<ExtraContext>;
+type WebServerContext = MiddlewareContext<Transaction, ExtraContext>;
 
 export async function buildWebServerContext(
   db: Database,
