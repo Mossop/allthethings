@@ -1,5 +1,6 @@
-import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles } from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 
 import type { ServiceItemProps, ReactResult } from "../../../client/utils";
 import { ItemPill, ImageIcon, Styles, ReactMemo } from "../../../client/utils";
@@ -15,7 +16,7 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: "hidden",
     },
     iconContainer: {
-      padding: theme.spacing(1.5),
+      padding: `calc(${theme.spacing(1)} + 2px)`,
       ...Styles.flexCentered,
     },
     summary: {

@@ -1,5 +1,7 @@
-import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles, IconButton } from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import { IconButton } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { useCallback, useMemo } from "react";
 
 import type {
@@ -26,7 +28,7 @@ import {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     headingText: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
     },
     actions: {
       flex: 1,

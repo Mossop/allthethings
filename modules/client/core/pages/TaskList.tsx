@@ -1,5 +1,7 @@
-import { List, createStyles, makeStyles } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+import { List } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useState, forwardRef, useCallback } from "react";
@@ -42,7 +44,7 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexCenteredRow,
     },
     tasksHeading: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
       whiteSpace: "nowrap",
     },
     headingInput: {

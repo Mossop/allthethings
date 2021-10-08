@@ -1,11 +1,7 @@
-import {
-  Divider,
-  List,
-  ListSubheader,
-  createStyles,
-  makeStyles,
-} from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+import { Divider, List, ListSubheader } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useCallback } from "react";
@@ -44,7 +40,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     sectionHeadingInput: TextStyles.subheading,
     sectionDragHeading: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
     },
     dragging: Styles.dragging,
   }),

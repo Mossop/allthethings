@@ -1,4 +1,4 @@
-import { SvgIcon } from "@material-ui/core";
+import { SvgIcon } from "@mui/material";
 import type { ReactElement } from "react";
 
 // @ts-ignore: SVG Icon.

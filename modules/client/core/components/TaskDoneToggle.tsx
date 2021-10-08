@@ -1,6 +1,7 @@
-import { IconButton } from "@material-ui/core";
-import type { Theme } from "@material-ui/core/styles";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
+import { IconButton } from "@mui/material";
+import type { Theme } from "@mui/material/styles";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { DateTime } from "luxon";
 import { useCallback } from "react";
 
@@ -12,8 +13,8 @@ import { useEditTaskMutation } from "../utils/api";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     noTask: {
-      width: `calc(${theme.spacing(3)}px + 1.5rem)`,
-      height: `calc(${theme.spacing(3)}px + 1.5rem)`,
+      width: `calc(${theme.spacing(2)} + 1.5rem)`,
+      height: `calc(${theme.spacing(2)} + 1.5rem)`,
     },
   }),
 );

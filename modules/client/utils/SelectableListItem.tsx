@@ -1,4 +1,4 @@
-import { ListItem, ListItemIcon, ListItemText } from "@material-ui/core";
+import { ListItem, ListItemIcon, ListItemText } from "@mui/material";
 import type { ReactNode } from "react";
 import { forwardRef } from "react";
 

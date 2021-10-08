@@ -1,7 +1,13 @@
-import LuxonUtils from "@date-io/luxon";
-import { CssBaseline, createMuiTheme, ThemeProvider } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
-import { MuiPickersUtilsProvider } from "@material-ui/pickers";
+import AdapterLuxon from "@mui/lab/AdapterLuxon";
+import LocalizationProvider from "@mui/lab/LocalizationProvider";
+import {
+  CssBaseline,
+  createTheme,
+  ThemeProvider,
+  StyledEngineProvider,
+} from "@mui/material";
+import type { Theme } from "@mui/material";
+import { createSpacing } from "@mui/system";
 
 import type { ReactResult } from "../utils";
 import ErrorHandler from "./components/ErrorHandler";
@@ -9,123 +15,138 @@ import GlobalPopups from "./components/GlobalPopups";
 import Main from "./components/Main";
 import { DragContext } from "./utils/drag";
 
-const base = createMuiTheme();
+declare module "@mui/styles/defaultTheme" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-interface
+  interface DefaultTheme extends Theme {}
+}
 
-/* eslint-disable @typescript-eslint/naming-convention */
-const baseTheme = (theme: Theme): Theme =>
-  createMuiTheme({
-    palette: {
-      type: "dark",
-      primary: {
-        main: "#CEA07E",
-        contrastText: "#000000",
-      },
-      secondary: {
-        main: "#7EACCE",
-        contrastText: "#000000",
+const spacing = createSpacing(8);
+
+const baseTheme = createTheme({
+  spacing,
+  palette: {
+    mode: "dark",
+    primary: {
+      main: "#CEA07E",
+      contrastText: "#000000",
+    },
+    secondary: {
+      main: "#7EACCE",
+      contrastText: "#000000",
+    },
+    background: {
+      default: "#303030",
+      paper: "#424242",
+    },
+  },
+  components: {
+    MuiAppBar: {
+      defaultProps: {
+        enableColorOnDark: true,
       },
     },
-    overrides: {
-      MuiCssBaseline: {
-        "@global": {
-          "*": {
-            fontFamily: "inherit",
-            fontWeight: "inherit",
-            fontSize: "inherit",
-            letterSpacing: "inherit",
-            lineHeight: "inherit",
-            padding: 0,
-            margin: 0,
-            color: "inherit",
-            cursor: "inherit",
-            textDecoration: "none",
-          },
-          html: {
-            overflow: "hidden",
-          },
-          body: {
-            cursor: "default",
-          },
-        },
-      },
-      // @ts-ignore
-      MuiSpeedDialIcon: {
-        icon: {
-          fontSize: theme.typography.pxToRem(24),
-        },
-      },
-      MuiSpeedDialAction: {
-        fab: {
-          fontSize: theme.typography.pxToRem(24),
-        },
-      },
-      MuiIconButton: {
-        root: {
+    MuiCssBaseline: {
+      styleOverrides: {
+        "*": {
+          fontFamily: "inherit",
+          fontWeight: "inherit",
           fontSize: "inherit",
+          letterSpacing: "inherit",
+          lineHeight: "inherit",
+          padding: 0,
+          margin: 0,
           color: "inherit",
+          cursor: "inherit",
+          textDecoration: "none",
+        },
+        html: {
+          overflow: "hidden",
+        },
+        body: {
+          cursor: "default",
         },
       },
-      MuiListItemIcon: {
-        root: {
-          color: "inherit",
-        },
-      },
-      MuiFormControl: {
-        marginNormal: {
-          marginTop: theme.spacing(1),
-        },
-      },
-      MuiDialog: {
+    },
+    MuiDialog: {
+      styleOverrides: {
         paper: {
           minWidth: "22rem",
         },
       },
-      MuiDialogTitle: {
+    },
+    MuiDialogActions: {
+      styleOverrides: {
         root: {
-          paddingTop: theme.spacing(2),
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2),
-          paddingBottom: 0,
+          paddingTop: 0,
+          paddingLeft: spacing(2),
+          paddingRight: spacing(2),
+          paddingBottom: spacing(2),
         },
       },
-      MuiDialogContent: {
+    },
+    MuiDialogContent: {
+      styleOverrides: {
         root: {
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2),
-          paddingBottom: theme.spacing(4),
+          paddingLeft: spacing(2),
+          paddingRight: spacing(2),
+          paddingBottom: spacing(4),
           display: "flex",
           flexDirection: "column",
           justifyContent: "start",
           alignItems: "stretch",
         },
       },
-      MuiDialogActions: {
+    },
+    MuiDialogTitle: {
+      styleOverrides: {
         root: {
-          paddingTop: 0,
-          paddingLeft: theme.spacing(2),
-          paddingRight: theme.spacing(2),
-          paddingBottom: theme.spacing(2),
+          paddingTop: spacing(2),
+          paddingLeft: spacing(2),
+          paddingRight: spacing(2),
+          paddingBottom: 0,
         },
       },
     },
-  });
-/* eslint-enable @typescript-eslint/naming-convention */
+    MuiFormControl: {
+      styleOverrides: {
+        marginNormal: {
+          marginTop: spacing(1),
+        },
+      },
+    },
+    MuiIconButton: {
+      styleOverrides: {
+        root: {
+          fontSize: "inherit",
+          color: "inherit",
+        },
+      },
+    },
+    MuiListItemIcon: {
+      styleOverrides: {
+        root: {
+          color: "inherit",
+        },
+      },
+    },
+  },
+});
 
 export default function App(): ReactResult {
   return (
-    <ThemeProvider theme={base}>
+    <StyledEngineProvider injectFirst={true}>
       <ThemeProvider theme={baseTheme}>
         <DragContext>
           <CssBaseline />
           <ErrorHandler>
-            <MuiPickersUtilsProvider utils={LuxonUtils}>
+            <LocalizationProvider dateAdapter={AdapterLuxon}>
               <GlobalPopups>
                 <Main />
               </GlobalPopups>
-            </MuiPickersUtilsProvider>
+            </LocalizationProvider>
           </ErrorHandler>
         </DragContext>
       </ThemeProvider>
-    </ThemeProvider>
+    </StyledEngineProvider>
   );
 }

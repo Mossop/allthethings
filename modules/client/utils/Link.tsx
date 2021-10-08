@@ -1,4 +1,5 @@
-import { makeStyles, createStyles } from "@material-ui/core";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 
 import type { ReactChildren, ReactResult } from "./types";

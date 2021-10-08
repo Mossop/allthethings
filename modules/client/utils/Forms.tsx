@@ -2,13 +2,11 @@ import type {
   ButtonProps as MuiButtonProps,
   OutlinedInputProps,
   Theme,
-} from "@material-ui/core";
+} from "@mui/material";
 import {
   FormHelperText,
   MenuItem,
   CircularProgress,
-  createStyles,
-  makeStyles,
   FormLabel,
   FormControl,
   InputLabel,
@@ -19,7 +17,9 @@ import {
   Checkbox as MuiCheckbox,
   Select as MuiSelect,
   Button as MuiButton,
-} from "@material-ui/core";
+} from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type {
   Dispatch,
@@ -236,9 +236,15 @@ export const TextFieldInput = ReactMemo(function TextFieldInput<
   stateKey,
   ...props
 }: TextFieldInputProps<T, K>): ReactElement {
-  let value = useMemo(() => state[stateKey], [state, stateKey]) as string;
+  let value = useMemo(
+    () => state[stateKey],
+    [state, stateKey],
+  ) as unknown as string;
 
-  let change = useScopedState(stateKey, setState) as Dispatch<string>;
+  let change = useScopedState(
+    stateKey,
+    setState,
+  ) as unknown as Dispatch<string>;
 
   return <TextField value={value} onChange={change} {...props} />;
 });

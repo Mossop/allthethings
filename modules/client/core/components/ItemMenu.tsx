@@ -1,11 +1,11 @@
+import MenuIcon from "@mui/icons-material/MoreVert";
 import {
   Collapse,
   IconButton,
   ListItemIcon,
   ListItemText,
   MenuItem,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/MoreVert";
+} from "@mui/material";
 import { useCallback, useState } from "react";
 
 import {

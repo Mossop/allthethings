@@ -1,14 +1,14 @@
 import {
   IconButton,
   ListItem,
-  createStyles,
-  makeStyles,
   Tooltip,
   MenuItem,
   ListItemText,
   ListItemIcon,
-} from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+} from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import { DateTime } from "luxon";
 import { forwardRef, useCallback, useMemo, useState } from "react";

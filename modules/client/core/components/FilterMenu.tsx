@@ -1,13 +1,13 @@
-import type { Theme } from "@material-ui/core";
+import type { Theme } from "@mui/material";
 import {
-  createStyles,
   IconButton,
   ListItemIcon,
   ListItemText,
-  makeStyles,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { Dispatch, SetStateAction } from "react";
 import { useCallback } from "react";

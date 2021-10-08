@@ -1,11 +1,7 @@
-import {
-  Divider,
-  List,
-  Paper,
-  createStyles,
-  makeStyles,
-} from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+import { Divider, List, Paper } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { ReactElement } from "react";
 import { useMemo, forwardRef } from "react";
@@ -58,7 +54,7 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     icon: {
       paddingRight: theme.spacing(1),
-      minWidth: theme.spacing(1) + 24,
+      minWidth: `calc(${theme.spacing(1)} + 24px)`,
       fontSize: theme.typography.pxToRem(24),
     },
     item: ({ depth }: StyleProps) => ({

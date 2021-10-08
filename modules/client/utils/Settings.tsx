@@ -1,11 +1,7 @@
-import type { Theme } from "@material-ui/core";
-import {
-  createStyles,
-  makeStyles,
-  List,
-  ListSubheader,
-  ListItem,
-} from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import { List, ListSubheader, ListItem } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { ReactElement, ReactNode } from "react";
 import { createContext, useCallback, useContext } from "react";
@@ -23,7 +19,7 @@ export const useSidebarStyles = makeStyles((theme: Theme) =>
     },
     icon: {
       paddingRight: theme.spacing(1),
-      minWidth: theme.spacing(1) + 24,
+      minWidth: theme.spacing(4),
       fontSize: theme.typography.pxToRem(24),
       ...flexCentered,
     },

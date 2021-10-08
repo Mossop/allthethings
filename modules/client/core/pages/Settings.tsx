@@ -1,14 +1,9 @@
-import type { Theme } from "@material-ui/core";
-import {
-  Divider,
-  ListSubheader,
-  createStyles,
-  makeStyles,
-  Paper,
-  List,
-} from "@material-ui/core";
-import AdminIcon from "@material-ui/icons/BusinessCenter";
-import SettingsIcon from "@material-ui/icons/Settings";
+import AdminIcon from "@mui/icons-material/BusinessCenter";
+import SettingsIcon from "@mui/icons-material/Settings";
+import type { Theme } from "@mui/material";
+import { Divider, ListSubheader, Paper, List } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { Fragment, useCallback } from "react";
 
 import {

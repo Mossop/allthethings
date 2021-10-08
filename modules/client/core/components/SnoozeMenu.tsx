@@ -1,13 +1,13 @@
-import type { Theme } from "@material-ui/core";
+import type { Theme } from "@mui/material";
 import {
-  createStyles,
   IconButton,
   List,
   ListItemText,
-  makeStyles,
   MenuItem,
   Tooltip,
-} from "@material-ui/core";
+} from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { DateTime } from "luxon";
 import { forwardRef, useCallback, useMemo } from "react";
 
@@ -161,7 +161,11 @@ export const SnoozeItems = ReactMemo(
           <ListItemText>Custom...</ListItemText>
         </MenuItem>
         {pickerOpen && (
-          <DateTimeDialog onSelect={snoozeItem} onClosed={closePicker} />
+          <DateTimeDialog
+            okText="Snooze"
+            onSelect={snoozeItem}
+            onClosed={closePicker}
+          />
         )}
       </List>
     );

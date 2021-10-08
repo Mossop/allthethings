@@ -84,9 +84,9 @@ module.exports = {
   resolve: {
     extensions: [".js", ".jsx", ".ts", ".tsx"],
     plugins: [new TsconfigPathsPlugin({ configFile: tsConfig })],
-    fallback: {
-      assert: "assert",
-    },
+    // fallback: {
+    //   assert: "assert",
+    // },
   },
   output: {
     path: path.join(__dirname, "dist", "web", "app"),
@@ -159,6 +159,7 @@ module.exports = {
     }),
     new DefinePlugin({
       SCHEMA_VERSION: schemaVersion,
+      "process.stderr": "null",
       "process.env.NODE_DEBUG": JSON.stringify(process.env.NODE_DEBUG),
     }),
     new ForkTsCheckerWebpackPlugin({

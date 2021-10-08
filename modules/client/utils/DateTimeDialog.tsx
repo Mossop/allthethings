@@ -1,5 +1,8 @@
-import { createStyles, makeStyles } from "@material-ui/core/styles";
-import { DateTimePicker } from "@material-ui/pickers";
+import DateTimePicker from "@mui/lab/DateTimePicker";
+import type { TextFieldProps } from "@mui/material/TextField";
+import TextField from "@mui/material/TextField";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import type { DateTime } from "luxon";
 import { useCallback } from "react";
 
@@ -16,6 +19,7 @@ const useStyles = makeStyles(() =>
 );
 
 export interface DateTimeDialogProps {
+  okText: string;
   initialValue?: DateTime | null;
   onSelect: (date: DateTime) => void;
   onClosed: () => void;
@@ -23,6 +27,7 @@ export interface DateTimeDialogProps {
 
 export const DateTimeDialog = ReactMemo(function DateTimeDialog({
   initialValue,
+  okText,
   onSelect,
   onClosed,
 }: DateTimeDialogProps): ReactResult {
@@ -40,18 +45,22 @@ export const DateTimeDialog = ReactMemo(function DateTimeDialog({
 
   return (
     <DateTimePicker
+      // eslint-disable-next-line react/jsx-no-bind
+      renderInput={(params: TextFieldProps) => <TextField {...params} />}
       value={initialValue}
       disablePast={true}
       showTodayButton={true}
       clearable={false}
-      okLabel="Snooze"
+      okText={okText}
       open={isOpen}
       className={classes.pickerInput}
       onChange={selected}
       onClose={close}
       DialogProps={{
         onClose: close,
-        onExited: onClosed,
+        TransitionProps: {
+          onExited: onClosed,
+        },
       }}
     />
   );

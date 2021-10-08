@@ -1,5 +1,6 @@
-import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles } from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 
 import type { Overwrite } from "../../../utils";
 import type { ReactResult } from "../../utils";
@@ -16,8 +17,8 @@ const useStyles = makeStyles((theme: Theme) =>
       overflow: "hidden",
     },
     iconContainer: {
-      paddingLeft: theme.spacing(1.5),
-      paddingRight: theme.spacing(1.5),
+      paddingLeft: `calc(${theme.spacing(1)} + 2px)`,
+      paddingRight: `calc(${theme.spacing(1)} + 2px)`,
       ...Styles.flexCentered,
     },
     favicon: {

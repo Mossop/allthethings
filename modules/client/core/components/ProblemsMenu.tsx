@@ -1,4 +1,4 @@
-import { IconButton, MenuItem } from "@material-ui/core";
+import { IconButton, MenuItem } from "@mui/material";
 
 import type { ReactResult } from "../../utils";
 import {

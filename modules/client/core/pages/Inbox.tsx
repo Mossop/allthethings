@@ -1,5 +1,7 @@
-import { List, createStyles, makeStyles } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+import { List } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { useEffect, useState } from "react";
 
 import { useBoolState, ReactMemo, Icons, Styles, Heading } from "../../utils";
@@ -33,7 +35,7 @@ const useStyles = makeStyles((theme: Theme) =>
       borderBottomStyle: "solid",
     },
     headingText: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
     },
   }),
 );

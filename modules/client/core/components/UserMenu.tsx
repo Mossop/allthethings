@@ -1,10 +1,6 @@
-import {
-  Avatar,
-  IconButton,
-  MenuItem,
-  createStyles,
-  makeStyles,
-} from "@material-ui/core";
+import { Avatar, IconButton, MenuItem } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import md5 from "md5";
 import { useCallback } from "react";
 

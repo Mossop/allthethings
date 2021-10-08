@@ -1,5 +1,6 @@
-import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles } from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import clsx from "clsx";
 import type { DetailedHTMLProps, HTMLAttributes } from "react";
 

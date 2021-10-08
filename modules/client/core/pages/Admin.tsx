@@ -1,9 +1,11 @@
-import type { Theme } from "@material-ui/core";
-import { IconButton, makeStyles, createStyles } from "@material-ui/core";
-import AdminIcon from "@material-ui/icons/BusinessCenter";
-import UsersIcon from "@material-ui/icons/People";
-import AdminUserIcon from "@material-ui/icons/Person";
-import UserIcon from "@material-ui/icons/PersonOutline";
+import AdminIcon from "@mui/icons-material/BusinessCenter";
+import UsersIcon from "@mui/icons-material/People";
+import AdminUserIcon from "@mui/icons-material/Person";
+import UserIcon from "@mui/icons-material/PersonOutline";
+import { IconButton } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { useCallback } from "react";
 
 import {
@@ -25,7 +27,7 @@ import { useUser } from "../utils/globalState";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     headingText: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
     },
     userIcon: {
       ...Styles.flexCenteredRow,

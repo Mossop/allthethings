@@ -1,13 +1,13 @@
+import MenuIcon from "@mui/icons-material/MoreVert";
 import {
   IconButton,
-  createStyles,
-  makeStyles,
   Tooltip,
   ListItemIcon,
   ListItemText,
   MenuItem,
-} from "@material-ui/core";
-import MenuIcon from "@material-ui/icons/MoreVert";
+} from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { useMemo } from "react";
 
 import type { ReactResult } from "../../utils";

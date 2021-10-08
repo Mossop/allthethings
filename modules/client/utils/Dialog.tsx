@@ -3,7 +3,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-} from "@material-ui/core";
+} from "@mui/material";
 import type { FormEvent } from "react";
 import { useCallback } from "react";
 
@@ -48,7 +48,11 @@ export const Dialog = ReactMemo(function Dialog({
   );
 
   return (
-    <MuiDialog open={isOpen} onClose={onClose} onExited={onClosed}>
+    <MuiDialog
+      open={isOpen}
+      onClose={onClose}
+      TransitionProps={{ onExited: onClosed }}
+    >
       <FormStateProvider state={formState}>
         <form onSubmit={submit}>
           <DialogTitle>{title}</DialogTitle>
@@ -57,19 +61,10 @@ export const Dialog = ReactMemo(function Dialog({
             {children}
           </DialogContent>
           <DialogActions>
-            <Button
-              type="submit"
-              disabled={!canSubmit}
-              variant="contained"
-              color="primary"
-            >
+            <Button type="submit" disabled={!canSubmit} variant="contained">
               {submitLabel}
             </Button>
-            {cancelLabel && (
-              <Button onClick={onClose} variant="contained">
-                {cancelLabel}
-              </Button>
-            )}
+            {cancelLabel && <Button onClick={onClose}>{cancelLabel}</Button>}
           </DialogActions>
         </form>
       </FormStateProvider>

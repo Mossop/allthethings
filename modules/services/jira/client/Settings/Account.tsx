@@ -1,7 +1,9 @@
-import type { Theme } from "@material-ui/core";
-import { makeStyles, createStyles, IconButton } from "@material-ui/core";
-import AddCircleIcon from "@material-ui/icons/AddCircle";
-import SearchIcon from "@material-ui/icons/Search";
+import AddCircleIcon from "@mui/icons-material/AddCircle";
+import SearchIcon from "@mui/icons-material/Search";
+import type { Theme } from "@mui/material";
+import { IconButton } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { useCallback } from "react";
 
 import type {
@@ -30,7 +32,7 @@ import SearchDialog from "./SearchDialog";
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     headingText: {
-      padding: theme.spacing(1) + 2,
+      padding: `calc(${theme.spacing(1)} + 2px)`,
     },
     actions: {
       flex: 1,

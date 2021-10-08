@@ -1,5 +1,7 @@
-import type { Theme } from "@material-ui/core";
-import { Divider, makeStyles, createStyles } from "@material-ui/core";
+import type { Theme } from "@mui/material";
+import { Divider } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import ReactMarkdown from "react-markdown";
 
 import { Styles, Loading, ReactMemo, Link } from "../../utils";

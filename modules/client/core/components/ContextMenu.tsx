@@ -1,5 +1,7 @@
-import { Button, MenuItem, createStyles, makeStyles } from "@material-ui/core";
-import type { Theme } from "@material-ui/core";
+import { Button, MenuItem } from "@mui/material";
+import type { Theme } from "@mui/material";
+import createStyles from "@mui/styles/createStyles";
+import makeStyles from "@mui/styles/makeStyles";
 import { forwardRef, useCallback, useMemo } from "react";
 
 import type { ReactRef, ReactResult } from "../../utils";
@@ -31,9 +33,6 @@ const useStyles = makeStyles((theme: Theme) =>
       ...Styles.flexCenteredRow,
       minWidth: "auto",
       textTransform: "none",
-    },
-    label: {
-      width: "auto",
     },
     icon: {
       fontSize: "2em",
@@ -111,7 +110,6 @@ export default ReactMemo(function ContextMenu(): ReactResult {
       <Button
         classes={{
           root: classes.button,
-          label: classes.label,
         }}
         variant="outlined"
         color="inherit"

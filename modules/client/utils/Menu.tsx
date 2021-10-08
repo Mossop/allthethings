@@ -1,5 +1,5 @@
-import type { PopoverOrigin } from "@material-ui/core";
-import { Menu as MuiMenu } from "@material-ui/core";
+import type { PopoverOrigin } from "@mui/material";
+import { Menu as MuiMenu } from "@mui/material";
 import type { PopupState } from "material-ui-popup-state/hooks";
 import { bindMenu, usePopupState } from "material-ui-popup-state/hooks";
 import { useCallback } from "react";
@@ -47,9 +47,10 @@ export const Menu = ReactMemo(function Menu({
       anchorOrigin={anchorOrigin}
       transformOrigin={transformOrigin}
       keepMounted={keepMounted}
-      getContentAnchorEl={null}
       onClick={closeMenu}
-      onExited={onClosed}
+      TransitionProps={{
+        onExited: onClosed,
+      }}
     >
       {children}
     </MuiMenu>
