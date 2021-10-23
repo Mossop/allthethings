@@ -76,7 +76,10 @@ function SettingsSidebar(): ReactResult {
             <Fragment key={service.serverId}>
               <Divider className={classes.divider} />
               <List disablePadding={true}>
-                <ListSubheader className={classes.serviceHeader}>
+                <ListSubheader
+                  disableSticky={true}
+                  className={classes.serviceHeader}
+                >
                   {service.name}
                 </ListSubheader>
                 {service.renderServiceSettingsPageList()}

@@ -114,7 +114,11 @@ export const SettingsListSection = ReactMemo(function SettingsListSection({
 
   return (
     <List disablePadding={true} className={classes.section}>
-      <ListSubheader disableGutters={true} className={classes.sectionHeading}>
+      <ListSubheader
+        disableGutters={true}
+        disableSticky={true}
+        className={classes.sectionHeading}
+      >
         {heading}
       </ListSubheader>
       {children}

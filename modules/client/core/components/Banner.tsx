@@ -67,7 +67,9 @@ export default ReactMemo(function Banner(): ReactResult {
             <UserMenu />
           </>
         ) : (
-          <Button onClick={showLoginDialog}>Login</Button>
+          <Button color="inherit" onClick={showLoginDialog}>
+            Login
+          </Button>
         )}
       </div>
       {loginDialogShown && <LoginDialog onClosed={closeLoginDialog} />}
