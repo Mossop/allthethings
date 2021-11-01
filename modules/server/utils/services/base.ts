@@ -19,9 +19,13 @@ export abstract class BaseService implements Service {
 
   public constructor(private readonly server: Server) {
     server.taskManager.queueRecurringTask(async (): Promise<number> => {
-      await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
-        this.update(tx),
-      );
+      try {
+        await this.server.withTransaction("Update", (tx: ServiceTransaction) =>
+          this.update(tx),
+        );
+      } catch (e) {
+        // Will have already been logged.
+      }
 
       return UPDATE_DELAY;
     }, INITIAL_DELAY);
